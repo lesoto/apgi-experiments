@@ -1,0 +1,7602 @@
+[
+  {
+    "episode": 0,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          55,
+          54,
+          6
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          104,
+          124,
+          106
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          12,
+          94,
+          36
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          500,
+          500,
+          26
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:34:36.538936",
+    "end_time": "2025-11-04T20:34:38.075977"
+  },
+  {
+    "episode": 1,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          500,
+          89,
+          26
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          43,
+          391,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          78,
+          8,
+          372
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          8,
+          84,
+          49
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:34:38.121779",
+    "end_time": "2025-11-04T20:34:40.320196"
+  },
+  {
+    "episode": 2,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          38,
+          500,
+          78
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          55,
+          107,
+          136
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          122,
+          6,
+          65
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          8,
+          91,
+          13
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:34:40.357232",
+    "end_time": "2025-11-04T20:34:41.473475"
+  },
+  {
+    "episode": 3,
+    "steps": 388,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          369,
+          387,
+          10
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          360,
+          26,
+          30
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          379,
+          1,
+          368
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          384,
+          383,
+          6
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:34:41.511004",
+    "end_time": "2025-11-04T20:34:44.208441"
+  },
+  {
+    "episode": 4,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          500,
+          23,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          500,
+          76,
+          62
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          36,
+          27,
+          93
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          8,
+          54,
+          9
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:34:44.257139",
+    "end_time": "2025-11-04T20:34:46.126179"
+  },
+  {
+    "episode": 5,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          490,
+          11,
+          85
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          112,
+          7,
+          90
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          500,
+          500,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          500,
+          500,
+          98
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:34:46.172952",
+    "end_time": "2025-11-04T20:34:49.615780"
+  },
+  {
+    "episode": 6,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          500,
+          53,
+          33
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          44,
+          71,
+          67
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          55,
+          500,
+          79
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          9,
+          14,
+          20
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:34:49.655773",
+    "end_time": "2025-11-04T20:34:51.146860"
+  },
+  {
+    "episode": 7,
+    "steps": 370,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          13,
+          69,
+          219
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          7,
+          369,
+          88
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          17,
+          13,
+          74
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          51,
+          33,
+          30
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:34:51.186727",
+    "end_time": "2025-11-04T20:34:52.073244"
+  },
+  {
+    "episode": 8,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          500,
+          10,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          19,
+          500,
+          4
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          10,
+          10,
+          6
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          14,
+          500,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:34:52.111136",
+    "end_time": "2025-11-04T20:34:54.589712"
+  },
+  {
+    "episode": 9,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          18,
+          72,
+          16
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          56,
+          20,
+          11
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          33,
+          500,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          10,
+          66,
+          22
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:34:54.639146",
+    "end_time": "2025-11-04T20:34:55.891261"
+  },
+  {
+    "episode": 10,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          19,
+          10,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          39,
+          7,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          500,
+          21,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          29,
+          12,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:34:55.949372",
+    "end_time": "2025-11-04T20:34:58.965623"
+  },
+  {
+    "episode": 11,
+    "steps": 270,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          57,
+          269,
+          2
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          36,
+          90,
+          26
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          85,
+          226,
+          213
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          6,
+          13,
+          72
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:34:59.031888",
+    "end_time": "2025-11-04T20:35:00.165462"
+  },
+  {
+    "episode": 12,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          500,
+          56,
+          15
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          13,
+          500,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          14,
+          40,
+          46
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          33,
+          500,
+          466
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:00.236755",
+    "end_time": "2025-11-04T20:35:03.287348"
+  },
+  {
+    "episode": 13,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          89,
+          500,
+          35
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          45,
+          24,
+          205
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          500,
+          56,
+          11
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          500,
+          9,
+          166
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:03.336677",
+    "end_time": "2025-11-04T20:35:05.983716"
+  },
+  {
+    "episode": 14,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          500,
+          95,
+          9
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          13,
+          500,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          98,
+          500,
+          14
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          21,
+          500,
+          7
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:06.025561",
+    "end_time": "2025-11-04T20:35:08.605663"
+  },
+  {
+    "episode": 15,
+    "steps": 237,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          15,
+          1,
+          7
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          206,
+          236,
+          181
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          99,
+          102,
+          24
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          209,
+          110,
+          6
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:08.667893",
+    "end_time": "2025-11-04T20:35:09.690659"
+  },
+  {
+    "episode": 16,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          368,
+          45,
+          31
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          500,
+          26,
+          43
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          12,
+          85,
+          10
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          72,
+          25,
+          30
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:09.731660",
+    "end_time": "2025-11-04T20:35:10.901464"
+  },
+  {
+    "episode": 17,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          16,
+          500,
+          31
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          500,
+          500,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          500,
+          6,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          500,
+          500,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:10.939205",
+    "end_time": "2025-11-04T20:35:16.140284"
+  },
+  {
+    "episode": 18,
+    "steps": 168,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          14,
+          153,
+          98
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          56,
+          70,
+          20
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          10,
+          38,
+          62
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          167,
+          16,
+          4
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:16.185788",
+    "end_time": "2025-11-04T20:35:16.829068"
+  },
+  {
+    "episode": 19,
+    "steps": 199,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          12,
+          198,
+          10
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          188,
+          46,
+          48
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          44,
+          34,
+          25
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          22,
+          11,
+          3
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:16.873128",
+    "end_time": "2025-11-04T20:35:17.440647"
+  },
+  {
+    "episode": 20,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          500,
+          222,
+          31
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          500,
+          19,
+          475
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          193,
+          471,
+          230
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          12,
+          10,
+          8
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:17.490467",
+    "end_time": "2025-11-04T20:35:20.176382"
+  },
+  {
+    "episode": 21,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          278,
+          17,
+          60
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          7,
+          28,
+          8
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          50,
+          55,
+          14
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          27,
+          35,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:20.237238",
+    "end_time": "2025-11-04T20:35:21.386795"
+  },
+  {
+    "episode": 22,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          25,
+          20,
+          2
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          8,
+          40,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          4,
+          500,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          19,
+          500,
+          24
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:21.425890",
+    "end_time": "2025-11-04T20:35:23.631766"
+  },
+  {
+    "episode": 23,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          500,
+          246,
+          8
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          9,
+          8,
+          30
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          500,
+          18,
+          307
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          227,
+          500,
+          15
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:23.674037",
+    "end_time": "2025-11-04T20:35:25.689264"
+  },
+  {
+    "episode": 24,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          34,
+          48,
+          41
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          16,
+          13,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          500,
+          500,
+          25
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          43,
+          38,
+          4
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:25.727182",
+    "end_time": "2025-11-04T20:35:27.752962"
+  },
+  {
+    "episode": 25,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          15,
+          261,
+          5
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          32,
+          274,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          6,
+          276,
+          23
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          12,
+          80,
+          281
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:27.792905",
+    "end_time": "2025-11-04T20:35:29.517900"
+  },
+  {
+    "episode": 26,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          500,
+          15,
+          183
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          500,
+          10,
+          12
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          8,
+          500,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          18,
+          500,
+          2
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:29.559032",
+    "end_time": "2025-11-04T20:35:32.421545"
+  },
+  {
+    "episode": 27,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          33,
+          29,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          30,
+          20,
+          54
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          33,
+          22,
+          52
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          49,
+          79,
+          11
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:32.463478",
+    "end_time": "2025-11-04T20:35:33.352733"
+  },
+  {
+    "episode": 28,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          11,
+          500,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          500,
+          36,
+          7
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          500,
+          29,
+          398
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          500,
+          7,
+          14
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:33.392274",
+    "end_time": "2025-11-04T20:35:36.529293"
+  },
+  {
+    "episode": 29,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          6,
+          99,
+          13
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          44,
+          35,
+          189
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          15,
+          500,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          500,
+          27,
+          3
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:36.568109",
+    "end_time": "2025-11-04T20:35:38.334196"
+  },
+  {
+    "episode": 30,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          7,
+          500,
+          15
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          500,
+          18,
+          33
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          500,
+          500,
+          18
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          18,
+          500,
+          3
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:38.387195",
+    "end_time": "2025-11-04T20:35:41.344862"
+  },
+  {
+    "episode": 31,
+    "steps": 163,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          29,
+          12,
+          9
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          33,
+          39,
+          15
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          157,
+          150,
+          142
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          162,
+          37,
+          26
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:41.387109",
+    "end_time": "2025-11-04T20:35:42.050675"
+  },
+  {
+    "episode": 32,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          61,
+          426,
+          13
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          44,
+          22,
+          4
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          81,
+          413,
+          27
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          92,
+          436,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:42.087980",
+    "end_time": "2025-11-04T20:35:44.024880"
+  },
+  {
+    "episode": 33,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          475,
+          35,
+          74
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          471,
+          59,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          18,
+          353,
+          201
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          7,
+          11,
+          492
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:44.064788",
+    "end_time": "2025-11-04T20:35:46.607233"
+  },
+  {
+    "episode": 34,
+    "steps": 114,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          22,
+          66,
+          62
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          113,
+          38,
+          91
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          85,
+          5,
+          58
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          7,
+          11,
+          106
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:46.659235",
+    "end_time": "2025-11-04T20:35:47.202586"
+  },
+  {
+    "episode": 35,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          500,
+          13,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          479,
+          497,
+          15
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          325,
+          310,
+          303
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          8,
+          292,
+          31
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:47.238742",
+    "end_time": "2025-11-04T20:35:50.286612"
+  },
+  {
+    "episode": 36,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          68,
+          500,
+          51
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          21,
+          56,
+          16
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          500,
+          24,
+          36
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          15,
+          82,
+          6
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:50.329028",
+    "end_time": "2025-11-04T20:35:51.756798"
+  },
+  {
+    "episode": 37,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          32,
+          191,
+          14
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          33,
+          227,
+          23
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          36,
+          16,
+          206
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          500,
+          217,
+          5
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:51.797764",
+    "end_time": "2025-11-04T20:35:53.105035"
+  },
+  {
+    "episode": 38,
+    "steps": 173,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          21,
+          172,
+          5
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          12,
+          40,
+          30
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          14,
+          163,
+          31
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          13,
+          44,
+          115
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:53.155134",
+    "end_time": "2025-11-04T20:35:53.704300"
+  },
+  {
+    "episode": 39,
+    "steps": 80,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          42,
+          49,
+          19
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          44,
+          50,
+          16
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          70,
+          6,
+          18
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          79,
+          22,
+          31
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:53.742328",
+    "end_time": "2025-11-04T20:35:54.088500"
+  },
+  {
+    "episode": 40,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          25,
+          35,
+          36
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          24,
+          15,
+          18
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          5,
+          33,
+          489
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          1,
+          500,
+          43
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:54.143543",
+    "end_time": "2025-11-04T20:35:55.367142"
+  },
+  {
+    "episode": 41,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          10,
+          5,
+          42
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          51,
+          20,
+          33
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          36,
+          20,
+          128
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          24,
+          500,
+          26
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:55.407350",
+    "end_time": "2025-11-04T20:35:56.531499"
+  },
+  {
+    "episode": 42,
+    "steps": 446,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          432,
+          436,
+          34
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          14,
+          23,
+          27
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          375,
+          445,
+          47
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          387,
+          72,
+          369
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:56.590535",
+    "end_time": "2025-11-04T20:35:59.168431"
+  },
+  {
+    "episode": 43,
+    "steps": 415,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          8,
+          16,
+          38
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          414,
+          48,
+          394
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          11,
+          19,
+          1
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          24,
+          35,
+          15
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:35:59.206759",
+    "end_time": "2025-11-04T20:36:00.226227"
+  },
+  {
+    "episode": 44,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          24,
+          46,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          284,
+          16,
+          12
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          500,
+          21,
+          64
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          15,
+          5,
+          32
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:00.268077",
+    "end_time": "2025-11-04T20:36:01.880168"
+  },
+  {
+    "episode": 45,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          122,
+          112,
+          200
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          156,
+          171,
+          167
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          176,
+          8,
+          38
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          19,
+          13,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:01.920969",
+    "end_time": "2025-11-04T20:36:03.287961"
+  },
+  {
+    "episode": 46,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          395,
+          402,
+          4
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          16,
+          16,
+          396
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          339,
+          23,
+          333
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          409,
+          500,
+          32
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:03.327346",
+    "end_time": "2025-11-04T20:36:06.039148"
+  },
+  {
+    "episode": 47,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          69,
+          91,
+          57
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          23,
+          500,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          2,
+          60,
+          75
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          43,
+          30,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:06.081920",
+    "end_time": "2025-11-04T20:36:07.925569"
+  },
+  {
+    "episode": 48,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          7,
+          7,
+          52
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          500,
+          26,
+          455
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          108,
+          16,
+          70
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          40,
+          444,
+          42
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:07.973021",
+    "end_time": "2025-11-04T20:36:09.624351"
+  },
+  {
+    "episode": 49,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          26,
+          3,
+          37
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          119,
+          19,
+          86
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          111,
+          7,
+          62
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          99,
+          500,
+          16
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:09.686692",
+    "end_time": "2025-11-04T20:36:10.787434"
+  },
+  {
+    "episode": 50,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          41,
+          47,
+          39
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          20,
+          71,
+          29
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          6,
+          3,
+          15
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          29,
+          500,
+          22
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:10.844427",
+    "end_time": "2025-11-04T20:36:11.627651"
+  },
+  {
+    "episode": 51,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          63,
+          104,
+          3
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          500,
+          500,
+          59
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          99,
+          10,
+          10
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          52,
+          40,
+          26
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:11.666866",
+    "end_time": "2025-11-04T20:36:13.046186"
+  },
+  {
+    "episode": 52,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          15,
+          33,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          500,
+          500,
+          42
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          500,
+          500,
+          3
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          500,
+          500,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:13.083586",
+    "end_time": "2025-11-04T20:36:17.057931"
+  },
+  {
+    "episode": 53,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          77,
+          5,
+          355
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          34,
+          10,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          21,
+          50,
+          61
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          500,
+          41,
+          448
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:17.096182",
+    "end_time": "2025-11-04T20:36:19.103792"
+  },
+  {
+    "episode": 54,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          8,
+          500,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          500,
+          500,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          500,
+          500,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          500,
+          66,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:19.144286",
+    "end_time": "2025-11-04T20:36:24.063170"
+  },
+  {
+    "episode": 55,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          11,
+          42,
+          51
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          33,
+          64,
+          14
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          500,
+          42,
+          75
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          500,
+          61,
+          39
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:24.124173",
+    "end_time": "2025-11-04T20:36:25.494659"
+  },
+  {
+    "episode": 56,
+    "steps": 347,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          3,
+          203,
+          121
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          15,
+          17,
+          308
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          33,
+          29,
+          299
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          223,
+          346,
+          12
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:25.531498",
+    "end_time": "2025-11-04T20:36:26.921664"
+  },
+  {
+    "episode": 57,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          12,
+          39,
+          46
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          67,
+          324,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          388,
+          327,
+          58
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          73,
+          500,
+          80
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:26.960486",
+    "end_time": "2025-11-04T20:36:29.389693"
+  },
+  {
+    "episode": 58,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          6,
+          31,
+          364
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          500,
+          20,
+          18
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          26,
+          11,
+          16
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          43,
+          45,
+          15
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:29.429301",
+    "end_time": "2025-11-04T20:36:30.464336"
+  },
+  {
+    "episode": 59,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          27,
+          15,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          37,
+          500,
+          41
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          15,
+          23,
+          37
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          26,
+          9,
+          16
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:30.503923",
+    "end_time": "2025-11-04T20:36:31.615985"
+  },
+  {
+    "episode": 60,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          90,
+          26,
+          4
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          500,
+          43,
+          58
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          18,
+          102,
+          11
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          22,
+          2,
+          17
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:31.687006",
+    "end_time": "2025-11-04T20:36:32.664587"
+  },
+  {
+    "episode": 61,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          12,
+          328,
+          342
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          125,
+          34,
+          150
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          500,
+          49,
+          133
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          500,
+          10,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:32.703183",
+    "end_time": "2025-11-04T20:36:35.590958"
+  },
+  {
+    "episode": 62,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          12,
+          36,
+          145
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          500,
+          500,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          31,
+          21,
+          51
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          500,
+          31,
+          21
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:35.628967",
+    "end_time": "2025-11-04T20:36:37.666389"
+  },
+  {
+    "episode": 63,
+    "steps": 79,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          65,
+          69,
+          54
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          30,
+          40,
+          78
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          13,
+          52,
+          39
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          61,
+          16,
+          4
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:37.707823",
+    "end_time": "2025-11-04T20:36:38.130133"
+  },
+  {
+    "episode": 64,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          500,
+          52,
+          8
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          49,
+          500,
+          13
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          127,
+          64,
+          58
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          31,
+          500,
+          27
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:38.173134",
+    "end_time": "2025-11-04T20:36:39.853796"
+  },
+  {
+    "episode": 65,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          50,
+          45,
+          26
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          18,
+          16,
+          62
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          23,
+          79,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          40,
+          8,
+          28
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:39.890416",
+    "end_time": "2025-11-04T20:36:40.777273"
+  },
+  {
+    "episode": 66,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          191,
+          20,
+          5
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          181,
+          500,
+          50
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          34,
+          207,
+          167
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          39,
+          222,
+          7
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:40.818979",
+    "end_time": "2025-11-04T20:36:41.996603"
+  },
+  {
+    "episode": 67,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          500,
+          6,
+          5
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          500,
+          23,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          8,
+          84,
+          11
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          500,
+          500,
+          26
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:42.037216",
+    "end_time": "2025-11-04T20:36:44.349612"
+  },
+  {
+    "episode": 68,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          42,
+          9,
+          19
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          500,
+          28,
+          25
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          38,
+          38,
+          20
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          57,
+          4,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:44.387723",
+    "end_time": "2025-11-04T20:36:45.767963"
+  },
+  {
+    "episode": 69,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          3,
+          9,
+          15
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          25,
+          343,
+          15
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          6,
+          2,
+          15
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          500,
+          500,
+          39
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:45.804847",
+    "end_time": "2025-11-04T20:36:47.256042"
+  },
+  {
+    "episode": 70,
+    "steps": 240,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          33,
+          40,
+          21
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          239,
+          13,
+          7
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          7,
+          93,
+          22
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          139,
+          84,
+          111
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:47.317991",
+    "end_time": "2025-11-04T20:36:47.975837"
+  },
+  {
+    "episode": 71,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          116,
+          54,
+          43
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          8,
+          23,
+          136
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          27,
+          114,
+          116
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          500,
+          36,
+          16
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:48.014351",
+    "end_time": "2025-11-04T20:36:49.241053"
+  },
+  {
+    "episode": 72,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          41,
+          47,
+          32
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          36,
+          500,
+          16
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          59,
+          18,
+          28
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          12,
+          500,
+          3
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:49.280251",
+    "end_time": "2025-11-04T20:36:50.402801"
+  },
+  {
+    "episode": 73,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          211,
+          6,
+          5
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          40,
+          4,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          14,
+          18,
+          222
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          117,
+          26,
+          200
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:50.439496",
+    "end_time": "2025-11-04T20:36:51.955556"
+  },
+  {
+    "episode": 74,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          4,
+          34,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          500,
+          15,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          500,
+          21,
+          5
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          45,
+          17,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:52.021631",
+    "end_time": "2025-11-04T20:36:54.707489"
+  },
+  {
+    "episode": 75,
+    "steps": 70,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          64,
+          8,
+          49
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          40,
+          44,
+          20
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          2,
+          28,
+          28
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          58,
+          69,
+          16
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:54.744381",
+    "end_time": "2025-11-04T20:36:55.140774"
+  },
+  {
+    "episode": 76,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          30,
+          246,
+          56
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          500,
+          264,
+          20
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          67,
+          42,
+          10
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          33,
+          5,
+          271
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:55.178995",
+    "end_time": "2025-11-04T20:36:56.708398"
+  },
+  {
+    "episode": 77,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          10,
+          29,
+          24
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          18,
+          110,
+          19
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          163,
+          500,
+          67
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          29,
+          14,
+          123
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:56.746120",
+    "end_time": "2025-11-04T20:36:57.819687"
+  },
+  {
+    "episode": 78,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          500,
+          463,
+          36
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          10,
+          12,
+          54
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          16,
+          8,
+          31
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          448,
+          13,
+          28
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:57.859029",
+    "end_time": "2025-11-04T20:36:59.231830"
+  },
+  {
+    "episode": 79,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          500,
+          24,
+          114
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          500,
+          85,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          500,
+          42,
+          9
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          100,
+          92,
+          58
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:36:59.267902",
+    "end_time": "2025-11-04T20:37:01.809034"
+  },
+  {
+    "episode": 80,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          500,
+          1,
+          18
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          77,
+          24,
+          67
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          10,
+          500,
+          12
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          38,
+          43,
+          16
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:37:01.882810",
+    "end_time": "2025-11-04T20:37:03.079258"
+  },
+  {
+    "episode": 81,
+    "steps": 438,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          425,
+          378,
+          47
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          421,
+          361,
+          437
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          26,
+          8,
+          327
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          40,
+          372,
+          336
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:37:03.118116",
+    "end_time": "2025-11-04T20:37:05.994633"
+  },
+  {
+    "episode": 82,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          80,
+          23,
+          36
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          500,
+          21,
+          233
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          56,
+          17,
+          46
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          15,
+          500,
+          68
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:37:06.031547",
+    "end_time": "2025-11-04T20:37:07.589728"
+  },
+  {
+    "episode": 83,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          13,
+          60,
+          31
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          26,
+          26,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          302,
+          500,
+          362
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          66,
+          13,
+          97
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:37:07.627529",
+    "end_time": "2025-11-04T20:37:09.664283"
+  },
+  {
+    "episode": 84,
+    "steps": 303,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          66,
+          27,
+          302
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          22,
+          44,
+          8
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          40,
+          296,
+          20
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          6,
+          16,
+          24
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:37:09.702404",
+    "end_time": "2025-11-04T20:37:10.521531"
+  },
+  {
+    "episode": 85,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          419,
+          64,
+          9
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          500,
+          49,
+          23
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          140,
+          16,
+          27
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          24,
+          17,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:37:10.563429",
+    "end_time": "2025-11-04T20:37:12.295377"
+  },
+  {
+    "episode": 86,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          500,
+          66,
+          34
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          89,
+          22,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          500,
+          19,
+          9
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          26,
+          9,
+          98
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:37:12.336629",
+    "end_time": "2025-11-04T20:37:14.343310"
+  },
+  {
+    "episode": 87,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          90,
+          7,
+          17
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          62,
+          25,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          43,
+          6,
+          99
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          54,
+          27,
+          79
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:37:14.411148",
+    "end_time": "2025-11-04T20:37:15.328096"
+  },
+  {
+    "episode": 88,
+    "steps": 172,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          60,
+          50,
+          137
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          5,
+          95,
+          36
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          74,
+          12,
+          120
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          103,
+          169,
+          171
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:37:15.366946",
+    "end_time": "2025-11-04T20:37:16.253763"
+  },
+  {
+    "episode": 89,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          9,
+          36,
+          14
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          21,
+          500,
+          29
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          21,
+          3,
+          23
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          34,
+          25,
+          17
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:37:16.291965",
+    "end_time": "2025-11-04T20:37:17.096054"
+  },
+  {
+    "episode": 90,
+    "steps": 161,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          9,
+          23,
+          3
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          43,
+          30,
+          14
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          15,
+          31,
+          160
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          37,
+          100,
+          17
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:37:17.156892",
+    "end_time": "2025-11-04T20:37:17.557196"
+  },
+  {
+    "episode": 91,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          51,
+          139,
+          5
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          65,
+          36,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          124,
+          16,
+          15
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          17,
+          3,
+          28
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:37:17.599284",
+    "end_time": "2025-11-04T20:37:18.458501"
+  },
+  {
+    "episode": 92,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          58,
+          8,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          65,
+          234,
+          250
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          52,
+          250,
+          244
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          500,
+          49,
+          9
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:37:18.498262",
+    "end_time": "2025-11-04T20:37:20.474152"
+  },
+  {
+    "episode": 93,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          500,
+          362,
+          9
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          500,
+          351,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          193,
+          31,
+          353
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          21,
+          11,
+          16
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:37:20.517014",
+    "end_time": "2025-11-04T20:37:22.887394"
+  },
+  {
+    "episode": 94,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          500,
+          7,
+          346
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          360,
+          46,
+          19
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          500,
+          17,
+          140
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          27,
+          137,
+          15
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:37:22.928905",
+    "end_time": "2025-11-04T20:37:24.766449"
+  },
+  {
+    "episode": 95,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          16,
+          500,
+          51
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          22,
+          500,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          500,
+          45,
+          4
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          29,
+          500,
+          11
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:37:24.810104",
+    "end_time": "2025-11-04T20:37:27.245518"
+  },
+  {
+    "episode": 96,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          22,
+          39,
+          6
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          10,
+          69,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          16,
+          8,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          13,
+          37,
+          50
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:37:27.284527",
+    "end_time": "2025-11-04T20:37:28.466757"
+  },
+  {
+    "episode": 97,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          500,
+          422,
+          52
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          418,
+          30,
+          12
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          500,
+          401,
+          83
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          14,
+          68,
+          73
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:37:28.510969",
+    "end_time": "2025-11-04T20:37:30.812809"
+  },
+  {
+    "episode": 98,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          23,
+          9,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          500,
+          500,
+          36
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          20,
+          500,
+          103
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          39,
+          17,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:37:30.856532",
+    "end_time": "2025-11-04T20:37:33.484677"
+  },
+  {
+    "episode": 99,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          11,
+          7,
+          45
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          500,
+          58,
+          500
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          20,
+          25,
+          46
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          31,
+          21,
+          37
+        ],
+        "food_consumed": [
+          0,
+          0,
+          0
+        ],
+        "final_energy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2025-11-04T20:37:33.521413",
+    "end_time": "2025-11-04T20:37:34.777510"
+  }
+]
