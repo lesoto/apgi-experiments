@@ -14,7 +14,7 @@
     - _Requirements: 1.2, 2.2, 3.2, 4.4_
 
   - [ ] 2.2 Implement database schema and ORM integration
-    - Create SQLAlchemy models for sessions, trials, and parameter estimates tables
+    - Create Firebase models for sessions, trials, and parameter estimates tables
     - Write database migration scripts and connection management
     - Implement data access layer with CRUD operations
     - _Requirements: 8.4, 8.5_
