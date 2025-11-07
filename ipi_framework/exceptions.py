@@ -40,3 +40,33 @@ class ConfigurationError(IPIFrameworkError):
 class DataError(IPIFrameworkError):
     """Errors in data management, storage, and retrieval."""
     pass
+
+
+class DataManagementError(IPIFrameworkError):
+    """Errors in integrated data management operations."""
+    pass
+
+
+class VisualizationError(IPIFrameworkError):
+    """Errors in visualization and plotting operations."""
+    pass
+
+
+class DashboardError(IPIFrameworkError):
+    """Errors in dashboard and monitoring operations."""
+    pass
+
+
+class PersistenceError(IPIFrameworkError):
+    """Errors in data persistence and storage operations."""
+    pass
+
+
+class ReportGenerationError(IPIFrameworkError):
+    """Errors in report generation operations."""
+    pass
+
+
+class DataExportError(IPIFrameworkError):
+    """Errors in data export operations."""
+    pass

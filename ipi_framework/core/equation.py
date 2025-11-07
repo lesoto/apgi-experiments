@@ -10,10 +10,16 @@ The core equation is:
 """
 
 import numpy as np
-from typing import Union, Optional
+from typing import Union, Optional, TYPE_CHECKING
 import warnings
 
 from ..exceptions import MathematicalError
+
+if TYPE_CHECKING:
+    from .precision import PrecisionCalculator
+    from .prediction_error import PredictionErrorProcessor
+    from .somatic_marker import SomaticMarkerEngine
+    from .threshold import ThresholdManager
 
 
 class IPIEquation:
@@ -22,18 +28,34 @@ class IPIEquation:
     
     This class provides methods for calculating precision-weighted surprise
     and ignition probability based on the IPI Framework mathematical model.
+    Integrates with PrecisionCalculator, PredictionErrorProcessor, 
+    SomaticMarkerEngine, and ThresholdManager for complete functionality.
     """
     
-    def __init__(self, numerical_stability: bool = True):
+    def __init__(self, 
+                 precision_calculator: Optional['PrecisionCalculator'] = None,
+                 prediction_error_processor: Optional['PredictionErrorProcessor'] = None,
+                 somatic_marker_engine: Optional['SomaticMarkerEngine'] = None,
+                 threshold_manager: Optional['ThresholdManager'] = None,
+                 numerical_stability: bool = True):
         """
-        Initialize the IPI equation calculator.
+        Initialize the IPI equation calculator with integrated components.
         
         Args:
+            precision_calculator: Calculator for precision values (Πₑ, Πᵢ)
+            prediction_error_processor: Processor for prediction errors (εₑ, εᵢ)
+            somatic_marker_engine: Engine for somatic marker gain (M_{c,a})
+            threshold_manager: Manager for dynamic threshold (θₜ)
             numerical_stability: Whether to apply numerical stability measures
-                                for sigmoid calculations.
         """
         self.numerical_stability = numerical_stability
         self._max_sigmoid_input = 500.0  # Prevent overflow in sigmoid
+        
+        # Integrated components
+        self.precision_calculator = precision_calculator
+        self.prediction_error_processor = prediction_error_processor
+        self.somatic_marker_engine = somatic_marker_engine
+        self.threshold_manager = threshold_manager
     
     def calculate_surprise(self, 
                           extero_error: float,
@@ -216,6 +238,186 @@ class IPIEquation:
         
         return surprise, probability
     
+    def calculate_integrated_surprise(self,
+                                    raw_extero_error: float,
+                                    raw_intero_error: float,
+                                    extero_variance: float,
+                                    intero_variance: float,
+                                    context: Optional['ContextType'] = None,
+                                    arousal: float = 1.0,
+                                    valence: float = 0.0,
+                                    stakes: float = 1.0) -> float:
+        """
+        Calculate surprise using integrated components for full processing pipeline.
+        
+        Args:
+            raw_extero_error: Raw exteroceptive prediction error
+            raw_intero_error: Raw interoceptive prediction error
+            extero_variance: Variance for exteroceptive precision calculation
+            intero_variance: Variance for interoceptive precision calculation
+            context: Contextual situation for somatic marker
+            arousal: Arousal level for somatic marker and threshold
+            valence: Emotional valence for somatic marker
+            stakes: Situational stakes for somatic marker
+            
+        Returns:
+            Total precision-weighted surprise
+            
+        Raises:
+            MathematicalError: If required components are not available
+        """
+        if not all([self.precision_calculator, self.prediction_error_processor, 
+                   self.somatic_marker_engine]):
+            raise MathematicalError("Required components not available for integrated calculation")
+        
+        # Process prediction errors
+        processed_extero_error = self.prediction_error_processor.process_exteroceptive_error(
+            raw_extero_error
+        )
+        processed_intero_error = self.prediction_error_processor.process_interoceptive_error(
+            raw_intero_error
+        )
+        
+        # Calculate precisions
+        extero_precision = self.precision_calculator.calculate_exteroceptive_precision(
+            extero_variance
+        )
+        intero_precision = self.precision_calculator.calculate_interoceptive_precision(
+            intero_variance, arousal=arousal
+        )
+        
+        # Calculate somatic marker gain
+        from .somatic_marker import ContextType
+        context_enum = context if context is not None else ContextType.NEUTRAL
+        somatic_gain = self.somatic_marker_engine.calculate_somatic_gain(
+            context=context_enum,
+            arousal=arousal,
+            valence=valence,
+            stakes=stakes
+        )
+        
+        # Calculate final surprise
+        return self.calculate_surprise(
+            extero_error=processed_extero_error,
+            intero_error=processed_intero_error,
+            extero_precision=extero_precision,
+            intero_precision=intero_precision,
+            somatic_gain=somatic_gain
+        )
+    
+    def calculate_integrated_ignition_probability(self,
+                                                raw_extero_error: float,
+                                                raw_intero_error: float,
+                                                extero_variance: float,
+                                                intero_variance: float,
+                                                context: Optional['ContextType'] = None,
+                                                arousal: float = 1.0,
+                                                valence: float = 0.0,
+                                                stakes: float = 1.0,
+                                                steepness: float = 2.0) -> tuple[float, float]:
+        """
+        Calculate both surprise and ignition probability using integrated components.
+        
+        Args:
+            raw_extero_error: Raw exteroceptive prediction error
+            raw_intero_error: Raw interoceptive prediction error
+            extero_variance: Variance for exteroceptive precision calculation
+            intero_variance: Variance for interoceptive precision calculation
+            context: Contextual situation
+            arousal: Arousal level
+            valence: Emotional valence
+            stakes: Situational stakes
+            steepness: Sigmoid steepness parameter
+            
+        Returns:
+            Tuple of (surprise, ignition_probability)
+            
+        Raises:
+            MathematicalError: If required components are not available
+        """
+        if not self.threshold_manager:
+            raise MathematicalError("ThresholdManager not available for integrated calculation")
+        
+        # Calculate surprise using integrated components
+        surprise = self.calculate_integrated_surprise(
+            raw_extero_error=raw_extero_error,
+            raw_intero_error=raw_intero_error,
+            extero_variance=extero_variance,
+            intero_variance=intero_variance,
+            context=context,
+            arousal=arousal,
+            valence=valence,
+            stakes=stakes
+        )
+        
+        # Get current threshold from threshold manager
+        from .somatic_marker import ContextType
+        context_enum = context if context is not None else ContextType.NEUTRAL
+        current_threshold = self.threshold_manager.get_current_threshold(
+            context=context_enum,
+            arousal=arousal
+        )
+        
+        # Calculate ignition probability
+        probability = self.calculate_ignition_probability(
+            surprise=surprise,
+            threshold=current_threshold,
+            steepness=steepness
+        )
+        
+        return surprise, probability
+    
+    def update_threshold_from_ignition(self,
+                                     ignition_occurred: bool,
+                                     context: Optional['ContextType'] = None) -> float:
+        """
+        Update threshold based on ignition outcome using integrated ThresholdManager.
+        
+        Args:
+            ignition_occurred: Whether ignition occurred in the last trial
+            context: Current contextual situation
+            
+        Returns:
+            Updated threshold value
+            
+        Raises:
+            MathematicalError: If ThresholdManager is not available
+        """
+        if not self.threshold_manager:
+            raise MathematicalError("ThresholdManager not available for threshold update")
+        
+        from .somatic_marker import ContextType
+        context_enum = context if context is not None else ContextType.NEUTRAL
+        
+        return self.threshold_manager.update_threshold(
+            ignition_occurred=ignition_occurred,
+            context=context_enum
+        )
+    
+    def validate_integrated_components(self) -> dict:
+        """
+        Validate that all integrated components are properly configured.
+        
+        Returns:
+            Dictionary with validation results for each component
+        """
+        validation_results = {
+            'precision_calculator': self.precision_calculator is not None,
+            'prediction_error_processor': self.prediction_error_processor is not None,
+            'somatic_marker_engine': self.somatic_marker_engine is not None,
+            'threshold_manager': self.threshold_manager is not None,
+            'all_components_available': False
+        }
+        
+        validation_results['all_components_available'] = all([
+            validation_results['precision_calculator'],
+            validation_results['prediction_error_processor'],
+            validation_results['somatic_marker_engine'],
+            validation_results['threshold_manager']
+        ])
+        
+        return validation_results
+    
     def get_equation_info(self) -> dict:
         """
         Get information about the equation implementation.
@@ -223,6 +425,8 @@ class IPIEquation:
         Returns:
             Dictionary with equation details and parameters.
         """
+        component_info = self.validate_integrated_components()
+        
         return {
             "equation_name": "IPI Ignition Threshold Equation",
             "surprise_formula": "Sₜ = Πₑ·|εₑ| + Πᵢ(M_{c,a})·|εᵢ|",
@@ -230,5 +434,11 @@ class IPIEquation:
             "numerical_stability": self.numerical_stability,
             "max_sigmoid_input": self._max_sigmoid_input,
             "expected_surprise_range": "0-10 (dimensionless)",
-            "probability_range": "0-1"
+            "probability_range": "0-1",
+            "integrated_components": component_info,
+            "available_methods": [
+                "calculate_surprise", "calculate_ignition_probability",
+                "calculate_integrated_surprise", "calculate_integrated_ignition_probability",
+                "update_threshold_from_ignition"
+            ]
         }

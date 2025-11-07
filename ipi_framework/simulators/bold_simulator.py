@@ -364,3 +364,36 @@ class BOLDSimulator:
         ai_activation, acc_activation = self.get_ai_acc_activation(signature)
         return (ai_activation < self.unconscious_z_threshold and 
                 acc_activation < self.unconscious_z_threshold)
+    
+    def simulate_bold_activation(self, regions: List[str], 
+                                z_range: Tuple[float, float]) -> 'BOLDResult':
+        """
+        Legacy method for backward compatibility with falsification tests.
+        
+        Args:
+            regions: List of brain regions to simulate
+            z_range: Range for Z-score generation
+            
+        Returns:
+            BOLDResult with activations attribute for compatibility
+        """
+        # Determine if this should be conscious or unconscious based on Z range
+        if z_range[0] > self.conscious_z_threshold:
+            signature = self.generate_conscious_signature(z_range)
+        elif z_range[1] < self.conscious_z_threshold:
+            signature = self.generate_unconscious_signature(z_range)
+        else:
+            # Mixed range - use target regions with midpoint Z-score
+            target_z = (z_range[0] + z_range[1]) / 2
+            signature = self.generate_signature(regions, target_z)
+        
+        # Return compatibility object
+        return BOLDResult(signature)
+
+
+class BOLDResult:
+    """Compatibility wrapper for BOLD simulation results."""
+    
+    def __init__(self, signature: BOLDSignature):
+        self.signature = signature
+        self.activations = signature.activations

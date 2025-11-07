@@ -332,3 +332,44 @@ class GammaSimulator:
             return 0.0
         
         return np.mean(frontoparietal_plvs)
+    
+    def simulate_gamma_synchrony(self, plv_range: Tuple[float, float], 
+                                duration_range: Tuple[float, float]) -> 'GammaResult':
+        """
+        Legacy method for backward compatibility with falsification tests.
+        
+        Args:
+            plv_range: Range for PLV generation
+            duration_range: Range for duration generation (ms)
+            
+        Returns:
+            GammaResult with plv and duration attributes for compatibility
+        """
+        # Determine if this should be conscious or unconscious based on PLV range
+        if plv_range[0] > self.conscious_plv_threshold:
+            signature = self.generate_conscious_signature(plv_range, duration_range)
+        elif plv_range[1] < self.conscious_plv_threshold:
+            signature = self.generate_unconscious_signature(plv_range, duration_range)
+        else:
+            # Mixed range - use target PLV at midpoint
+            target_plv = (plv_range[0] + plv_range[1]) / 2
+            target_duration = (duration_range[0] + duration_range[1]) / 2
+            signature = self.generate_signature(target_plv, target_duration)
+        
+        # Return compatibility object
+        return GammaResult(signature)
+
+
+class GammaResult:
+    """Compatibility wrapper for gamma simulation results."""
+    
+    def __init__(self, signature: GammaSignature):
+        self.signature = signature
+        self.plv = self.get_max_plv()
+        self.duration = signature.duration
+    
+    def get_max_plv(self) -> float:
+        """Get maximum PLV value from signature."""
+        if not self.signature.plv_values:
+            return 0.0
+        return max(self.signature.plv_values.values())

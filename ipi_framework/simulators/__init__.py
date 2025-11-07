@@ -7,8 +7,8 @@ Perturbational Complexity Index (PCI).
 """
 
 from .p3b_simulator import P3bSimulator, P3bSignature
-from .gamma_simulator import GammaSimulator, GammaSignature, BrainRegion as GammaBrainRegion
-from .bold_simulator import BOLDSimulator, BOLDSignature, BrainRegion as BOLDBrainRegion
+from .gamma_simulator import GammaSimulator, GammaSignature, GammaResult, BrainRegion as GammaBrainRegion
+from .bold_simulator import BOLDSimulator, BOLDSignature, BOLDResult, BrainRegion as BOLDBrainRegion
 from .pci_calculator import PCICalculator, PCISignature
 from .signature_validator import (
     SignatureValidator, 
@@ -25,11 +25,13 @@ __all__ = [
     # Gamma-band synchrony simulator
     'GammaSimulator',
     'GammaSignature',
+    'GammaResult',
     'GammaBrainRegion',
     
     # BOLD activation simulator
     'BOLDSimulator',
     'BOLDSignature',
+    'BOLDResult',
     'BOLDBrainRegion',
     
     # PCI calculator

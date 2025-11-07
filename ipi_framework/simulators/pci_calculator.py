@@ -522,3 +522,16 @@ class PCICalculator:
             True if PCI exceeds conscious threshold (>0.4)
         """
         return signature.pci_value > self.conscious_pci_threshold
+    
+    def calculate_pci(self, connectivity_matrix: np.ndarray) -> float:
+        """
+        Legacy method for backward compatibility with falsification tests.
+        
+        Args:
+            connectivity_matrix: NxN connectivity matrix between brain regions
+            
+        Returns:
+            PCI value (float) for compatibility
+        """
+        signature = self.calculate_pci_from_connectivity(connectivity_matrix)
+        return signature.pci_value

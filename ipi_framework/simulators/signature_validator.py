@@ -57,6 +57,31 @@ class CombinedSignature:
     is_complete_ignition: bool
     is_falsification_pattern: bool
     falsification_confidence: float
+    
+    @property
+    def p3b_amplitude(self) -> float:
+        """Get P3b amplitude value"""
+        return self.p3b_signature.amplitude if self.p3b_signature else 0.0
+    
+    @property
+    def gamma_plv(self) -> float:
+        """Get gamma phase-locking value"""
+        if self.gamma_signature and self.gamma_signature.plv_values:
+            # Return the maximum PLV value across all region pairs
+            return max(self.gamma_signature.plv_values.values())
+        return 0.0
+    
+    @property
+    def pci_value(self) -> float:
+        """Get PCI value"""
+        return self.pci_signature.pci_value if self.pci_signature else 0.0
+    
+    @property
+    def bold_activations(self) -> Dict[str, float]:
+        """Get BOLD activation values by region"""
+        if self.bold_signature:
+            return self.bold_signature.activations
+        return {}
 
 
 class SignatureValidator:

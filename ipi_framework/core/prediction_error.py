@@ -54,13 +54,19 @@ class PredictionErrorProcessor:
         error = np.asarray(error)
         
         if self.standardize:
+            # Handle single values - don't standardize if only one value
+            if error.size == 1 and reference_mean is None and reference_std is None:
+                warnings.warn("Cannot standardize single value without reference parameters, returning raw error")
+                return error
+            
             if reference_mean is None:
                 reference_mean = np.mean(error)
             if reference_std is None:
-                reference_std = np.std(error, ddof=1)
+                reference_std = np.std(error, ddof=1) if error.size > 1 else 1.0
             
             if reference_std <= 0:
-                raise MathematicalError("Standard deviation must be positive for standardization")
+                warnings.warn("Standard deviation is zero or negative, using raw error")
+                return error
             
             # Z-score standardization
             standardized_error = (error - reference_mean) / reference_std
@@ -96,13 +102,19 @@ class PredictionErrorProcessor:
         error = np.asarray(error)
         
         if self.standardize:
+            # Handle single values - don't standardize if only one value
+            if error.size == 1 and reference_mean is None and reference_std is None:
+                warnings.warn("Cannot standardize single value without reference parameters, returning raw error")
+                return error
+            
             if reference_mean is None:
                 reference_mean = np.mean(error)
             if reference_std is None:
-                reference_std = np.std(error, ddof=1)
+                reference_std = np.std(error, ddof=1) if error.size > 1 else 1.0
             
             if reference_std <= 0:
-                raise MathematicalError("Standard deviation must be positive for standardization")
+                warnings.warn("Standard deviation is zero or negative, using raw error")
+                return error
             
             # Z-score standardization
             standardized_error = (error - reference_mean) / reference_std

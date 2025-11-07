@@ -11,6 +11,11 @@ from .precision import PrecisionCalculator
 from .prediction_error import PredictionErrorProcessor
 from .somatic_marker import SomaticMarkerEngine, ContextType
 from .threshold import ThresholdManager, ThresholdAdaptationType
+from .data_models import (
+    IPIParameters, NeuralSignatures, ConsciousnessAssessment,
+    ExperimentalTrial, FalsificationResult, StatisticalSummary,
+    PharmacologicalCondition
+)
 
 __all__ = [
     "IPIEquation",
@@ -19,5 +24,12 @@ __all__ = [
     "SomaticMarkerEngine",
     "ContextType",
     "ThresholdManager",
-    "ThresholdAdaptationType"
+    "ThresholdAdaptationType",
+    "IPIParameters",
+    "NeuralSignatures", 
+    "ConsciousnessAssessment",
+    "ExperimentalTrial",
+    "FalsificationResult",
+    "StatisticalSummary",
+    "PharmacologicalCondition"
 ]

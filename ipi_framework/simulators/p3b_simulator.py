@@ -189,3 +189,26 @@ class P3bSimulator:
             True if amplitude exceeds conscious threshold (>5 μV)
         """
         return signature.amplitude > self.conscious_amplitude_threshold
+    
+    def simulate_p3b(self, amplitude_range: Tuple[float, float], 
+                     latency_range: Tuple[float, float]) -> P3bSignature:
+        """
+        Legacy method for backward compatibility with falsification tests.
+        
+        Args:
+            amplitude_range: Range for amplitude generation (μV)
+            latency_range: Range for latency generation (ms)
+            
+        Returns:
+            P3bSignature with specified characteristics
+        """
+        # Determine if this should be conscious or unconscious based on amplitude range
+        if amplitude_range[0] > self.conscious_amplitude_threshold:
+            return self.generate_conscious_signature(amplitude_range, latency_range)
+        elif amplitude_range[1] < self.conscious_amplitude_threshold:
+            return self.generate_unconscious_signature(amplitude_range, latency_range)
+        else:
+            # Mixed range - use target amplitude at midpoint
+            target_amplitude = (amplitude_range[0] + amplitude_range[1]) / 2
+            target_latency = (latency_range[0] + latency_range[1]) / 2
+            return self.generate_signature(target_amplitude, target_latency)

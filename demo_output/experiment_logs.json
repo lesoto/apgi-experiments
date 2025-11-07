@@ -1,0 +1,815 @@
+{
+  "session_info": {
+    "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+    "experiment_id": "IPI Primary Falsification Demo",
+    "session_name": "IPI Primary Falsification Demo_20251106_204234",
+    "start_time": "2025-11-06 20:42:34.316632",
+    "end_time": "2025-11-06 20:42:34.331542",
+    "status": "completed",
+    "parameters": {
+      "n_participants": 20,
+      "n_trials_per_participant": 10,
+      "test_types": [
+        "primary_falsification",
+        "consciousness_without_ignition",
+        "threshold_insensitivity",
+        "soma_bias"
+      ],
+      "significance_level": 0.05,
+      "power_threshold": 0.8
+    },
+    "random_seed": 42,
+    "configuration": {},
+    "conditions": [
+      "primary_falsification"
+    ],
+    "current_condition": null,
+    "trial_count": 41,
+    "completed_trials": 5,
+    "events": [
+      {
+        "timestamp": "2025-11-06T20:42:34.314636",
+        "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+        "level": "INFO",
+        "category": "session",
+        "message": "Created experiment session: IPI Primary Falsification Demo_20251106_204234",
+        "details": {
+          "experiment_id": "IPI Primary Falsification Demo",
+          "parameters": {
+            "n_participants": 20,
+            "n_trials_per_participant": 10,
+            "test_types": [
+              "primary_falsification",
+              "consciousness_without_ignition",
+              "threshold_insensitivity",
+              "soma_bias"
+            ],
+            "significance_level": 0.05,
+            "power_threshold": 0.8
+          },
+          "conditions": [
+            "primary_falsification"
+          ],
+          "random_seed": 42
+        },
+        "source": "tracker"
+      },
+      {
+        "timestamp": "2025-11-06T20:42:34.316632",
+        "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+        "level": "INFO",
+        "category": "session",
+        "message": "Started experiment session",
+        "details": {
+          "start_time": "2025-11-06T20:42:34.316632"
+        },
+        "source": "tracker"
+      },
+      {
+        "timestamp": "2025-11-06T20:42:34.318632",
+        "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+        "level": "INFO",
+        "category": "milestone",
+        "message": "Reached milestone: participant_recruitment_completed",
+        "details": {},
+        "source": "tracker"
+      },
+      {
+        "timestamp": "2025-11-06T20:42:34.319636",
+        "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+        "level": "INFO",
+        "category": "milestone",
+        "message": "Reached milestone: equipment_calibration_completed",
+        "details": {},
+        "source": "tracker"
+      },
+      {
+        "timestamp": "2025-11-06T20:42:34.320634",
+        "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+        "level": "INFO",
+        "category": "milestone",
+        "message": "Reached milestone: data_collection_started",
+        "details": {},
+        "source": "tracker"
+      },
+      {
+        "timestamp": "2025-11-06T20:42:34.321636",
+        "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+        "level": "INFO",
+        "category": "milestone",
+        "message": "Reached milestone: neural_recording_started",
+        "details": {},
+        "source": "tracker"
+      },
+      {
+        "timestamp": "2025-11-06T20:42:34.322634",
+        "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+        "level": "INFO",
+        "category": "milestone",
+        "message": "Reached milestone: behavioral_testing_started",
+        "details": {},
+        "source": "tracker"
+      },
+      {
+        "timestamp": "2025-11-06T20:42:34.323946",
+        "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+        "level": "DEBUG",
+        "category": "trial",
+        "message": "Started trial 1",
+        "details": {
+          "trial_number": 1,
+          "trial_parameters": {
+            "participant_id": "P001",
+            "condition": "primary_falsification",
+            "trial_type": "primary_falsification"
+          },
+          "condition": null
+        },
+        "source": "tracker"
+      },
+      {
+        "timestamp": "2025-11-06T20:42:34.323946",
+        "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+        "level": "DEBUG",
+        "category": "trial",
+        "message": "Completed trial 1 (success: True)",
+        "details": {
+          "trial_number": 1,
+          "trial_results": {
+            "consciousness_detected": true,
+            "p3b_amplitude": 8.3,
+            "gamma_plv": 0.47,
+            "reaction_time_ms": 450
+          },
+          "success": true,
+          "completed_trials": 1
+        },
+        "source": "tracker"
+      },
+      {
+        "timestamp": "2025-11-06T20:42:34.323946",
+        "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+        "level": "DEBUG",
+        "category": "trial",
+        "message": "Started trial 11",
+        "details": {
+          "trial_number": 11,
+          "trial_parameters": {
+            "participant_id": "P002",
+            "condition": "primary_falsification",
+            "trial_type": "primary_falsification"
+          },
+          "condition": null
+        },
+        "source": "tracker"
+      },
+      {
+        "timestamp": "2025-11-06T20:42:34.323946",
+        "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+        "level": "DEBUG",
+        "category": "trial",
+        "message": "Completed trial 11 (success: True)",
+        "details": {
+          "trial_number": 11,
+          "trial_results": {
+            "consciousness_detected": false,
+            "p3b_amplitude": 5.3,
+            "gamma_plv": 0.21999999999999997,
+            "reaction_time_ms": 470
+          },
+          "success": true,
+          "completed_trials": 2
+        },
+        "source": "tracker"
+      },
+      {
+        "timestamp": "2025-11-06T20:42:34.328577",
+        "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+        "level": "DEBUG",
+        "category": "trial",
+        "message": "Started trial 21",
+        "details": {
+          "trial_number": 21,
+          "trial_parameters": {
+            "participant_id": "P003",
+            "condition": "primary_falsification",
+            "trial_type": "primary_falsification"
+          },
+          "condition": null
+        },
+        "source": "tracker"
+      },
+      {
+        "timestamp": "2025-11-06T20:42:34.329526",
+        "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+        "level": "DEBUG",
+        "category": "trial",
+        "message": "Completed trial 21 (success: True)",
+        "details": {
+          "trial_number": 21,
+          "trial_results": {
+            "consciousness_detected": false,
+            "p3b_amplitude": 5.3,
+            "gamma_plv": 0.21999999999999997,
+            "reaction_time_ms": 490
+          },
+          "success": true,
+          "completed_trials": 3
+        },
+        "source": "tracker"
+      },
+      {
+        "timestamp": "2025-11-06T20:42:34.329526",
+        "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+        "level": "DEBUG",
+        "category": "trial",
+        "message": "Started trial 31",
+        "details": {
+          "trial_number": 31,
+          "trial_parameters": {
+            "participant_id": "P004",
+            "condition": "primary_falsification",
+            "trial_type": "primary_falsification"
+          },
+          "condition": null
+        },
+        "source": "tracker"
+      },
+      {
+        "timestamp": "2025-11-06T20:42:34.331542",
+        "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+        "level": "DEBUG",
+        "category": "trial",
+        "message": "Completed trial 31 (success: True)",
+        "details": {
+          "trial_number": 31,
+          "trial_results": {
+            "consciousness_detected": false,
+            "p3b_amplitude": 5.3,
+            "gamma_plv": 0.21999999999999997,
+            "reaction_time_ms": 510
+          },
+          "success": true,
+          "completed_trials": 4
+        },
+        "source": "tracker"
+      },
+      {
+        "timestamp": "2025-11-06T20:42:34.331542",
+        "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+        "level": "DEBUG",
+        "category": "trial",
+        "message": "Started trial 41",
+        "details": {
+          "trial_number": 41,
+          "trial_parameters": {
+            "participant_id": "P005",
+            "condition": "primary_falsification",
+            "trial_type": "primary_falsification"
+          },
+          "condition": null
+        },
+        "source": "tracker"
+      },
+      {
+        "timestamp": "2025-11-06T20:42:34.331542",
+        "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+        "level": "DEBUG",
+        "category": "trial",
+        "message": "Completed trial 41 (success: True)",
+        "details": {
+          "trial_number": 41,
+          "trial_results": {
+            "consciousness_detected": false,
+            "p3b_amplitude": 5.3,
+            "gamma_plv": 0.21999999999999997,
+            "reaction_time_ms": 530
+          },
+          "success": true,
+          "completed_trials": 5
+        },
+        "source": "tracker"
+      },
+      {
+        "timestamp": "2025-11-06T20:42:34.331542",
+        "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+        "level": "INFO",
+        "category": "result",
+        "message": "Logged intermediate results",
+        "details": {
+          "result_keys": [
+            "trials_completed",
+            "participants_completed",
+            "consciousness_detection_rate",
+            "mean_p3b_amplitude",
+            "mean_gamma_plv"
+          ]
+        },
+        "source": "tracker"
+      },
+      {
+        "timestamp": "2025-11-06T20:42:34.331542",
+        "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+        "level": "INFO",
+        "category": "result",
+        "message": "Logged final results",
+        "details": {
+          "result_keys": [
+            "falsification_results",
+            "overall_falsification_detected",
+            "strongest_evidence",
+            "statistical_power_achieved"
+          ]
+        },
+        "source": "tracker"
+      },
+      {
+        "timestamp": "2025-11-06T20:42:34.331542",
+        "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+        "level": "INFO",
+        "category": "session",
+        "message": "Ended experiment session with status: completed",
+        "details": {
+          "end_time": "2025-11-06T20:42:34.331542",
+          "execution_time_seconds": 0.01491,
+          "completed_trials": 5,
+          "total_trials": 41
+        },
+        "source": "tracker"
+      }
+    ],
+    "milestones": {
+      "session_started": "2025-11-06 20:42:34.316632",
+      "participant_recruitment_completed": "2025-11-06 20:42:34.318632",
+      "equipment_calibration_completed": "2025-11-06 20:42:34.319636",
+      "data_collection_started": "2025-11-06 20:42:34.320634",
+      "neural_recording_started": "2025-11-06 20:42:34.321636",
+      "behavioral_testing_started": "2025-11-06 20:42:34.322634",
+      "session_ended": "2025-11-06 20:42:34.331542"
+    },
+    "intermediate_results": {
+      "trial_1": {
+        "consciousness_detected": true,
+        "p3b_amplitude": 8.3,
+        "gamma_plv": 0.47,
+        "reaction_time_ms": 450
+      },
+      "trial_11": {
+        "consciousness_detected": false,
+        "p3b_amplitude": 5.3,
+        "gamma_plv": 0.21999999999999997,
+        "reaction_time_ms": 470
+      },
+      "trial_21": {
+        "consciousness_detected": false,
+        "p3b_amplitude": 5.3,
+        "gamma_plv": 0.21999999999999997,
+        "reaction_time_ms": 490
+      },
+      "trial_31": {
+        "consciousness_detected": false,
+        "p3b_amplitude": 5.3,
+        "gamma_plv": 0.21999999999999997,
+        "reaction_time_ms": 510
+      },
+      "trial_41": {
+        "consciousness_detected": false,
+        "p3b_amplitude": 5.3,
+        "gamma_plv": 0.21999999999999997,
+        "reaction_time_ms": 530
+      },
+      "intermediate": {
+        "trials_completed": 200,
+        "participants_completed": 20,
+        "consciousness_detection_rate": 0.5,
+        "mean_p3b_amplitude": 6.8,
+        "mean_gamma_plv": 0.335
+      }
+    },
+    "final_results": {
+      "falsification_results": [
+        {
+          "test_id": "edef25e1-dab0-4611-b30c-1c0fd46444d0",
+          "test_type": "primary_falsification",
+          "experiment_id": "demo_experiment_001",
+          "is_falsified": false,
+          "confidence_level": 0.95,
+          "effect_size": 0.3,
+          "p_value": 0.15,
+          "statistical_power": 0.85,
+          "n_participants": 20,
+          "n_trials": 200,
+          "replication_count": 3,
+          "detailed_results": {
+            "test_statistic": 1.2,
+            "degrees_of_freedom": 19,
+            "confidence_interval": [
+              -0.2,
+              0.8
+            ]
+          },
+          "statistical_tests": {},
+          "timestamp": "2025-11-06T20:42:34.294996",
+          "duration_seconds": 0.0,
+          "researcher": "Dr. Demo Researcher"
+        },
+        {
+          "test_id": "dd7643b5-889c-405f-b602-2494c31677e0",
+          "test_type": "consciousness_without_ignition",
+          "experiment_id": "demo_experiment_001",
+          "is_falsified": true,
+          "confidence_level": 0.95,
+          "effect_size": 0.8,
+          "p_value": 0.02,
+          "statistical_power": 0.87,
+          "n_participants": 20,
+          "n_trials": 200,
+          "replication_count": 3,
+          "detailed_results": {
+            "test_statistic": 2.5,
+            "degrees_of_freedom": 19,
+            "confidence_interval": [
+              0.1,
+              1.5
+            ]
+          },
+          "statistical_tests": {},
+          "timestamp": "2025-11-06T20:42:34.294996",
+          "duration_seconds": 0.0,
+          "researcher": "Dr. Demo Researcher"
+        },
+        {
+          "test_id": "f6928e71-394b-447b-b082-ea889dfb63ac",
+          "test_type": "threshold_insensitivity",
+          "experiment_id": "demo_experiment_001",
+          "is_falsified": false,
+          "confidence_level": 0.95,
+          "effect_size": 0.3,
+          "p_value": 0.15,
+          "statistical_power": 0.89,
+          "n_participants": 20,
+          "n_trials": 200,
+          "replication_count": 3,
+          "detailed_results": {
+            "test_statistic": 1.2,
+            "degrees_of_freedom": 19,
+            "confidence_interval": [
+              -0.2,
+              0.8
+            ]
+          },
+          "statistical_tests": {},
+          "timestamp": "2025-11-06T20:42:34.294996",
+          "duration_seconds": 0.0,
+          "researcher": "Dr. Demo Researcher"
+        },
+        {
+          "test_id": "6f34d8b2-9860-424c-8706-d747efa8bfd7",
+          "test_type": "soma_bias",
+          "experiment_id": "demo_experiment_001",
+          "is_falsified": false,
+          "confidence_level": 0.95,
+          "effect_size": 0.3,
+          "p_value": 0.15,
+          "statistical_power": 0.9099999999999999,
+          "n_participants": 20,
+          "n_trials": 200,
+          "replication_count": 3,
+          "detailed_results": {
+            "test_statistic": 1.2,
+            "degrees_of_freedom": 19,
+            "confidence_interval": [
+              -0.2,
+              0.8
+            ]
+          },
+          "statistical_tests": {},
+          "timestamp": "2025-11-06T20:42:34.294996",
+          "duration_seconds": 0.0,
+          "researcher": "Dr. Demo Researcher"
+        }
+      ],
+      "overall_falsification_detected": true,
+      "strongest_evidence": "consciousness_without_ignition",
+      "statistical_power_achieved": 0.88
+    },
+    "performance_metrics": {},
+    "errors": [],
+    "warnings": [],
+    "memory_usage_mb": [],
+    "cpu_usage_percent": [],
+    "execution_time_seconds": 0.01491
+  },
+  "logs": [
+    {
+      "timestamp": "2025-11-06T20:42:34.314636",
+      "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+      "level": "INFO",
+      "category": "session",
+      "message": "Created experiment session: IPI Primary Falsification Demo_20251106_204234",
+      "details": {
+        "experiment_id": "IPI Primary Falsification Demo",
+        "parameters": {
+          "n_participants": 20,
+          "n_trials_per_participant": 10,
+          "test_types": [
+            "primary_falsification",
+            "consciousness_without_ignition",
+            "threshold_insensitivity",
+            "soma_bias"
+          ],
+          "significance_level": 0.05,
+          "power_threshold": 0.8
+        },
+        "conditions": [
+          "primary_falsification"
+        ],
+        "random_seed": 42
+      },
+      "source": "tracker"
+    },
+    {
+      "timestamp": "2025-11-06T20:42:34.316632",
+      "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+      "level": "INFO",
+      "category": "session",
+      "message": "Started experiment session",
+      "details": {
+        "start_time": "2025-11-06T20:42:34.316632"
+      },
+      "source": "tracker"
+    },
+    {
+      "timestamp": "2025-11-06T20:42:34.318632",
+      "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+      "level": "INFO",
+      "category": "milestone",
+      "message": "Reached milestone: participant_recruitment_completed",
+      "details": {},
+      "source": "tracker"
+    },
+    {
+      "timestamp": "2025-11-06T20:42:34.319636",
+      "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+      "level": "INFO",
+      "category": "milestone",
+      "message": "Reached milestone: equipment_calibration_completed",
+      "details": {},
+      "source": "tracker"
+    },
+    {
+      "timestamp": "2025-11-06T20:42:34.320634",
+      "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+      "level": "INFO",
+      "category": "milestone",
+      "message": "Reached milestone: data_collection_started",
+      "details": {},
+      "source": "tracker"
+    },
+    {
+      "timestamp": "2025-11-06T20:42:34.321636",
+      "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+      "level": "INFO",
+      "category": "milestone",
+      "message": "Reached milestone: neural_recording_started",
+      "details": {},
+      "source": "tracker"
+    },
+    {
+      "timestamp": "2025-11-06T20:42:34.322634",
+      "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+      "level": "INFO",
+      "category": "milestone",
+      "message": "Reached milestone: behavioral_testing_started",
+      "details": {},
+      "source": "tracker"
+    },
+    {
+      "timestamp": "2025-11-06T20:42:34.323946",
+      "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+      "level": "DEBUG",
+      "category": "trial",
+      "message": "Started trial 1",
+      "details": {
+        "trial_number": 1,
+        "trial_parameters": {
+          "participant_id": "P001",
+          "condition": "primary_falsification",
+          "trial_type": "primary_falsification"
+        },
+        "condition": null
+      },
+      "source": "tracker"
+    },
+    {
+      "timestamp": "2025-11-06T20:42:34.323946",
+      "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+      "level": "DEBUG",
+      "category": "trial",
+      "message": "Completed trial 1 (success: True)",
+      "details": {
+        "trial_number": 1,
+        "trial_results": {
+          "consciousness_detected": true,
+          "p3b_amplitude": 8.3,
+          "gamma_plv": 0.47,
+          "reaction_time_ms": 450
+        },
+        "success": true,
+        "completed_trials": 1
+      },
+      "source": "tracker"
+    },
+    {
+      "timestamp": "2025-11-06T20:42:34.323946",
+      "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+      "level": "DEBUG",
+      "category": "trial",
+      "message": "Started trial 11",
+      "details": {
+        "trial_number": 11,
+        "trial_parameters": {
+          "participant_id": "P002",
+          "condition": "primary_falsification",
+          "trial_type": "primary_falsification"
+        },
+        "condition": null
+      },
+      "source": "tracker"
+    },
+    {
+      "timestamp": "2025-11-06T20:42:34.323946",
+      "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+      "level": "DEBUG",
+      "category": "trial",
+      "message": "Completed trial 11 (success: True)",
+      "details": {
+        "trial_number": 11,
+        "trial_results": {
+          "consciousness_detected": false,
+          "p3b_amplitude": 5.3,
+          "gamma_plv": 0.21999999999999997,
+          "reaction_time_ms": 470
+        },
+        "success": true,
+        "completed_trials": 2
+      },
+      "source": "tracker"
+    },
+    {
+      "timestamp": "2025-11-06T20:42:34.328577",
+      "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+      "level": "DEBUG",
+      "category": "trial",
+      "message": "Started trial 21",
+      "details": {
+        "trial_number": 21,
+        "trial_parameters": {
+          "participant_id": "P003",
+          "condition": "primary_falsification",
+          "trial_type": "primary_falsification"
+        },
+        "condition": null
+      },
+      "source": "tracker"
+    },
+    {
+      "timestamp": "2025-11-06T20:42:34.329526",
+      "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+      "level": "DEBUG",
+      "category": "trial",
+      "message": "Completed trial 21 (success: True)",
+      "details": {
+        "trial_number": 21,
+        "trial_results": {
+          "consciousness_detected": false,
+          "p3b_amplitude": 5.3,
+          "gamma_plv": 0.21999999999999997,
+          "reaction_time_ms": 490
+        },
+        "success": true,
+        "completed_trials": 3
+      },
+      "source": "tracker"
+    },
+    {
+      "timestamp": "2025-11-06T20:42:34.329526",
+      "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+      "level": "DEBUG",
+      "category": "trial",
+      "message": "Started trial 31",
+      "details": {
+        "trial_number": 31,
+        "trial_parameters": {
+          "participant_id": "P004",
+          "condition": "primary_falsification",
+          "trial_type": "primary_falsification"
+        },
+        "condition": null
+      },
+      "source": "tracker"
+    },
+    {
+      "timestamp": "2025-11-06T20:42:34.331542",
+      "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+      "level": "DEBUG",
+      "category": "trial",
+      "message": "Completed trial 31 (success: True)",
+      "details": {
+        "trial_number": 31,
+        "trial_results": {
+          "consciousness_detected": false,
+          "p3b_amplitude": 5.3,
+          "gamma_plv": 0.21999999999999997,
+          "reaction_time_ms": 510
+        },
+        "success": true,
+        "completed_trials": 4
+      },
+      "source": "tracker"
+    },
+    {
+      "timestamp": "2025-11-06T20:42:34.331542",
+      "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+      "level": "DEBUG",
+      "category": "trial",
+      "message": "Started trial 41",
+      "details": {
+        "trial_number": 41,
+        "trial_parameters": {
+          "participant_id": "P005",
+          "condition": "primary_falsification",
+          "trial_type": "primary_falsification"
+        },
+        "condition": null
+      },
+      "source": "tracker"
+    },
+    {
+      "timestamp": "2025-11-06T20:42:34.331542",
+      "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+      "level": "DEBUG",
+      "category": "trial",
+      "message": "Completed trial 41 (success: True)",
+      "details": {
+        "trial_number": 41,
+        "trial_results": {
+          "consciousness_detected": false,
+          "p3b_amplitude": 5.3,
+          "gamma_plv": 0.21999999999999997,
+          "reaction_time_ms": 530
+        },
+        "success": true,
+        "completed_trials": 5
+      },
+      "source": "tracker"
+    },
+    {
+      "timestamp": "2025-11-06T20:42:34.331542",
+      "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+      "level": "INFO",
+      "category": "result",
+      "message": "Logged intermediate results",
+      "details": {
+        "result_keys": [
+          "trials_completed",
+          "participants_completed",
+          "consciousness_detection_rate",
+          "mean_p3b_amplitude",
+          "mean_gamma_plv"
+        ]
+      },
+      "source": "tracker"
+    },
+    {
+      "timestamp": "2025-11-06T20:42:34.331542",
+      "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+      "level": "INFO",
+      "category": "result",
+      "message": "Logged final results",
+      "details": {
+        "result_keys": [
+          "falsification_results",
+          "overall_falsification_detected",
+          "strongest_evidence",
+          "statistical_power_achieved"
+        ]
+      },
+      "source": "tracker"
+    },
+    {
+      "timestamp": "2025-11-06T20:42:34.331542",
+      "session_id": "df7a575b-c41b-4ad0-b11d-3cea187a2e3f",
+      "level": "INFO",
+      "category": "session",
+      "message": "Ended experiment session with status: completed",
+      "details": {
+        "end_time": "2025-11-06T20:42:34.331542",
+        "execution_time_seconds": 0.01491,
+        "completed_trials": 5,
+        "total_trials": 41
+      },
+      "source": "tracker"
+    }
+  ]
+}
