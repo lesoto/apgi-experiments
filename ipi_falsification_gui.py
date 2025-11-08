@@ -815,6 +815,13 @@ class ResultsVisualizationPanel(ttk.Frame):
         self.fig = plt.figure(figsize=(14, 9))
         self.fig.suptitle("IPI Falsification Test Results - Real-Time Analysis", fontsize=14, fontweight='bold')
         
+        # Create subplots
+        gs = self.fig.add_gridspec(2, 2, hspace=0.4, wspace=0.3)
+        self.ax1 = self.fig.add_subplot(gs[0, 0])  # Falsification rates
+        self.ax2 = self.fig.add_subplot(gs[0, 1])  # Effect sizes
+        self.ax3 = self.fig.add_subplot(gs[1, 0])  # P-values
+        self.ax4 = self.fig.add_subplot(gs[1, 1])  # Statistical power
+        
         # Create canvas
         self.canvas = FigureCanvasTk(self.fig, self)
         self.canvas.get_tk_widget().pack(fill="both", expand=True, padx=5, pady=5)

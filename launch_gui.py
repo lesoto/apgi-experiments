@@ -55,7 +55,7 @@ def main():
     
     try:
         print("Starting GUI application...")
-        from ipi_gui import main as gui_main
+        from ipi_falsification_gui import main as gui_main
         gui_main()
     except ImportError as e:
         print(f"Error importing GUI module: {e}")
