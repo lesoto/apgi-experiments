@@ -1,355 +1,214 @@
-# IPI Framework Documentation
+# IPI Framework
 
-Welcome to the IPI Framework Falsification Testing System documentation.
+This project implements the Integrated Predictive Ignition (IPI) framework for understanding consciousness through computational modeling and experimental validation.
 
-## 📚 Documentation Overview
+## Project Structure
 
-This directory contains comprehensive documentation for using, understanding, and troubleshooting the IPI Framework.
+```text
+ipi-consciousness/
+├── core/                      # Core framework components
+│   ├── models/                # Core computational models
+│   │   ├── ipi_agent.py       # Main IPI agent implementation
+│   │   ├── phase_transition.py # Somatic marker agent
+│   │   ├── active_inference.py # Active inference models
+│   │   └── hierarchical_predictive.py # Hierarchical predictive coding
+│   ├── analysis/              # Data analysis utilities
+│   └── utils/                 # Helper functions
+├── experiments/               # Experimental implementations
+│   ├── interoceptive_gating/  # Interoceptive gating paradigm (IMPLEMENTED)
+│   ├── ai_benchmarking/       # AI agent benchmarking (IMPLEMENTED)
+│   ├── somatic_marker_priming/# Somatic marker experiments (PARTIAL)
+│   ├── metabolic_cost/        # Metabolic cost analysis (PARTIAL)
+│   └── clinical_biomarkers/   # Clinical applications (STUB)
+├── data/                      # Data storage
+│   ├── raw/                   # Raw data
+│   └── processed/             # Processed data
+├── docs/                      # Documentation
+└── tests/                     # Unit tests
+```
 
-## 🚀 Getting Started
+## Getting Started
 
-**New users should start here:**
+### Quick Start (5 minutes)
 
-1. **[Quick Start Guide](QUICK_START_GUIDE.md)** - Get up and running in 5 minutes
-   - Installation instructions
-   - Your first test (GUI, CLI, or Python API)
-   - Understanding basic results
-   - Common workflows
+**New to the system?** See the [Quick Start Guide](docs/QUICK_START_GUIDE.md) for a 5-minute introduction.
 
-2. **[GUI Visual Guide](GUI_VISUAL_GUIDE.md)** - Visual walkthrough of the GUI
-   - Main window layout with ASCII diagrams
-   - Step-by-step visual instructions
-   - Button states and interactions
-   - Workflow examples with visuals
+**Using the GUI?** Check out the [GUI Visual Guide](docs/GUI_VISUAL_GUIDE.md) for a visual walkthrough.
 
-3. **[Examples](../examples/README.md)** - Working code examples
-   - Running primary falsification test
-   - Batch processing configurations
-   - Custom analysis of results
-   - Extending the framework
+**Need help?** See the [Documentation Index](docs/DOCUMENTATION_INDEX.md) for complete documentation.
 
-## 📖 Complete Documentation
+### Installation
 
-### User Guides
+1. **Set up the environment**
 
-| Document | Description | When to Use |
-|----------|-------------|-------------|
-| [Quick Start Guide](QUICK_START_GUIDE.md) | 5-minute introduction | First time using the system |
-| [User Guide](USER_GUIDE.md) | Complete user manual | Comprehensive reference |
-| [GUI Visual Guide](GUI_VISUAL_GUIDE.md) | Visual GUI walkthrough | Learning the GUI interface |
-| [CLI Reference](CLI_REFERENCE.md) | Command-line documentation | Using CLI or automation |
+   ```bash
+   # Create and activate virtual environment
+   python -m venv venv
+   .\venv\Scripts\activate  # On Windows
+   source venv/bin/activate  # On Unix/macOS
+   
+   # Install dependencies
+   pip install -r requirements.txt
+   ```
 
-### Understanding Results
+2. **Validate installation**
 
-| Document | Description | When to Use |
-|----------|-------------|-------------|
-| [Results Interpretation Guide](RESULTS_INTERPRETATION_GUIDE.md) | How to interpret test results | After running tests |
-| [Troubleshooting](TROUBLESHOOTING.md) | Common issues and solutions | When encountering problems |
+   ```bash
+   python -m ipi_framework.cli validate-system
+   ```
 
-### Technical Documentation
+2. **Run the IPI Agent example**
 
-| Document | Description | When to Use |
-|----------|-------------|-------------|
-| [Error Handling Quick Reference](ERROR_HANDLING_QUICK_REFERENCE.md) | Error handling patterns | Development and debugging |
-| [Validation Quick Reference](../VALIDATION_QUICK_REFERENCE.md) | Parameter validation | Development and debugging |
-| [Parameter Validation Guide](parameter_validation_guide.md) | Detailed validation docs | Development |
+   ```bash
+   python -m core.models.ipi_agent
+   ```
 
-### Theoretical Background
+3. **Run the Somatic Agent example**
 
-| Document | Description | When to Use |
-|----------|-------------|-------------|
-| [IPI Falsification](../IPI-Falsification.md) | Falsification theory | Understanding the science |
-| [IPI Ignition Equation](../IPI-Ignition-Equation.md) | Mathematical framework | Understanding the math |
-| [IPI Testable Predictions](../IPI-Testable-Predictions.md) | Framework predictions | Understanding predictions |
+   ```bash
+   python -m core.models.phase_transition
+   ```
 
-### Implementation Documentation
+4. **Run experiments via GUI**
 
-| Document | Description | When to Use |
-|----------|-------------|-------------|
-| [Task 3.1 Implementation Summary](TASK_3.1_IMPLEMENTATION_SUMMARY.md) | Parameter validation implementation | Development reference |
-| [Task 3.2 Error Handling Summary](TASK_3.2_ERROR_HANDLING_SUMMARY.md) | Error handling implementation | Development reference |
-| [Validation and Error Handling Summary](../VALIDATION_AND_ERROR_HANDLING_SUMMARY.md) | Complete implementation summary | Development reference |
+   ```bash
+   python gui.py
+   ```
 
-### Index and Navigation
+5. **Run experiments via command line**
 
-| Document | Description | When to Use |
-|----------|-------------|-------------|
-| [Documentation Index](DOCUMENTATION_INDEX.md) | Complete documentation index | Finding specific information |
+   ```bash
+   # Run interoceptive gating experiment
+   python run_experiments.py interoceptive_gating --n_participants 10 --n_trials 50
+   
+   # Run AI benchmarking experiment
+   python run_experiments.py ai_benchmarking --n_episodes 100 --n_agents_per_type 3
+   ```
 
-## 🎯 Documentation by Task
+## Currently Implemented
 
-### I want to...
+### Core Models
 
-#### Run my first test
-1. [Quick Start Guide](QUICK_START_GUIDE.md)
-2. [GUI Visual Guide](GUI_VISUAL_GUIDE.md) (if using GUI)
-3. [Example 01](../examples/01_run_primary_falsification_test.py)
+1. **IPI Agent** (`core/models/ipi_agent.py`)
+   - Implements the core IPI framework with interoceptive and exteroceptive processing
+   - Dynamic threshold mechanism for conscious access
+   - Precision-weighted prediction errors
+   - Somatic marker integration
 
-#### Understand my results
-1. [Results Interpretation Guide](RESULTS_INTERPRETATION_GUIDE.md)
-2. [Quick Start Guide - Understanding Results](QUICK_START_GUIDE.md#understanding-your-results)
+2. **Phase Transition Model** (`core/models/phase_transition.py`)
+   - Somatic marker-based decision making
+   - Conscious vs unconscious processing modes
+   - Expected free energy calculations
 
-#### Use the GUI
-1. [Quick Start Guide - GUI Section](QUICK_START_GUIDE.md#option-a-using-the-gui-recommended-for-beginners)
-2. [GUI Visual Guide](GUI_VISUAL_GUIDE.md)
-3. [User Guide - GUI Section](USER_GUIDE.md#gui-user-guide)
+3. **Base Experiment Framework** (`core/experiment.py`)
+   - Abstract base class for all experiments
+   - Standardized data collection and analysis
 
-#### Use the CLI
-1. [Quick Start Guide - CLI Section](QUICK_START_GUIDE.md#option-b-using-the-cli-recommended-for-automation)
-2. [CLI Reference](CLI_REFERENCE.md)
+### Implemented Experiments
 
-#### Use the Python API
-1. [Quick Start Guide - Python API Section](QUICK_START_GUIDE.md#option-c-using-python-api-recommended-for-integration)
-2. [Examples](../examples/README.md)
+1. **Interoceptive Gating Paradigm** (`experiments/interoceptive_gating/`)
+   - Tests how interoceptive precision gates conscious access
+   - Cardiac discrimination task simulation
+   - Three conditions: interoceptive focus, exteroceptive focus, control
+   - Threshold tracking and detection rate analysis
 
-#### Run batch tests
-1. [User Guide - Batch Processing](USER_GUIDE.md#batch-processing)
-2. [Example 02](../examples/02_batch_processing_configurations.py)
+2. **AI Benchmarking** (`experiments/ai_benchmarking/`)
+   - Compares different agent architectures in survival environments
+   - Includes Random, Reactive, DQN, and IPI agents
+   - Grid world environment with food, obstacles, and predators
+   - Performance metrics: survival time, energy efficiency, food consumption
 
-#### Analyze saved results
-1. [User Guide - Loading Results](USER_GUIDE.md#loading-previous-results)
-2. [Example 03](../examples/03_custom_analysis_saved_results.py)
+### Demonstration Scripts
 
-#### Troubleshoot problems
-1. [Troubleshooting Guide](TROUBLESHOOTING.md)
-2. [User Guide - Troubleshooting Section](USER_GUIDE.md#troubleshooting)
+1. **IPI Model Demonstrations** (`run_experiments.py`)
+   - Threshold effects on ignition probability
+   - Somatic marker influence on decision making
+   - Precision parameter effects
+   - Dynamic threshold adaptation
 
-#### Understand the theory
-1. [IPI Falsification](../IPI-Falsification.md)
-2. [IPI Ignition Equation](../IPI-Ignition-Equation.md)
-3. [IPI Testable Predictions](../IPI-Testable-Predictions.md)
+2. **GUI Interface** (`gui.py`)
+   - Tkinter-based interface for running experiments
+   - Parameter configuration and real-time logging
+   - Supports all implemented experiments
 
-#### Extend the framework
-1. [Example 04](../examples/04_extending_falsification_criteria.py)
-2. [Error Handling Quick Reference](ERROR_HANDLING_QUICK_REFERENCE.md)
+## Key Features
 
-## 📊 Documentation by User Type
+- **Modular Architecture**: Clean separation between models, experiments, and utilities
+- **Standardized Experiments**: All experiments inherit from `BaseExperiment` for consistency
+- **Multiple Interfaces**: Command-line, GUI, and programmatic access
+- **Data Management**: Automatic data saving and visualization
+- **Extensible Design**: Easy to add new models and experiments
 
-### Researchers
-**Start here:**
-1. [Quick Start Guide](QUICK_START_GUIDE.md)
-2. [Results Interpretation Guide](RESULTS_INTERPRETATION_GUIDE.md)
-3. [IPI Falsification](../IPI-Falsification.md)
+## Example Usage
 
-**Then explore:**
-- [User Guide](USER_GUIDE.md) - Complete reference
-- [Examples](../examples/README.md) - Working code
-- [CLI Reference](CLI_REFERENCE.md) - Automation
+### Running Falsification Tests
 
-### Students/Learners
-**Start here:**
-1. [Quick Start Guide](QUICK_START_GUIDE.md)
-2. [GUI Visual Guide](GUI_VISUAL_GUIDE.md)
-3. [Examples](../examples/README.md)
-
-**Then explore:**
-- [User Guide](USER_GUIDE.md) - Detailed instructions
-- [IPI Falsification](../IPI-Falsification.md) - Theory
-- [Results Interpretation Guide](RESULTS_INTERPRETATION_GUIDE.md) - Understanding results
-
-### Developers
-**Start here:**
-1. [Error Handling Quick Reference](ERROR_HANDLING_QUICK_REFERENCE.md)
-2. [Validation Quick Reference](../VALIDATION_QUICK_REFERENCE.md)
-3. [Example 04](../examples/04_extending_falsification_criteria.py)
-
-**Then explore:**
-- Implementation summaries
-- Code in `ipi_framework/`
-- [Parameter Validation Guide](parameter_validation_guide.md)
-
-### System Administrators
-**Start here:**
-1. [Quick Start Guide - Installation](QUICK_START_GUIDE.md#installation-2-minutes)
-2. [Troubleshooting Guide](TROUBLESHOOTING.md)
-3. [CLI Reference](CLI_REFERENCE.md)
-
-**Then explore:**
-- [User Guide](USER_GUIDE.md) - Complete reference
-- System validation procedures
-
-## 🔍 Quick Reference
-
-### Common Commands
-
+**Using the GUI:**
 ```bash
-# Validate system
-python -m ipi_framework.cli validate-system
+python launch_gui.py
+```
 
-# Run primary test
+**Using the CLI:**
+```bash
+# Run primary falsification test
 python -m ipi_framework.cli run-test primary --trials 1000
 
 # Run all tests
 python -m ipi_framework.cli run-batch --all-tests
-
-# Generate configuration
-python -m ipi_framework.cli generate-config --output config.json
-
-# Launch GUI
-python launch_gui.py
 ```
 
-### Parameter Ranges
+**Using Python API:**
+```python
+from ipi_framework.main_controller import MainApplicationController
 
-| Parameter | Range | Default |
-|-----------|-------|---------|
-| extero_precision | 0.1-10.0 | 2.0 |
-| intero_precision | 0.1-10.0 | 1.5 |
-| threshold | 0.5-10.0 | 3.5 |
-| steepness | 0.1-5.0 | 2.0 |
-| somatic_gain | 0.1-5.0 | 1.3 |
+# Initialize system
+controller = MainApplicationController()
+controller.initialize_system()
 
-### Statistical Thresholds
+# Run test
+tests = controller.get_falsification_tests()
+result = tests['primary'].run_test(n_trials=1000)
 
-| Metric | Threshold | Interpretation |
-|--------|-----------|----------------|
-| Confidence | ≥ 0.8 | High confidence |
-| P-value | < 0.05 | Significant |
-| Effect Size | ≥ 0.5 | Medium effect |
-| Power | ≥ 0.8 | Well-powered |
+# View results
+print(f"Falsified: {result.is_falsified}")
+print(f"Confidence: {result.confidence_level:.2f}")
 
-## 📝 Documentation Standards
-
-All documentation follows these standards:
-- **Markdown format** for easy reading and version control
-- **Table of contents** for long documents
-- **Working code examples** that can be run directly
-- **Consistent terminology** across all documents
-- **Version information** and last updated dates
-- **Cross-references** to related documents
-
-## 🆘 Getting Help
-
-### Step-by-Step Help Process
-
-1. **Check Quick Start Guide** - [QUICK_START_GUIDE.md](QUICK_START_GUIDE.md)
-   - Covers most common use cases
-   - 5-minute introduction
-
-2. **Search Documentation Index** - [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md)
-   - Find relevant documentation
-   - Organized by task and user type
-
-3. **Try Examples** - [../examples/README.md](../examples/README.md)
-   - Working code samples
-   - Common use cases
-
-4. **Check Troubleshooting** - [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
-   - Common issues and solutions
-   - Diagnostic commands
-
-5. **Enable Debug Logging**
-   ```bash
-   python -m ipi_framework.cli --log-level DEBUG run-test primary
-   ```
-
-6. **Run System Validation**
-   ```bash
-   python -m ipi_framework.cli validate-system --detailed
-   ```
-
-### Support Resources
-
-- **Documentation**: This directory
-- **Examples**: `../examples/` directory
-- **Logs**: `results/ipi_framework.log`
-- **System Validation**: `python -m ipi_framework.cli validate-system`
-
-## 📦 Documentation Structure
-
-```
-docs/
-├── README.md                                    ← You are here
-├── DOCUMENTATION_INDEX.md                       ← Complete index
-│
-├── Getting Started/
-│   ├── QUICK_START_GUIDE.md                    ← Start here (5 min)
-│   ├── GUI_VISUAL_GUIDE.md                     ← Visual GUI guide
-│   └── USER_GUIDE.md                           ← Complete manual
-│
-├── Reference/
-│   ├── CLI_REFERENCE.md                        ← CLI documentation
-│   ├── RESULTS_INTERPRETATION_GUIDE.md         ← Understanding results
-│   └── parameter_validation_guide.md           ← Validation reference
-│
-├── Troubleshooting/
-│   ├── TROUBLESHOOTING.md                      ← Problem solving
-│   └── ERROR_HANDLING_QUICK_REFERENCE.md       ← Error patterns
-│
-├── Theory/
-│   ├── ../IPI-Falsification.md                 ← Falsification theory
-│   ├── ../IPI-Ignition-Equation.md             ← Mathematical framework
-│   └── ../IPI-Testable-Predictions.md          ← Framework predictions
-│
-└── Implementation/
-    ├── TASK_3.1_IMPLEMENTATION_SUMMARY.md      ← Validation implementation
-    ├── TASK_3.2_ERROR_HANDLING_SUMMARY.md      ← Error handling implementation
-    └── clinical_parameter_extraction_guide.md   ← Clinical parameters
+# Cleanup
+controller.shutdown_system()
 ```
 
-## 🔄 Documentation Updates
+### Running the IPI Agent
 
-**Current Version:** 1.0  
-**Last Updated:** 2025-01-07
+```python
+from core.models.ipi_agent import IPIAgent
 
-### Recent Additions
-- ✨ Quick Start Guide - 5-minute introduction
-- ✨ GUI Visual Guide - Visual walkthrough with ASCII diagrams
-- ✨ Enhanced Documentation Index
-- ✨ This README for easy navigation
+# Create and run agent with default parameters
+agent = IPIAgent()
+agent.run_example()  # Runs simulation and shows plots
+```
 
-### Contributing to Documentation
+### Running an Experiment
 
-To improve documentation:
-1. Identify gaps or unclear sections
-2. Follow existing documentation style
-3. Include working examples
-4. Test all code samples
-5. Update this README and index
+```python
+from experiments.interoceptive_gating.experiment import run_interoceptive_gating_experiment
 
-## 🎓 Learning Path
+# Run experiment with custom parameters
+experiment = run_interoceptive_gating_experiment(
+    n_participants=20,
+    n_trials_per_condition=100
+)
+```
 
-### Beginner Path (1-2 hours)
-1. [Quick Start Guide](QUICK_START_GUIDE.md) - 5 min
-2. [GUI Visual Guide](GUI_VISUAL_GUIDE.md) - 15 min
-3. Run first test - 5 min
-4. [Results Interpretation Guide](RESULTS_INTERPRETATION_GUIDE.md) - 30 min
-5. [Examples](../examples/README.md) - 30 min
+## Documentation
 
-### Intermediate Path (3-4 hours)
-1. Complete Beginner Path
-2. [User Guide](USER_GUIDE.md) - 1 hour
-3. [CLI Reference](CLI_REFERENCE.md) - 30 min
-4. [Batch Processing Example](../examples/02_batch_processing_configurations.py) - 30 min
-5. [Custom Analysis Example](../examples/03_custom_analysis_saved_results.py) - 30 min
+Complete documentation is available in the `docs/` directory:
 
-### Advanced Path (5-8 hours)
-1. Complete Intermediate Path
-2. [IPI Falsification Theory](../IPI-Falsification.md) - 1 hour
-3. [IPI Ignition Equation](../IPI-Ignition-Equation.md) - 1 hour
-4. [Extending Framework Example](../examples/04_extending_falsification_criteria.py) - 1 hour
-5. [Error Handling Reference](ERROR_HANDLING_QUICK_REFERENCE.md) - 30 min
-6. Explore source code - 2+ hours
+- **[Quick Start Guide](docs/QUICK_START_GUIDE.md)** - Get started in 5 minutes
+- **[GUI Visual Guide](docs/GUI_VISUAL_GUIDE.md)** - Visual walkthrough of the GUI
+- **[User Guide](docs/USER_GUIDE.md)** - Complete user manual
+- **[CLI Reference](docs/CLI_REFERENCE.md)** - Command-line interface documentation
+- **[Results Interpretation Guide](docs/RESULTS_INTERPRETATION_GUIDE.md)** - Understanding test results
+- **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
+- **[Documentation Index](docs/DOCUMENTATION_INDEX.md)** - Complete documentation index
 
-## 📞 Contact and Support
-
-For questions, issues, or contributions:
-1. Check documentation first
-2. Review examples for similar use cases
-3. Run system validation
-4. Enable debug logging
-5. Check logs for detailed information
-
----
-
-**Ready to get started?** → [Quick Start Guide](QUICK_START_GUIDE.md)
-
-**Need help?** → [Troubleshooting Guide](TROUBLESHOOTING.md)
-
-**Want to learn more?** → [Documentation Index](DOCUMENTATION_INDEX.md)
-
----
-
-**Version:** 1.0  
-**Last Updated:** 2025-01-07  
-**Maintainer:** IPI Framework Development Team
+See [docs/README.md](docs/README.md) for a complete documentation overview.
