@@ -1,408 +1,176 @@
 # Implementation Plan
 
-## Core Framework (COMPLETED)
+## Overview
 
-- [x] 1. Set up project structure and core mathematical framework
+The IPI Framework Falsification Testing System is substantially complete with all core components implemented:
+- ✅ Mathematical framework (IPI equation, precision, prediction errors, thresholds)
+- ✅ Neural signature simulators (P3b, gamma, BOLD, PCI)
+- ✅ All four falsification test controllers (primary, consciousness-without-ignition, threshold-insensitivity, soma-bias)
+- ✅ Statistical analysis engine with effect sizes and power calculations
+- ✅ Data management and persistence layer
+- ✅ Error handling and validation framework
+- ✅ Example scripts and comprehensive documentation
+- ✅ Main application controller with system integration
 
-  - Create directory structure for models, engines, simulators, and analysis components
-  - Implement the core IPI ignition threshold equation with proper mathematical operations
-  - Create configuration management system for experimental parameters
-  - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
+## Remaining Core Tasks
 
-- [x] 1.1 Create core project structure and base classes
+The following tasks represent the final integration and testing work needed:
 
-  - Set up Python package structure with proper **init**.py files
-  - Create base exception classes for error handling
-  - Implement configuration management for experimental parameters
-  - _Requirements: 1.1_
+- [ ] 1. Complete end-to-end integration testing
+  - Run complete falsification test workflows to verify system integration
+  - Test all four falsification tests with various parameter configurations
+  - Verify data flow from parameter input through to report generation
+  - Validate that results are correctly saved and can be reloaded
+  - Test error handling and recovery in realistic failure scenarios
+  - _Requirements: All requirements_
 
-- [x] 1.2 Implement IPI mathematical framework core
-
-  - Code the IPIEquation class with surprise calculation (Sₜ = Πₑ·|εₑ| + Πᵢ(M\_{c,a})·|εᵢ|)
-  - Implement ignition probability calculation (Bₜ = σ(α(Sₜ - θₜ)))
-  - Create logistic sigmoid function with proper numerical stability
-  - _Requirements: 1.1, 1.2_
-
-- [x] 1.3 Implement precision and prediction error processing
-
-  - Create PrecisionCalculator class for Πₑ and Πᵢ calculations
-  - Implement PredictionErrorProcessor for z-score standardization
-  - Add input validation for parameter ranges and edge cases
-  - _Requirements: 1.3, 1.4_
-
-- [x] 1.4 Implement somatic marker and threshold management
-  - Code SomaticMarkerEngine for M\_{c,a} gain calculations
-  - Create ThresholdManager for dynamic θₜ adjustments
-  - Implement context-based threshold modulation (high-stakes vs routine)
-  - _Requirements: 1.4, 1.5_
-
-## Neural Signature Simulation (COMPLETED)
-
-- [x] 2. Implement neural signature simulation system
-
-  - Create neural signature simulators for P3b ERP, gamma synchrony, BOLD activation, and PCI
-  - Implement threshold-based validation for each signature type
-  - Build signature combination and validation mechanisms
-  - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
-
-- [x] 2.1 Implement P3b ERP signature simulator
-
-  - Create P3bSimulator class with amplitude >5 μV at Pz electrode
-  - Implement latency control within 250-500 ms range
-  - Add noise and variability modeling for realistic signatures
-  - _Requirements: 2.1_
-
-- [x] 2.2 Implement gamma-band synchrony simulator
-
-  - Code GammaSimulator for phase-locking values (PLV) >0.3
-  - Implement frontoparietal and temporal region connectivity
-  - Create sustained activity modeling >200 ms (30-80 Hz)
-  - _Requirements: 2.2_
-
-- [x] 2.3 Implement BOLD activation simulator
-
-  - Create BOLDSimulator for Z > 3.1 activation patterns
-  - Implement bilateral dorsolateral prefrontal cortex simulation
-  - Add intraparietal sulcus and anterior insula/ACC modeling
-  - _Requirements: 2.3_
-
-- [x] 2.4 Implement Perturbational Complexity Index calculator
-
-  - Code PCICalculator for PCI > 0.4 conscious state detection
-  - Implement connectivity matrix processing
-  - Create subthreshold PCI generation for unconscious states
-  - _Requirements: 2.4_
-
-- [x] 2.5 Create signature validation and combination system
-  - Implement SignatureValidator for threshold checking
-  - Create signature combination logic for complete patterns
-  - Add partial signature detection and interpretation
-  - _Requirements: 2.5_
-
-## Falsification Testing Framework (COMPLETED)
-
-- [x] 3. Implement primary falsification testing framework
-
-  - Create the primary falsification test controller for full ignition signatures without consciousness
-  - Implement consciousness assessment and AI/ACC engagement validation
-  - Build experimental control and validation mechanisms
+- [ ] 1.1 Test primary falsification workflow
+  - Run primary falsification test with default and custom parameters
+  - Verify neural signature generation meets threshold criteria
+  - Confirm consciousness assessment produces valid results
+  - Validate statistical analysis calculations (p-values, effect sizes, power)
+  - Test result interpretation logic for falsified and non-falsified cases
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
 
-- [x] 3.1 Implement primary falsification test controller
-
-  - Create PrimaryFalsificationTest class
-  - Implement simultaneous signature verification (P3b, gamma, BOLD, PCI)
-  - Add trial-by-trial falsification assessment logic
-  - _Requirements: 3.1_
-
-- [x] 3.2 Implement consciousness assessment system
-
-  - Create ConsciousnessAssessment data model
-  - Implement subjective report and forced-choice validation
-  - Add confidence ratings and wagering behavior simulation
-  - _Requirements: 3.2_
-
-- [x] 3.3 Implement AI/ACC engagement validation
-
-  - Create AI/ACC BOLD response validation (no significant activation)
-  - Implement gamma coherence checking (PLV ≤ 0.25)
-  - Add effective connectivity analysis for AI/ACC-frontoparietal pathways
-  - _Requirements: 3.3_
-
-- [x] 3.4 Implement experimental control validation
-
-  - Create control requirement checker for motor/verbal systems
-  - Implement metacognitive sensitivity validation
-  - Add task comprehension and stimulus validation
-  - _Requirements: 3.4_
-
-- [x] 3.5 Create result interpretation system
-  - Implement complete vs partial signature pattern detection
-  - Create falsification vs subthreshold ignition classification
-  - Add detailed result logging and interpretation
-  - _Requirements: 3.5_
-
-## Secondary Falsification Criteria (COMPLETED)
-
-- [x] 4. Implement secondary falsification criteria testing
-
-  - Create test controllers for consciousness without ignition, threshold insensitivity, and soma-bias absence
-  - Implement pharmacological simulation and β value calculations
-  - Build comprehensive secondary criteria validation
-  - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
-
-- [x] 4.1 Implement consciousness without ignition test
-
-  - Create ConsciousnessWithoutIgnitionTest class
-  - Implement conscious report verification with absent signatures
-  - Add >20% occurrence threshold validation across participants
+- [ ] 1.2 Test consciousness-without-ignition workflow
+  - Run consciousness-without-ignition test with multiple participants
+  - Verify signatures are correctly generated below ignition thresholds
+  - Confirm consciousness assessment shows present consciousness
+  - Validate 20% threshold criterion for falsification
+  - Test participant-level analysis and aggregation
   - _Requirements: 4.1_
 
-- [x] 4.2 Implement threshold insensitivity testing
+- [ ] 1.3 Test threshold-insensitivity workflow
+  - Run threshold-insensitivity test with all drug conditions
+  - Verify pharmacological condition simulation (propranolol, L-DOPA, SSRI, physostigmine)
+  - Confirm threshold changes are calculated correctly
+  - Validate control measure simulation and validation
+  - Test drug-specific sensitivity analysis
+  - _Requirements: 4.2, 5.1, 5.2, 5.3, 5.4, 5.5_
 
-  - Create ThresholdInsensitivityTest class
-  - Implement pharmacological challenge simulation (propranolol, L-DOPA, SSRIs, physostigmine)
-  - Add θₜ modulation detection and validation
-  - _Requirements: 4.2_
-
-- [x] 4.3 Implement pharmacological simulator
-
-  - Create PharmacologicalSimulator for drug effect modeling
-  - Implement drug-specific threshold modulation patterns
-  - Add control measure validation (pupil response, physiology)
-  - _Requirements: 4.2_
-
-- [x] 4.4 Implement soma-bias testing
-
-  - Create SomaBiasTest class for interoceptive vs exteroceptive comparison
-  - Implement matched precision validation and β value calculation
-  - Add large sample size handling (n > 100) for statistical power
+- [ ] 1.4 Test soma-bias workflow
+  - Run soma-bias test with large sample size (n > 100)
+  - Verify precision matching between intero and extero domains
+  - Confirm beta coefficient calculation is correct
+  - Validate bias direction classification (intero/extero/none)
+  - Test population-level statistical analysis
   - _Requirements: 4.3, 4.4_
 
-- [x] 4.5 Implement edge case interpretation
-  - Create edge case classifier for anesthesia awareness, blindsight, dreams, locked-in syndrome
-  - Implement framework boundary validation
-  - Add proper interpretation logic for each edge case type
-  - _Requirements: 4.5_
+- [ ] 1.5 Test data persistence and retrieval
+  - Save results from all four test types
+  - Load saved results and verify data completeness
+  - Test result serialization and deserialization
+  - Validate metadata preservation (timestamps, parameters, etc.)
+  - Test data export functionality if implemented
+  - _Requirements: 8.1, 8.3, 8.4_
 
-## Statistical Analysis Engine (COMPLETED)
-
-- [x] 5. Implement statistical analysis and validation engine
-
-  - Create comprehensive statistical testing framework with cluster correction and effect size calculations
-  - Implement replication tracking and power analysis
-  - Build statistical validation for all falsification criteria
-  - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
-
-- [x] 5.1 Implement core statistical testing framework
-
-  - Create StatisticalTester class with t-tests, ANOVA, and non-parametric tests
-  - Implement cluster-corrected statistical tests with p < 0.05 threshold
-  - Add multiple comparisons correction (FDR, Bonferroni)
-  - _Requirements: 6.1_
-
-- [x] 5.2 Implement effect size and confidence interval calculations
-
-  - Create EffectSizeCalculator for Cohen's d and confidence intervals
-  - Implement bootstrap confidence interval estimation
-  - Add effect size interpretation guidelines
-  - _Requirements: 6.2_
-
-- [x] 5.3 Implement replication and power analysis
-
-  - Create ReplicationTracker for multi-lab result tracking
-  - Implement PowerAnalyzer for sample size calculations
-  - Add replication success criteria and validation
-  - _Requirements: 6.3_
-
-- [x] 5.4 Implement sample size validation
-
-  - Create sample size requirement checker (n > 100 for soma-bias)
-  - Implement power analysis for different effect sizes
-  - Add statistical power reporting and warnings
-  - _Requirements: 6.4_
-
-- [x] 5.5 Create statistical report generator
-  - Implement detailed statistical summary generation
-  - Create falsification probability assessment
-  - Add publication-ready statistical reporting
-  - _Requirements: 6.5_
-
-## Experimental Control System (COMPLETED)
-
-- [x] 6. Implement experimental control and validation system
-
-  - Create robust experimental control mechanisms and validation systems
-  - Implement participant simulation and task validation
-  - Build comprehensive experimental integrity checking
+- [ ] 1.6 Test system integration and error handling
+  - Test MainApplicationController initialization and shutdown
+  - Verify system validation checks all components
+  - Test error handling for invalid parameters
+  - Verify graceful degradation when components fail
+  - Test logging and error reporting
   - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
 
-- [x] 6.1 Implement experimental control manager
-
-  - Create ExperimentalControlManager for validation orchestration
-  - Implement motor/verbal response system validation
-  - Add task comprehension verification mechanisms
-  - _Requirements: 7.1, 7.2_
-
-- [x] 6.2 Implement participant simulator
-
-  - Create ParticipantSimulator for realistic participant behavior
-  - Implement individual difference modeling
-  - Add response variability and consistency checking
-  - _Requirements: 7.1_
-
-- [x] 6.3 Implement stimulus and task validation
-
-  - Create stimulus validation for supraliminal presentation
-  - Implement task training verification
-  - Add well-trained task performance checking
-  - _Requirements: 7.3_
-
-- [x] 6.4 Implement consciousness measurement validation
-
-  - Create multiple converging consciousness measures
-  - Implement metacognitive sensitivity assessment
-  - Add confidence-accuracy correspondence validation
-  - _Requirements: 7.4, 7.5_
-
-- [x] 6.5 Create experimental integrity checker
-  - Implement comprehensive experimental validation
-  - Create integrity report generation
-  - Add experimental condition verification
-  - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
-
-## Data Management System (COMPLETED)
-
-- [x] 7. Implement data management and reporting system
-
-  - Create comprehensive data storage, versioning, and export capabilities
-  - Implement detailed reporting and visualization systems
-  - Build publication-ready output generation
-  - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5_
-
-- [x] 7.1 Implement data storage and management
-
-  - Create structured dataset storage with metadata and versioning
-  - Implement data persistence layer with SQLite/HDF5 support
-  - Add data integrity validation and backup mechanisms
-  - _Requirements: 8.1_
-
-- [x] 7.2 Implement experiment tracking and logging
-
-  - Create comprehensive experiment logging system
-  - Implement parameter settings and random seed tracking
-  - Add experimental condition and timeline logging
-  - _Requirements: 8.3_
-
-- [x] 7.3 Implement report generation system
-
-  - Create ReportGenerator for detailed falsification test results
-  - Implement statistical summary generation
-  - Add automated interpretation and conclusion generation
-  - _Requirements: 8.2_
-
-- [x] 7.4 Implement data export and visualization
-
-  - Create multi-format data export (CSV, JSON, HDF5)
-  - Implement publication-quality plotting and figure generation
-  - Add interactive visualization capabilities
-  - _Requirements: 8.4, 8.5_
-
-- [x] 7.5 Create comprehensive reporting dashboard
-  - Implement web-based dashboard for experiment monitoring
-  - Create real-time progress tracking and visualization
-  - Add experiment comparison and analysis tools
-  - _Requirements: 8.2, 8.5_
-
-## Main Application Integration (COMPLETED)
-
-- [x] 8. Integrate all components and create main application interface
-
-  - Wire together all implemented components into cohesive system
-  - Create main application interface and command-line tools
-  - Implement end-to-end falsification testing workflows
-  - _Requirements: All requirements integrated_
-
-- [x] 8.1 Create main application controller
-
-  - Implement MainApplicationController for system orchestration
-  - Create component integration and dependency injection
-  - Add system initialization and configuration loading
+- [ ] 2. Implement real-time progress tracking (optional enhancement)
+  - Add progress callbacks from test controllers
+  - Implement progress percentage calculation based on trial completion
+  - Add estimated time remaining calculation
+  - Display intermediate results during long-running tests
   - _Requirements: All requirements_
 
-- [x] 8.2 Implement command-line interface
+## Completed Tasks
 
-  - Create CLI for running individual falsification tests
-  - Implement batch experiment execution capabilities
-  - Add configuration file support and parameter overrides
+- [x] Core mathematical framework implementation
+  - IPI equation with integrated components
+  - Precision calculator with validation
+  - Prediction error processor with standardization
+  - Somatic marker engine with gain modulation
+  - Threshold manager with dynamic adjustment
+
+- [x] Neural signature simulation
+  - P3b simulator with amplitude and latency control
+  - Gamma synchrony simulator with PLV calculation
+  - BOLD activation simulator for multiple brain regions
+  - PCI calculator for perturbational complexity
+  - Signature validator for threshold checking
+
+- [x] Falsification test controllers
+  - Primary falsification test (full ignition without consciousness)
+  - Consciousness-without-ignition test (consciousness without signatures)
+  - Threshold-insensitivity test (neuromodulatory challenges)
+  - Soma-bias test (interoceptive vs exteroceptive weighting)
+
+- [x] Statistical analysis engine
+  - Effect size calculation (Cohen's d)
+  - P-value calculation for significance testing
+  - Statistical power calculation
+  - Confidence interval estimation
+  - Population-level analysis for multi-participant tests
+
+- [x] Data management system
+  - Storage manager for result persistence
+  - Data validator for integrity checking
+  - Result serialization and deserialization
+  - Metadata tracking
+
+- [x] Error handling and validation
+  - Parameter validation with range checking
+  - Error handling wrappers for test execution
+  - Graceful error recovery mechanisms
+  - Detailed error logging and reporting
+  - System health checks and diagnostics
+
+- [x] Example scripts and documentation
+  - Primary falsification test example
+  - Batch processing example
+  - Custom analysis example
+  - Framework extension example
+  - Comprehensive user guide
+  - CLI reference documentation
+  - Error handling quick reference
+
+- [x] System integration
+  - Main application controller
+  - Component dependency injection
+  - System initialization and shutdown
+  - Configuration management
+  - System validation framework
+
+## Optional Enhancement Tasks
+
+These tasks are not required for core functionality but would improve the system:
+
+- [ ]* 2.1 Add GUI progress visualization
+  - Real-time progress bars in GUI
+  - Trial-by-trial result updates
+  - Live plotting of intermediate results
   - _Requirements: All requirements_
 
-- [x] 8.3 Create end-to-end workflow orchestration
-
-  - Implement complete falsification testing workflows
-  - Create automated experiment pipelines
-  - Add result aggregation and final reporting
-  - _Requirements: All requirements_
-
-- [x] 8.4 Implement system validation and verification
-  - Create comprehensive system validation tests
-  - Implement end-to-end falsification scenario testing
-  - Add performance benchmarking and optimization
-  - _Requirements: All requirements_
-
-## Remaining Tasks
-
-- [x] 9. Fix mathematical framework integration issues
-
-  - Update IPIEquation class to properly integrate with PrecisionCalculator, PredictionErrorProcessor, SomaticMarkerEngine, and ThresholdManager
-  - Fix dependency injection in MainApplicationController for mathematical components
-  - Ensure proper parameter passing between mathematical framework components
-  - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
-
-- [x] 10. Fix neural simulator integration issues
-
-  - Update neural simulators to work with current SignatureValidator interface
-  - Fix method name mismatches in simulator calls (e.g., simulate_p3b vs generate_signature)
-  - Ensure consistent data structures across all simulators
-  - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
-
-- [ ] 11. Complete missing data management components
-
-
-- [ ] 11. Complete missing data management components
-
-  - Implement missing DataValidator, ExperimentTracker, and StorageManager classes
-  - Add proper data persistence and retrieval mechanisms
-  - Create missing visualization and dashboard components
-  - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5_
-
-- [ ] 12. Fix configuration management system
-
-  - Implement complete ConfigManager class with proper parameter handling
-  - Add configuration file loading and validation
-  - Create proper configuration data models (IPIParameters, ExperimentalConfig)
-  - _Requirements: 1.1, All requirements_
-
-- [x] 13. Create GUI application with tkinter
-
-
-
-
-
-  - Implement main GUI window with tkinter for IPI Falsification Testing System
-  - Create tabbed interface for different falsification tests (Primary, Consciousness Without Ignition, Threshold Insensitivity, Soma-Bias)
-  - Add parameter configuration panels for IPI parameters, experimental settings, and neural signature thresholds
-  - Implement progress tracking and real-time status updates during test execution
-  - Create results visualization panels with plots and statistical summaries
-  - Add file menu for loading/saving configurations and exporting results
-  - Add logging panel to display system messages and test progress
-
-
-cation tests
-  - Add logging panel to display system messages and test progress
-  - _Requirements: All requirements integrated through GUI interface_
-
-## Optional Testing Tasks
-
-- [ ]\* 14. Write comprehensive unit tests
-
+- [ ]* 3. Write comprehensive unit tests
   - Test mathematical framework components against known values
   - Validate neural simulator outputs and thresholds
   - Test falsification test logic and edge cases
-  - Test statistical analysis accuracy and correctness
+  - Test statistical analysis accuracy
   - _Requirements: All requirements_
 
-- [ ]\* 15. Write integration tests
-
-  - Test complete falsification workflows end-to-end
-  - Validate system performance under various conditions
-  - Test error handling and recovery mechanisms
-  - Validate data integrity throughout the system
+- [ ]* 4. Write integration tests
+  - Automated end-to-end test suite
+  - Performance benchmarking under various conditions
+  - Stress testing with large sample sizes
   - _Requirements: All requirements_
 
-- [ ]\* 16. Write system validation tests
-  - Test system initialization and component integration
-  - Validate CLI functionality and parameter handling
-  - Test configuration loading and validation
-  - Validate output generation and reporting
+- [ ]* 5. Add performance optimizations
+  - Profile test execution to identify bottlenecks
+  - Optimize neural signature generation
+  - Add parallel processing for multiple trials
+  - Implement caching for repeated calculations
   - _Requirements: All requirements_
+
+- [ ]* 6. Extend visualization capabilities
+  - Interactive plots with zoom and pan
+  - Animated visualizations of test progress
+  - 3D visualizations for multi-dimensional data
+  - Custom plot export options
+  - _Requirements: 8.4, 8.5_
+

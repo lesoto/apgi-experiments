@@ -16,7 +16,11 @@ from ..simulators.p3b_simulator import P3bSimulator
 from ..simulators.gamma_simulator import GammaSimulator
 from ..simulators.bold_simulator import BOLDSimulator
 from ..simulators.pci_calculator import PCICalculator
-from ..exceptions import ValidationError
+from ..exceptions import ValidationError, SimulationError
+from .error_handling_wrapper import with_error_handling, log_test_execution
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -108,6 +112,7 @@ class PrimaryFalsificationTest:
         # AI/ACC validation thresholds
         self.ai_acc_gamma_threshold = 0.25  # PLV threshold for AI/ACC
     
+    @with_error_handling(validate_params=True, enable_retry=True, log_errors=True)
     def run_falsification_test(self, 
                              n_trials: int = 100,
                              n_participants: int = 20,
@@ -122,25 +127,58 @@ class PrimaryFalsificationTest:
             
         Returns:
             Complete falsification test results
+            
+        Raises:
+            ValidationError: If parameters are invalid
+            SimulationError: If simulation fails
         """
-        if test_id is None:
-            test_id = f"primary_falsification_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        start_time = datetime.now()
         
-        trial_results = []
-        
-        for participant_id in range(n_participants):
-            for trial_num in range(n_trials):
-                trial_id = f"{test_id}_p{participant_id:03d}_t{trial_num:03d}"
-                
-                trial_result = self._run_single_trial(
-                    trial_id=trial_id,
-                    participant_id=f"P{participant_id:03d}"
-                )
-                
-                trial_results.append(trial_result)
-        
-        # Analyze results
-        return self._analyze_results(test_id, trial_results, n_trials, n_participants)
+        try:
+            # Validate parameters
+            if n_trials <= 0:
+                raise ValidationError(f"n_trials must be positive, got {n_trials}")
+            if n_participants <= 0:
+                raise ValidationError(f"n_participants must be positive, got {n_participants}")
+            
+            if test_id is None:
+                test_id = f"primary_falsification_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            
+            logger.info(f"Starting primary falsification test: {test_id}")
+            logger.info(f"Parameters: n_trials={n_trials}, n_participants={n_participants}")
+            
+            trial_results = []
+            
+            for participant_id in range(n_participants):
+                for trial_num in range(n_trials):
+                    trial_id = f"{test_id}_p{participant_id:03d}_t{trial_num:03d}"
+                    
+                    try:
+                        trial_result = self._run_single_trial(
+                            trial_id=trial_id,
+                            participant_id=f"P{participant_id:03d}"
+                        )
+                        trial_results.append(trial_result)
+                    except Exception as e:
+                        logger.error(f"Trial {trial_id} failed: {str(e)}")
+                        # Continue with other trials
+                        continue
+            
+            if not trial_results:
+                raise SimulationError("All trials failed - no results to analyze")
+            
+            # Analyze results
+            result = self._analyze_results(test_id, trial_results, n_trials, n_participants)
+            
+            end_time = datetime.now()
+            log_test_execution("Primary Falsification Test", start_time, end_time, True)
+            
+            return result
+            
+        except Exception as e:
+            end_time = datetime.now()
+            log_test_execution("Primary Falsification Test", start_time, end_time, False, e)
+            raise
     
     def _run_single_trial(self, trial_id: str, participant_id: str) -> FalsificationTrialResult:
         """

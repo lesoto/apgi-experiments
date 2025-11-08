@@ -27,14 +27,31 @@ class IPIParameters:
     
     def __post_init__(self):
         """Validate parameter ranges."""
-        if self.extero_precision <= 0:
-            raise ConfigurationError("Exteroceptive precision must be positive")
-        if self.intero_precision <= 0:
-            raise ConfigurationError("Interoceptive precision must be positive")
-        if self.somatic_gain <= 0:
-            raise ConfigurationError("Somatic gain must be positive")
-        if self.steepness <= 0:
-            raise ConfigurationError("Steepness parameter must be positive")
+        # Import here to avoid circular dependency
+        try:
+            from .validation.parameter_validator import get_validator
+            validator = get_validator()
+            result = validator.validate_ipi_parameters(
+                extero_precision=self.extero_precision,
+                intero_precision=self.intero_precision,
+                extero_error=self.extero_error,
+                intero_error=self.intero_error,
+                somatic_gain=self.somatic_gain,
+                threshold=self.threshold,
+                steepness=self.steepness
+            )
+            if not result.is_valid:
+                raise ConfigurationError(f"Invalid IPI parameters:\n{result.get_message()}")
+        except ImportError:
+            # Fallback to basic validation if validator not available
+            if self.extero_precision <= 0:
+                raise ConfigurationError("Exteroceptive precision must be positive")
+            if self.intero_precision <= 0:
+                raise ConfigurationError("Interoceptive precision must be positive")
+            if self.somatic_gain <= 0:
+                raise ConfigurationError("Somatic gain must be positive")
+            if self.steepness <= 0:
+                raise ConfigurationError("Steepness parameter must be positive")
 
 
 @dataclass
@@ -60,12 +77,27 @@ class ExperimentalConfig:
     
     def __post_init__(self):
         """Validate experimental configuration."""
-        if self.n_trials <= 0:
-            raise ConfigurationError("Number of trials must be positive")
-        if self.n_participants <= 0:
-            raise ConfigurationError("Number of participants must be positive")
-        if not 0 < self.alpha_level < 1:
-            raise ConfigurationError("Alpha level must be between 0 and 1")
+        # Import here to avoid circular dependency
+        try:
+            from .validation.parameter_validator import get_validator
+            validator = get_validator()
+            result = validator.validate_experimental_config(
+                n_trials=self.n_trials,
+                n_participants=self.n_participants,
+                alpha_level=self.alpha_level,
+                effect_size_threshold=self.effect_size_threshold,
+                power_threshold=self.power_threshold
+            )
+            if not result.is_valid:
+                raise ConfigurationError(f"Invalid experimental configuration:\n{result.get_message()}")
+        except ImportError:
+            # Fallback to basic validation if validator not available
+            if self.n_trials <= 0:
+                raise ConfigurationError("Number of trials must be positive")
+            if self.n_participants <= 0:
+                raise ConfigurationError("Number of participants must be positive")
+            if not 0 < self.alpha_level < 1:
+                raise ConfigurationError("Alpha level must be between 0 and 1")
 
 
 class ConfigManager:

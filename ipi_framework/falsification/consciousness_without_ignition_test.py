@@ -18,7 +18,11 @@ from ..simulators.gamma_simulator import GammaSimulator
 from ..simulators.bold_simulator import BOLDSimulator
 from ..simulators.pci_calculator import PCICalculator
 from .consciousness_assessment import ConsciousnessAssessmentSimulator, ConsciousnessLevel
-from ..exceptions import ValidationError
+from ..exceptions import ValidationError, SimulationError
+from .error_handling_wrapper import with_error_handling, log_test_execution
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -120,6 +124,7 @@ class ConsciousnessWithoutIgnitionTest:
         # Falsification threshold (>20% occurrence required)
         self.falsification_threshold = 0.20
     
+    @with_error_handling(validate_params=True, enable_retry=True, log_errors=True)
     def run_consciousness_without_ignition_test(self, 
                                               n_trials: int = 100,
                                               n_participants: int = 25,
@@ -134,33 +139,65 @@ class ConsciousnessWithoutIgnitionTest:
             
         Returns:
             Complete consciousness without ignition test results
+            
+        Raises:
+            ValidationError: If parameters are invalid
+            SimulationError: If simulation fails
         """
-        if test_id is None:
-            test_id = f"consciousness_without_ignition_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        start_time = datetime.now()
         
-        trial_results = []
-        participant_results = {}
-        
-        for participant_id in range(n_participants):
-            participant_key = f"P{participant_id:03d}"
-            participant_trials = []
+        try:
+            # Validate parameters
+            if n_trials <= 0:
+                raise ValidationError(f"n_trials must be positive, got {n_trials}")
+            if n_participants <= 0:
+                raise ValidationError(f"n_participants must be positive, got {n_participants}")
             
-            for trial_num in range(n_trials):
-                trial_id = f"{test_id}_p{participant_id:03d}_t{trial_num:03d}"
-                
-                trial_result = self._run_single_trial(
-                    trial_id=trial_id,
-                    participant_id=participant_key
-                )
-                
-                trial_results.append(trial_result)
-                participant_trials.append(trial_result)
+            if test_id is None:
+                test_id = f"consciousness_without_ignition_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             
-            participant_results[participant_key] = participant_trials
-        
-        # Analyze results
-        return self._analyze_results(test_id, trial_results, participant_results, 
-                                   n_trials, n_participants)
+            logger.info(f"Starting consciousness without ignition test: {test_id}")
+            logger.info(f"Parameters: n_trials={n_trials}, n_participants={n_participants}")
+            
+            trial_results = []
+            participant_results = {}
+            
+            for participant_id in range(n_participants):
+                participant_key = f"P{participant_id:03d}"
+                participant_trials = []
+                
+                for trial_num in range(n_trials):
+                    trial_id = f"{test_id}_p{participant_id:03d}_t{trial_num:03d}"
+                    
+                    try:
+                        trial_result = self._run_single_trial(
+                            trial_id=trial_id,
+                            participant_id=participant_key
+                        )
+                        trial_results.append(trial_result)
+                        participant_trials.append(trial_result)
+                    except Exception as e:
+                        logger.error(f"Trial {trial_id} failed: {str(e)}")
+                        continue
+                
+                participant_results[participant_key] = participant_trials
+            
+            if not trial_results:
+                raise SimulationError("All trials failed - no results to analyze")
+            
+            # Analyze results
+            result = self._analyze_results(test_id, trial_results, participant_results, 
+                                       n_trials, n_participants)
+            
+            end_time = datetime.now()
+            log_test_execution("Consciousness Without Ignition Test", start_time, end_time, True)
+            
+            return result
+            
+        except Exception as e:
+            end_time = datetime.now()
+            log_test_execution("Consciousness Without Ignition Test", start_time, end_time, False, e)
+            raise
     
     def _run_single_trial(self, trial_id: str, participant_id: str) -> ConsciousnessWithoutIgnitionTrialResult:
         """

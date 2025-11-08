@@ -15,7 +15,11 @@ from scipy import stats
 from ..core.equation import IPIEquation
 from ..core.precision import PrecisionCalculator
 from ..core.prediction_error import PredictionErrorProcessor
-from ..exceptions import ValidationError
+from ..exceptions import ValidationError, SimulationError
+from .error_handling_wrapper import with_error_handling, log_test_execution
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -115,6 +119,7 @@ class SomaBiasTest:
         self.minimum_sample_size = 100
         self.falsification_threshold = 0.6  # Proportion with no bias for falsification
     
+    @with_error_handling(validate_params=True, enable_retry=True, log_errors=True)
     def run_soma_bias_test(self, 
                           n_trials_per_participant: int = 50,
                           n_participants: int = 120,
@@ -129,36 +134,65 @@ class SomaBiasTest:
             
         Returns:
             Complete soma-bias test results
+            
+        Raises:
+            ValidationError: If parameters are invalid
+            SimulationError: If simulation fails
         """
-        if test_id is None:
-            test_id = f"soma_bias_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        start_time = datetime.now()
         
-        if n_participants < self.minimum_sample_size:
-            raise ValidationError(f"Sample size {n_participants} below minimum {self.minimum_sample_size}")
-        
-        trial_results = []
-        participant_results = {}
-        
-        for participant_id in range(n_participants):
-            participant_key = f"P{participant_id:03d}"
-            participant_trials = []
+        try:
+            # Validate parameters
+            if n_trials_per_participant <= 0:
+                raise ValidationError(f"n_trials_per_participant must be positive, got {n_trials_per_participant}")
+            if n_participants < self.minimum_sample_size:
+                raise ValidationError(f"Sample size {n_participants} below minimum {self.minimum_sample_size}")
             
-            for trial_num in range(n_trials_per_participant):
-                trial_id = f"{test_id}_p{participant_id:03d}_t{trial_num:03d}"
-                
-                trial_result = self._run_single_trial(
-                    trial_id=trial_id,
-                    participant_id=participant_key
-                )
-                
-                trial_results.append(trial_result)
-                participant_trials.append(trial_result)
+            if test_id is None:
+                test_id = f"soma_bias_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             
-            participant_results[participant_key] = participant_trials
-        
-        # Analyze results
-        return self._analyze_results(test_id, trial_results, participant_results, 
-                                   n_trials_per_participant, n_participants)
+            logger.info(f"Starting soma-bias test: {test_id}")
+            logger.info(f"Parameters: n_trials_per_participant={n_trials_per_participant}, n_participants={n_participants}")
+            
+            trial_results = []
+            participant_results = {}
+            
+            for participant_id in range(n_participants):
+                participant_key = f"P{participant_id:03d}"
+                participant_trials = []
+                
+                for trial_num in range(n_trials_per_participant):
+                    trial_id = f"{test_id}_p{participant_id:03d}_t{trial_num:03d}"
+                    
+                    try:
+                        trial_result = self._run_single_trial(
+                            trial_id=trial_id,
+                            participant_id=participant_key
+                        )
+                        trial_results.append(trial_result)
+                        participant_trials.append(trial_result)
+                    except Exception as e:
+                        logger.error(f"Trial {trial_id} failed: {str(e)}")
+                        continue
+                
+                participant_results[participant_key] = participant_trials
+            
+            if not trial_results:
+                raise SimulationError("All trials failed - no results to analyze")
+            
+            # Analyze results
+            result = self._analyze_results(test_id, trial_results, participant_results, 
+                                       n_trials_per_participant, n_participants)
+            
+            end_time = datetime.now()
+            log_test_execution("Soma-Bias Test", start_time, end_time, True)
+            
+            return result
+            
+        except Exception as e:
+            end_time = datetime.now()
+            log_test_execution("Soma-Bias Test", start_time, end_time, False, e)
+            raise
     
     def _run_single_trial(self, trial_id: str, participant_id: str) -> SomaBiasTrialResult:
         """

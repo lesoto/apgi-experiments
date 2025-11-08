@@ -29,6 +29,16 @@ ipi-consciousness/
 
 ## Getting Started
 
+### Quick Start (5 minutes)
+
+**New to the system?** See the [Quick Start Guide](docs/QUICK_START_GUIDE.md) for a 5-minute introduction.
+
+**Using the GUI?** Check out the [GUI Visual Guide](docs/GUI_VISUAL_GUIDE.md) for a visual walkthrough.
+
+**Need help?** See the [Documentation Index](docs/DOCUMENTATION_INDEX.md) for complete documentation.
+
+### Installation
+
 1. **Set up the environment**
 
    ```bash
@@ -39,6 +49,12 @@ ipi-consciousness/
    
    # Install dependencies
    pip install -r requirements.txt
+   ```
+
+2. **Validate installation**
+
+   ```bash
+   python -m ipi_framework.cli validate-system
    ```
 
 2. **Run the IPI Agent example**
@@ -125,6 +141,42 @@ ipi-consciousness/
 
 ## Example Usage
 
+### Running Falsification Tests
+
+**Using the GUI:**
+```bash
+python launch_gui.py
+```
+
+**Using the CLI:**
+```bash
+# Run primary falsification test
+python -m ipi_framework.cli run-test primary --trials 1000
+
+# Run all tests
+python -m ipi_framework.cli run-batch --all-tests
+```
+
+**Using Python API:**
+```python
+from ipi_framework.main_controller import MainApplicationController
+
+# Initialize system
+controller = MainApplicationController()
+controller.initialize_system()
+
+# Run test
+tests = controller.get_falsification_tests()
+result = tests['primary'].run_test(n_trials=1000)
+
+# View results
+print(f"Falsified: {result.is_falsified}")
+print(f"Confidence: {result.confidence_level:.2f}")
+
+# Cleanup
+controller.shutdown_system()
+```
+
 ### Running the IPI Agent
 
 ```python
@@ -146,3 +198,17 @@ experiment = run_interoceptive_gating_experiment(
     n_trials_per_condition=100
 )
 ```
+
+## Documentation
+
+Complete documentation is available in the `docs/` directory:
+
+- **[Quick Start Guide](docs/QUICK_START_GUIDE.md)** - Get started in 5 minutes
+- **[GUI Visual Guide](docs/GUI_VISUAL_GUIDE.md)** - Visual walkthrough of the GUI
+- **[User Guide](docs/USER_GUIDE.md)** - Complete user manual
+- **[CLI Reference](docs/CLI_REFERENCE.md)** - Command-line interface documentation
+- **[Results Interpretation Guide](docs/RESULTS_INTERPRETATION_GUIDE.md)** - Understanding test results
+- **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
+- **[Documentation Index](docs/DOCUMENTATION_INDEX.md)** - Complete documentation index
+
+See [docs/README.md](docs/README.md) for a complete documentation overview.

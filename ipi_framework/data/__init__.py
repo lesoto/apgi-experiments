@@ -13,6 +13,33 @@ from .data_models import (
     DataVersion,
     BackupInfo
 )
+from .parameter_estimation_models import (
+    TaskType,
+    StimulusModality,
+    BehavioralResponse,
+    QualityMetrics,
+    TrialData,
+    DetectionTrialResult,
+    HeartbeatTrialResult,
+    OddballTrialResult,
+    ParameterDistribution,
+    ModelFitMetrics,
+    ReliabilityMetrics,
+    ParameterEstimates,
+    SessionData
+)
+from .parameter_estimation_schema import (
+    ParameterEstimationSchema,
+    create_parameter_estimation_schema
+)
+from .parameter_estimation_dao import (
+    ParameterEstimationDAO,
+    create_parameter_estimation_dao
+)
+from .migration_manager import (
+    MigrationManager,
+    create_migration_manager
+)
 from .persistence_layer import PersistenceLayer
 from .data_validator import DataValidator
 from .experiment_tracker import ExperimentTracker
@@ -34,6 +61,29 @@ __all__ = [
     'PersistenceLayer',
     'DataValidator',
     'ExperimentTracker',
+    
+    # Parameter estimation models
+    'TaskType',
+    'StimulusModality',
+    'BehavioralResponse',
+    'QualityMetrics',
+    'TrialData',
+    'DetectionTrialResult',
+    'HeartbeatTrialResult',
+    'OddballTrialResult',
+    'ParameterDistribution',
+    'ModelFitMetrics',
+    'ReliabilityMetrics',
+    'ParameterEstimates',
+    'SessionData',
+    
+    # Parameter estimation database
+    'ParameterEstimationSchema',
+    'create_parameter_estimation_schema',
+    'ParameterEstimationDAO',
+    'create_parameter_estimation_dao',
+    'MigrationManager',
+    'create_migration_manager',
     
     # Reporting and visualization
     'ReportGenerator',

@@ -50,6 +50,45 @@ from .statistical_report_generator import (
     ReportFormat
 )
 
+from .bayesian_models import (
+    HierarchicalBayesianModel,
+    SurpriseAccumulator,
+    IgnitionProbabilityCalculator,
+    StanModelCompiler,
+    ParameterDistribution,
+    ParameterEstimates
+)
+
+from .parameter_estimation import (
+    JointParameterFitter,
+    ParameterExtractor,
+    ConvergenceDiagnosticsCalculator,
+    IndividualParameterEstimator,
+    ConvergenceDiagnostics,
+    FitResults
+)
+
+from .parameter_recovery import (
+    SyntheticDataGenerator,
+    ParameterRecoveryValidator,
+    RecoveryAnalyzer,
+    ValidationReportGenerator,
+    GroundTruthParameters,
+    RecoveryMetrics,
+    RecoveryResults
+)
+
+from .predictive_validity import (
+    EmotionalInterferenceTask,
+    ContinuousPerformanceTask,
+    BodyVigilanceScaleAnalyzer,
+    PredictivePowerComparator,
+    PredictiveValidityFramework,
+    TaskPerformance,
+    ValidityResult,
+    ComparativeValidityResult
+)
+
 __all__ = [
     # Statistical Testing
     'StatisticalTester',
@@ -89,5 +128,40 @@ __all__ = [
     'PublicationReport',
     'FalsificationAssessment',
     'FalsificationConclusion',
-    'ReportFormat'
+    'ReportFormat',
+    
+    # Bayesian Modeling
+    'HierarchicalBayesianModel',
+    'SurpriseAccumulator',
+    'IgnitionProbabilityCalculator',
+    'StanModelCompiler',
+    'ParameterDistribution',
+    'ParameterEstimates',
+    
+    # Parameter Estimation Pipeline
+    'JointParameterFitter',
+    'ParameterExtractor',
+    'ConvergenceDiagnosticsCalculator',
+    'IndividualParameterEstimator',
+    'ConvergenceDiagnostics',
+    'FitResults',
+    
+    # Parameter Recovery Validation
+    'SyntheticDataGenerator',
+    'ParameterRecoveryValidator',
+    'RecoveryAnalyzer',
+    'ValidationReportGenerator',
+    'GroundTruthParameters',
+    'RecoveryMetrics',
+    'RecoveryResults',
+    
+    # Predictive Validity Testing
+    'EmotionalInterferenceTask',
+    'ContinuousPerformanceTask',
+    'BodyVigilanceScaleAnalyzer',
+    'PredictivePowerComparator',
+    'PredictiveValidityFramework',
+    'TaskPerformance',
+    'ValidityResult',
+    'ComparativeValidityResult'
 ]

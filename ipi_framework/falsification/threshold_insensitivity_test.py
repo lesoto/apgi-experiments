@@ -14,7 +14,11 @@ from datetime import datetime
 
 from ..core.equation import IPIEquation
 from ..core.threshold import ThresholdManager
-from ..exceptions import ValidationError
+from ..exceptions import ValidationError, SimulationError
+from .error_handling_wrapper import with_error_handling, log_test_execution
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class DrugType(Enum):
@@ -65,8 +69,9 @@ class ThresholdInsensitivityTrialResult:
     # Falsification assessment
     is_falsifying: bool
     confidence_level: float
-@da
-taclass
+
+
+@dataclass
 class ThresholdInsensitivityTestResult:
     """Complete result of threshold insensitivity testing"""
     test_id: str
@@ -124,6 +129,7 @@ class ThresholdInsensitivityTest:
         self.sensitivity_threshold = 0.1  # Minimum change to be considered sensitive
         self.insensitivity_threshold = 0.8  # Rate above which framework is falsified
     
+    @with_error_handling(validate_params=True, enable_retry=True, log_errors=True)
     def run_threshold_insensitivity_test(self, 
                                        n_trials_per_condition: int = 50,
                                        n_participants: int = 20,
@@ -140,34 +146,67 @@ class ThresholdInsensitivityTest:
             
         Returns:
             Complete threshold insensitivity test results
-        """
-        if test_id is None:
-            test_id = f"threshold_insensitivity_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        
-        if drug_conditions is None:
-            drug_conditions = [DrugType.PROPRANOLOL, DrugType.L_DOPA, 
-                             DrugType.SSRI, DrugType.PHYSOSTIGMINE, DrugType.PLACEBO]
-        
-        trial_results = []
-        
-        for participant_id in range(n_participants):
-            participant_key = f"P{participant_id:03d}"
             
-            for drug_type in drug_conditions:
-                for trial_num in range(n_trials_per_condition):
-                    trial_id = f"{test_id}_p{participant_id:03d}_{drug_type.value}_t{trial_num:03d}"
-                    
-                    trial_result = self._run_single_trial(
-                        trial_id=trial_id,
-                        participant_id=participant_key,
-                        drug_type=drug_type
-                    )
-                    
-                    trial_results.append(trial_result)
+        Raises:
+            ValidationError: If parameters are invalid
+            SimulationError: If simulation fails
+        """
+        start_time = datetime.now()
         
-        # Analyze results
-        return self._analyze_results(test_id, trial_results, n_trials_per_condition, 
-                                   n_participants, drug_conditions)
+        try:
+            # Validate parameters
+            if n_trials_per_condition <= 0:
+                raise ValidationError(f"n_trials_per_condition must be positive, got {n_trials_per_condition}")
+            if n_participants <= 0:
+                raise ValidationError(f"n_participants must be positive, got {n_participants}")
+            
+            if test_id is None:
+                test_id = f"threshold_insensitivity_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            
+            if drug_conditions is None:
+                drug_conditions = [DrugType.PROPRANOLOL, DrugType.L_DOPA, 
+                                 DrugType.SSRI, DrugType.PHYSOSTIGMINE, DrugType.PLACEBO]
+            
+            logger.info(f"Starting threshold insensitivity test: {test_id}")
+            logger.info(f"Parameters: n_trials_per_condition={n_trials_per_condition}, n_participants={n_participants}")
+            logger.info(f"Drug conditions: {[d.value for d in drug_conditions]}")
+            
+            trial_results = []
+            
+            for participant_id in range(n_participants):
+                participant_key = f"P{participant_id:03d}"
+                
+                for drug_type in drug_conditions:
+                    for trial_num in range(n_trials_per_condition):
+                        trial_id = f"{test_id}_p{participant_id:03d}_{drug_type.value}_t{trial_num:03d}"
+                        
+                        try:
+                            trial_result = self._run_single_trial(
+                                trial_id=trial_id,
+                                participant_id=participant_key,
+                                drug_type=drug_type
+                            )
+                            trial_results.append(trial_result)
+                        except Exception as e:
+                            logger.error(f"Trial {trial_id} failed: {str(e)}")
+                            continue
+            
+            if not trial_results:
+                raise SimulationError("All trials failed - no results to analyze")
+            
+            # Analyze results
+            result = self._analyze_results(test_id, trial_results, n_trials_per_condition, 
+                                       n_participants, drug_conditions)
+            
+            end_time = datetime.now()
+            log_test_execution("Threshold Insensitivity Test", start_time, end_time, True)
+            
+            return result
+            
+        except Exception as e:
+            end_time = datetime.now()
+            log_test_execution("Threshold Insensitivity Test", start_time, end_time, False, e)
+            raise
     
     def _run_single_trial(self, trial_id: str, participant_id: str, 
                          drug_type: DrugType) -> ThresholdInsensitivityTrialResult:
