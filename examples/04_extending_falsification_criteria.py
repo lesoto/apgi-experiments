@@ -118,8 +118,8 @@ class TemporalDynamicsFalsificationTest:
         
         # Simple binomial test p-value
         from scipy import stats
-        p_value = stats.binom_test(temporal_violations, n_trials, expected_rate, 
-                                   alternative='greater')
+        p_value = stats.binomtest(temporal_violations, n_trials, expected_rate, 
+                                   alternative='greater').pvalue
         
         # Statistical power (simplified)
         statistical_power = 0.8 if n_trials >= 1000 else 0.6
@@ -221,8 +221,8 @@ class CrossModalIntegrationTest:
         
         # P-value
         from scipy import stats
-        p_value = stats.binom_test(isolated_activations, n_trials, expected_rate,
-                                   alternative='greater')
+        p_value = stats.binomtest(isolated_activations, n_trials, expected_rate,
+                                   alternative='greater').pvalue
         
         statistical_power = 0.8 if n_trials >= 1000 else 0.6
         
@@ -326,8 +326,8 @@ class MetacognitiveCalibrationTest:
         
         # P-value
         from scipy import stats
-        p_value = stats.binom_test(miscalibration_count, n_trials, expected_rate,
-                                   alternative='greater')
+        p_value = stats.binomtest(miscalibration_count, n_trials, expected_rate,
+                                   alternative='greater').pvalue
         
         statistical_power = 0.8 if n_trials >= 1000 else 0.6
         

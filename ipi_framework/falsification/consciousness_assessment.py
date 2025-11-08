@@ -274,6 +274,10 @@ class ConsciousnessAssessmentSimulator:
         
         return assessments
 
+    def simulate_conscious_trial(self, trial_id: Optional[str] = None,
+                                 custom_params: Optional[Dict[str, float]] = None) -> ConsciousnessAssessment:
+        return self.simulate_assessment(ConsciousnessLevel.CONSCIOUS, trial_id, custom_params)
+
 
 class ConsciousnessValidator:
     """

@@ -9,6 +9,12 @@ in the IPI Framework, including:
 - Using validation in GUI applications
 """
 
+import sys
+from pathlib import Path
+
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from ipi_framework.validation import get_validator
 from ipi_framework.config import IPIParameters, ExperimentalConfig, ConfigManager
 from ipi_framework.exceptions import ConfigurationError

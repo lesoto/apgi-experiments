@@ -34,16 +34,21 @@ print(result.get_report())
 from ipi_framework.falsification.primary_falsification_test import PrimaryFalsificationTest
 
 # Tests now have automatic error handling
+
 test = PrimaryFalsificationTest()
 result = test.run_falsification_test(n_trials=100, n_participants=20)
 ```
 
+
 ## Command Line Tools
 
+
 ### Health Check
+
 ```bash
 python -m ipi_framework.validation.diagnostics_cli health-check
 ```
+
 
 ### Validate Parameters
 ```bash
@@ -109,6 +114,7 @@ def my_function():
 ## Parameter Ranges
 
 ### IPI Parameters
+
 - `extero_precision`: 0.01 - 10.0 (typical: 0.5-5.0)
 - `intero_precision`: 0.01 - 10.0 (typical: 0.5-5.0)
 - `extero_error`: -10.0 - 10.0 (typical: -3 to 3)
@@ -118,11 +124,13 @@ def my_function():
 - `steepness`: 0.1 - 10.0 (typical: 1.0-3.0)
 
 ### Experimental Config
+
 - `n_trials`: 1 - 100000 (typical: 50-1000)
 - `n_participants`: 1 - 10000 (typical: 20-200)
 - `alpha_level`: 0.001 - 0.1 (typical: 0.05)
 
 ### Neural Thresholds
+
 - `p3b_threshold`: 1.0 - 20.0 μV (typical: 3.0-7.0)
 - `gamma_plv_threshold`: 0.05 - 0.8 (typical: 0.2-0.4)
 - `bold_z_threshold`: 1.0 - 5.0 (typical: 2.3-3.5)
@@ -131,11 +139,13 @@ def my_function():
 ## Error Types
 
 ### ValidationError
+
 - Parameter validation failures
 - Not retried automatically
 - Fix parameters and retry
 
 ### ConfigurationError
+
 - Configuration file issues
 - Not retried automatically
 - Fix configuration and retry

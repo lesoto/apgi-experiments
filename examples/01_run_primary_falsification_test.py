@@ -46,7 +46,7 @@ def run_primary_falsification_test_basic():
         
         # Run the test with default parameters (1000 trials)
         logger.info("Running primary falsification test with 1000 trials...")
-        result = primary_test.run_test(n_trials=1000)
+        result = primary_test.run_falsification_test(n_trials=1000)
         
         # Display results
         logger.info("\n" + "="*60)
@@ -110,7 +110,7 @@ def run_primary_falsification_test_custom():
         logger.info(f"  - Threshold: 3.0")
         logger.info(f"  - Random Seed: 42")
         
-        result = primary_test.run_test(n_trials=2000)
+        result = primary_test.run_falsification_test(n_trials=2000)
         
         # Display detailed results
         logger.info("\n" + "="*60)
@@ -180,7 +180,7 @@ def run_primary_falsification_test_with_validation():
         primary_test = tests['primary']
         
         logger.info("Running primary falsification test...")
-        result = primary_test.run_test(n_trials=1000)
+        result = primary_test.run_falsification_test(n_trials=1000)
         
         # Display results
         logger.info("\n" + "="*60)

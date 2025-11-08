@@ -73,7 +73,7 @@ def batch_process_threshold_variations():
             
             # Run primary falsification test
             tests = controller.get_falsification_tests()
-            result = tests['primary'].run_test(n_trials=500)
+            result = tests['primary'].run_falsification_test(n_trials=500)
             
             # Store results
             results.append({
@@ -162,7 +162,7 @@ def batch_process_precision_combinations():
                 
                 # Run test
                 tests = controller.get_falsification_tests()
-                result = tests['primary'].run_test(n_trials=500)
+                result = tests['primary'].run_falsification_test(n_trials=500)
                 
                 # Store results
                 results.append({
@@ -266,7 +266,7 @@ def batch_process_comprehensive_sweep():
             
             # Run test
             tests = controller.get_falsification_tests()
-            result = tests['primary'].run_test(n_trials=1000)
+            result = tests['primary'].run_falsification_test(n_trials=1000)
             
             # Store results with configuration
             result_dict = {

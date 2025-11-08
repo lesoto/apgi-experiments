@@ -208,14 +208,12 @@ The system provides multiple levels of error recovery:
 - Verify cable connections
 - Try repositioning sensor
 
-## Support
+## Future Enhancements
 
-For issues or questions:
-1. Check the error log in `error_logs/`
-2. Review session backups in backup directory
-3. Consult the main IPI Framework documentation
-4. Contact technical support
-
-## License
-
-Part of the IPI Framework - © 2024 IPI Research Team
+### Potential Improvements
+1. **Advanced Visualizations**: Real-time EEG/pupil waveforms
+2. **Remote Monitoring**: Web-based monitoring dashboard
+3. **Automated Analysis**: Post-session parameter estimation pipeline
+4. **Multi-Session Analysis**: Longitudinal parameter tracking
+5. **Hardware Auto-Detection**: Automatic hardware configuration
+6. **Cloud Backup**: Remote data backup and synchronization

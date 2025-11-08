@@ -17,6 +17,7 @@ The parameter estimation pipeline combines behavioral task data with multi-modal
 #### HierarchicalBayesianModel
 Main class for hierarchical Bayesian parameter estimation using Stan/PyMC3.
 
+
 ```python
 from ipi_framework.analysis import HierarchicalBayesianModel
 
@@ -44,6 +45,7 @@ print(f"θ₀ = {estimates.theta0.mean:.3f} "
 
 #### SurpriseAccumulator
 Implements surprise accumulation dynamics: dSₜ/dt = –Sₜ/τ + f(Πₑ·|εₑ|, β·Πᵢ·|εᵢ|)
+
 
 ```python
 from ipi_framework.analysis import SurpriseAccumulator
@@ -174,6 +176,7 @@ Validates pipeline through simulation of 100 synthetic datasets.
 
 ```python
 from ipi_framework.analysis import ParameterRecoveryValidator
+
 
 validator = ParameterRecoveryValidator(
     validation_criteria={
@@ -355,6 +358,7 @@ heartbeat_data = {
 ```
 
 ### Oddball Task Data
+
 ```python
 oddball_data = {
     'subject_id': np.array([...]),        # Subject indices
@@ -365,6 +369,7 @@ oddball_data = {
 ```
 
 ## Installation Requirements
+
 
 ```bash
 # Core dependencies

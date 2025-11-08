@@ -29,13 +29,17 @@ The IPI (Interoceptive Predictive Integration) Framework Falsification Testing S
 
 **Need help?** Check the [Troubleshooting Guide](TROUBLESHOOTING.md) for common issues and solutions.
 
+
 ### What is Falsification Testing?
 
 Falsification testing is a scientific methodology where we attempt to disprove a theory by identifying conditions under which its predictions fail. For the IPI Framework, we test four primary falsification criteria:
 
 1. **Primary Falsification**: Full ignition signatures without consciousness
+
 2. **Consciousness Without Ignition**: Conscious reports without ignition signatures
+
 3. **Threshold Insensitivity**: Ignition threshold unaffected by neuromodulation
+
 4. **Soma-Bias Absence**: No preferential weighting of interoceptive signals
 
 ## Getting Started
@@ -156,6 +160,7 @@ In the Parameter Configuration Panel, set:
 
 1. Click the **"Run Test"** button
 2. Monitor progress in the Progress Panel
+
 3. Wait for test completion (may take 30 seconds to several minutes)
 
 #### Step 4: View Results
@@ -550,9 +555,13 @@ python -m ipi_framework.cli run-batch --all-tests --config config.json
 
 **Steps**:
 1. Run experiments and save results
+
 2. Load results using Python API
+
 3. Perform custom statistical analyses
+
 4. Generate custom visualizations
+
 5. Export analysis report
 
 **Example Script**: See `examples/03_custom_analysis_saved_results.py`
@@ -753,6 +762,7 @@ tail -n 50 results/ipi_framework.log | grep ERROR
    - Example: `primary_test_threshold3.5_20250107.json`
 
 3. **Backup Important Results**
+
    - Regularly backup results directory
    - Use version control for configurations
    - Archive completed experiments

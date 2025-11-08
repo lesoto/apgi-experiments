@@ -15,6 +15,7 @@ November 7, 2025
 **Purpose**: Provides comprehensive validation for all IPI Framework parameters.
 
 **Key Features**:
+
 - Validates IPI equation parameters (precision, errors, gain, threshold, steepness)
 - Validates experimental configuration (trials, participants, statistical parameters)
 - Validates neural signature thresholds (P3b, gamma, BOLD, PCI)
@@ -23,10 +24,12 @@ November 7, 2025
 - Includes parameter range documentation and tooltips
 
 **Key Classes**:
+
 - `ValidationResult`: Contains validation status, errors, warnings, and suggestions
 - `ParameterValidator`: Main validator with methods for different parameter types
 
 **Usage Example**:
+
 ```python
 from ipi_framework.validation import get_validator
 
@@ -41,11 +44,13 @@ if not result.is_valid:
     print(result.get_message())
 ```
 
+
 ### 2. System Health Checker (`ipi_framework/validation/system_health.py`)
 
 **Purpose**: Performs comprehensive system health checks and diagnostics.
 
 **Key Features**:
+
 - Checks Python environment and version
 - Validates required and optional dependencies
 - Verifies configuration validity
@@ -55,10 +60,12 @@ if not result.is_valid:
 - Generates detailed health reports with recommendations
 
 **Key Classes**:
+
 - `HealthCheckResult`: Contains health check status and recommendations
 - `SystemHealthChecker`: Performs various health checks
 
 **Usage Example**:
+
 ```python
 from ipi_framework.validation import get_health_checker
 
@@ -67,11 +74,13 @@ result = health_checker.run_full_health_check()
 print(result.get_report())
 ```
 
+
 ### 3. Error Recovery Module (`ipi_framework/validation/error_recovery.py`)
 
 **Purpose**: Provides automatic error recovery and retry mechanisms.
 
 **Key Features**:
+
 - Automatic retry with exponential backoff
 - Configurable retry behavior
 - Error logging with context
@@ -80,6 +89,7 @@ print(result.get_report())
 - Default recovery strategies for common errors
 
 **Key Classes**:
+
 - `RetryConfig`: Configuration for retry behavior
 - `ErrorRecoveryManager`: Manages recovery strategies and error logging
 
@@ -87,6 +97,7 @@ print(result.get_report())
 - `@with_retry`: Adds automatic retry to functions
 
 **Usage Example**:
+
 ```python
 from ipi_framework.validation import with_retry, RetryConfig
 
@@ -97,6 +108,7 @@ def potentially_failing_function():
     # Function that might fail transiently
     pass
 ```
+
 
 ### 4. Error Handling Wrapper (`ipi_framework/falsification/error_handling_wrapper.py`)
 
@@ -126,6 +138,7 @@ def run_test(n_trials, n_participants):
     pass
 ```
 
+
 ### 5. Configuration Integration
 
 **Updated Files**:
@@ -135,6 +148,7 @@ def run_test(n_trials, n_participants):
 - `__post_init__` methods now use `ParameterValidator` for comprehensive validation
 - Provides detailed error messages with validation results
 - Falls back to basic validation if validator not available
+
 
 ### 6. Falsification Test Updates
 
@@ -151,6 +165,7 @@ def run_test(n_trials, n_participants):
 - Added logging for test execution and errors
 - Tests continue with remaining trials if individual trials fail
 - Raises `SimulationError` if all trials fail
+
 
 ### 7. Diagnostics CLI Tool (`ipi_framework/validation/diagnostics_cli.py`)
 

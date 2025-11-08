@@ -9,12 +9,14 @@ This module provides comprehensive neural data acquisition and processing capabi
 Real-time EEG/MEG data acquisition with streaming, buffering, and artifact detection.
 
 **Key Classes:**
+
 - `EEGInterface`: Main interface for data acquisition
 - `EEGConfig`: Configuration for sampling rate, channels, filtering
 - `ArtifactDetector`: Real-time artifact detection (amplitude, gradient, flatline)
 - `ChannelInfo`: Channel metadata and impedance tracking
 
 **Features:**
+
 - Real-time data streaming with configurable callbacks
 - Multi-channel buffering with timestamp synchronization
 - Automatic artifact detection and rejection
@@ -23,6 +25,7 @@ Real-time EEG/MEG data acquisition with streaming, buffering, and artifact detec
 - Data export (NumPy, CSV formats)
 
 **Example Usage:**
+
 ```python
 from ipi_framework.neural import EEGInterface, EEGConfig, ChannelInfo, ChannelType
 
@@ -66,11 +69,13 @@ eeg.export_data("experiment_data.npz", format="numpy")
 Event-Related Potential extraction with P3b and early component analysis.
 
 **Key Classes:**
+
 - `ERPAnalysis`: Main ERP analysis engine
 - `ERPComponents`: Container for all extracted components
 - `P3bMetrics`: Detailed P3b measurements
 
 **Features:**
+
 - P3b peak detection with area-under-curve calculation
 - Early component extraction (P1, N1, N170)
 - Single-trial ERP estimation (wavelet, adaptive, matched filter)
@@ -79,6 +84,7 @@ Event-Related Potential extraction with P3b and early component analysis.
 - Bootstrap confidence intervals
 
 **Example Usage:**
+
 ```python
 from ipi_framework.neural import ERPAnalysis
 
@@ -97,6 +103,7 @@ print(f"P3b latency: {components.p3b_latency:.2f} ms")
 print(f"P3b area: {components.p3b_area:.2f} µV·ms")
 
 # Single-trial estimation
+
 single_trial_erp = erp.single_trial_estimation(
     trial_data=raw_trial,
     time_zero_idx=200,
