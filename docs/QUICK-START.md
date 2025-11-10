@@ -17,7 +17,8 @@ python -m ipi_framework.cli validate-system
 ```
 
 Expected output:
-```
+
+```text
 System Validation: PASS
 ```
 
@@ -28,11 +29,13 @@ System Validation: PASS
 ### Option A: Using the GUI (Recommended for Beginners)
 
 **1. Launch the GUI:**
+
 ```bash
 python launch_gui.py
 ```
 
 **2. Run a test:**
+
 - Click **"Primary Falsification Test"** button
 - Leave default parameters
 - Click **"Run Test"**

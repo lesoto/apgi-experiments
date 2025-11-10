@@ -5,42 +5,49 @@ Comprehensive graphical user interface for running parameter estimation experime
 ## Overview
 
 The GUI provides a unified interface for conducting parameter estimation experiments that extract three core IPI parameters:
+
 - **θ₀** (Baseline Ignition Threshold) - via detection task
-- **Πᵢ** (Interoceptive Precision) - via heartbeat detection task  
+- **Πᵢ** (Interoceptive Precision) - via heartbeat detection task
 - **β** (Somatic Bias) - via dual-modality oddball task
 
 ## Features
 
 ### 1. Session Management
+
 - Create and manage experimental sessions
 - Track participant information
 - Configure protocol parameters
 - Session history and retrieval
 
 ### 2. Task Control
+
 - **Detection Task**: Visual/auditory detection with adaptive staircase
 - **Heartbeat Detection Task**: Cardiac-locked tone presentation with confidence ratings
 - **Oddball Task**: Precision-matched interoceptive/exteroceptive deviants
 
 ### 3. Real-Time Monitoring
+
 - **EEG Monitoring**: Signal quality, artifact rates, P3b/HEP amplitudes
 - **Pupillometry**: Pupil diameter, blink rate, data loss tracking
 - **Cardiac Monitoring**: Heart rate, HRV, R-peak detection quality
 - **Parameter Estimates**: Live Bayesian parameter updates
 
 ### 4. Data Quality Management
+
 - Automated quality alerts for all modalities
 - Real-time quality scoring
 - Artifact detection and reporting
 - Hardware failure detection
 
 ### 5. Reporting & Export
+
 - Comprehensive session reports
 - Parameter visualization with credible intervals
 - Data export in multiple formats (CSV, JSON, HDF5, BIDS)
 - Quality summaries across all modalities
 
 ### 6. Error Handling & Recovery
+
 - Graceful hardware failure handling
 - Session pause/resume with state preservation
 - Automatic data backup

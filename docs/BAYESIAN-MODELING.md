@@ -15,6 +15,7 @@ The parameter estimation pipeline combines behavioral task data with multi-modal
 ### 1. Bayesian Models (`bayesian_models.py`)
 
 #### HierarchicalBayesianModel
+
 Main class for hierarchical Bayesian parameter estimation using Stan/PyMC3.
 
 
@@ -44,6 +45,7 @@ print(f"θ₀ = {estimates.theta0.mean:.3f} "
 ```
 
 #### SurpriseAccumulator
+
 Implements surprise accumulation dynamics: dSₜ/dt = –Sₜ/τ + f(Πₑ·|εₑ|, β·Πᵢ·|εᵢ|)
 
 
@@ -59,7 +61,9 @@ surprise_trace = accumulator.integrate(
 ```
 
 #### IgnitionProbabilityCalculator
+
 Calculates ignition probability: Bₜ = σ(α(Sₜ – θₜ))
+
 
 ```python
 from ipi_framework.analysis import IgnitionProbabilityCalculator
@@ -76,7 +80,9 @@ ignition_time = calculator.find_ignition_time(
 ```
 
 #### StanModelCompiler
+
 Manages Stan model compilation with caching for efficient reuse.
+
 
 ```python
 from ipi_framework.analysis import StanModelCompiler
@@ -88,6 +94,7 @@ model = compiler.compile_stan_model(model_code)
 ### 2. Parameter Estimation Pipeline (`parameter_estimation.py`)
 
 #### JointParameterFitter
+
 Fits all parameters simultaneously from behavioral and neural data.
 
 ```python
@@ -113,7 +120,9 @@ for est in results.parameter_estimates:
 ```
 
 #### ConvergenceDiagnosticsCalculator
+
 Computes R-hat, effective sample size, and chain mixing diagnostics.
+
 
 ```python
 from ipi_framework.analysis import ConvergenceDiagnosticsCalculator
@@ -127,7 +136,9 @@ print(f"Converged: {diagnostics.converged}")
 ```
 
 #### IndividualParameterEstimator
+
 Estimates personalized parameters with uncertainty quantification.
+
 
 ```python
 from ipi_framework.analysis import IndividualParameterEstimator
@@ -154,6 +165,7 @@ intervals = estimator.compute_credible_intervals(
 #### SyntheticDataGenerator
 Generates synthetic data with known ground-truth parameters.
 
+
 ```python
 from ipi_framework.analysis import (
     SyntheticDataGenerator, 
@@ -172,11 +184,11 @@ detection, heartbeat, oddball = generator.generate_complete_dataset(
 ```
 
 #### ParameterRecoveryValidator
+
 Validates pipeline through simulation of 100 synthetic datasets.
 
 ```python
 from ipi_framework.analysis import ParameterRecoveryValidator
-
 
 validator = ParameterRecoveryValidator(
     validation_criteria={
@@ -200,6 +212,7 @@ else:
 ```
 
 #### RecoveryAnalyzer
+
 Analyzes recovery with correlation metrics and bias assessment.
 
 ```python
@@ -223,6 +236,7 @@ analyzer.plot_recovery(
 ```
 
 #### ValidationReportGenerator
+
 Generates comprehensive validation reports.
 
 ```python
@@ -241,6 +255,7 @@ print(report)
 #### EmotionalInterferenceTask
 Emotional Stroop/flanker task for Πᵢ validation.
 
+
 ```python
 from ipi_framework.analysis import EmotionalInterferenceTask
 
@@ -256,6 +271,7 @@ predicted_interference = task.predict_from_pi_i(
 
 #### ContinuousPerformanceTask
 CPT for θ₀ validation and attentional lapse prediction.
+
 
 ```python
 from ipi_framework.analysis import ContinuousPerformanceTask
@@ -273,6 +289,7 @@ predicted_lapses = task.predict_from_theta0(
 #### BodyVigilanceScaleAnalyzer
 BVS analyzer for β validation through somatic symptom correlation.
 
+
 ```python
 from ipi_framework.analysis import BodyVigilanceScaleAnalyzer
 
@@ -287,6 +304,7 @@ predicted_bvs = analyzer.predict_from_beta(beta=1.1)
 
 #### PredictivePowerComparator
 Compares IPI parameters against traditional measures.
+
 
 ```python
 from ipi_framework.analysis import PredictivePowerComparator
@@ -336,6 +354,7 @@ print(report)
 ## Data Requirements
 
 ### Detection Task Data
+
 ```python
 detection_data = {
     'subject_id': np.array([...]),        # Subject indices (1-based)
@@ -346,6 +365,7 @@ detection_data = {
 ```
 
 ### Heartbeat Detection Task Data
+
 ```python
 heartbeat_data = {
     'subject_id': np.array([...]),        # Subject indices
@@ -359,6 +379,7 @@ heartbeat_data = {
 
 ### Oddball Task Data
 
+
 ```python
 oddball_data = {
     'subject_id': np.array([...]),        # Subject indices
@@ -370,13 +391,15 @@ oddball_data = {
 
 ## Installation Requirements
 
-
 ```bash
 # Core dependencies
 pip install numpy scipy pandas matplotlib
 
 # Bayesian modeling (required for parameter estimation)
 pip install pystan
+
+# For GPU acceleration (optional)
+pip install pystan-cuda
 
 # Alternative: PyMC3
 pip install pymc3

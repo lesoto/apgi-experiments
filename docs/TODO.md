@@ -11,11 +11,13 @@ This document contains all the experimental paradigms and features that are plan
 **Idea**: Test if unconscious somatic markers bias conscious decisions through interoceptive precision.
 
 **Method**:
+
 - Use backward masking to pair neutral decision cues (e.g., abstract symbols) with unconsciously presented affective images (positive/negative from IAPS database)
 - Followed by a conscious perceptual decision task under uncertainty (e.g., random dot motion discrimination)
 - Manipulate interoceptive awareness via heartbeat counting during the task
 
 **IPI Prediction**:
+
 - Decisions on trials primed with negative somatic markers will show:
   1. Higher interoceptive precision (measured via skin conductance response, pupil dilation)
   2. Increased likelihood of conscious "ignition" (P3b) during the decision period
@@ -31,6 +33,7 @@ This document contains all the experimental paradigms and features that are plan
 **Idea**: Directly measure the metabolic expenditure of conscious processing to validate its proposed "expensive" nature.
 
 **Method**:
+
 - Use calibrated fMRI or fNIRS to quantify the glucose/oxygen cost of neural processing
 - Compare brain metabolism during:
   1. Subliminal word processing (masked primes, no ignition)
@@ -39,6 +42,7 @@ This document contains all the experimental paradigms and features that are plan
 - Vary cognitive load and interoceptive demand (e.g., concurrent heartbeat counting)
 
 **IPI Prediction**:
+
 - A significant, non-linear increase in metabolic rate will be observed specifically in the frontoparietal "workspace" network during ignition trials (2 & 3)
 - High interoceptive demand will amplify this effect in the PFC but reduce it in sensory regions
 - The metabolic cost will correlate with the amplitude of the global broadcast signal
@@ -52,13 +56,18 @@ This document contains all the experimental paradigms and features that are plan
 **Idea**: Develop a diagnostic panel based on IPI components to distinguish between states of consciousness.
 
 **Method**:
+
 Multi-modal assessment in DoC patients:
+
 - **fMRI/EEG**: Measure global workspace connectivity (ignition capacity)
 - **Heartbeat Evoked Potentials (HEP)**: Measure interoceptive precision
 - **Pupillometry/SCR**: Measure autonomic (somatic) reactivity to emotional stimuli
 - **Behavioral scales**: CRS-R for clinical correlation
 
-**IPI Prediction**: This multi-dimensional IPI Consciousness Index will:
+**IPI Prediction**:
+
+This multi-dimensional IPI Consciousness Index will:
+
 1. Have higher prognostic accuracy than single-modality tools (e.g., PCI alone)
 2. Show that patients with preserved interoceptive precision but disrupted ignition (e.g., severe TBI) have better recovery prospects
 3. Reveal distinct neural signatures for different DoC states (VS, MCS, EMCS)
@@ -70,6 +79,7 @@ Multi-modal assessment in DoC patients:
 **Idea**: Test if anesthetic transitions follow critical slowing dynamics predicted by IPI.
 
 **Method**:
+
 - High-temporal EEG during propofol induction/recovery
 - Measure:
   1. Critical slowing (autocorrelation, variance)
@@ -77,6 +87,7 @@ Multi-modal assessment in DoC patients:
   3. Perturbation complexity index
 
 **Prediction**:
+
 - Loss of consciousness will show hallmarks of critical slowing
 - Recovery will be more variable, reflecting multi-stable attractors
 - Individual differences in transition dynamics will correlate with baseline precision
@@ -88,6 +99,7 @@ Multi-modal assessment in DoC patients:
 **Test**: Whether IPI generalizes to non-human consciousness.
 
 **Approach**:
+
 - Train macaques in a confidence-based visual task
 - Simultaneous recordings:
   1. Prefrontal LFPs (ignition)
@@ -106,6 +118,7 @@ Multi-modal assessment in DoC patients:
 **Idea**: Systematic investigation of the ignition threshold mechanism.
 
 **Method**:
+
 - Parametric manipulation of stimulus intensity around perceptual threshold
 - EEG/MEG recording to capture ignition signatures
 - Manipulation of interoceptive precision through various means
@@ -115,6 +128,7 @@ Multi-modal assessment in DoC patients:
 **Status**: Partial implementation
 
 **Needed Implementations**:
+
 - Full hierarchical predictive coding network
 - Realistic neural mass models
 - Energy-dependent gating mechanisms
@@ -125,17 +139,20 @@ Multi-modal assessment in DoC patients:
 ### Core Framework Enhancements
 
 1. **Better Neural Simulation**
+
    - Implement realistic neural dynamics
    - Add noise models for different brain regions
    - Include neuromodulatory effects (dopamine, norepinephrine, acetylcholine)
 
 2. **Advanced Analysis Tools**
+
    - EEG/MEG analysis pipelines
    - Connectivity analysis methods
    - Statistical testing frameworks
    - Machine learning classification tools
 
 3. **Data Management**
+
    - Database integration for large datasets
    - Standardized data formats (BIDS compliance)
    - Version control for experimental protocols
@@ -143,17 +160,19 @@ Multi-modal assessment in DoC patients:
 ### Experimental Infrastructure
 
 1. **Real-time Capabilities**
+
    - Integration with psychophysics toolboxes (PsychoPy, Psychtoolbox)
    - Real-time physiological monitoring
    - Closed-loop experimental control
 
 2. **Hardware Integration**
+
    - EEG/MEG acquisition systems
    - Eye tracking integration
    - Physiological monitoring (ECG, GSR, pupillometry)
 
 3. **Stimulus Generation**
+
    - Advanced visual stimulus generation
    - Auditory stimulus synthesis
    - Haptic/tactile stimulus control
-

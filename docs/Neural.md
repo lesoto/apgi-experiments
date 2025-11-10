@@ -15,7 +15,7 @@ Real-time EEG/MEG data acquisition with streaming, buffering, and artifact detec
 - `ArtifactDetector`: Real-time artifact detection (amplitude, gradient, flatline)
 - `ChannelInfo`: Channel metadata and impedance tracking
 
-**Features:**
+#### Features
 
 - Real-time data streaming with configurable callbacks
 - Multi-channel buffering with timestamp synchronization
@@ -24,7 +24,7 @@ Real-time EEG/MEG data acquisition with streaming, buffering, and artifact detec
 - Reference scheme configuration (average, mastoid, custom)
 - Data export (NumPy, CSV formats)
 
-**Example Usage:**
+#### Example Usage
 
 ```python
 from ipi_framework.neural import EEGInterface, EEGConfig, ChannelInfo, ChannelType
@@ -68,13 +68,13 @@ eeg.export_data("experiment_data.npz", format="numpy")
 
 Event-Related Potential extraction with P3b and early component analysis.
 
-**Key Classes:**
+#### Key Classes
 
 - `ERPAnalysis`: Main ERP analysis engine
 - `ERPComponents`: Container for all extracted components
 - `P3bMetrics`: Detailed P3b measurements
 
-**Features:**
+#### Features:
 
 - P3b peak detection with area-under-curve calculation
 - Early component extraction (P1, N1, N170)
@@ -83,7 +83,7 @@ Event-Related Potential extraction with P3b and early component analysis.
 - Grand average computation with artifact rejection
 - Bootstrap confidence intervals
 
-**Example Usage:**
+#### Example Usage:
 
 ```python
 from ipi_framework.neural import ERPAnalysis
@@ -121,11 +121,13 @@ grand_avg, n_accepted = erp.compute_grand_average(
 
 Scalp topography clustering and temporal dynamics analysis.
 
-**Key Classes:**
+#### Key Classes
+
 - `MicrostateAnalysis`: Microstate clustering and analysis
 - `MicrostateSequence`: Container for sequence data and metrics
 
-**Features:**
+#### Features:
+
 - Modified K-means clustering for microstate templates
 - Global Field Power (GFP) computation
 - Polarity-invariant template matching
@@ -133,7 +135,8 @@ Scalp topography clustering and temporal dynamics analysis.
 - Transition probability matrices
 - Posterior-to-anterior transition detection
 
-**Example Usage:**
+#### Example Usage:
+
 ```python
 from ipi_framework.neural import MicrostateAnalysis
 
@@ -160,12 +163,14 @@ print(f"Found {len(transitions)} posterior-to-anterior transitions")
 
 Long-range coherence and cross-frequency coupling analysis.
 
-**Key Classes:**
+#### Key Classes
+
 - `GammaSynchronyAnalysis`: Gamma-band analysis engine
 - `CoherenceMetrics`: Coherence measurements
 - `NetworkConnectivity`: Network-level connectivity metrics
 
-**Features:**
+#### Features:
+
 - Gamma-band coherence computation
 - Phase-amplitude coupling (PAC) detection
 - Cross-frequency coupling (CFC) analysis
@@ -174,14 +179,15 @@ Long-range coherence and cross-frequency coupling analysis.
 - Graph metrics (clustering, path length, small-worldness)
 - Gamma burst detection
 
-**Example Usage:**
+#### Example Usage:
+
 ```python
 from ipi_framework.neural import GammaSynchronyAnalysis
 
 # Initialize analyzer
 gamma = GammaSynchronyAnalysis(sampling_rate=1000.0)
 
-# Compute coherence between two channels
+### Compute coherence between two channels
 metrics = gamma.compute_gamma_coherence(
     signal1=eeg_data[frontal_channel],
     signal2=eeg_data[posterior_channel],
@@ -192,7 +198,7 @@ print(f"Gamma coherence: {metrics.gamma_coherence:.3f}")
 print(f"Peak frequency: {metrics.gamma_peak_freq:.1f} Hz")
 print(f"Phase locking value: {metrics.phase_locking_value:.3f}")
 
-# Compute phase-amplitude coupling
+### Compute phase-amplitude coupling
 pac = gamma.compute_phase_amplitude_coupling(
     low_freq_signal=eeg_data[0],
     high_freq_signal=eeg_data[0],
@@ -201,7 +207,7 @@ pac = gamma.compute_phase_amplitude_coupling(
 )
 print(f"Theta-gamma PAC: {pac:.3f}")
 
-# Network analysis
+### Network analysis
 network = gamma.analyze_network_connectivity(
     data=eeg_data,
     channel_names=channel_names,
@@ -212,7 +218,7 @@ network = gamma.analyze_network_connectivity(
 print(f"Frontal-posterior coherence: {network.frontal_posterior_coherence:.3f}")
 print(f"Small-worldness: {network.small_worldness:.3f}")
 
-# Detect gamma bursts
+### Detect gamma bursts
 bursts = gamma.detect_gamma_bursts(
     data=eeg_data[0],
     threshold=2.0,

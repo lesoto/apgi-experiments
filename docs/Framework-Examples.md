@@ -13,11 +13,13 @@ Demonstrates how to run the primary falsification test from Python code:
 3. **With Validation**: Run system validation before executing tests
 
 **Run the example:**
+
 ```bash
 python examples/01_run_primary_falsification_test.py
 ```
 
 **Key Features:**
+
 - System initialization and configuration
 - Running falsification tests programmatically
 - Interpreting test results
@@ -32,6 +34,7 @@ Demonstrates batch processing across multiple parameter configurations:
 3. **Comprehensive Sweep**: Multi-dimensional parameter exploration
 
 **Run the example:**
+
 ```bash
 python examples/02_batch_processing_configurations.py
 ```
@@ -53,6 +56,7 @@ Demonstrates custom analysis of saved experimental results:
 5. **Custom Metrics Extraction**: Extract and analyze specific metrics
 
 **Run the example:**
+
 ```bash
 python examples/03_custom_analysis_saved_results.py
 ```
@@ -73,6 +77,7 @@ Demonstrates how to extend the framework with custom falsification tests:
 3. **Metacognitive Calibration Test**: Test metacognitive calibration requirements
 
 **Run the example:**
+
 ```bash
 python examples/04_extending_falsification_criteria.py
 ```
@@ -97,6 +102,7 @@ Demonstrates the validation and error handling features:
 6. **Error Recovery**: Error logging and recovery mechanisms
 
 **Run the example:**
+
 ```bash
 python examples/validation_and_error_handling_example.py
 ```
@@ -106,6 +112,7 @@ python examples/validation_and_error_handling_example.py
 Focused examples of parameter validation capabilities.
 
 **Run the example:**
+
 ```bash
 python examples/parameter_validation_example.py
 ```
@@ -185,6 +192,7 @@ print(f"Falsification rate: {falsification_rate:.1%}")
 The framework also provides a comprehensive CLI for running tests:
 
 ### Run Individual Test
+
 ```bash
 # Run primary falsification test
 python -m ipi_framework.cli run-test primary --trials 1000
@@ -194,6 +202,7 @@ python -m ipi_framework.cli run-test primary --trials 2000 --seed 42
 ```
 
 ### Run Batch Tests
+
 ```bash
 # Run all tests
 python -m ipi_framework.cli run-batch --all-tests

@@ -39,9 +39,7 @@ test = PrimaryFalsificationTest()
 result = test.run_falsification_test(n_trials=100, n_participants=20)
 ```
 
-
 ## Command Line Tools
-
 
 ### Health Check
 
@@ -49,13 +47,14 @@ result = test.run_falsification_test(n_trials=100, n_participants=20)
 python -m ipi_framework.validation.diagnostics_cli health-check
 ```
 
-
 ### Validate Parameters
+
 ```bash
 python -m ipi_framework.validation.diagnostics_cli validate --params extero_precision=2.0 threshold=3.5
 ```
 
 ### Get Parameter Info
+
 ```bash
 python -m ipi_framework.validation.diagnostics_cli param-info --parameter threshold
 ```
@@ -151,11 +150,13 @@ def my_function():
 - Fix configuration and retry
 
 ### SimulationError
+
 - Simulation failures
 - Retried automatically (up to 2 times)
 - May recover with different random seed
 
 ### StatisticalError
+
 - Statistical analysis failures
 - Not retried automatically
 - May indicate insufficient data
@@ -163,22 +164,26 @@ def my_function():
 ## Troubleshooting
 
 ### "Parameter validation failed"
+
 1. Check parameter ranges in this guide
 2. Use `param-info` command to get details
 3. Review error message for specific issue
 
 ### "System health check failed"
+
 1. Run `health-check` command
 2. Review component status
 3. Follow recommendations in report
 
 ### "All trials failed"
+
 1. Check system health
 2. Review error logs
 3. Verify parameters are reasonable
 4. Try with smaller sample size
 
 ### "Configuration error"
+
 1. Validate parameters before creating config
 2. Check for typos in parameter names
 3. Ensure all required parameters provided

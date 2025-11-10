@@ -24,22 +24,15 @@ The IPI (Interoceptive Predictive Integration) Framework Falsification Testing S
 ### Quick Navigation
 
 **New to the system?** Start with the [Quick Start Guide](QUICK_START_GUIDE.md) to get running in 5 minutes.
-
 **Using the GUI?** See the [GUI Visual Guide](GUI_VISUAL_GUIDE.md) for a visual walkthrough with diagrams.
-
 **Need help?** Check the [Troubleshooting Guide](TROUBLESHOOTING.md) for common issues and solutions.
-
 
 ### What is Falsification Testing?
 
 Falsification testing is a scientific methodology where we attempt to disprove a theory by identifying conditions under which its predictions fail. For the IPI Framework, we test four primary falsification criteria:
-
 1. **Primary Falsification**: Full ignition signatures without consciousness
-
 2. **Consciousness Without Ignition**: Conscious reports without ignition signatures
-
 3. **Threshold Insensitivity**: Ignition threshold unaffected by neuromodulation
-
 4. **Soma-Bias Absence**: No preferential weighting of interoceptive signals
 
 ## Getting Started
@@ -114,6 +107,7 @@ The GUI provides an intuitive interface for running falsification tests and view
 #### Step 1: Select Test Type
 
 Click on one of the test buttons in the left panel:
+
 - **Primary Falsification Test**: Tests for full ignition without consciousness
 - **Consciousness Without Ignition**: Tests for consciousness without ignition signatures
 - **Threshold Insensitivity**: Tests neuromodulatory effects on threshold
@@ -124,27 +118,29 @@ Click on one of the test buttons in the left panel:
 In the Parameter Configuration Panel, set:
 
 **IPI Parameters:**
+
 - **Exteroceptive Precision** (0.1-10.0): Precision of external sensory signals
   - Default: 2.0
   - Higher values = more reliable external signals
-  
+
 - **Interoceptive Precision** (0.1-10.0): Precision of internal bodily signals
   - Default: 1.5
   - Higher values = more reliable internal signals
-  
+
 - **Threshold** (0.5-10.0): Ignition threshold for conscious access
   - Default: 3.5
   - Lower values = easier ignition
-  
+
 - **Steepness** (0.1-5.0): Sigmoid steepness for ignition probability
   - Default: 2.0
   - Higher values = sharper threshold
-  
+
 - **Somatic Gain** (0.1-5.0): Gain for somatic marker modulation
   - Default: 1.3
   - Higher values = stronger emotional modulation
 
 **Experimental Settings:**
+
 - **Number of Trials**: How many trials to simulate (100-10000)
   - Recommended: 1000 for standard tests
   - Use 2000+ for high-power analyses
@@ -168,6 +164,7 @@ In the Parameter Configuration Panel, set:
 Results appear in the Results Display Panel:
 
 **Summary Section:**
+
 - Falsification status (FALSIFIED / NOT FALSIFIED)
 - Confidence level (0-1)
 - Statistical significance (p-value)
@@ -175,11 +172,13 @@ Results appear in the Results Display Panel:
 - Statistical power
 
 **Detailed Metrics:**
+
 - Trial-by-trial breakdown
 - Neural signature statistics
 - Consciousness assessment metrics
 
 **Visualizations:**
+
 - Distribution plots
 - Time series (if applicable)
 - Statistical summaries
@@ -215,6 +214,7 @@ For running multiple configurations:
 
 1. Click **Tools → Batch Processing**
 2. Define parameter ranges:
+
    - Select parameters to vary
    - Set min, max, and step values
 3. Click **"Start Batch"**
@@ -374,6 +374,7 @@ FalsificationResult(
 **Meaning**: The test did not find evidence contradicting the IPI Framework.
 
 **Interpretation**:
+
 - Framework predictions held under test conditions
 - No instances of the falsification criterion were observed
 - Framework remains viable under these parameters
@@ -385,6 +386,7 @@ FalsificationResult(
 **Meaning**: The test found evidence contradicting the IPI Framework.
 
 **Interpretation**:
+
 - Framework predictions violated under test conditions
 - Falsification criterion was met
 - Framework may need revision or has boundary conditions
@@ -396,38 +398,46 @@ FalsificationResult(
 #### Confidence Level
 
 - **Range**: 0.0 to 1.0
-- **Interpretation**:
-  - < 0.5: Low confidence in result
-  - 0.5-0.7: Moderate confidence
-  - 0.7-0.9: High confidence
-  - > 0.9: Very high confidence
+
+**Interpretation**:
+
+- < 0.5: Low confidence in result
+- 0.5-0.7: Moderate confidence
+- 0.7-0.9: High confidence
+- > 0.9: Very high confidence
 
 #### P-value
 
 - **Range**: 0.0 to 1.0
-- **Interpretation**:
-  - < 0.001: Extremely significant
-  - < 0.01: Highly significant
-  - < 0.05: Significant (standard threshold)
-  - ≥ 0.05: Not significant
+
+**Interpretation**:
+
+- < 0.001: Extremely significant
+- < 0.01: Highly significant
+- < 0.05: Significant (standard threshold)
+- ≥ 0.05: Not significant
 
 #### Effect Size (Cohen's d)
 
 - **Range**: -∞ to +∞ (typically -3 to +3)
-- **Interpretation**:
-  - |d| < 0.2: Small effect
-  - 0.2 ≤ |d| < 0.5: Small to medium effect
-  - 0.5 ≤ |d| < 0.8: Medium to large effect
-  - |d| ≥ 0.8: Large effect
+
+**Interpretation**:
+
+- |d| < 0.2: Small effect
+- 0.2 ≤ |d| < 0.5: Small to medium effect
+- 0.5 ≤ |d| < 0.8: Medium to large effect
+- |d| ≥ 0.8: Large effect
 
 #### Statistical Power
 
 - **Range**: 0.0 to 1.0
-- **Interpretation**:
-  - < 0.5: Underpowered (increase sample size)
-  - 0.5-0.8: Adequate power
-  - ≥ 0.8: Well-powered (standard target)
-  - ≥ 0.95: Very well-powered
+
+**Interpretation**:
+
+- < 0.5: Underpowered (increase sample size)
+- 0.5-0.8: Adequate power
+- ≥ 0.8: Well-powered (standard target)
+- ≥ 0.95: Very well-powered
 
 ### Test-Specific Interpretations
 
@@ -478,6 +488,7 @@ FalsificationResult(
 **Goal**: Run a single falsification test with default parameters.
 
 **Steps**:
+
 1. Launch GUI or use CLI
 2. Select primary falsification test
 3. Use default parameters
@@ -524,14 +535,21 @@ python -m ipi_framework.cli run-batch --all-tests --config config.json
 **Goal**: Ensure results can be replicated exactly.
 
 **Steps**:
+
 1. Create configuration file with all parameters
+
 2. Set random seed for reproducibility
+
 3. Document software versions
+
 4. Run tests with configuration
+
 5. Save configuration with results
+
 6. Share configuration for replication
 
 **Configuration Example**:
+
 ```json
 {
   "ipi_parameters": {
@@ -554,14 +572,11 @@ python -m ipi_framework.cli run-batch --all-tests --config config.json
 **Goal**: Perform custom analysis on saved results.
 
 **Steps**:
+
 1. Run experiments and save results
-
 2. Load results using Python API
-
 3. Perform custom statistical analyses
-
 4. Generate custom visualizations
-
 5. Export analysis report
 
 **Example Script**: See `examples/03_custom_analysis_saved_results.py`

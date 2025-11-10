@@ -45,9 +45,9 @@ Specify configuration file path.
 python -m ipi_framework.cli --config config.json run-test primary
 ```
 
-**Type**: String (file path)  
-**Default**: None  
-**Required**: No
+- **Type**: String (file path)
+- **Default**: None
+- **Required**: No
 
 ### --log-level, -l
 
@@ -57,12 +57,12 @@ Set logging verbosity level.
 python -m ipi_framework.cli --log-level DEBUG run-test primary
 ```
 
-**Type**: Choice  
-**Options**: DEBUG, INFO, WARNING, ERROR  
-**Default**: INFO  
-**Required**: No
+- **Type**: Choice (DEBUG, INFO, WARNING, ERROR)
+- **Default**: INFO
+- **Required**: No
 
 **Level Descriptions**:
+
 - **DEBUG**: Detailed diagnostic information
 - **INFO**: General informational messages
 - **WARNING**: Warning messages for potential issues
@@ -99,6 +99,7 @@ python -m ipi_framework.cli run-test TEST_TYPE [OPTIONS]
 Type of falsification test to run.
 
 **Choices**:
+
 - `primary`: Primary falsification test (full ignition without consciousness)
 - `consciousness-without-ignition`: Consciousness without ignition signatures
 - `threshold-insensitivity`: Neuromodulatory threshold dynamics
@@ -106,7 +107,7 @@ Type of falsification test to run.
 
 #### Options
 
-**--trials, -n**
+### --trials, -n
 
 Number of trials to simulate.
 

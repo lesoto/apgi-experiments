@@ -1,67 +1,91 @@
 # IPI Framework Falsification Testing System - GUI Application
 
+
 ## Overview
 
 The IPI Framework Falsification Testing System GUI provides a comprehensive graphical interface for conducting falsification tests on the Interoceptive Predictive Integration (IPI) Framework. The application features a tabbed interface for different test types, parameter configuration, real-time progress tracking, and results visualization.
 
+
 ## Features
 
+
 ### 1. Configuration Management
+
 - **IPI Parameters**: Configure core equation parameters (precision, errors, gains, thresholds)
 - **Experimental Settings**: Set trial counts, participant numbers, statistical thresholds
 - **Load/Save**: Import and export configuration files in JSON format
 - **Reset to Defaults**: Quickly restore default parameter values
 
+
 ### 2. Falsification Test Tabs
 
+
 #### Primary Falsification Test
+
 - Tests for full ignition signatures without consciousness
 - Validates P3b ERP, gamma synchrony, BOLD activation, and PCI signatures
 - Checks for absence of consciousness reports and AI/ACC engagement
 
+
 #### Consciousness Without Ignition Test
+
 - Tests for consciousness reports without ignition signatures
 - Validates framework boundaries for conscious access mechanisms
 - Requires >20% occurrence rate for falsification
 
+
 #### Threshold Insensitivity Test
+
 - Tests neuromodulatory threshold dynamics
 - Simulates pharmacological challenges (propranolol, L-DOPA, SSRIs, physostigmine)
 - Validates threshold modulation predictions
 
+
 #### Soma-Bias Test
+
 - Tests interoceptive vs exteroceptive prediction error bias
 - Compares matched precision conditions
 - Calculates β values for bias assessment
 
+
 ### 3. Progress Tracking
+
 - Real-time progress bars for running tests
 - Status updates and completion notifications
 - Start/stop controls for test execution
 - Thread-safe operation to maintain GUI responsiveness
 
+
 ### 4. Results Visualization
+
 - **Falsification Rates**: Bar charts showing rates by test type
 - **Effect Size Distribution**: Histograms of statistical effect sizes
 - **P-values vs Effect Sizes**: Scatter plots with significance thresholds
 - **Statistical Power**: Distribution of power analysis results
 - **Export Capabilities**: Save results in JSON or CSV formats
 
+
 ### 5. System Logging
+
 - Real-time log display with configurable levels (DEBUG, INFO, WARNING, ERROR)
 - System initialization and validation messages
 - Test execution progress and completion status
 - Error reporting and troubleshooting information
 - Save logs to file functionality
 
+
 ### 6. Menu System
+
 - **File Menu**: Configuration management and result export
 - **System Menu**: Initialization, status checking, and validation
 - **Help Menu**: About information and system details
 
+
 ## Installation and Setup
 
+
 ### Prerequisites
+
 - Python 3.8 or higher
 - Required packages (install via `pip install -r requirements.txt`):
   - tkinter (usually included with Python)
@@ -70,42 +94,56 @@ The IPI Framework Falsification Testing System GUI provides a comprehensive grap
   - pandas >= 1.3.0
   - scipy >= 1.7.0
 
+
 ### Running the Application
 
+
 #### Option 1: Direct Launch
+
 ```bash
 python ipi_gui.py
 ```
 
+
 #### Option 2: Using Launcher (Recommended)
+
 ```bash
 python launch_gui.py
 ```
 
 The launcher script provides dependency checking and better error handling.
 
+
 ## Usage Guide
 
+
 ### 1. Initial Setup
+
 1. Launch the application using one of the methods above
 2. The system will automatically attempt to initialize
 3. Check the "System Logs" tab for initialization status
 4. Use "System → System Status" to verify all components are ready
 
+
 ### 2. Configuration
+
 1. Go to the "Configuration" tab
 2. Adjust IPI parameters and experimental settings as needed
 3. Click "Apply Changes" to update the configuration
 4. Optionally save your configuration using "File → Save Configuration"
 
+
 ### 3. Running Tests
+
 1. Select the desired falsification test tab
 2. Configure test-specific parameters (trials, participants)
 3. Click "Run Test" to start execution
 4. Monitor progress via the progress bar and status updates
 5. View results in the test panel when complete
 
+
 ### 4. Analyzing Results
+
 1. Go to the "Results & Visualization" tab
 2. Generate sample data or view results from completed tests
 3. Examine the four visualization plots:
@@ -115,11 +153,14 @@ The launcher script provides dependency checking and better error handling.
    - Statistical power distributions
 4. Export results using the "Export Results" button
 
+
 ### 5. Monitoring System
+
 1. Use the "System Logs" tab to monitor system activity
 2. Adjust log level as needed (DEBUG for detailed information)
 3. Clear logs or save them to file as required
 4. Check system status via "System → System Status"
+
 
 ## Configuration File Format
 
@@ -151,20 +192,27 @@ Configuration files are saved in JSON format with the following structure:
 }
 ```
 
+
 ## Troubleshooting
+
 
 ### Common Issues
 
 1. **Import Errors**: Ensure all required packages are installed
+
    ```bash
    pip install -r requirements.txt
    ```
 
 2. **System Initialization Fails**: Check the System Logs tab for detailed error messages
 
+
 3. **GUI Not Responsive**: Tests run in separate threads; check if a test is currently running
 
+
+
 4. **Matplotlib Display Issues**: Ensure you have a proper display environment (X11 on Linux, etc.)
+
 
 ### Error Messages
 

@@ -19,6 +19,7 @@ This guide helps you interpret the results of IPI Framework falsification tests.
 - Reporting findings accurately
 - Avoiding common misinterpretations
 
+
 ### Key Principle
 
 Falsification testing follows Karl Popper's philosophy: we attempt to **disprove** the theory. A theory that survives rigorous falsification attempts gains credibility, while one that fails is either rejected or requires modification.
@@ -37,10 +38,12 @@ Falsification testing follows Karl Popper's philosophy: we attempt to **disprove
 - If falsified: Framework is decisively refuted
 
 **What to look for**:
+
 - All neural signatures present (P3b > 5μV, gamma PLV > 0.3, BOLD Z > 3.1, PCI > 0.4)
 - No subjective report of consciousness
 - Forced-choice performance at chance level
 - AI/ACC not engaged (BOLD < 3.1, gamma PLV ≤ 0.25)
+
 
 #### 2. Consciousness Without Ignition
 
@@ -52,6 +55,7 @@ Falsification testing follows Karl Popper's philosophy: we attempt to **disprove
 - If falsified: Alternative routes to consciousness exist
 
 **What to look for**:
+
 - Conscious reports (subjective + above-chance forced-choice)
 - Subthreshold neural signatures (P3b < 2μV, gamma PLV < 0.15, PCI < 0.3)
 - No frontoparietal BOLD elevation
@@ -67,6 +71,7 @@ Falsification testing follows Karl Popper's philosophy: we attempt to **disprove
 - If falsified: Threshold is fixed, not dynamic
 
 **What to look for**:
+
 - Pharmacological manipulation (propranolol, L-DOPA, SSRIs, physostigmine)
 - No significant threshold modulation
 - Ignition patterns unchanged despite neuromodulatory changes
@@ -81,6 +86,7 @@ Falsification testing follows Karl Popper's philosophy: we attempt to **disprove
 - If falsified: Interoception has no special role
 
 **What to look for**:
+
 - β (interoceptive/exteroceptive weighting ratio) between 0.95-1.05
 - Equal weighting of interoceptive and exteroceptive signals
 - No preferential processing of bodily signals
@@ -136,6 +142,7 @@ Interpretation: High confidence in the result.
 | ≥ 0.05 | Not significant | ns |
 
 **Common Misinterpretations**:
+
 - ❌ "p = 0.05 means 95% probability the hypothesis is true"
 - ❌ "p < 0.05 means the effect is large or important"
 - ✅ "p < 0.05 means results are unlikely under null hypothesis"

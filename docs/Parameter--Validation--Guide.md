@@ -7,21 +7,25 @@ The IPI Framework includes a comprehensive parameter validation system that ensu
 ## Features
 
 ### 1. Real-Time Validation
+
 - Parameters are validated as you type in the GUI
 - Visual indicators show validation status (✓, ⚠, ✗)
 - Immediate feedback prevents invalid configurations
 
 ### 2. Comprehensive Error Messages
+
 - Clear descriptions of what went wrong
 - Specific valid ranges for each parameter
 - Typical values for reference
 
 ### 3. Warnings and Suggestions
+
 - Warnings for unusual but valid values
 - Suggestions for optimal parameter choices
 - Context-aware recommendations
 
 ### 4. Multiple Validation Levels
+
 - Individual parameter validation
 - Configuration-level validation
 - Comprehensive system-wide validation
@@ -72,6 +76,7 @@ The GUI provides three types of visual indicators:
 ### Tooltips
 
 Hover over parameter labels to see:
+
 - Valid range
 - Typical values
 - Parameter description
@@ -79,6 +84,7 @@ Hover over parameter labels to see:
 ### Validation Status Panel
 
 The validation status panel shows:
+
 - Overall validation status
 - Detailed error messages
 - Warnings and suggestions
@@ -189,7 +195,7 @@ except ConfigurationError as e:
 
 **Problem**: Parameter value is outside valid range
 
-```
+```text
 Error: extero_precision: Value -1.0 outside valid range [0.01, 10.0]
 ```
 
@@ -199,7 +205,7 @@ Error: extero_precision: Value -1.0 outside valid range [0.01, 10.0]
 
 **Problem**: Trial count is too low for reliable results
 
-```
+```text
 Warning: Low trial count (30) may have insufficient statistical power
 ```
 
@@ -209,7 +215,7 @@ Warning: Low trial count (30) may have insufficient statistical power
 
 **Problem**: Parameter is valid but unusual
 
-```
+```text
 Warning: Very low precision (0.2) may indicate weak signal
 ```
 
@@ -219,7 +225,7 @@ Warning: Very low precision (0.2) may indicate weak signal
 
 **Problem**: Parameter combination is problematic
 
-```
+```text
 Suggestion: Interoceptive precision is 7.5x higher than exteroceptive - strong interoceptive bias
 ```
 
@@ -257,41 +263,50 @@ Suggestion: Interoceptive precision is 7.5x higher than exteroceptive - strong i
 ### Problem: Validation Fails Unexpectedly
 
 **Possible Causes**:
+
 - Parameter value is outside valid range
 - Type mismatch (string instead of number)
 - Missing required parameters
 
 **Solutions**:
+
 1. Check error messages for specific issues
 2. Verify parameter types match expected types
 3. Ensure all required parameters are provided
 4. Review parameter ranges in documentation
 
+
 ### Problem: Too Many Warnings
 
 **Possible Causes**:
+
 - Parameters are at edge of typical ranges
 - Unusual experimental design
 - Cross-parameter interactions
 
 **Solutions**:
+
 1. Review each warning individually
 2. Adjust parameters if warnings are unintentional
 3. Document reasons if warnings are intentional
 4. Consider suggestions for optimization
 
+
 ### Problem: Validation Passes but Tests Fail
 
 **Possible Causes**:
+
 - Validation checks ranges, not experimental validity
 - Parameter combination is valid but ineffective
 - System-level issues beyond parameter validation
 
 **Solutions**:
+
 1. Review experimental design
 2. Check system status and health
 3. Validate test controller initialization
 4. Review test-specific requirements
+
 
 ## API Reference
 

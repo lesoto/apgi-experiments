@@ -236,11 +236,13 @@ result = test.run_test(n_trials=10000)  # ✅ More reasonable
 ## Best Practices
 
 1. **Always initialize error handling at startup**
+
    ```python
    initialize_error_handling()
    ```
 
 2. **Use the decorator for all test methods**
+
    ```python
    @with_error_handling(validate_params=True, enable_retry=True)
    def run_test(...):
@@ -248,6 +250,7 @@ result = test.run_test(n_trials=10000)  # ✅ More reasonable
    ```
 
 3. **Check error summaries after test runs**
+
    ```python
    summary = wrapped.get_error_summary()
    if summary['total_errors'] > 0:
@@ -255,6 +258,7 @@ result = test.run_test(n_trials=10000)  # ✅ More reasonable
    ```
 
 4. **Export error logs for analysis**
+
    ```python
    wrapped.export_error_log('errors.json')
    ```
@@ -269,6 +273,7 @@ result = test.run_test(n_trials=10000)  # ✅ More reasonable
    - Non-transient: 0-1 retries
 
 7. **Validate parameters before running tests**
+
    ```python
    from ipi_framework.validation import get_validator
    

@@ -3,7 +3,8 @@
 ## GUI Enhancements
 
 ### Before (Without Validation)
-```
+
+```text
 ┌─────────────────────────────────────┐
 │ IPI Parameters                      │
 ├─────────────────────────────────────┤
@@ -15,7 +16,8 @@
 ```
 
 ### After (With Validation)
-```
+
+```text
 ┌──────────────────────────────────────────┐
 │ IPI Parameters                           │
 ├──────────────────────────────────────────┤
@@ -43,16 +45,19 @@
 ## Validation Indicators
 
 ### ✓ Green Checkmark
+
 - **Meaning**: Parameter is valid and within typical range
 - **Action**: No action needed
 - **Example**: `extero_precision: 2.0` (typical: 0.5-5.0)
 
 ### ⚠ Orange Warning
+
 - **Meaning**: Parameter is valid but unusual
 - **Action**: Review parameter choice
 - **Example**: `somatic_gain: 0.2` (typical: 0.5-2.0)
 
 ### ✗ Red Cross
+
 - **Meaning**: Parameter is invalid
 - **Action**: Must correct before proceeding
 - **Example**: `threshold: -1.0` (must be positive)
@@ -60,7 +65,8 @@
 ## Tooltip System
 
 ### Hover Over Parameter Label
-```
+
+```text
 ┌─────────────────────────────────────────────┐
 │ Exteroceptive Precision: [2.0    ] ✓       │
 │  ↑                                          │
@@ -77,7 +83,8 @@
 ## Validation Workflow
 
 ### Step 1: Enter Parameters
-```
+
+```text
 User types: extero_precision = 2.0
             ↓
 Real-time validation triggered
@@ -86,7 +93,8 @@ Indicator updates: ✓
 ```
 
 ### Step 2: Review Validation Status
-```
+
+```text
 ┌─────────────────────────────────────┐
 │ Validation Status                   │
 ├─────────────────────────────────────┤
@@ -99,7 +107,8 @@ Indicator updates: ✓
 ```
 
 ### Step 3: Validate All (Optional)
-```
+
+```text
 Click "Validate All" button
             ↓
 Comprehensive validation runs
@@ -108,7 +117,8 @@ Dialog shows results
 ```
 
 ### Step 4: Apply Changes
-```
+
+```text
 Click "Apply Changes"
             ↓
 Pre-validation check
@@ -121,7 +131,8 @@ If valid: Save configuration
 ## Test Execution Validation
 
 ### Before Running Test
-```
+
+```text
 Click "Run Test"
             ↓
 Validate test parameters
@@ -142,7 +153,8 @@ Test does not run
 ```
 
 ### With Warnings
-```
+
+```text
 Click "Run Test"
             ↓
 Validate test parameters
@@ -167,19 +179,22 @@ User decides whether to proceed
 ## Validation Messages
 
 ### Error Message Format
-```
+
+```text
 ERRORS:
   ❌ parameter_name: Value X outside valid range [min, max]. Description
 ```
 
 ### Warning Message Format
-```
+
+```text
 WARNINGS:
   ⚠️  parameter_name: Unusual value (X) - explanation
 ```
 
 ### Suggestion Message Format
-```
+
+```text
 SUGGESTIONS:
   💡 Helpful suggestion about parameter choice or optimization
 ```
@@ -187,7 +202,8 @@ SUGGESTIONS:
 ## Parameter Categories
 
 ### IPI Equation Parameters (7 parameters)
-```
+
+```text
 ┌─────────────────────────────────────┐
 │ extero_precision    [0.01 - 10.0]  │
 │ intero_precision    [0.01 - 10.0]  │

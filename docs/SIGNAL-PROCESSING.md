@@ -5,6 +5,7 @@ This module implements a comprehensive real-time signal processing pipeline for 
 ## Overview
 
 The signal processing pipeline integrates:
+
 - **EEG Processing**: Filtering, artifact detection (FASTER algorithm), and ERP extraction (P3b, HEP)
 - **Pupillometry Processing**: Blink detection, artifact interpolation, and feature extraction
 - **Cardiac Processing**: R-peak detection, HRV analysis, and HEP extraction
@@ -15,6 +16,7 @@ The signal processing pipeline integrates:
 ### 1. EEG Signal Processing (`eeg_processor.py`)
 
 #### EEGProcessor
+
 Real-time EEG signal processor with bandpass filtering (0.1-30 Hz) and notch filtering for power line noise.
 
 ```python
@@ -32,6 +34,7 @@ processed = processor.process_realtime(raw_eeg_data, timestamps, channels)
 ```
 
 #### FASTERArtifactDetector
+
 Fully Automated Statistical Thresholding for EEG artifact Rejection.
 
 ```python
@@ -42,6 +45,7 @@ cleaned_data, artifact_report = detector.clean(eeg_data)
 ```
 
 #### ERPExtractor
+
 Extract event-related potentials (P3b at Pz: 250-500ms, HEP: 250-400ms post R-peak).
 
 ```python
@@ -65,6 +69,7 @@ print(f"HEP amplitude: {features.hep_amplitude} µV")
 ### 2. Pupillometry Signal Processing (`pupillometry_processor.py`)
 
 #### PupillometryProcessor
+
 Integrates blink detection and artifact interpolation for clean pupil signals.
 
 ```python
@@ -83,6 +88,7 @@ processed = processor.process_trial(
 ```
 
 #### PupilFeatureExtractor
+
 Extract pupil dilation features from post-stimulus windows (200-500ms).
 
 ```python
@@ -103,6 +109,7 @@ print(f"Percent change: {features.percent_change}%")
 ```
 
 #### PupilQualityScorer
+
 Comprehensive data quality assessment for pupillometry.
 
 ```python
@@ -124,6 +131,7 @@ print(f"Recommendation: {quality.recommendation}")
 ### 3. Cardiac Signal Processing (`cardiac_processor.py`)
 
 #### CardiacProcessor
+
 Multi-algorithm R-peak detection (Pan-Tompkins, adaptive threshold).
 
 ```python
@@ -139,6 +147,7 @@ r_peaks = processor.detect_r_peaks(ecg_signal, timestamps)
 ```
 
 #### HRVAnalyzer
+
 Comprehensive HRV analysis with time and frequency domain metrics.
 
 ```python
@@ -156,6 +165,7 @@ print(f"LF/HF ratio: {hrv_metrics.lf_hf_ratio}")
 ```
 
 #### HEPExtractor
+
 Extract heartbeat-evoked potentials from EEG data.
 
 ```python
@@ -174,6 +184,7 @@ hep_epochs, hep_amplitudes = extractor.extract_hep(
 ### 4. Quality Control System (`quality_control.py`)
 
 #### SignalQualityMonitor
+
 Real-time quality monitoring integrating all modalities.
 
 ```python
@@ -194,12 +205,16 @@ print(f"Continue recording: {quality_metrics.continue_recording}")
 ```
 
 #### OperatorNotificationSystem
+
 Real-time alerts and recovery suggestions for operators.
 
 ```python
 from ipi_framework.neural import OperatorNotificationSystem
 
 notification_system = OperatorNotificationSystem()
+
+
+ 
 
 # Register callback
 def handle_notification(notification):
@@ -208,11 +223,18 @@ def handle_notification(notification):
 
 notification_system.register_callback(handle_notification)
 
+
+ 
+
 # Send quality update
 notification_system.send_quality_update(quality_metrics)
+
+
+ 
 ```
 
 #### AdaptiveProtocolManager
+
 Automatically adjust protocols based on quality metrics.
 
 ```python
@@ -311,12 +333,14 @@ Default quality thresholds (configurable):
 ## Examples
 
 See `example_signal_processing.py` for complete working examples of:
+
 1. EEG processing with artifact detection and ERP extraction
 2. Pupillometry processing with feature extraction
 3. Cardiac processing with HRV analysis
 4. Integrated quality control across all modalities
 
 Run the examples:
+
 ```bash
 python -m ipi_framework.neural.example_signal_processing
 ```
@@ -324,6 +348,7 @@ python -m ipi_framework.neural.example_signal_processing
 ## Requirements
 
 The signal processing pipeline requires:
+
 - `numpy`: Array operations and numerical computing
 - `scipy`: Signal filtering and spectral analysis
 - Python 3.7+
@@ -348,21 +373,25 @@ The extracted features feed directly into the hierarchical Bayesian modeling pip
 ## Troubleshooting
 
 ### High Artifact Rates
+
 - Check electrode impedances (EEG)
 - Minimize participant movement
 - Adjust artifact detection thresholds
 
 ### Poor Pupil Tracking
+
 - Recalibrate eye tracker
 - Adjust lighting conditions
 - Check participant head position
 
 ### Cardiac Signal Issues
+
 - Verify electrode placement
 - Check skin contact quality
 - Reduce movement artifacts
 
 ### Quality Alerts
+
 - Follow recovery suggestions in notifications
 - Use adaptive protocol manager for automatic adjustments
 - Consider pausing recording if quality is critical
@@ -371,7 +400,7 @@ The extracted features feed directly into the hierarchical Bayesian modeling pip
 
 If you use this signal processing pipeline in your research, please cite:
 
-```
+```text
 [IPI Framework Parameter Estimation Pipeline]
 Real-time multi-modal signal processing for interoceptive parameter estimation
 ```

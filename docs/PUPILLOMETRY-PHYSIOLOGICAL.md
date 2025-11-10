@@ -5,6 +5,7 @@ This document describes the pupillometry and physiological monitoring systems im
 ## Overview
 
 The IPI framework now includes comprehensive support for:
+
 - **High-speed pupillometry** with blink detection, artifact correction, and luminance-independent measurements
 - **Multi-modal physiological monitoring** including heart rate, skin conductance, and respiration
 
@@ -63,7 +64,7 @@ pupil_interface.export_data("pupil_data.npz", format="numpy")
 pupil_interface.stop_streaming()
 ```
 
-### Key Components
+### Pupillometry Key Components
 
 - **BlinkDetector**: Detects blinks using velocity or missing data methods
 - **ArtifactInterpolator**: Interpolates artifacts and blinks in pupil data
@@ -72,7 +73,7 @@ pupil_interface.stop_streaming()
 
 ## PhysiologicalMonitoring
 
-### Features
+### Physiological Monitoring Features
 
 - **Heart rate monitoring** with R-peak detection and HRV metrics (SDNN, RMSSD, pNN50)
 - **Skin conductance** with tonic/phasic decomposition and SCR event detection
@@ -142,11 +143,11 @@ physio_monitor.stop_streaming()
 - **SkinConductanceMonitor**: Tonic/phasic decomposition and SCR event detection
 - **RespirationMonitor**: Breath cycle detection and respiration phase identification
 
-## Integration with IPI Experiments
+## IPI Experiment Integration
 
 Both systems are designed to integrate seamlessly with IPI experimental paradigms:
 
-### Synchronized Multi-Modal Recording
+### Multi-Modal Recording Setup
 
 ```python
 from ipi_framework.neural import (
@@ -185,16 +186,16 @@ if physio_sample and physio_sample.heart_rate:
     )
 ```
 
-### Requirements Addressed
+### Implementation Requirements
 
-This implementation addresses the following requirements from the IPI framework specification:
+This implementation addresses the following IPI framework requirements:
 
 - **Requirement 3.1**: Neural data integration with real-time processing
 - **Requirement 5.3**: Physiological monitoring for interoceptive tasks
 - **Requirement 6.2**: Pupillometry for precision estimation
 - **Requirement 8.3**: Synchronized multi-modal data streaming
 
-## Data Quality Assurance
+## Quality Assurance
 
 Both systems include comprehensive quality assessment:
 
@@ -208,7 +209,7 @@ physio_quality = physio_monitor.get_quality_metrics()
 # Returns: status, overall_quality, heart_rate_quality, scr_quality, respiration_quality
 ```
 
-## Testing
+## System Testing
 
 Run the test suite to verify functionality:
 
@@ -217,13 +218,15 @@ python ipi_framework/neural/test_physiological_systems.py
 ```
 
 This will test:
+
 - Pupillometry interface with simulated data
 - Physiological monitoring with simulated biosignals
 - Integrated multi-modal synchronization
 
-## Future Enhancements
+## Planned Enhancements
 
-Potential future additions:
+Future development may include:
+
 - Integration with specific eye tracker hardware (Tobii, EyeLink, etc.)
 - Integration with biosignal acquisition systems (BIOPAC, g.tec, etc.)
 - Advanced HRV frequency domain analysis
@@ -233,7 +236,7 @@ Potential future additions:
 
 ## References
 
-- Pupillometry: Beatty, J., & Lucero-Wagoner, B. (2000). The pupillary system. Handbook of psychophysiology, 2, 142-162.
-- Heart Rate Variability: Task Force (1996). Heart rate variability: standards of measurement, physiological interpretation and clinical use.
+- **Pupillometry**: Beatty, J., & Lucero-Wagoner, B. (2000). The pupillary system. Handbook of psychophysiology, 2, 142-162.
+- **Heart Rate Variability**: Task Force (1996). Heart rate variability: standards of measurement, physiological interpretation and clinical use.
 - Skin Conductance: Boucsein, W. (2012). Electrodermal activity. Springer Science & Business Media.
 - Respiration: Homma, I., & Masaoka, Y. (2008). Breathing rhythms and emotions. Experimental physiology, 93(9), 1011-1021.

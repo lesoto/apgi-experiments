@@ -48,6 +48,8 @@ ipi-consciousness/
    source venv/bin/activate  # On Unix/macOS
    
    # Install dependencies
+
+   ```bash
    pip install -r requirements.txt
    ```
 
@@ -57,25 +59,25 @@ ipi-consciousness/
    python -m ipi_framework.cli validate-system
    ```
 
-2. **Run the IPI Agent example**
+3. **Run the IPI Agent example**
 
    ```bash
    python -m core.models.ipi_agent
    ```
 
-3. **Run the Somatic Agent example**
+4. **Run the Somatic Agent example**
 
    ```bash
    python -m core.models.phase_transition
    ```
 
-4. **Run experiments via GUI**
+5. **Run experiments via GUI**
 
    ```bash
    python gui.py
    ```
 
-5. **Run experiments via command line**
+6. **Run experiments via command line**
 
    ```bash
    # Run interoceptive gating experiment
@@ -144,11 +146,13 @@ ipi-consciousness/
 ### Running Falsification Tests
 
 **Using the GUI:**
+
 ```bash
 python launch_gui.py
 ```
 
 **Using the CLI:**
+
 ```bash
 # Run primary falsification test
 python -m ipi_framework.cli run-test primary --trials 1000
@@ -158,6 +162,7 @@ python -m ipi_framework.cli run-batch --all-tests
 ```
 
 **Using Python API:**
+
 ```python
 from ipi_framework.main_controller import MainApplicationController
 
@@ -168,8 +173,6 @@ controller.initialize_system()
 # Run test
 tests = controller.get_falsification_tests()
 result = tests['primary'].run_test(n_trials=1000)
-
-# View results
 print(f"Falsified: {result.is_falsified}")
 print(f"Confidence: {result.confidence_level:.2f}")
 
@@ -177,7 +180,7 @@ print(f"Confidence: {result.confidence_level:.2f}")
 controller.shutdown_system()
 ```
 
-### Running the IPI Agent
+## Running the IPI Agent
 
 ```python
 from core.models.ipi_agent import IPIAgent

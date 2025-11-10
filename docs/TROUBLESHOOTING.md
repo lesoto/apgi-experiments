@@ -18,7 +18,8 @@
 ### Problem: pip install fails with dependency errors
 
 **Symptoms**:
-```
+
+```text
 ERROR: Could not find a version that satisfies the requirement...
 ```
 
@@ -30,31 +31,39 @@ ERROR: Could not find a version that satisfies the requirement...
 **Solutions**:
 
 1. **Check Python version**:
-```bash
-python --version  # Should be 3.8 or higher
-```
+
+   ```bash
+   python --version  # Should be 3.8 or higher
+   ```
 
 2. **Upgrade pip**:
-```bash
-python -m pip install --upgrade pip
-```
+
+   ```bash
+   python -m pip install --upgrade pip
+   ```
 
 3. **Install dependencies individually**:
-```bash
-pip install numpy scipy matplotlib pandas
-pip install -r requirements.txt
-```
+
+   ```bash
+   pip install numpy scipy matplotlib pandas
+   pip install -r requirements.txt
+   ```
 
 4. **Use virtual environment**:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-```
+
+   ```bash
+   python -m venv venv
+   # On Windows:
+   .\venv\Scripts\activate
+   # On Unix/macOS:
+   # source venv/bin/activate
+   pip install -r requirements.txt
+   ```
 
 ### Problem: Import errors after installation
 
 **Symptoms**:
+
 ```python
 ModuleNotFoundError: No module named 'ipi_framework'
 ```
@@ -407,13 +416,15 @@ ls -lh results/
 ```
 
 3. **Try loading with error handling**:
-```python
-import json
 
-try:
-    with open('results/result.json', 'r') as f:
-        data = json.load(f)
-except json.JSONDecodeError as e:
+   ```python
+   import json
+
+   try:
+       with open('results/result.json', 'r') as f:
+           data = json.load(f)
+   except json.JSONDecodeError as e:
+   ```
     print(f"Error at line {e.lineno}: {e.msg}")
 ```
 
@@ -600,25 +611,28 @@ python: No module named ipi_framework.cli
 **Solutions**:
 
 1. **Check current directory**:
-```bash
+
+   ```bash
 pwd  # Should be in project root
 ls ipi_framework/  # Should see cli.py
 ```
 
 2. **Use full path**:
-```bash
+
+   ```bash
 python -m ipi_framework.cli --help
 ```
 
 3. **Install package**:
-```bash
+
+   ```bash
 pip install -e .
 ```
 
 ### Problem: Invalid command or arguments
 
 **Symptoms**:
-```
+```bash
 error: invalid choice: 'test'
 ```
 
