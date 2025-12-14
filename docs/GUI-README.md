@@ -1,10 +1,10 @@
-# IPI Parameter Estimation GUI
+# APGI Parameter Estimation GUI
 
-Comprehensive graphical user interface for running parameter estimation experiments in the IPI Framework.
+Comprehensive graphical user interface for running parameter estimation experiments in the APGI Framework.
 
 ## Overview
 
-The GUI provides a unified interface for conducting parameter estimation experiments that extract three core IPI parameters:
+The GUI provides a unified interface for conducting parameter estimation experiments that extract three core APGI parameters:
 
 - **θ₀** (Baseline Ignition Threshold) - via detection task
 - **Πᵢ** (Interoceptive Precision) - via heartbeat detection task
@@ -59,7 +59,7 @@ The GUI provides a unified interface for conducting parameter estimation experim
 
 ```python
 from pathlib import Path
-from ipi_framework.gui import launch_gui
+from apgi_framework.gui import launch_gui
 
 # Launch GUI with database path
 db_path = Path("data/parameter_estimation.db")
@@ -70,12 +70,12 @@ launch_gui(db_path)
 
 ```python
 from pathlib import Path
-from ipi_framework.gui import (
+from apgi_framework.gui import (
     ParameterEstimationGUI,
     SessionSetupManager,
     TaskParameterConfigurator
 )
-from ipi_framework.data.parameter_estimation_dao import ParameterEstimationDAO
+from apgi_framework.data.parameter_estimation_dao import ParameterEstimationDAO
 
 # Initialize components
 db_path = Path("data/parameter_estimation.db")

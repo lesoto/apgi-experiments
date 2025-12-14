@@ -1,4 +1,4 @@
-# IPI Framework Troubleshooting Guide
+# APGI Framework Troubleshooting Guide
 
 ## Table of Contents
 
@@ -19,7 +19,7 @@
 
 **Symptoms**:
 
-```text
+```
 ERROR: Could not find a version that satisfies the requirement...
 ```
 
@@ -64,8 +64,8 @@ ERROR: Could not find a version that satisfies the requirement...
 
 **Symptoms**:
 
-```python
-ModuleNotFoundError: No module named 'ipi_framework'
+```
+ModuleNotFoundError: No module named 'apgi_framework'
 ```
 
 **Causes**:
@@ -89,8 +89,8 @@ python -c "import sys; print(sys.executable)"
 ```
 
 3. **Reinstall in correct environment**:
-```bash
-pip uninstall ipi-framework
+```
+pip uninstall apgi-framework
 pip install -e .  # Install in development mode
 ```
 
@@ -127,7 +127,7 @@ brew install python-tk
 
 **Symptoms**:
 ```
-IPIFrameworkError: System not initialized. Call initialize_system() first.
+APGIFrameworkError: System not initialized. Call initialize_system() first.
 ```
 
 **Cause**:
@@ -135,7 +135,7 @@ IPIFrameworkError: System not initialized. Call initialize_system() first.
 
 **Solution**:
 ```python
-from ipi_framework.main_controller import MainApplicationController
+from apgi_framework.main_controller import MainApplicationController
 
 controller = MainApplicationController()
 controller.initialize_system()  # Don't forget this!
@@ -148,7 +148,7 @@ tests = controller.get_falsification_tests()
 
 **Symptoms**:
 ```
-IPIFrameworkError: Failed to initialize system: ...
+APGIFrameworkError: Failed to initialize system: ...
 ```
 
 **Causes**:
@@ -160,26 +160,26 @@ IPIFrameworkError: Failed to initialize system: ...
 
 1. **Run system validation**:
 ```bash
-python -m ipi_framework.cli validate-system --detailed
+python -m apgi_framework.cli validate-system --detailed
 ```
 
 2. **Check configuration**:
 ```python
-from ipi_framework.config import ConfigManager
+from apgi_framework.config import ConfigManager
 
 config_manager = ConfigManager()
-ipi_params = config_manager.get_ipi_parameters()
-print(ipi_params)  # Verify parameters are valid
+apgi_params = config_manager.get_apgi_parameters()
+print(apgi_params)  # Verify parameters are valid
 ```
 
 3. **Reset to defaults**:
 ```bash
-python -m ipi_framework.cli generate-config --output config.json
-python -m ipi_framework.cli --config config.json validate-system
+python -m apgi_framework.cli generate-config --output config.json
+python -m apgi_framework.cli --config config.json validate-system
 ```
 
 4. **Enable debug logging**:
-```python
+``python
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
@@ -204,19 +204,19 @@ Mathematical Engine: FAIL
 
 1. **Check detailed validation**:
 ```bash
-python -m ipi_framework.cli validate-system --detailed
+python -m apgi_framework.cli validate-system --detailed
 ```
 
 2. **Verify file structure**:
 ```bash
-ls -R ipi_framework/  # Check all modules present
+ls -R apgi_framework/  # Check all modules present
 ```
 
 3. **Test individual components**:
 ```python
-from ipi_framework.core import IPIEquation
+from apgi_framework.core import APGIEquation
 
-equation = IPIEquation()
+equation = APGIEquation()
 result = equation.calculate_surprise(1.0, 0.8, 2.0, 1.5, 1.3)
 print(f"Surprise: {result}")  # Should print a number
 ```
@@ -239,7 +239,7 @@ print(f"Surprise: {result}")  # Should print a number
 
 1. **Reduce trial count for testing**:
 ```bash
-python -m ipi_framework.cli run-test primary --trials 100
+python -m apgi_framework.cli run-test primary --trials 100
 ```
 
 2. **Monitor progress**:
@@ -285,7 +285,7 @@ RuntimeWarning: invalid value encountered in divide
 1. **Check parameter ranges**:
 ```python
 # Ensure parameters are in valid ranges
-config_manager.update_ipi_parameters(
+config_manager.update_apgi_parameters(
     extero_precision=2.0,  # 0.1-10.0
     intero_precision=1.5,  # 0.1-10.0
     threshold=3.5,         # 0.5-10.0
@@ -296,9 +296,9 @@ config_manager.update_ipi_parameters(
 
 2. **Enable numerical stability**:
 ```python
-from ipi_framework.core import IPIEquation
+from apgi_framework.core import APGIEquation
 
-equation = IPIEquation(numerical_stability=True)
+equation = APGIEquation(numerical_stability=True)
 ```
 
 3. **Avoid extreme values**:
@@ -443,7 +443,7 @@ ls -lh results/
 
 1. **Check for errors during test**:
 ```bash
-cat results/ipi_framework.log | grep ERROR
+cat results/apgi_framework.log | grep ERROR
 ```
 
 2. **Verify test completed**:
@@ -456,8 +456,8 @@ else:
 ```
 
 3. **Re-run test**:
-```bash
-python -m ipi_framework.cli run-test primary --trials 1000
+``bash
+python -m apgi_framework.cli run-test primary --trials 1000
 ```
 
 ## Performance Problems
@@ -479,12 +479,12 @@ python -m ipi_framework.cli run-test primary --trials 1000
 1. **Reduce trial count**:
 ```bash
 # Start with fewer trials
-python -m ipi_framework.cli run-test primary --trials 500
+python -m apgi_framework.cli run-test primary --trials 500
 ```
 
 2. **Disable debug logging**:
 ```bash
-python -m ipi_framework.cli --log-level WARNING run-test primary
+python -m apgi_framework.cli --log-level WARNING run-test primary
 ```
 
 3. **Close other applications**:
@@ -494,7 +494,7 @@ python -m ipi_framework.cli --log-level WARNING run-test primary
 4. **Use batch processing efficiently**:
 ```bash
 # Process sequentially, not in parallel
-python -m ipi_framework.cli run-batch --all-tests
+python -m apgi_framework.cli run-batch --all-tests
 # Don't use --parallel unless necessary
 ```
 
@@ -590,7 +590,7 @@ pip install PyQt5
 - Select result file
 
 3. **Check for errors**:
-```bash
+``bash
 python launch_gui.py --verbose
 ```
 
@@ -600,7 +600,7 @@ python launch_gui.py --verbose
 
 **Symptoms**:
 ```bash
-python: No module named ipi_framework.cli
+python: No module named apgi_framework.cli
 ```
 
 **Causes**:
@@ -614,13 +614,13 @@ python: No module named ipi_framework.cli
 
    ```bash
 pwd  # Should be in project root
-ls ipi_framework/  # Should see cli.py
+ls apgi_framework/  # Should see cli.py
 ```
 
 2. **Use full path**:
 
    ```bash
-python -m ipi_framework.cli --help
+python -m apgi_framework.cli --help
 ```
 
 3. **Install package**:
@@ -632,7 +632,7 @@ pip install -e .
 ### Problem: Invalid command or arguments
 
 **Symptoms**:
-```bash
+```
 error: invalid choice: 'test'
 ```
 
@@ -643,10 +643,10 @@ error: invalid choice: 'test'
 **Solution**:
 ```bash
 # Check available commands
-python -m ipi_framework.cli --help
+python -m apgi_framework.cli --help
 
 # Use correct command name
-python -m ipi_framework.cli run-test primary  # Not just 'test'
+python -m apgi_framework.cli run-test primary  # Not just 'test'
 ```
 
 ### Problem: Configuration file not found
@@ -665,12 +665,12 @@ FileNotFoundError: [Errno 2] No such file or directory: 'config.json'
 
 1. **Generate configuration**:
 ```bash
-python -m ipi_framework.cli generate-config --output config.json
+python -m apgi_framework.cli generate-config --output config.json
 ```
 
 2. **Use absolute path**:
 ```bash
-python -m ipi_framework.cli --config /full/path/to/config.json run-test primary
+python -m apgi_framework.cli --config /full/path/to/config.json run-test primary
 ```
 
 3. **Check file exists**:
@@ -699,7 +699,7 @@ ValidationError: Parameter 'threshold' must be between 0.5 and 10.0
 # steepness: 0.1-5.0
 # somatic_gain: 0.1-5.0
 
-config_manager.update_ipi_parameters(
+config_manager.update_apgi_parameters(
     threshold=3.5  # Within valid range
 )
 ```
@@ -733,7 +733,7 @@ with open('config.json', 'r') as f:
 
 3. **Specify config explicitly**:
 ```bash
-python -m ipi_framework.cli --config config.json run-test primary
+python -m apgi_framework.cli --config config.json run-test primary
 ```
 
 ## Statistical Issues
@@ -751,7 +751,7 @@ Warning: Statistical power (0.62) is below recommended threshold (0.80)
 **Solution**:
 ```bash
 # Increase number of trials
-python -m ipi_framework.cli run-test primary --trials 2000
+python -m apgi_framework.cli run-test primary --trials 2000
 ```
 
 ### Problem: All p-values are 1.0
@@ -769,11 +769,11 @@ python -m ipi_framework.cli run-test primary --trials 2000
 
 1. **Increase trials**:
 ```bash
-python -m ipi_framework.cli run-test primary --trials 2000
+python -m apgi_framework.cli run-test primary --trials 2000
 ```
 
 2. **Check data variation**:
-```python
+``python
 # Verify data has variation
 print(f"Mean: {np.mean(data)}")
 print(f"Std: {np.std(data)}")  # Should be > 0
@@ -806,16 +806,16 @@ config_manager.update_experimental_config(random_seed=42)
 
 ```bash
 # System status
-python -m ipi_framework.cli status
+python -m apgi_framework.cli status
 
 # Detailed validation
-python -m ipi_framework.cli validate-system --detailed
+python -m apgi_framework.cli validate-system --detailed
 
 # Check logs
-cat results/ipi_framework.log
+cat results/apgi_framework.log
 
 # Recent errors
-tail -n 50 results/ipi_framework.log | grep ERROR
+tail -n 50 results/apgi_framework.log | grep ERROR
 ```
 
 ### Enable Verbose Logging
@@ -851,8 +851,8 @@ print(f"SciPy: {scipy.__version__}")
 
 When reporting issues, create a minimal example:
 
-```python
-from ipi_framework.main_controller import MainApplicationController
+```
+from apgi_framework.main_controller import MainApplicationController
 
 # Minimal example that reproduces the issue
 controller = MainApplicationController()
@@ -876,7 +876,7 @@ print(f"Result: {result}")
    - Working code samples
 
 3. **Check Logs**:
-   - results/ipi_framework.log
+   - results/apgi_framework.log
    - Enable DEBUG logging
 
 4. **Run Diagnostics**:

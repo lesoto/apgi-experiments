@@ -2,11 +2,11 @@
 
 - [x] 1. Set up core project structure and mathematical foundation
   - Create directory structure for core, experiments, analysis, clinical, and simulation modules
-  - Implement base IPI mathematical model with core equation Sₜ = Πₑ·|εₑ| + Πᵢ(M_{c,a})·|εᵢ|
+  - Implement base APGI mathematical model with core equation Sₜ = Πₑ·|εₑ| + Πᵢ(M_{c,a})·|εᵢ|
   - Create parameter validation and configuration management system
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
 
-- [x] 2. Implement core IPI mathematical engine
+- [x] 2. Implement core APGI mathematical engine
   - [x] 2.1 Create IPIModel class with ignition threshold computation
     - Implement Sₜ calculation with precision weighting
     - Add ignition probability computation Bₜ = σ(α(Sₜ - θₜ))
@@ -26,7 +26,7 @@
     - _Requirements: 1.4, 5.3_
 
   - [ ]* 2.4 Write unit tests for core mathematical functions
-    - Test IPI equation accuracy with known parameter sets
+    - Test APGI equation accuracy with known parameter sets
     - Validate threshold dynamics under various conditions
     - Test somatic marker learning and retrieval
     - _Requirements: 1.1, 1.2, 1.3, 1.4_
@@ -151,7 +151,7 @@
 
 - [x] 6. Create computational agent simulation framework
   - [x] 6.1 Implement IPIAgent class with full architecture
-    - Create agent with configurable IPI parameters
+    - Create agent with configurable APGI parameters
     - Add somatic marker learning and application
     - Implement embodied decision-making in simulated environments
     - _Requirements: 6.1, 6.2, 6.3, 6.4_
@@ -169,7 +169,7 @@
     - _Requirements: 6.1, 6.2, 6.4_
 
   - [ ]* 6.4 Write tests for agent simulation
-    - Test IPI agent parameter sensitivity
+    - Test APGI agent parameter sensitivity
     - Validate environment dynamics
     - Test comparative performance metrics
     - _Requirements: 6.1, 6.2, 6.4_

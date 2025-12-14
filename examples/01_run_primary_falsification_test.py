@@ -4,7 +4,7 @@ Example 1: Running Primary Falsification Test from CLI
 This example demonstrates how to run the primary falsification test,
 which tests whether full ignition signatures can occur without consciousness.
 
-The primary falsification criterion is the most decisive test of the IPI Framework:
+The primary falsification criterion is the most decisive test of the APGI Framework:
 if we observe all neural signatures of ignition (P3b, gamma synchrony, BOLD activation,
 PCI) without any evidence of consciousness, the framework would be falsified.
 """
@@ -15,8 +15,8 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from ipi_framework.main_controller import MainApplicationController
-from ipi_framework.config import ConfigManager
+from apgi_framework.main_controller import MainApplicationController
+from apgi_framework.config import ConfigManager
 import logging
 
 # Setup logging
@@ -82,9 +82,9 @@ def run_primary_falsification_test_custom():
         controller = MainApplicationController()
         controller.initialize_system()
         
-        # Update IPI parameters for a specific scenario
+        # Update APGI parameters for a specific scenario
         # Example: Testing with higher interoceptive precision
-        controller.config_manager.update_ipi_parameters(
+        controller.config_manager.update_apgi_parameters(
             extero_precision=2.5,
             intero_precision=2.0,  # Higher than default
             threshold=3.0,  # Lower threshold
@@ -127,10 +127,10 @@ def run_primary_falsification_test_custom():
         # Display interpretation
         logger.info("\nINTERPRETATION:")
         if result.is_falsified:
-            logger.info("  ⚠️  The IPI Framework has been FALSIFIED!")
+            logger.info("  ⚠️  The APGI Framework has been FALSIFIED!")
             logger.info("  Full ignition signatures were observed without consciousness.")
         else:
-            logger.info("  ✓ The IPI Framework passed this falsification test.")
+            logger.info("  ✓ The APGI Framework passed this falsification test.")
             logger.info("  No instances of full ignition without consciousness were found.")
         
         logger.info("="*60 + "\n")
@@ -203,7 +203,7 @@ def run_primary_falsification_test_with_validation():
 
 if __name__ == '__main__':
     print("\n" + "="*70)
-    print("IPI Framework - Primary Falsification Test Examples")
+    print("APGI Framework - Primary Falsification Test Examples")
     print("="*70 + "\n")
     
     # Run all examples

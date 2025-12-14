@@ -2,7 +2,7 @@
 
 ## Overview
 
-The IPI Framework includes a comprehensive parameter validation system that ensures all experimental parameters are within valid ranges and provides helpful feedback for optimal configuration. This guide explains how to use the validation system effectively.
+The APGI Framework includes a comprehensive parameter validation system that ensures all experimental parameters are within valid ranges and provides helpful feedback for optimal configuration. This guide explains how to use the validation system effectively.
 
 ## Features
 
@@ -32,7 +32,7 @@ The IPI Framework includes a comprehensive parameter validation system that ensu
 
 ## Parameter Categories
 
-### IPI Equation Parameters
+### APGI Equation Parameters
 
 | Parameter | Range | Typical Values | Description |
 |-----------|-------|----------------|-------------|
@@ -102,13 +102,13 @@ The validation status panel shows:
 
 ### Basic Validation
 
-```python
-from ipi_framework.validation import get_validator
+``python
+from apgi_framework.validation import get_validator
 
 validator = get_validator()
 
-# Validate IPI parameters
-result = validator.validate_ipi_parameters(
+# Validate APGI parameters
+result = validator.validate_apgi_parameters(
     extero_precision=2.0,
     intero_precision=1.5,
     extero_error=1.2,
@@ -150,10 +150,10 @@ if result.suggestions:
 ```python
 # Validate all parameter types at once
 result = validator.validate_all(
-    ipi_params={
+    apgi_params={
         'extero_precision': 2.0,
         'intero_precision': 1.5,
-        # ... other IPI parameters
+        # ... other APGI parameters
     },
     experimental_config={
         'n_trials': 1000,
@@ -170,12 +170,12 @@ result = validator.validate_all(
 
 ### Using with ConfigManager
 
-```python
-from ipi_framework.config import IPIParameters, ConfigurationError
+``python
+from apgi_framework.config import APGIParameters, ConfigurationError
 
 # ConfigManager automatically validates on creation
 try:
-    params = IPIParameters(
+    params = APGIParameters(
         extero_precision=2.0,
         intero_precision=1.5,
         extero_error=1.2,
@@ -195,7 +195,7 @@ except ConfigurationError as e:
 
 **Problem**: Parameter value is outside valid range
 
-```text
+``text
 Error: extero_precision: Value -1.0 outside valid range [0.01, 10.0]
 ```
 
@@ -205,7 +205,7 @@ Error: extero_precision: Value -1.0 outside valid range [0.01, 10.0]
 
 **Problem**: Trial count is too low for reliable results
 
-```text
+``text
 Warning: Low trial count (30) may have insufficient statistical power
 ```
 
@@ -215,7 +215,7 @@ Warning: Low trial count (30) may have insufficient statistical power
 
 **Problem**: Parameter is valid but unusual
 
-```text
+``text
 Warning: Very low precision (0.2) may indicate weak signal
 ```
 
@@ -225,7 +225,7 @@ Warning: Very low precision (0.2) may indicate weak signal
 
 **Problem**: Parameter combination is problematic
 
-```text
+``text
 Suggestion: Interoceptive precision is 7.5x higher than exteroceptive - strong interoceptive bias
 ```
 
@@ -314,12 +314,12 @@ Suggestion: Interoceptive precision is 7.5x higher than exteroceptive - strong i
 
 #### Methods
 
-- `validate_ipi_parameters(**params)`: Validate IPI equation parameters
+- `validate_apgi_parameters(**params)`: Validate APGI equation parameters
 - `validate_experimental_config(**config)`: Validate experimental configuration
 - `validate_neural_thresholds(**thresholds)`: Validate neural signature thresholds
 - `validate_pharmacological_condition(drug_type, dosage, time)`: Validate drug conditions
 - `validate_statistical_parameters(**params)`: Validate statistical parameters
-- `validate_all(ipi_params, experimental_config, neural_thresholds)`: Comprehensive validation
+- `validate_all(apgi_params, experimental_config, neural_thresholds)`: Comprehensive validation
 - `get_parameter_info(param_name)`: Get detailed parameter information
 - `get_validation_summary()`: Get validation history summary
 

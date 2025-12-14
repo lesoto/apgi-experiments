@@ -1,4 +1,4 @@
-# IPI Framework Falsification Testing System - User Guide
+# APGI Framework Falsification Testing System - User Guide
 
 ## Table of Contents
 
@@ -13,7 +13,7 @@
 
 ## Introduction
 
-The IPI (Interoceptive Predictive Integration) Framework Falsification Testing System is a comprehensive platform for testing the predictions of the IPI Framework through systematic falsification testing. This guide will help you:
+The APGI (Interoceptive Predictive Integration) Framework Falsification Testing System is a comprehensive platform for testing the predictions of the APGI Framework through systematic falsification testing. This guide will help you:
 
 - Run falsification tests using the GUI or CLI
 - Configure experimental parameters
@@ -29,7 +29,7 @@ The IPI (Interoceptive Predictive Integration) Framework Falsification Testing S
 
 ### What is Falsification Testing?
 
-Falsification testing is a scientific methodology where we attempt to disprove a theory by identifying conditions under which its predictions fail. For the IPI Framework, we test four primary falsification criteria:
+Falsification testing is a scientific methodology where we attempt to disprove a theory by identifying conditions under which its predictions fail. For the APGI Framework, we test four primary falsification criteria:
 1. **Primary Falsification**: Full ignition signatures without consciousness
 2. **Consciousness Without Ignition**: Conscious reports without ignition signatures
 3. **Threshold Insensitivity**: Ignition threshold unaffected by neuromodulation
@@ -49,8 +49,8 @@ pip install -r requirements.txt
 
 #### Using Python API
 
-```python
-from ipi_framework.main_controller import MainApplicationController
+```
+from apgi_framework.main_controller import MainApplicationController
 
 # Initialize system
 controller = MainApplicationController()
@@ -70,20 +70,20 @@ controller.shutdown_system()
 
 #### Using CLI
 
-```bash
+```
 # Run primary falsification test
-python -m ipi_framework.cli run-test primary --trials 1000
+python -m apgi_framework.cli run-test primary --trials 1000
 
 # View system status
-python -m ipi_framework.cli status
+python -m apgi_framework.cli status
 
 # Validate system
-python -m ipi_framework.cli validate-system
+python -m apgi_framework.cli validate-system
 ```
 
 #### Using GUI
 
-```bash
+```
 # Launch GUI application
 python launch_gui.py
 ```
@@ -97,7 +97,7 @@ The GUI provides an intuitive interface for running falsification tests and view
 #### Components
 
 1. **Test Selection Panel** (Left): Choose which falsification test to run
-2. **Parameter Configuration Panel** (Center): Set IPI parameters and experimental settings
+2. **Parameter Configuration Panel** (Center): Set APGI parameters and experimental settings
 3. **Results Display Panel** (Right): View test results and visualizations
 4. **Progress Panel** (Bottom): Monitor test execution progress
 5. **Menu Bar** (Top): Access file operations, settings, and help
@@ -117,7 +117,7 @@ Click on one of the test buttons in the left panel:
 
 In the Parameter Configuration Panel, set:
 
-**IPI Parameters:**
+**APGI Parameters:**
 
 - **Exteroceptive Precision** (0.1-10.0): Precision of external sensory signals
   - Default: 2.0
@@ -227,12 +227,12 @@ For running multiple configurations:
 
 #### Run Individual Test
 
-```bash
+```
 # Primary falsification test
-python -m ipi_framework.cli run-test primary --trials 1000
+python -m apgi_framework.cli run-test primary --trials 1000
 
 # With custom parameters
-python -m ipi_framework.cli run-test primary \
+python -m apgi_framework.cli run-test primary \
     --trials 2000 \
     --seed 42 \
     --output-dir results/my_test
@@ -240,66 +240,58 @@ python -m ipi_framework.cli run-test primary \
 
 #### Run Batch Tests
 
-```bash
+```
 # Run all tests
-python -m ipi_framework.cli run-batch --all-tests
+python -m apgi_framework.cli run-batch --all-tests
 
 # Run specific tests
-python -m ipi_framework.cli run-batch \
+python -m apgi_framework.cli run-batch \
     --tests primary consciousness-without-ignition
 
 # Parallel execution (experimental)
-python -m ipi_framework.cli run-batch --all-tests --parallel
+python -m apgi_framework.cli run-batch --all-tests --parallel
 ```
 
 #### Configuration Management
 
-```bash
+```
 # Generate default configuration
-python -m ipi_framework.cli generate-config --output config.json
+python -m apgi_framework.cli generate-config --output config.json
 
-# Generate minimal configuration
-python -m ipi_framework.cli generate-config \
+# With custom template
+python -m apgi_framework.cli generate-config \
+    --template comprehensive \
+    --output comprehensive_config.json
+
+# Minimal configuration
+python -m apgi_framework.cli generate-config \
     --template minimal \
     --output minimal_config.json
-
-# Generate comprehensive configuration
-python -m ipi_framework.cli generate-config \
-    --template comprehensive \
-    --output full_config.json
 ```
 
 #### System Management
 
-```bash
-# Check system status
-python -m ipi_framework.cli status
-
-# Validate system components
-python -m ipi_framework.cli validate-system
-
-# Detailed validation
-python -m ipi_framework.cli validate-system --detailed
+```
+python -m apgi_framework.cli status
+python -m apgi_framework.cli validate-system
+python -m apgi_framework.cli validate-system --detailed
 ```
 
 #### Parameter Configuration
 
-```bash
-# Set IPI parameters
-python -m ipi_framework.cli set-params \
-    --extero-precision 2.5 \
-    --intero-precision 2.0 \
-    --threshold 3.0 \
-    --steepness 2.5
+```
+python -m apgi_framework.cli set-params \
+    --threshold 4.0 \
+    --intero_precision 2.0
 ```
 
 ### Using Configuration Files
 
 #### Create Configuration File
 
-```json
+```
 {
-  "ipi_parameters": {
+  "apgi_parameters": {
     "extero_precision": 2.0,
     "intero_precision": 1.5,
     "threshold": 3.5,
@@ -314,38 +306,33 @@ python -m ipi_framework.cli set-params \
     "log_level": "INFO"
   }
 }
+
 ```
 
 #### Use Configuration File
 
-```bash
-# Run test with configuration
-python -m ipi_framework.cli run-test primary --config config.json
-
-# Run batch with configuration
-python -m ipi_framework.cli run-batch --all-tests --config config.json
+```
+python -m apgi_framework.cli run-test primary --config config.json
+python -m apgi_framework.cli run-batch --all-tests --config config.json
 ```
 
 ### Advanced CLI Usage
 
 #### Logging Control
 
-```bash
-# Set log level
-python -m ipi_framework.cli run-test primary \
+```
+python -m apgi_framework.cli run-test primary \
     --log-level DEBUG \
-    --trials 1000
-
-# Available levels: DEBUG, INFO, WARNING, ERROR
+    --trials 100
 ```
 
 #### Output Directory Management
 
-```bash
-# Specify output directory
-python -m ipi_framework.cli run-test primary \
-    --output-dir results/experiment_001 \
-    --trials 1000
+```
+python -m apgi_framework.cli run-test primary \
+    --trials 2000 \
+    --seed 42 \
+    --output-dir results/high_power_test
 ```
 
 ## Understanding Results
@@ -354,7 +341,7 @@ python -m ipi_framework.cli run-test primary \
 
 Every test returns a `FalsificationResult` with:
 
-```python
+```
 FalsificationResult(
     test_type: str,              # Type of test run
     is_falsified: bool,          # Whether framework was falsified
@@ -371,7 +358,7 @@ FalsificationResult(
 
 #### NOT FALSIFIED (is_falsified = False)
 
-**Meaning**: The test did not find evidence contradicting the IPI Framework.
+**Meaning**: The test did not find evidence contradicting the APGI Framework.
 
 **Interpretation**:
 
@@ -383,7 +370,7 @@ FalsificationResult(
 
 #### FALSIFIED (is_falsified = True)
 
-**Meaning**: The test found evidence contradicting the IPI Framework.
+**Meaning**: The test found evidence contradicting the APGI Framework.
 
 **Interpretation**:
 
@@ -415,8 +402,6 @@ FalsificationResult(
 - < 0.001: Extremely significant
 - < 0.01: Highly significant
 - < 0.05: Significant (standard threshold)
-- ≥ 0.05: Not significant
-
 #### Effect Size (Cohen's d)
 
 - **Range**: -∞ to +∞ (typically -3 to +3)
@@ -497,8 +482,8 @@ FalsificationResult(
 6. Save results for records
 
 **CLI Commands**:
-```bash
-python -m ipi_framework.cli run-test primary --trials 1000
+```
+python -m apgi_framework.cli run-test primary --trials 1000
 ```
 
 ### Workflow 2: Parameter Sensitivity Analysis
@@ -526,8 +511,8 @@ python -m ipi_framework.cli run-test primary --trials 1000
 5. Generate comprehensive report
 
 **CLI Commands**:
-```bash
-python -m ipi_framework.cli run-batch --all-tests --config config.json
+```
+python -m apgi_framework.cli run-batch --all-tests --config config.json
 ```
 
 ### Workflow 4: Reproducible Research
@@ -550,9 +535,9 @@ python -m ipi_framework.cli run-batch --all-tests --config config.json
 
 **Configuration Example**:
 
-```json
+```
 {
-  "ipi_parameters": {
+  "apgi_parameters"
     "extero_precision": 2.0,
     "intero_precision": 1.5,
     "threshold": 3.5,
@@ -592,7 +577,7 @@ python -m ipi_framework.cli run-batch --all-tests --config config.json
 **Cause**: System components not properly initialized.
 
 **Solution**:
-```python
+```
 controller = MainApplicationController()
 controller.initialize_system()  # Don't forget this!
 ```
@@ -620,7 +605,7 @@ controller.initialize_system()  # Don't forget this!
 pip install -r requirements.txt
 
 # Add to Python path
-export PYTHONPATH="${PYTHONPATH}:/path/to/ipi_framework"
+export PYTHONPATH="${PYTHONPATH}:/path/to/apgi_framework"
 ```
 
 #### Issue: GUI Not Launching
@@ -648,7 +633,7 @@ python launch_gui.py --verbose
 **Cause**: Permission issues or invalid output path.
 
 **Solution**:
-```bash
+```
 # Check permissions
 ls -la results/
 
@@ -656,7 +641,7 @@ ls -la results/
 mkdir -p results
 
 # Specify absolute path
-python -m ipi_framework.cli run-test primary \
+python -m apgi_framework.cli run-test primary \
     --output-dir /absolute/path/to/results
 ```
 
@@ -667,7 +652,7 @@ python -m ipi_framework.cli run-test primary \
 **Cause**: Random seed not set.
 
 **Solution**:
-```python
+```
 # Set random seed for reproducibility
 controller.config_manager.update_experimental_config(random_seed=42)
 ```
@@ -688,27 +673,27 @@ controller.config_manager.update_experimental_config(random_seed=42)
 
 #### Check System Status
 
-```bash
-python -m ipi_framework.cli status
-python -m ipi_framework.cli validate-system --detailed
+```
+python -m apgi_framework.cli status
+python -m apgi_framework.cli validate-system --detailed
 ```
 
 #### Enable Debug Logging
 
-```bash
-python -m ipi_framework.cli run-test primary \
+```
+python -m apgi_framework.cli run-test primary \
     --log-level DEBUG \
     --trials 100
 ```
 
 #### Review Log Files
 
-```bash
+```
 # Check application logs
-cat results/ipi_framework.log
+cat results/apgi_framework.log
 
 # Check recent errors
-tail -n 50 results/ipi_framework.log | grep ERROR
+tail -n 50 results/apgi_framework.log | grep ERROR
 ```
 
 ## Best Practices
@@ -816,9 +801,9 @@ tail -n 50 results/ipi_framework.log | grep ERROR
 ## Additional Resources
 
 - **Examples**: See `examples/` directory for working code examples
-- **API Documentation**: Check module docstrings in `ipi_framework/`
-- **Theoretical Background**: See `IPI-Falsification.md`
-- **CLI Reference**: Run `python -m ipi_framework.cli --help`
+- **API Documentation**: Check module docstrings in `apgi_framework/`
+- **Theoretical Background**: See `APGI-Falsification.md`
+- **CLI Reference**: Run `python -m apgi_framework.cli --help`
 - **Error Handling**: See `docs/ERROR_HANDLING_QUICK_REFERENCE.md`
 
 ## Support
@@ -833,4 +818,4 @@ For issues, questions, or contributions:
 
 **Version**: 1.0  
 **Last Updated**: 2025-01-07  
-**Maintainer**: IPI Framework Development Team
+**Maintainer**: APGI Framework Development Team

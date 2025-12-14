@@ -1,6 +1,6 @@
 # Neural Data Acquisition and Processing Pipeline
 
-This module provides comprehensive neural data acquisition and processing capabilities for the IPI framework, including EEG/MEG interfaces, ERP analysis, microstate analysis, and gamma synchrony detection.
+This module provides comprehensive neural data acquisition and processing capabilities for the APGI framework, including EEG/MEG interfaces, ERP analysis, microstate analysis, and gamma synchrony detection.
 
 ## Components
 
@@ -27,7 +27,7 @@ Real-time EEG/MEG data acquisition with streaming, buffering, and artifact detec
 #### Example Usage
 
 ```python
-from ipi_framework.neural import EEGInterface, EEGConfig, ChannelInfo, ChannelType
+from apgi_framework.neural import EEGInterface, EEGConfig, ChannelInfo, ChannelType
 
 # Configure EEG system
 channels = [
@@ -86,7 +86,7 @@ Event-Related Potential extraction with P3b and early component analysis.
 #### Example Usage:
 
 ```python
-from ipi_framework.neural import ERPAnalysis
+from apgi_framework.neural import ERPAnalysis
 
 # Initialize analyzer
 erp = ERPAnalysis(sampling_rate=1000.0)
@@ -138,7 +138,7 @@ Scalp topography clustering and temporal dynamics analysis.
 #### Example Usage:
 
 ```python
-from ipi_framework.neural import MicrostateAnalysis
+from apgi_framework.neural import MicrostateAnalysis
 
 # Initialize analyzer
 ms = MicrostateAnalysis(n_states=4, sampling_rate=1000.0)
@@ -182,7 +182,7 @@ Long-range coherence and cross-frequency coupling analysis.
 #### Example Usage:
 
 ```python
-from ipi_framework.neural import GammaSynchronyAnalysis
+from apgi_framework.neural import GammaSynchronyAnalysis
 
 # Initialize analyzer
 gamma = GammaSynchronyAnalysis(sampling_rate=1000.0)
@@ -227,9 +227,9 @@ bursts = gamma.detect_gamma_bursts(
 print(f"Detected {len(bursts)} gamma bursts")
 ```
 
-## Integration with IPI Framework
+## Integration with APGI Framework
 
-The neural processing pipeline integrates with the IPI framework to validate key predictions:
+The neural processing pipeline integrates with the APGI framework to validate key predictions:
 
 1. **Threshold Estimation**: ERP analysis validates ignition threshold predictions
 2. **Ignition Cascade**: Microstate analysis detects posterior-to-anterior transitions
@@ -247,7 +247,7 @@ The neural processing pipeline integrates with the IPI framework to validate key
 Unit tests are marked as optional in the implementation plan. To run tests if implemented:
 
 ```bash
-pytest ipi_framework/tests/test_neural_*.py
+pytest apgi_framework/tests/test_neural_*.py
 ```
 
 ## References

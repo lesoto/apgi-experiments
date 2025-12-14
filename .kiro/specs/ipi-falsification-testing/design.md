@@ -2,9 +2,9 @@
 
 ## Overview
 
-The IPI Framework Falsification Testing System is designed as a modular, extensible platform for implementing and validating the Interoceptive Predictive Integration (IPI) Framework through comprehensive falsification testing. The system combines mathematical modeling, neural signature simulation, statistical analysis, and experimental control mechanisms to test the four primary falsification criteria outlined in the IPI Framework.
+The APGI Framework Falsification Testing System is designed as a modular, extensible platform for implementing and validating the Interoceptive Predictive Integration (APGI) Framework through comprehensive falsification testing. The system combines mathematical modeling, neural signature simulation, statistical analysis, and experimental control mechanisms to test the four primary falsification criteria outlined in the APGI Framework.
 
-The architecture follows a layered approach with clear separation between the core mathematical engine, simulation modules, analysis components, and user interfaces. This design enables researchers to systematically test whether the IPI Framework can be falsified under controlled experimental conditions while maintaining scientific rigor and reproducibility.
+The architecture follows a layered approach with clear separation between the core mathematical engine, simulation modules, analysis components, and user interfaces. This design enables researchers to systematically test whether the APGI Framework can be falsified under controlled experimental conditions while maintaining scientific rigor and reproducibility.
 
 ## Architecture
 
@@ -35,7 +35,7 @@ graph TB
 
 ### Core Components
 
-1. **Mathematical Framework Engine**: Implements the IPI ignition threshold equation and related calculations
+1. **Mathematical Framework Engine**: Implements the APGI ignition threshold equation and related calculations
 2. **Neural Signature Simulator**: Generates realistic neural signatures (P3b, gamma, BOLD, PCI)
 3. **Falsification Test Controller**: Orchestrates the four primary falsification test scenarios
 4. **Statistical Analysis Engine**: Performs comprehensive statistical validation and significance testing
@@ -46,7 +46,7 @@ graph TB
 
 ### Mathematical Framework Component
 
-**Purpose**: Implements the core IPI ignition threshold equation and related mathematical operations.
+**Purpose**: Implements the core APGI ignition threshold equation and related mathematical operations.
 
 **Key Classes**:
 - `IPIEquation`: Main equation implementation
@@ -228,7 +228,7 @@ class PharmacologicalCondition:
 
 ```python
 class IPIFrameworkError(Exception):
-    """Base exception for IPI Framework errors"""
+    """Base exception for APGI Framework errors"""
     pass
 
 class MathematicalError(IPIFrameworkError):
@@ -330,4 +330,4 @@ def conscious_neural_signatures():
     )
 ```
 
-This design provides a comprehensive, modular architecture for implementing and testing the IPI Framework falsification criteria while maintaining scientific rigor and extensibility for future research needs.
+This design provides a comprehensive, modular architecture for implementing and testing the APGI Framework falsification criteria while maintaining scientific rigor and extensibility for future research needs.

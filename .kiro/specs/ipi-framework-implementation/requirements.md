@@ -2,15 +2,15 @@
 
 ## Introduction
 
-The IPI (Interoceptive Predictive Ignition) Framework Implementation is a comprehensive computational neuroscience platform that enables empirical validation of consciousness and attention mechanisms through testable predictions. The system implements the core IPI mathematical model, provides experimental paradigms for data collection, includes computational agents for simulation studies, and offers clinical assessment tools for translating research findings into practical applications.
+The APGI (Interoceptive Predictive Ignition) Framework Implementation is a comprehensive computational neuroscience platform that enables empirical validation of consciousness and attention mechanisms through testable predictions. The system implements the core APGI mathematical model, provides experimental paradigms for data collection, includes computational agents for simulation studies, and offers clinical assessment tools for translating research findings into practical applications.
 
 The framework centers around the ignition threshold equation where conscious access occurs when precision-weighted surprise (Sₜ) exceeds a dynamic threshold (θₜ). This implementation will enable researchers to conduct the seven priority levels of empirical validation outlined in the testable predictions document.
 
 ## Requirements
 
-### Requirement 1: Core IPI Mathematical Model Implementation
+### Requirement 1: Core APGI Mathematical Model Implementation
 
-**User Story:** As a computational neuroscientist, I want to implement the core IPI mathematical equations so that I can simulate ignition dynamics and validate theoretical predictions.
+**User Story:** As a computational neuroscientist, I want to implement the core APGI mathematical equations so that I can simulate ignition dynamics and validate theoretical predictions.
 
 #### Acceptance Criteria
 
@@ -58,7 +58,7 @@ The framework centers around the ignition threshold equation where conscious acc
 
 ### Requirement 5: Clinical Assessment and Translation Tools
 
-**User Story:** As a clinical psychologist, I want to assess individual IPI parameters so that I can predict treatment responses and guide precision medicine approaches.
+**User Story:** As a clinical psychologist, I want to assess individual APGI parameters so that I can predict treatment responses and guide precision medicine approaches.
 
 #### Acceptance Criteria
 
@@ -70,15 +70,15 @@ The framework centers around the ignition threshold equation where conscious acc
 
 ### Requirement 6: Computational Agent Simulation Platform
 
-**User Story:** As a computational modeler, I want to simulate IPI agents in complex environments so that I can demonstrate adaptive advantages of the ignition architecture.
+**User Story:** As a computational modeler, I want to simulate APGI agents in complex environments so that I can demonstrate adaptive advantages of the ignition architecture.
 
 #### Acceptance Criteria
 
-1. WHEN implementing IPI agents THEN they SHALL use somatic-marker-gated ignition rules with configurable parameters
-2. WHEN testing in volatile environments THEN IPI agents SHALL outperform standard predictive processing agents
+1. WHEN implementing APGI agents THEN they SHALL use somatic-marker-gated ignition rules with configurable parameters
+2. WHEN testing in volatile environments THEN APGI agents SHALL outperform standard predictive processing agents
 3. WHEN facing high-cost states THEN somatic bias SHALL prevent catastrophic errors through interoceptive gating
 4. WHEN operating under resource constraints THEN threshold mechanisms SHALL conserve computational resources
-5. WHEN comparing architectures THEN IPI agents SHALL show superior sample efficiency and robustness to uncertainty
+5. WHEN comparing architectures THEN APGI agents SHALL show superior sample efficiency and robustness to uncertainty
 
 ### Requirement 7: Cross-Species Comparative Analysis Framework
 

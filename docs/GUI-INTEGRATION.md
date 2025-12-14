@@ -2,7 +2,7 @@
 
 ## Task 2: Enhance GUI Functionality and User Experience
 
-This document summarizes the implementation of Task 2 from the IPI Falsification Testing specification, which connects the GUI to actual falsification test controllers and enhances the user experience.
+This document summarizes the implementation of Task 2 from the APGI Falsification Testing specification, which connects the GUI to actual falsification test controllers and enhances the user experience.
 
 ## Completed Subtasks
 
@@ -103,13 +103,13 @@ Created `test_gui_integration.py` to verify:
 To run the GUI with integrated test controllers:
 
 ```bash
-python ipi_falsification_gui.py
+python apgi_falsification_gui.py
 ```
 
 Or use the main entry point:
 
 ```python
-from ipi_falsification_gui import main
+from apgi_falsification_gui import main
 
 main()
 ```
@@ -128,7 +128,7 @@ main()
 ## Architecture
 
 ```
-IPIFalsificationGUI
+APIFalsificationGUI
 ├── ParameterConfigPanel (Configuration)
 ├── FalsificationTestPanel (Primary)
 │   └── PrimaryFalsificationTest controller
@@ -152,9 +152,9 @@ The following tasks remain in the specification:
 
 ## Files Modified
 
-1. `ipi_falsification_gui.py` - Main GUI application
-2. `ipi_framework/falsification/threshold_insensitivity_test.py` - Fixed syntax error
-3. `ipi_framework/data/parameter_estimation_models.py` - Fixed dataclass field ordering
+1. `apgi_falsification_gui.py` - Main GUI application
+2. `apgi_framework/falsification/threshold_insensitivity_test.py` - Fixed syntax error
+3. `apgi_framework/data/parameter_estimation_models.py` - Fixed dataclass field ordering
 
 ## Files Created
 

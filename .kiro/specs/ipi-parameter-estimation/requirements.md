@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The IPI Framework Parameter Estimation Pipeline is a comprehensive neuroscience research system that enables rapid, individualized quantification of key computational parameters within a standardized 45-60 minute protocol. The system combines behavioral tasks, high-density EEG analysis, and pupillometry to extract three core parameters: baseline ignition threshold (θ₀), interoceptive precision (Πᵢ), and somatic bias (β). The implementation must support adaptive, computerized tasks optimized for clinical feasibility, real-time data processing, and robust statistical modeling.
+The APGI Framework Parameter Estimation Pipeline is a comprehensive neuroscience research system that enables rapid, individualized quantification of key computational parameters within a standardized 45-60 minute protocol. The system combines behavioral tasks, high-density EEG analysis, and pupillometry to extract three core parameters: baseline ignition threshold (θ₀), interoceptive precision (Πᵢ), and somatic bias (β). The implementation must support adaptive, computerized tasks optimized for clinical feasibility, real-time data processing, and robust statistical modeling.
 
 ## Requirements
 

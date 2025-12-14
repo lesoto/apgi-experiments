@@ -2,15 +2,15 @@
 
 ## Introduction
 
-This specification defines the requirements for implementing a comprehensive testing framework to validate or falsify the IPI (Interoceptive Predictive Integration) Framework. The system will implement the mathematical ignition threshold equation, simulate neural signatures, and provide automated testing capabilities to evaluate the four primary falsification criteria outlined in the IPI Framework Falsification document.
+This specification defines the requirements for implementing a comprehensive testing framework to validate or falsify the APGI (Interoceptive Predictive Integration) Framework. The system will implement the mathematical ignition threshold equation, simulate neural signatures, and provide automated testing capabilities to evaluate the four primary falsification criteria outlined in the APGI Framework Falsification document.
 
-The framework tests conscious access through precision-gated threshold mechanisms, requiring implementation of complex neurophysiological simulations, statistical analysis tools, and automated validation systems to determine if the IPI Framework can be falsified under controlled experimental conditions.
+The framework tests conscious access through precision-gated threshold mechanisms, requiring implementation of complex neurophysiological simulations, statistical analysis tools, and automated validation systems to determine if the APGI Framework can be falsified under controlled experimental conditions.
 
 ## Requirements
 
 ### Requirement 1: Core Mathematical Framework Implementation
 
-**User Story:** As a neuroscience researcher, I want to implement the IPI ignition threshold equation so that I can simulate conscious access mechanisms and test falsification criteria.
+**User Story:** As a neuroscience researcher, I want to implement the APGI ignition threshold equation so that I can simulate conscious access mechanisms and test falsification criteria.
 
 #### Acceptance Criteria
 
@@ -34,7 +34,7 @@ The framework tests conscious access through precision-gated threshold mechanism
 
 ### Requirement 3: Primary Falsification Testing
 
-**User Story:** As a researcher, I want to test the primary falsification criterion (full ignition signatures without consciousness) so that I can determine if the IPI Framework can be decisively falsified.
+**User Story:** As a researcher, I want to test the primary falsification criterion (full ignition signatures without consciousness) so that I can determine if the APGI Framework can be decisively falsified.
 
 #### Acceptance Criteria
 

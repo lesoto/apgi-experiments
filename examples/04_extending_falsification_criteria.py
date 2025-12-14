@@ -1,7 +1,7 @@
 """
 Example 4: Extending with New Falsification Criteria
 
-This example demonstrates how to extend the IPI Framework with custom
+This example demonstrates how to extend the APGI Framework with custom
 falsification criteria and tests. This is useful for:
 - Testing novel predictions of the framework
 - Implementing domain-specific falsification tests
@@ -20,15 +20,18 @@ from dataclasses import dataclass
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from ipi_framework.core import (
-    IPIEquation, IPIParameters, NeuralSignatures,
-    ConsciousnessAssessment, FalsificationResult
+from apgi_framework.core import (
+    APGIEquation,
+    FalsificationResult,
+    ConsciousnessAssessment
 )
-from ipi_framework.simulators import (
-    P3bSimulator, GammaSimulator, BOLDSimulator, PCICalculator
+from apgi_framework.simulators import (
+    NeuralSignatureSimulator,
+    PhysiologicalResponseSimulator
 )
-from ipi_framework.falsification import (
-    ConsciousnessAssessmentSimulator, ConsciousnessValidator
+from apgi_framework.falsification import (
+    BaseFalsificationTest,
+    FalsificationCriteria
 )
 import logging
 
@@ -391,7 +394,7 @@ def display_custom_test_result(result: CustomFalsificationResult):
 
 if __name__ == '__main__':
     print("\n" + "="*70)
-    print("IPI Framework - Extended Falsification Criteria Examples")
+    print("APGI Framework - Extended Falsification Criteria Examples")
     print("="*70 + "\n")
     
     # Example 4A: Temporal Dynamics Test

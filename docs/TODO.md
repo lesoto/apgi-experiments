@@ -1,4 +1,4 @@
-# IPI Framework - TODO List
+# APGI Framework - TODO List
 
 This document contains all the experimental paradigms and features that are planned but not yet fully implemented.
 
@@ -16,7 +16,7 @@ This document contains all the experimental paradigms and features that are plan
 - Followed by a conscious perceptual decision task under uncertainty (e.g., random dot motion discrimination)
 - Manipulate interoceptive awareness via heartbeat counting during the task
 
-**IPI Prediction**:
+**APGI Prediction**:
 
 - Decisions on trials primed with negative somatic markers will show:
   1. Higher interoceptive precision (measured via skin conductance response, pupil dilation)
@@ -41,7 +41,7 @@ This document contains all the experimental paradigms and features that are plan
   3. Semantic decision-making (sustained ignition)
 - Vary cognitive load and interoceptive demand (e.g., concurrent heartbeat counting)
 
-**IPI Prediction**:
+**APGI Prediction**:
 
 - A significant, non-linear increase in metabolic rate will be observed specifically in the frontoparietal "workspace" network during ignition trials (2 & 3)
 - High interoceptive demand will amplify this effect in the PFC but reduce it in sensory regions
@@ -53,7 +53,7 @@ This document contains all the experimental paradigms and features that are plan
 
 **Status**: Stub implementation only
 
-**Idea**: Develop a diagnostic panel based on IPI components to distinguish between states of consciousness.
+**Idea**: Develop a diagnostic panel based on APGI components to distinguish between states of consciousness.
 
 **Method**:
 
@@ -64,9 +64,9 @@ Multi-modal assessment in DoC patients:
 - **Pupillometry/SCR**: Measure autonomic (somatic) reactivity to emotional stimuli
 - **Behavioral scales**: CRS-R for clinical correlation
 
-**IPI Prediction**:
+**APGI Prediction**:
 
-This multi-dimensional IPI Consciousness Index will:
+This multi-dimensional APGI Consciousness Index will:
 
 1. Have higher prognostic accuracy than single-modality tools (e.g., PCI alone)
 2. Show that patients with preserved interoceptive precision but disrupted ignition (e.g., severe TBI) have better recovery prospects
@@ -76,7 +76,7 @@ This multi-dimensional IPI Consciousness Index will:
 
 **Status**: Not implemented
 
-**Idea**: Test if anesthetic transitions follow critical slowing dynamics predicted by IPI.
+**Idea**: Test if anesthetic transitions follow critical slowing dynamics predicted by APGI.
 
 **Method**:
 
@@ -96,7 +96,7 @@ This multi-dimensional IPI Consciousness Index will:
 
 **Status**: Not implemented
 
-**Test**: Whether IPI generalizes to non-human consciousness.
+**Test**: Whether APGI generalizes to non-human consciousness.
 
 **Approach**:
 

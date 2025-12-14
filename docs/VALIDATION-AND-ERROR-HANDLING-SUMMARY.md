@@ -2,13 +2,13 @@
 
 ## Components Implemented
 
-### 1. Parameter Validation Module (`ipi_framework/validation/parameter_validator.py`)
+### 1. Parameter Validation Module (`apgi_framework/validation/parameter_validator.py`)
 
-**Purpose**: Provides comprehensive validation for all IPI Framework parameters.
+**Purpose**: Provides comprehensive validation for all APGI Framework parameters.
 
 **Key Features**:
 
-- Validates IPI equation parameters (precision, errors, gain, threshold, steepness)
+- Validates APGI equation parameters (precision, errors, gain, threshold, steepness)
 - Validates experimental configuration (trials, participants, statistical parameters)
 - Validates neural signature thresholds (P3b, gamma, BOLD, PCI)
 - Validates pharmacological conditions (drug types, dosages, timing)
@@ -23,10 +23,10 @@
 **Usage Example**:
 
 ```python
-from ipi_framework.validation import get_validator
+from apgi_framework.validation import get_validator
 
 validator = get_validator()
-result = validator.validate_ipi_parameters(
+result = validator.validate_apgi_parameters(
     extero_precision=2.0,
     intero_precision=1.5,
     threshold=3.5
@@ -37,7 +37,7 @@ if not result.is_valid:
 ```
 
 
-### 2. System Health Checker (`ipi_framework/validation/system_health.py`)
+### 2. System Health Checker (`apgi_framework/validation/system_health.py`)
 
 **Purpose**: Performs comprehensive system health checks and diagnostics.
 
@@ -58,8 +58,8 @@ if not result.is_valid:
 
 **Usage Example**:
 
-```python
-from ipi_framework.validation import get_health_checker
+``python
+from apgi_framework.validation import get_health_checker
 
 health_checker = get_health_checker()
 result = health_checker.run_full_health_check()
@@ -67,7 +67,7 @@ print(result.get_report())
 ```
 
 
-### 3. Error Recovery Module (`ipi_framework/validation/error_recovery.py`)
+### 3. Error Recovery Module (`apgi_framework/validation/error_recovery.py`)
 
 **Purpose**: Provides automatic error recovery and retry mechanisms.
 
@@ -92,7 +92,7 @@ print(result.get_report())
 **Usage Example**:
 
 ```python
-from ipi_framework.validation import with_retry, RetryConfig
+from apgi_framework.validation import with_retry, RetryConfig
 
 config = RetryConfig(max_attempts=3, initial_delay=1.0)
 
@@ -102,7 +102,7 @@ def potentially_failing_function():
     pass
 ```
 
-### 4. Error Handling Wrapper (`ipi_framework/falsification/error_handling_wrapper.py`)
+### 4. Error Handling Wrapper (`apgi_framework/falsification/error_handling_wrapper.py`)
 
 **Purpose**: Wraps falsification test controllers with comprehensive error handling.
 
@@ -125,7 +125,7 @@ def potentially_failing_function():
 
 **Usage Example**:
 ```python
-from ipi_framework.falsification.error_handling_wrapper import with_error_handling
+from apgi_framework.falsification.error_handling_wrapper import with_error_handling
 
 @with_error_handling(validate_params=True, enable_retry=True)
 def run_test(n_trials, n_participants):
@@ -137,7 +137,7 @@ def run_test(n_trials, n_participants):
 
 **Updated Files**:
 
-- `ipi_framework/config.py`: Integrated parameter validation into `IPIParameters` and `ExperimentalConfig`
+- `apgi_framework/config.py`: Integrated parameter validation into `APGIParameters` and `ExperimentalConfig`
 
 **Changes**:
 
@@ -149,10 +149,10 @@ def run_test(n_trials, n_participants):
 ### 6. Falsification Test Updates
 
 **Updated Files**:
-- `ipi_framework/falsification/primary_falsification_test.py`
-- `ipi_framework/falsification/consciousness_without_ignition_test.py`
-- `ipi_framework/falsification/threshold_insensitivity_test.py`
-- `ipi_framework/falsification/soma_bias_test.py`
+- `apgi_framework/falsification/primary_falsification_test.py`
+- `apgi_framework/falsification/consciousness_without_ignition_test.py`
+- `apgi_framework/falsification/threshold_insensitivity_test.py`
+- `apgi_framework/falsification/soma_bias_test.py`
 
 **Changes**:
 - Added `@with_error_handling` decorator to main test methods
@@ -162,7 +162,7 @@ def run_test(n_trials, n_participants):
 - Tests continue with remaining trials if individual trials fail
 - Raises `SimulationError` if all trials fail
 
-### 7. Diagnostics CLI Tool (`ipi_framework/validation/diagnostics_cli.py`)
+### 7. Diagnostics CLI Tool (`apgi_framework/validation/diagnostics_cli.py`)
 
 **Purpose**: Command-line interface for diagnostics and validation.
 
@@ -176,16 +176,16 @@ def run_test(n_trials, n_participants):
 **Usage Examples**:
 ```bash
 # Run full health check
-python -m ipi_framework.validation.diagnostics_cli health-check
+python -m apgi_framework.validation.diagnostics_cli health-check
 
 # Check specific component
-python -m ipi_framework.validation.diagnostics_cli health-check --component python
+python -m apgi_framework.validation.diagnostics_cli health-check --component python
 
 # Validate parameters
-python -m ipi_framework.validation.diagnostics_cli validate --params extero_precision=2.0 threshold=3.5
+python -m apgi_framework.validation.diagnostics_cli validate --params extero_precision=2.0 threshold=3.5
 
 # Get parameter info
-python -m ipi_framework.validation.diagnostics_cli param-info --parameter threshold
+python -m apgi_framework.validation.diagnostics_cli param-info --parameter threshold
 ```
 
 ## Error Handling Strategy
@@ -212,7 +212,7 @@ python -m ipi_framework.validation.diagnostics_cli param-info --parameter thresh
    - Logged with statistical context
    - May indicate insufficient data
 
-5. **IPIFrameworkError**: General framework errors
+5. **APGIFrameworkError**: General framework errors
    - Logged with full context
    - Recovery attempted if strategy available
    - Wrapped unexpected errors
@@ -236,7 +236,7 @@ All errors are logged with:
 
 ## Validation Coverage
 
-### IPI Parameters
+### APGI Parameters
 - ✓ Exteroceptive precision (0.01-10.0)
 - ✓ Interoceptive precision (0.01-10.0)
 - ✓ Exteroceptive error (-10.0-10.0)
@@ -341,4 +341,4 @@ This implementation satisfies all requirements from Task 3:
 
 ## Conclusion
 
-The validation and error handling system provides a robust foundation for reliable operation of the IPI Framework Falsification Testing System. It catches errors early, provides helpful guidance to users, and automatically recovers from transient failures, significantly improving the overall user experience and system reliability.
+The validation and error handling system provides a robust foundation for reliable operation of the APGI Framework Falsification Testing System. It catches errors early, provides helpful guidance to users, and automatically recovers from transient failures, significantly improving the overall user experience and system reliability.

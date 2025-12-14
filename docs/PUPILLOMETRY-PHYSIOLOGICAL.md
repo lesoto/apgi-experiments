@@ -1,10 +1,10 @@
 # Pupillometry and Physiological Monitoring Systems
 
-This document describes the pupillometry and physiological monitoring systems implemented for the IPI framework.
+This document describes the pupillometry and physiological monitoring systems implemented for the APGI framework.
 
 ## Overview
 
-The IPI framework now includes comprehensive support for:
+The APGI framework now includes comprehensive support for:
 
 - **High-speed pupillometry** with blink detection, artifact correction, and luminance-independent measurements
 - **Multi-modal physiological monitoring** including heart rate, skin conductance, and respiration
@@ -24,7 +24,7 @@ The IPI framework now includes comprehensive support for:
 ### Basic Usage
 
 ```python
-from ipi_framework.neural import (
+from apgi_framework.neural import (
     PupillometryInterface,
     PupillometryConfig,
     EyeType,
@@ -86,7 +86,7 @@ pupil_interface.stop_streaming()
 ### Basic Usage
 
 ```python
-from ipi_framework.neural import (
+from apgi_framework.neural import (
     PhysiologicalMonitoring,
     PhysiologicalConfig,
     SignalType
@@ -143,14 +143,14 @@ physio_monitor.stop_streaming()
 - **SkinConductanceMonitor**: Tonic/phasic decomposition and SCR event detection
 - **RespirationMonitor**: Breath cycle detection and respiration phase identification
 
-## IPI Experiment Integration
+## APGI Experiment Integration
 
-Both systems are designed to integrate seamlessly with IPI experimental paradigms:
+Both systems are designed to integrate seamlessly with APGI experimental paradigms:
 
 ### Multi-Modal Recording Setup
 
 ```python
-from ipi_framework.neural import (
+from apgi_framework.neural import (
     PupillometryInterface,
     PhysiologicalMonitoring,
     PupillometryConfig,
@@ -181,14 +181,14 @@ if physio_sample and physio_sample.heart_rate:
     hr_change = physio_sample.heart_rate - baseline_hr
     
     # Compute interoceptive precision marker
-    interoceptive_precision = compute_ipi_precision(
+    interoceptive_precision = compute_apgi_precision(
         pupil_dilation, hr_change, physio_sample.scr_response
     )
 ```
 
 ### Implementation Requirements
 
-This implementation addresses the following IPI framework requirements:
+This implementation addresses the following APGI framework requirements:
 
 - **Requirement 3.1**: Neural data integration with real-time processing
 - **Requirement 5.3**: Physiological monitoring for interoceptive tasks
@@ -214,7 +214,7 @@ physio_quality = physio_monitor.get_quality_metrics()
 Run the test suite to verify functionality:
 
 ```bash
-python ipi_framework/neural/test_physiological_systems.py
+python apgi_framework/neural/test_physiological_systems.py
 ```
 
 This will test:

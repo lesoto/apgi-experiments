@@ -1,6 +1,6 @@
-# IPI Framework Examples
+# APGI Framework Examples
 
-This directory contains example scripts demonstrating various features of the IPI Framework, including falsification testing, batch processing, custom analysis, and framework extension.
+This directory contains example scripts demonstrating various features of the APGI Framework, including falsification testing, batch processing, custom analysis, and framework extension.
 
 ## Falsification Testing Examples
 
@@ -9,7 +9,7 @@ This directory contains example scripts demonstrating various features of the IP
 Demonstrates how to run the primary falsification test from Python code:
 
 1. **Basic Test**: Run primary falsification test with default parameters
-2. **Custom Parameters**: Configure IPI parameters and experimental settings
+2. **Custom Parameters**: Configure APGI parameters and experimental settings
 3. **With Validation**: Run system validation before executing tests
 
 **Run the example:**
@@ -122,7 +122,7 @@ python examples/parameter_validation_example.py
 ### Running Your First Falsification Test
 
 ```python
-from ipi_framework.main_controller import MainApplicationController
+from apgi_framework.main_controller import MainApplicationController
 
 # Initialize the system
 controller = MainApplicationController()
@@ -146,7 +146,7 @@ controller.shutdown_system()
 ### Batch Processing Multiple Configurations
 
 ```python
-from ipi_framework.main_controller import MainApplicationController
+from apgi_framework.main_controller import MainApplicationController
 
 threshold_values = [2.0, 3.0, 4.0, 5.0]
 results = []
@@ -156,7 +156,7 @@ for threshold in threshold_values:
     controller.initialize_system()
     
     # Configure parameters
-    controller.config_manager.update_ipi_parameters(threshold=threshold)
+    controller.config_manager.update_apgi_parameters(threshold=threshold)
     
     # Run test
     tests = controller.get_falsification_tests()
@@ -195,43 +195,43 @@ The framework also provides a comprehensive CLI for running tests:
 
 ```bash
 # Run primary falsification test
-python -m ipi_framework.cli run-test primary --trials 1000
+python -m apgi_framework.cli run-test primary --trials 1000
 
 # Run with custom parameters
-python -m ipi_framework.cli run-test primary --trials 2000 --seed 42
+python -m apgi_framework.cli run-test primary --trials 2000 --seed 42
 ```
 
 ### Run Batch Tests
 
 ```bash
 # Run all tests
-python -m ipi_framework.cli run-batch --all-tests
+python -m apgi_framework.cli run-batch --all-tests
 
 # Run specific tests
-python -m ipi_framework.cli run-batch --tests primary soma-bias
+python -m apgi_framework.cli run-batch --tests primary soma-bias
 ```
 
 ### Generate Configuration
 ```bash
 # Generate default configuration
-python -m ipi_framework.cli generate-config --output config.json
+python -m apgi_framework.cli generate-config --output config.json
 
 # Generate minimal configuration
-python -m ipi_framework.cli generate-config --template minimal --output minimal_config.json
+python -m apgi_framework.cli generate-config --template minimal --output minimal_config.json
 ```
 
 ### System Validation
 ```bash
 # Run system validation
-python -m ipi_framework.cli validate-system
+python -m apgi_framework.cli validate-system
 
 # Detailed validation
-python -m ipi_framework.cli validate-system --detailed
+python -m apgi_framework.cli validate-system --detailed
 ```
 
 ## Requirements
 
-All examples require the IPI Framework to be properly installed with all dependencies:
+All examples require the APGI Framework to be properly installed with all dependencies:
 
 ```bash
 pip install -r requirements.txt
@@ -239,11 +239,11 @@ pip install -r requirements.txt
 
 ## Additional Resources
 
-- **Falsification Documentation**: See `IPI-Falsification.md` for theoretical background
+- **Falsification Documentation**: See `APGI-Falsification.md` for theoretical background
 - **Validation Documentation**: See `VALIDATION_AND_ERROR_HANDLING_SUMMARY.md`
 - **Error Handling Guide**: See `docs/ERROR_HANDLING_QUICK_REFERENCE.md`
-- **CLI Reference**: Run `python -m ipi_framework.cli --help`
-- **API Documentation**: Check module docstrings in `ipi_framework/`
+- **CLI Reference**: Run `python -m apgi_framework.cli --help`
+- **API Documentation**: Check module docstrings in `apgi_framework/`
 
 ## Troubleshooting
 
@@ -263,7 +263,7 @@ python examples/01_run_primary_falsification_test.py
 
 **System Validation Fails**: Check that all components are properly initialized:
 ```bash
-python -m ipi_framework.cli validate-system --detailed
+python -m apgi_framework.cli validate-system --detailed
 ```
 
 ## Contributing

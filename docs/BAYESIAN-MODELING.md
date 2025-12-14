@@ -1,6 +1,6 @@
 # Hierarchical Bayesian Parameter Estimation
 
-This module implements a complete hierarchical Bayesian modeling framework for estimating the three core IPI parameters:
+This module implements a complete hierarchical Bayesian modeling framework for estimating the three core APGI parameters:
 
 - **θ₀** (theta0): Baseline ignition threshold
 - **Πᵢ** (pi_i): Interoceptive precision  
@@ -20,7 +20,7 @@ Main class for hierarchical Bayesian parameter estimation using Stan/PyMC3.
 
 
 ```python
-from ipi_framework.analysis import HierarchicalBayesianModel
+from apgi_framework.analysis import HierarchicalBayesianModel
 
 model = HierarchicalBayesianModel()
 model.compile_model()
@@ -50,7 +50,7 @@ Implements surprise accumulation dynamics: dSₜ/dt = –Sₜ/τ + f(Πₑ·|ε�
 
 
 ```python
-from ipi_framework.analysis import SurpriseAccumulator
+from apgi_framework.analysis import SurpriseAccumulator
 
 accumulator = SurpriseAccumulator(tau=1.0, dt=0.001)
 
@@ -66,7 +66,7 @@ Calculates ignition probability: Bₜ = σ(α(Sₜ – θₜ))
 
 
 ```python
-from ipi_framework.analysis import IgnitionProbabilityCalculator
+from apgi_framework.analysis import IgnitionProbabilityCalculator
 
 calculator = IgnitionProbabilityCalculator(alpha=10.0)
 
@@ -85,9 +85,9 @@ Manages Stan model compilation with caching for efficient reuse.
 
 
 ```python
-from ipi_framework.analysis import StanModelCompiler
+from apgi_framework.analysis import StanModelCompiler
 
-compiler = StanModelCompiler(cache_dir='~/.ipi_framework/stan_cache')
+compiler = StanModelCompiler(cache_dir='~/.apgi_framework/stan_cache')
 model = compiler.compile_stan_model(model_code)
 ```
 
@@ -98,7 +98,7 @@ model = compiler.compile_stan_model(model_code)
 Fits all parameters simultaneously from behavioral and neural data.
 
 ```python
-from ipi_framework.analysis import JointParameterFitter
+from apgi_framework.analysis import JointParameterFitter
 
 fitter = JointParameterFitter()
 
@@ -125,7 +125,7 @@ Computes R-hat, effective sample size, and chain mixing diagnostics.
 
 
 ```python
-from ipi_framework.analysis import ConvergenceDiagnosticsCalculator
+from apgi_framework.analysis import ConvergenceDiagnosticsCalculator
 
 calculator = ConvergenceDiagnosticsCalculator()
 diagnostics = calculator.assess_convergence(fit_result)
@@ -141,7 +141,7 @@ Estimates personalized parameters with uncertainty quantification.
 
 
 ```python
-from ipi_framework.analysis import IndividualParameterEstimator
+from apgi_framework.analysis import IndividualParameterEstimator
 
 estimator = IndividualParameterEstimator()
 
@@ -167,7 +167,7 @@ Generates synthetic data with known ground-truth parameters.
 
 
 ```python
-from ipi_framework.analysis import (
+from apgi_framework.analysis import (
     SyntheticDataGenerator, 
     GroundTruthParameters
 )
@@ -188,7 +188,7 @@ detection, heartbeat, oddball = generator.generate_complete_dataset(
 Validates pipeline through simulation of 100 synthetic datasets.
 
 ```python
-from ipi_framework.analysis import ParameterRecoveryValidator
+from apgi_framework.analysis import ParameterRecoveryValidator
 
 validator = ParameterRecoveryValidator(
     validation_criteria={
@@ -216,7 +216,7 @@ else:
 Analyzes recovery with correlation metrics and bias assessment.
 
 ```python
-from ipi_framework.analysis import RecoveryAnalyzer
+from apgi_framework.analysis import RecoveryAnalyzer
 
 analyzer = RecoveryAnalyzer()
 
@@ -240,7 +240,7 @@ analyzer.plot_recovery(
 Generates comprehensive validation reports.
 
 ```python
-from ipi_framework.analysis import ValidationReportGenerator
+from apgi_framework.analysis import ValidationReportGenerator
 
 report = ValidationReportGenerator.generate_report(
     recovery_results,
@@ -257,7 +257,7 @@ Emotional Stroop/flanker task for Πᵢ validation.
 
 
 ```python
-from ipi_framework.analysis import EmotionalInterferenceTask
+from apgi_framework.analysis import EmotionalInterferenceTask
 
 task = EmotionalInterferenceTask(task_type='stroop')
 
@@ -274,7 +274,7 @@ CPT for θ₀ validation and attentional lapse prediction.
 
 
 ```python
-from ipi_framework.analysis import ContinuousPerformanceTask
+from apgi_framework.analysis import ContinuousPerformanceTask
 
 task = ContinuousPerformanceTask(duration_minutes=10)
 
@@ -291,7 +291,7 @@ BVS analyzer for β validation through somatic symptom correlation.
 
 
 ```python
-from ipi_framework.analysis import BodyVigilanceScaleAnalyzer
+from apgi_framework.analysis import BodyVigilanceScaleAnalyzer
 
 analyzer = BodyVigilanceScaleAnalyzer()
 
@@ -303,11 +303,11 @@ predicted_bvs = analyzer.predict_from_beta(beta=1.1)
 ```
 
 #### PredictivePowerComparator
-Compares IPI parameters against traditional measures.
+Compares APGI parameters against traditional measures.
 
 
 ```python
-from ipi_framework.analysis import PredictivePowerComparator
+from apgi_framework.analysis import PredictivePowerComparator
 
 comparator = PredictivePowerComparator()
 
@@ -323,12 +323,12 @@ print(f"r = {validity_result.correlation:.3f}, "
 
 # Compare to traditional measures
 comparison = comparator.compare_to_traditional_measures(
-    ipi_parameter, traditional_measure, outcome,
-    ipi_name='Πᵢ', traditional_name='Trait Anxiety'
+    apgi_parameter, traditional_measure, outcome,
+    apgi_name='Πᵢ', traditional_name='Trait Anxiety'
 )
 
-if comparison.ipi_better:
-    print(f"IPI parameter outperforms by "
+if comparison.apgi_better:
+    print(f"APGI parameter outperforms by "
           f"{comparison.improvement_percentage:.1f}%")
 ```
 
@@ -336,7 +336,7 @@ if comparison.ipi_better:
 Complete framework for testing predictive validity.
 
 ```python
-from ipi_framework.analysis import PredictiveValidityFramework
+from apgi_framework.analysis import PredictiveValidityFramework
 
 framework = PredictiveValidityFramework()
 
@@ -409,7 +409,7 @@ pip install pymc3
 
 ### 1. Parameter Recovery Validation (Required First)
 ```python
-from ipi_framework.analysis import ParameterRecoveryValidator
+from apgi_framework.analysis import ParameterRecoveryValidator
 
 validator = ParameterRecoveryValidator()
 results = validator.run_validation(n_datasets=100)
@@ -421,7 +421,7 @@ if not results.passed:
 
 ### 2. Empirical Parameter Estimation
 ```python
-from ipi_framework.analysis import JointParameterFitter
+from apgi_framework.analysis import JointParameterFitter
 
 fitter = JointParameterFitter()
 results = fitter.fit_all_subjects(
@@ -437,7 +437,7 @@ for est in results.parameter_estimates:
 
 ### 3. Predictive Validity Testing
 ```python
-from ipi_framework.analysis import PredictiveValidityFramework
+from apgi_framework.analysis import PredictiveValidityFramework
 
 framework = PredictiveValidityFramework()
 validity_results = framework.run_complete_validation(
@@ -497,4 +497,4 @@ See `example_bayesian_parameter_estimation.py` for complete working examples.
 
 ## Support
 
-For issues or questions, refer to the main IPI Framework documentation.
+For issues or questions, refer to the main APGI Framework documentation.

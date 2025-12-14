@@ -1,14 +1,14 @@
-# IPI Framework
+# APGI Framework
 
-This project implements the Integrated Predictive Ignition (IPI) framework for understanding consciousness through computational modeling and experimental validation.
+This project implements the Integrated Predictive Ignition (APGI) framework for understanding consciousness through computational modeling and experimental validation.
 
 ## Project Structure
 
 ```text
-ipi-consciousness/
+apgi-consciousness/
 ├── core/                      # Core framework components
 │   ├── models/                # Core computational models
-│   │   ├── ipi_agent.py       # Main IPI agent implementation
+│   │   ├── apgi_agent.py       # Main APGI agent implementation
 │   │   ├── phase_transition.py # Somatic marker agent
 │   │   ├── active_inference.py # Active inference models
 │   │   └── hierarchical_predictive.py # Hierarchical predictive coding
@@ -56,13 +56,13 @@ ipi-consciousness/
 2. **Validate installation**
 
    ```bash
-   python -m ipi_framework.cli validate-system
+   python -m apgi_framework.cli validate-system
    ```
 
-3. **Run the IPI Agent example**
+3. **Run the APGI Agent example**
 
    ```bash
-   python -m core.models.ipi_agent
+   python -m core.models.apgi_agent
    ```
 
 4. **Run the Somatic Agent example**
@@ -91,8 +91,8 @@ ipi-consciousness/
 
 ### Core Models
 
-1. **IPI Agent** (`core/models/ipi_agent.py`)
-   - Implements the core IPI framework with interoceptive and exteroceptive processing
+1. **APGI Agent** (`core/models/apgi_agent.py`)
+   - Implements the core APGI framework with interoceptive and exteroceptive processing
    - Dynamic threshold mechanism for conscious access
    - Precision-weighted prediction errors
    - Somatic marker integration
@@ -116,13 +116,13 @@ ipi-consciousness/
 
 2. **AI Benchmarking** (`experiments/ai_benchmarking/`)
    - Compares different agent architectures in survival environments
-   - Includes Random, Reactive, DQN, and IPI agents
+   - Includes Random, Reactive, DQN, and APGI agents
    - Grid world environment with food, obstacles, and predators
    - Performance metrics: survival time, energy efficiency, food consumption
 
 ### Demonstration Scripts
 
-1. **IPI Model Demonstrations** (`run_experiments.py`)
+1. **APGI Model Demonstrations** (`run_experiments.py`)
    - Threshold effects on ignition probability
    - Somatic marker influence on decision making
    - Precision parameter effects
@@ -155,16 +155,16 @@ python launch_gui.py
 
 ```bash
 # Run primary falsification test
-python -m ipi_framework.cli run-test primary --trials 1000
+python -m apgi_framework.cli run-test primary --trials 1000
 
 # Run all tests
-python -m ipi_framework.cli run-batch --all-tests
+python -m apgi_framework.cli run-batch --all-tests
 ```
 
 **Using Python API:**
 
 ```python
-from ipi_framework.main_controller import MainApplicationController
+from apgi_framework.main_controller import MainApplicationController
 
 # Initialize system
 controller = MainApplicationController()
@@ -180,13 +180,13 @@ print(f"Confidence: {result.confidence_level:.2f}")
 controller.shutdown_system()
 ```
 
-## Running the IPI Agent
+## Running the APGI Agent
 
 ```python
-from core.models.ipi_agent import IPIAgent
+from core.models.apgi_agent import APGIAgent
 
 # Create and run agent with default parameters
-agent = IPIAgent()
+agent = APGIAgent()
 agent.run_example()  # Runs simulation and shows plots
 ```
 

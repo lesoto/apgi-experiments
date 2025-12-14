@@ -20,8 +20,8 @@ from typing import List, Dict, Any
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from ipi_framework.data import StorageManager, DataExporter, IPIVisualizer
-from ipi_framework.core import FalsificationResult
+from apgi_framework.data import StorageManager, DataExporter, APGIVisualizer
+from apgi_framework.core import FalsificationResult
 import logging
 
 # Setup logging
@@ -369,7 +369,7 @@ def export_analysis_report(results: List[Dict[str, Any]], output_file: str = "an
 
 if __name__ == '__main__':
     print("\n" + "="*70)
-    print("IPI Framework - Custom Analysis Examples")
+    print("APGI Framework - Custom Analysis Examples")
     print("="*70 + "\n")
     
     # Load saved results

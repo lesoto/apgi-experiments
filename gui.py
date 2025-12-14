@@ -31,7 +31,7 @@ class StreamRedirector:
 class ExperimentGUI(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("IPI Experiments Runner")
+        self.title("APGI Experiments Runner")
         self.geometry("900x600")
 
         self.experiments = get_available_experiments()

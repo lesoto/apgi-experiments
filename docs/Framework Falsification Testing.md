@@ -1,10 +1,10 @@
-# IPI Framework Documentation
+# APGI Framework Documentation
 
-Welcome to the IPI Framework Falsification Testing System documentation.
+Welcome to the APGI Framework Falsification Testing System documentation.
 
 ## 📚 Documentation Overview
 
-This directory contains comprehensive documentation for using, understanding, and troubleshooting the IPI Framework.
+This directory contains comprehensive documentation for using, understanding, and troubleshooting the APGI Framework.
 
 ## 🚀 Getting Started
 
@@ -58,9 +58,9 @@ This directory contains comprehensive documentation for using, understanding, an
 
 | Document | Description | When to Use |
 |----------|-------------|-------------|
-| [IPI Falsification](../IPI-Falsification.md) | Falsification theory | Understanding the science |
-| [IPI Ignition Equation](../IPI-Ignition-Equation.md) | Mathematical framework | Understanding the math |
-| [IPI Testable Predictions](../IPI-Testable-Predictions.md) | Framework predictions | Understanding predictions |
+| [APGI Falsification](../APGI-Falsification.md) | Falsification theory | Understanding the science |
+| [APGI Ignition Equation](../APGI-Ignition-Equation.md) | Mathematical framework | Understanding the math |
+| [APGI Testable Predictions](../APGI-Testable-Predictions.md) | Framework predictions | Understanding predictions |
 
 ### Implementation Documentation
 
@@ -115,9 +115,9 @@ This directory contains comprehensive documentation for using, understanding, an
 2. [User Guide - Troubleshooting Section](USER_GUIDE.md#troubleshooting)
 
 #### Understand the theory
-1. [IPI Falsification](../IPI-Falsification.md)
-2. [IPI Ignition Equation](../IPI-Ignition-Equation.md)
-3. [IPI Testable Predictions](../IPI-Testable-Predictions.md)
+1. [APGI Falsification](../APGI-Falsification.md)
+2. [APGI Ignition Equation](../APGI-Ignition-Equation.md)
+3. [APGI Testable Predictions](../APGI-Testable-Predictions.md)
 
 #### Extend the framework
 1. [Example 04](../examples/04_extending_falsification_criteria.py)
@@ -129,7 +129,7 @@ This directory contains comprehensive documentation for using, understanding, an
 **Start here:**
 1. [Quick Start Guide](QUICK_START_GUIDE.md)
 2. [Results Interpretation Guide](RESULTS_INTERPRETATION_GUIDE.md)
-3. [IPI Falsification](../IPI-Falsification.md)
+3. [APGI Falsification](../APGI-Falsification.md)
 
 **Then explore:**
 - [User Guide](USER_GUIDE.md) - Complete reference
@@ -144,7 +144,7 @@ This directory contains comprehensive documentation for using, understanding, an
 
 **Then explore:**
 - [User Guide](USER_GUIDE.md) - Detailed instructions
-- [IPI Falsification](../IPI-Falsification.md) - Theory
+- [APGI Falsification](../APGI-Falsification.md) - Theory
 - [Results Interpretation Guide](RESULTS_INTERPRETATION_GUIDE.md) - Understanding results
 
 ### Developers
@@ -155,7 +155,7 @@ This directory contains comprehensive documentation for using, understanding, an
 
 **Then explore:**
 - Implementation summaries
-- Code in `ipi_framework/`
+- Code in `apgi_framework/`
 - [Parameter Validation Guide](parameter_validation_guide.md)
 
 ### System Administrators
@@ -174,16 +174,16 @@ This directory contains comprehensive documentation for using, understanding, an
 
 ```bash
 # Validate system
-python -m ipi_framework.cli validate-system
+python -m apgi_framework.cli validate-system
 
 # Run primary test
-python -m ipi_framework.cli run-test primary --trials 1000
+python -m apgi_framework.cli run-test primary --trials 1000
 
 # Run all tests
-python -m ipi_framework.cli run-batch --all-tests
+python -m apgi_framework.cli run-batch --all-tests
 
 # Generate configuration
-python -m ipi_framework.cli generate-config --output config.json
+python -m apgi_framework.cli generate-config --output config.json
 
 # Launch GUI
 python launch_gui.py
@@ -240,20 +240,20 @@ All documentation follows these standards:
 
 5. **Enable Debug Logging**
    ```bash
-   python -m ipi_framework.cli --log-level DEBUG run-test primary
+   python -m apgi_framework.cli --log-level DEBUG run-test primary
    ```
 
 6. **Run System Validation**
    ```bash
-   python -m ipi_framework.cli validate-system --detailed
+   python -m apgi_framework.cli validate-system --detailed
    ```
 
 ### Support Resources
 
 - **Documentation**: This directory
 - **Examples**: `../examples/` directory
-- **Logs**: `results/ipi_framework.log`
-- **System Validation**: `python -m ipi_framework.cli validate-system`
+- **Logs**: `results/apgi_framework.log`
+- **System Validation**: `python -m apgi_framework.cli validate-system`
 
 ## 📦 Documentation Structure
 
@@ -277,9 +277,9 @@ docs/
 │   └── ERROR_HANDLING_QUICK_REFERENCE.md       ← Error patterns
 │
 ├── Theory/
-│   ├── ../IPI-Falsification.md                 ← Falsification theory
-│   ├── ../IPI-Ignition-Equation.md             ← Mathematical framework
-│   └── ../IPI-Testable-Predictions.md          ← Framework predictions
+│   ├── ../APGI-Falsification.md                 ← Falsification theory
+│   ├── ../APGI-Ignition-Equation.md             ← Mathematical framework
+│   └── ../APGI-Testable-Predictions.md          ← Framework predictions
 │
 └── Implementation/
     ├── TASK_3.1_IMPLEMENTATION_SUMMARY.md      ← Validation implementation
@@ -325,8 +325,8 @@ To improve documentation:
 
 ### Advanced Path (5-8 hours)
 1. Complete Intermediate Path
-2. [IPI Falsification Theory](../IPI-Falsification.md) - 1 hour
-3. [IPI Ignition Equation](../IPI-Ignition-Equation.md) - 1 hour
+2. [APGI Falsification Theory](../APGI-Falsification.md) - 1 hour
+3. [APGI Ignition Equation](../APGI-Ignition-Equation.md) - 1 hour
 4. [Extending Framework Example](../examples/04_extending_falsification_criteria.py) - 1 hour
 5. [Error Handling Reference](ERROR_HANDLING_QUICK_REFERENCE.md) - 30 min
 6. Explore source code - 2+ hours
@@ -352,4 +352,4 @@ For questions, issues, or contributions:
 
 **Version:** 1.0  
 **Last Updated:** 2025-01-07  
-**Maintainer:** IPI Framework Development Team
+**Maintainer:** APGI Framework Development Team

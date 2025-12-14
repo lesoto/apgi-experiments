@@ -1,6 +1,6 @@
-# IPI Framework Documentation Index
+# APGI Framework Documentation Index
 
-Complete documentation for the IPI Framework Falsification Testing System.
+Complete documentation for the APGI Framework Falsification Testing System.
 
 ## Quick Start
 
@@ -36,9 +36,9 @@ Complete documentation for the IPI Framework Falsification Testing System.
 
 | Document | Description | Audience |
 |----------|-------------|----------|
-| [IPI Falsification](../IPI-Falsification.md) | Theoretical basis for falsification testing | Researchers |
-| [IPI Ignition Equation](../IPI-Ignition-Equation.md) | Mathematical framework documentation | Researchers |
-| [IPI Testable Predictions](../IPI-Testable-Predictions.md) | Framework predictions and tests | Researchers |
+| [APGI Falsification](../APGI-Falsification.md) | Theoretical basis for falsification testing | Researchers |
+| [APGI Ignition Equation](../APGI-Ignition-Equation.md) | Mathematical framework documentation | Researchers |
+| [APGI Testable Predictions](../APGI-Testable-Predictions.md) | Framework predictions and tests | Researchers |
 
 ## Examples and Tutorials
 
@@ -73,8 +73,8 @@ See [Examples README](../examples/README.md) for detailed descriptions and usage
 3. Try basic commands:
 
     ```bash
-    python -m ipi_framework.cli validate-system
-    python -m ipi_framework.cli run-test primary --trials 1000
+    python -m apgi_framework.cli validate-system
+    python -m apgi_framework.cli run-test primary --trials 1000
     ```
 
 **I want to use the GUI:**
@@ -127,7 +127,7 @@ See [Examples README](../examples/README.md) for detailed descriptions and usage
 **Something isn't working:**
 
 1. Check [Troubleshooting Guide](TROUBLESHOOTING.md)
-2. Run system validation: `python -m ipi_framework.cli validate-system --detailed`
+2. Run system validation: `python -m apgi_framework.cli validate-system --detailed`
 3. Enable debug logging: `--log-level DEBUG`
 4. Review [Common Issues](TROUBLESHOOTING.md#common-issues-and-solutions)
 
@@ -135,24 +135,24 @@ See [Examples README](../examples/README.md) for detailed descriptions and usage
 
 - [Troubleshooting - Error Categories](TROUBLESHOOTING.md)
 - [Error Handling Quick Reference](ERROR_HANDLING_QUICK_REFERENCE.md)
-- Check logs: `cat results/ipi_framework.log`
+- Check logs: `cat results/apgi_framework.log`
 
 ### Advanced Usage
 
 **I want to extend the framework:**
 
 - [Example 04](../examples/04_extending_falsification_criteria.py)
-- Review existing test implementations in `ipi_framework/falsification/`
+- Review existing test implementations in `apgi_framework/falsification/`
 
 **I want to understand the theory:**
 
-- [IPI Falsification](../IPI-Falsification.md)
-- [IPI Ignition Equation](../IPI-Ignition-Equation.md)
-- [IPI Testable Predictions](../IPI-Testable-Predictions.md)
+- [APGI Falsification](../APGI-Falsification.md)
+- [APGI Ignition Equation](../APGI-Ignition-Equation.md)
+- [APGI Testable Predictions](../APGI-Testable-Predictions.md)
 
 **I want to contribute:**
 
-- Review code in `ipi_framework/`
+- Review code in `apgi_framework/`
 - Check [Error Handling Quick Reference](ERROR_HANDLING_QUICK_REFERENCE.md)
 - Follow patterns in existing examples
 
@@ -164,7 +164,7 @@ See [Examples README](../examples/README.md) for detailed descriptions and usage
 
 1. [User Guide](USER_GUIDE.md)
 2. [Results Interpretation Guide](RESULTS_INTERPRETATION_GUIDE.md)
-3. [IPI Falsification](../IPI-Falsification.md)
+3. [APGI Falsification](../APGI-Falsification.md)
 4. [Examples](../examples/README.md)
 
 **Workflow:**
@@ -181,7 +181,7 @@ See [Examples README](../examples/README.md) for detailed descriptions and usage
 1. [Error Handling Quick Reference](ERROR_HANDLING_QUICK_REFERENCE.md)
 2. [Validation Quick Reference](../VALIDATION_QUICK_REFERENCE.md)
 3. [Example 04 - Extending Framework](../examples/04_extending_falsification_criteria.py)
-4. Code in `ipi_framework/`
+4. Code in `apgi_framework/`
 
 **Workflow:**
 
@@ -213,7 +213,7 @@ See [Examples README](../examples/README.md) for detailed descriptions and usage
 2. [GUI Visual Guide](GUI_VISUAL_GUIDE.md)
 3. [User Guide](USER_GUIDE.md)
 4. [Examples](../examples/README.md)
-5. [IPI Falsification](../IPI-Falsification.md)
+5. [APGI Falsification](../APGI-Falsification.md)
 
 **Workflow:**
 
@@ -229,26 +229,26 @@ See [Examples README](../examples/README.md) for detailed descriptions and usage
 
 ```bash
 # System validation
-python -m ipi_framework.cli validate-system
+python -m apgi_framework.cli validate-system
 
 # Run primary test
-python -m ipi_framework.cli run-test primary --trials 1000
+python -m apgi_framework.cli run-test primary --trials 1000
 
 # Run all tests
-python -m ipi_framework.cli run-batch --all-tests
+python -m apgi_framework.cli run-batch --all-tests
 
 # Generate configuration
-python -m ipi_framework.cli generate-config --output config.json
+python -m apgi_framework.cli generate-config --output config.json
 
 # Check status
-python -m ipi_framework.cli status
+python -m apgi_framework.cli status
 ```
 
 ### Common Python Patterns
 
 ```python
 # Initialize system
-from ipi_framework.main_controller import MainApplicationController
+from apgi_framework.main_controller import MainApplicationController
 
 controller = MainApplicationController()
 controller.initialize_system()
@@ -286,7 +286,7 @@ controller.shutdown_system()
 
 - **Current Version**: 1.0
 - **Last Updated**: 2025-01-07
-- **Maintainer**: IPI Framework Development Team
+- **Maintainer**: APGI Framework Development Team
 
 ### Contributing to Documentation
 
@@ -317,7 +317,7 @@ To improve documentation:
 
 ### Related Projects
 
-- IPI Framework Core Implementation
+- APGI Framework Core Implementation
 - Neural Signature Simulators
 - Statistical Analysis Tools
 

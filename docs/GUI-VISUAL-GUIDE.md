@@ -1,6 +1,6 @@
-# IPI Framework GUI - Visual Guide
+# APGI Framework GUI - Visual Guide
 
-A visual walkthrough of the IPI Framework Falsification Testing System GUI.
+A visual walkthrough of the APGI Framework Falsification Testing System GUI.
 
 ## Table of Contents
 
@@ -116,14 +116,14 @@ The left panel contains buttons for each falsification test type.
 
 ## Parameter Configuration
 
-The center panel allows you to configure IPI parameters and experimental settings.
+The center panel allows you to configure APGI parameters and experimental settings.
 
 ```
 ┌─────────────────────────────────┐
 │   Parameter Configuration       │
 ├─────────────────────────────────┤
 │                                 │
-│  IPI Parameters                 │
+│  APGI Parameters                 │
 │  ───────────────                │
 │                                 │
 │  Exteroceptive Precision:       │
@@ -499,7 +499,7 @@ Help
 │  ├─ Custom Analysis
 │  └─ Extending Framework
 ├─ ─────────────────
-├─ About IPI Framework
+├─ About APGI Framework
 └─ Check for Updates
 ```
 

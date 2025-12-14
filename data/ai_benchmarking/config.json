@@ -1,7 +1,7 @@
 {
   "n_episodes": 100,
   "max_steps": 1000,
-  "n_agents_per_type": 1,
+  "n_agents_per_type": 3,
   "world_size": 20,
   "n_food": 30,
   "n_obstacles": 20,

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The IPI Framework Parameter Estimation Pipeline is designed as a modular, real-time neuroscience research platform that integrates behavioral task presentation, multi-modal physiological data acquisition (EEG, pupillometry, cardiac), and advanced statistical modeling. The system architecture follows a layered approach with clear separation between data acquisition, signal processing, task control, and statistical analysis components.
+The APGI Framework Parameter Estimation Pipeline is designed as a modular, real-time neuroscience research platform that integrates behavioral task presentation, multi-modal physiological data acquisition (EEG, pupillometry, cardiac), and advanced statistical modeling. The system architecture follows a layered approach with clear separation between data acquisition, signal processing, task control, and statistical analysis components.
 
 The core design philosophy emphasizes:
 - Real-time processing capabilities for immediate feedback

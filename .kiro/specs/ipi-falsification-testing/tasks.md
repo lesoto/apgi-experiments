@@ -2,8 +2,8 @@
 
 ## Overview
 
-The IPI Framework Falsification Testing System is substantially complete with all core components implemented:
-- ✅ Mathematical framework (IPI equation, precision, prediction errors, thresholds)
+The APGI Framework Falsification Testing System is substantially complete with all core components implemented:
+- ✅ Mathematical framework (APGI equation, precision, prediction errors, thresholds)
 - ✅ Neural signature simulators (P3b, gamma, BOLD, PCI)
 - ✅ All four falsification test controllers (primary, consciousness-without-ignition, threshold-insensitivity, soma-bias)
 - ✅ Statistical analysis engine with effect sizes and power calculations
@@ -82,7 +82,7 @@ The following tasks represent the final integration and testing work needed:
 ## Completed Tasks
 
 - [x] Core mathematical framework implementation
-  - IPI equation with integrated components
+  - APGI equation with integrated components
   - Precision calculator with validation
   - Prediction error processor with standardization
   - Somatic marker engine with gain modulation

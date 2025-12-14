@@ -1,6 +1,6 @@
-# IPI Framework CLI Reference
+# APGI Framework CLI Reference
 
-Complete command-line interface reference for the IPI Framework Falsification Testing System.
+Complete command-line interface reference for the APGI Framework Falsification Testing System.
 
 ## Table of Contents
 
@@ -14,23 +14,23 @@ Complete command-line interface reference for the IPI Framework Falsification Te
 
 ## Overview
 
-The IPI Framework CLI provides comprehensive command-line access to all falsification testing capabilities.
+The APGI Framework CLI provides comprehensive command-line access to all falsification testing capabilities.
 
 ### Basic Usage
 
 ```bash
-python -m ipi_framework.cli [GLOBAL_OPTIONS] COMMAND [COMMAND_OPTIONS]
+python -m apgi_framework.cli [GLOBAL_OPTIONS] COMMAND [COMMAND_OPTIONS]
 ```
 
 ### Getting Help
 
 ```bash
 # General help
-python -m ipi_framework.cli --help
+python -m apgi_framework.cli --help
 
 # Command-specific help
-python -m ipi_framework.cli run-test --help
-python -m ipi_framework.cli run-batch --help
+python -m apgi_framework.cli run-test --help
+python -m apgi_framework.cli run-batch --help
 ```
 
 ## Global Options
@@ -42,7 +42,7 @@ Options that apply to all commands.
 Specify configuration file path.
 
 ```bash
-python -m ipi_framework.cli --config config.json run-test primary
+python -m apgi_framework.cli --config config.json run-test primary
 ```
 
 - **Type**: String (file path)
@@ -54,7 +54,7 @@ python -m ipi_framework.cli --config config.json run-test primary
 Set logging verbosity level.
 
 ```bash
-python -m ipi_framework.cli --log-level DEBUG run-test primary
+python -m apgi_framework.cli --log-level DEBUG run-test primary
 ```
 
 - **Type**: Choice (DEBUG, INFO, WARNING, ERROR)
@@ -73,7 +73,7 @@ python -m ipi_framework.cli --log-level DEBUG run-test primary
 Specify output directory for results.
 
 ```bash
-python -m ipi_framework.cli --output-dir results/my_experiment run-test primary
+python -m apgi_framework.cli --output-dir results/my_experiment run-test primary
 ```
 
 **Type**: String (directory path)  
@@ -89,7 +89,7 @@ Run an individual falsification test.
 #### Syntax
 
 ```bash
-python -m ipi_framework.cli run-test TEST_TYPE [OPTIONS]
+python -m apgi_framework.cli run-test TEST_TYPE [OPTIONS]
 ```
 
 #### Arguments
@@ -112,7 +112,7 @@ Type of falsification test to run.
 Number of trials to simulate.
 
 ```bash
-python -m ipi_framework.cli run-test primary --trials 2000
+python -m apgi_framework.cli run-test primary --trials 2000
 ```
 
 **Type**: Integer  
@@ -125,7 +125,7 @@ python -m ipi_framework.cli run-test primary --trials 2000
 Number of participants to simulate (for multi-participant tests).
 
 ```bash
-python -m ipi_framework.cli run-test soma-bias --participants 200
+python -m apgi_framework.cli run-test soma-bias --participants 200
 ```
 
 **Type**: Integer  
@@ -139,7 +139,7 @@ python -m ipi_framework.cli run-test soma-bias --participants 200
 Random seed for reproducibility.
 
 ```bash
-python -m ipi_framework.cli run-test primary --seed 42
+python -m apgi_framework.cli run-test primary --seed 42
 ```
 
 **Type**: Integer  
@@ -150,16 +150,16 @@ python -m ipi_framework.cli run-test primary --seed 42
 
 ```bash
 # Basic primary test
-python -m ipi_framework.cli run-test primary
+python -m apgi_framework.cli run-test primary
 
 # High-power test with reproducibility
-python -m ipi_framework.cli run-test primary --trials 5000 --seed 42
+python -m apgi_framework.cli run-test primary --trials 5000 --seed 42
 
 # Soma-bias test with many participants
-python -m ipi_framework.cli run-test soma-bias --participants 500
+python -m apgi_framework.cli run-test soma-bias --participants 500
 
 # With custom output directory
-python -m ipi_framework.cli run-test primary \
+python -m apgi_framework.cli run-test primary \
     --trials 2000 \
     --output-dir results/experiment_001
 ```
@@ -171,7 +171,7 @@ Run multiple falsification tests in batch mode.
 #### Syntax
 
 ```bash
-python -m ipi_framework.cli run-batch [OPTIONS]
+python -m apgi_framework.cli run-batch [OPTIONS]
 ```
 
 #### Options
@@ -181,7 +181,7 @@ python -m ipi_framework.cli run-batch [OPTIONS]
 Run all available falsification tests.
 
 ```bash
-python -m ipi_framework.cli run-batch --all-tests
+python -m apgi_framework.cli run-batch --all-tests
 ```
 
 **Type**: Flag  
@@ -193,7 +193,7 @@ python -m ipi_framework.cli run-batch --all-tests
 Specify which tests to run.
 
 ```bash
-python -m ipi_framework.cli run-batch --tests primary soma-bias
+python -m apgi_framework.cli run-batch --tests primary soma-bias
 ```
 
 **Type**: List of choices  
@@ -206,7 +206,7 @@ python -m ipi_framework.cli run-batch --tests primary soma-bias
 Run tests in parallel (experimental feature).
 
 ```bash
-python -m ipi_framework.cli run-batch --all-tests --parallel
+python -m apgi_framework.cli run-batch --all-tests --parallel
 ```
 
 **Type**: Flag  
@@ -218,16 +218,16 @@ python -m ipi_framework.cli run-batch --all-tests --parallel
 
 ```bash
 # Run all tests
-python -m ipi_framework.cli run-batch --all-tests
+python -m apgi_framework.cli run-batch --all-tests
 
 # Run specific tests
-python -m ipi_framework.cli run-batch --tests primary consciousness-without-ignition
+python -m apgi_framework.cli run-batch --tests primary consciousness-without-ignition
 
 # Run all tests with custom config
-python -m ipi_framework.cli --config my_config.json run-batch --all-tests
+python -m apgi_framework.cli --config my_config.json run-batch --all-tests
 
 # Parallel execution (experimental)
-python -m ipi_framework.cli run-batch --all-tests --parallel
+python -m apgi_framework.cli run-batch --all-tests --parallel
 ```
 
 ### generate-config
@@ -237,7 +237,7 @@ Generate a configuration file template.
 #### Syntax
 
 ```bash
-python -m ipi_framework.cli generate-config [OPTIONS]
+python -m apgi_framework.cli generate-config [OPTIONS]
 ```
 
 #### Options
@@ -247,11 +247,11 @@ python -m ipi_framework.cli generate-config [OPTIONS]
 Output file path for configuration.
 
 ```bash
-python -m ipi_framework.cli generate-config --output my_config.json
+python -m apgi_framework.cli generate-config --output my_config.json
 ```
 
 **Type**: String (file path)  
-**Default**: "ipi_config.json"  
+**Default**: "apgi_config.json"  
 **Required**: No
 
 **--template**
@@ -259,7 +259,7 @@ python -m ipi_framework.cli generate-config --output my_config.json
 Configuration template type.
 
 ```bash
-python -m ipi_framework.cli generate-config --template comprehensive
+python -m apgi_framework.cli generate-config --template comprehensive
 ```
 
 **Type**: Choice  
@@ -276,15 +276,15 @@ python -m ipi_framework.cli generate-config --template comprehensive
 
 ```bash
 # Generate default configuration
-python -m ipi_framework.cli generate-config
+python -m apgi_framework.cli generate-config
 
 # Generate minimal configuration
-python -m ipi_framework.cli generate-config \
+python -m apgi_framework.cli generate-config \
     --template minimal \
     --output minimal_config.json
 
 # Generate comprehensive configuration
-python -m ipi_framework.cli generate-config \
+python -m apgi_framework.cli generate-config \
     --template comprehensive \
     --output full_config.json
 ```
@@ -296,7 +296,7 @@ Validate system components and configuration.
 #### Syntax
 
 ```bash
-python -m ipi_framework.cli validate-system [OPTIONS]
+python -m apgi_framework.cli validate-system [OPTIONS]
 ```
 
 #### Options
@@ -306,7 +306,7 @@ python -m ipi_framework.cli validate-system [OPTIONS]
 Show detailed validation results for each component.
 
 ```bash
-python -m ipi_framework.cli validate-system --detailed
+python -m apgi_framework.cli validate-system --detailed
 ```
 
 **Type**: Flag  
@@ -317,13 +317,13 @@ python -m ipi_framework.cli validate-system --detailed
 
 ```bash
 # Basic validation
-python -m ipi_framework.cli validate-system
+python -m apgi_framework.cli validate-system
 
 # Detailed validation
-python -m ipi_framework.cli validate-system --detailed
+python -m apgi_framework.cli validate-system --detailed
 
 # Validate with specific configuration
-python -m ipi_framework.cli --config my_config.json validate-system --detailed
+python -m apgi_framework.cli --config my_config.json validate-system --detailed
 ```
 
 #### Output
@@ -354,24 +354,24 @@ Show current system status and configuration.
 #### Syntax
 
 ```bash
-python -m ipi_framework.cli status
+python -m apgi_framework.cli status
 ```
 
 #### Examples
 
 ```bash
 # Show system status
-python -m ipi_framework.cli status
+python -m apgi_framework.cli status
 
 # Show status with specific configuration
-python -m ipi_framework.cli --config my_config.json status
+python -m apgi_framework.cli --config my_config.json status
 ```
 
 #### Output
 
 ```
 ==================================================
-IPI Framework System Status
+APGI Framework System Status
 ==================================================
 Initialized: YES
 Components Registered: YES
@@ -386,12 +386,12 @@ Last Updated: 2025-01-07T10:30:45
 
 ### set-params
 
-Set IPI parameter values.
+Set APGI parameter values.
 
 #### Syntax
 
 ```bash
-python -m ipi_framework.cli set-params [OPTIONS]
+python -m apgi_framework.cli set-params [OPTIONS]
 ```
 
 #### Options
@@ -401,7 +401,7 @@ python -m ipi_framework.cli set-params [OPTIONS]
 Set exteroceptive precision value.
 
 ```bash
-python -m ipi_framework.cli set-params --extero-precision 2.5
+python -m apgi_framework.cli set-params --extero-precision 2.5
 ```
 
 **Type**: Float  
@@ -414,7 +414,7 @@ python -m ipi_framework.cli set-params --extero-precision 2.5
 Set interoceptive precision value.
 
 ```bash
-python -m ipi_framework.cli set-params --intero-precision 2.0
+python -m apgi_framework.cli set-params --intero-precision 2.0
 ```
 
 **Type**: Float  
@@ -427,7 +427,7 @@ python -m ipi_framework.cli set-params --intero-precision 2.0
 Set ignition threshold value.
 
 ```bash
-python -m ipi_framework.cli set-params --threshold 3.0
+python -m apgi_framework.cli set-params --threshold 3.0
 ```
 
 **Type**: Float  
@@ -440,7 +440,7 @@ python -m ipi_framework.cli set-params --threshold 3.0
 Set sigmoid steepness value.
 
 ```bash
-python -m ipi_framework.cli set-params --steepness 2.5
+python -m apgi_framework.cli set-params --steepness 2.5
 ```
 
 **Type**: Float  
@@ -453,7 +453,7 @@ python -m ipi_framework.cli set-params --steepness 2.5
 Set somatic marker gain value.
 
 ```bash
-python -m ipi_framework.cli set-params --somatic-gain 1.5
+python -m apgi_framework.cli set-params --somatic-gain 1.5
 ```
 
 **Type**: Float  
@@ -465,16 +465,16 @@ python -m ipi_framework.cli set-params --somatic-gain 1.5
 
 ```bash
 # Set single parameter
-python -m ipi_framework.cli set-params --threshold 3.0
+python -m apgi_framework.cli set-params --threshold 3.0
 
 # Set multiple parameters
-python -m ipi_framework.cli set-params \
+python -m apgi_framework.cli set-params \
     --extero-precision 2.5 \
     --intero-precision 2.0 \
     --threshold 3.0
 
 # Set all parameters
-python -m ipi_framework.cli set-params \
+python -m apgi_framework.cli set-params \
     --extero-precision 2.5 \
     --intero-precision 2.0 \
     --threshold 3.0 \
@@ -484,7 +484,7 @@ python -m ipi_framework.cli set-params \
 
 ## Parameter Reference
 
-### IPI Parameters
+### APGI Parameters
 
 #### extero_precision
 
@@ -628,7 +628,7 @@ Configuration files use JSON format.
 
 ```json
 {
-  "ipi_parameters": {
+  "apgi_parameters": {
     "extero_precision": 2.0,
     "intero_precision": 1.5,
     "extero_error": 1.2,
@@ -659,13 +659,13 @@ Configuration files use JSON format.
 
 ```bash
 # Run test with configuration
-python -m ipi_framework.cli --config config.json run-test primary
+python -m apgi_framework.cli --config config.json run-test primary
 
 # Generate configuration template
-python -m ipi_framework.cli generate-config --output config.json
+python -m apgi_framework.cli generate-config --output config.json
 
 # Validate configuration
-python -m ipi_framework.cli --config config.json validate-system
+python -m apgi_framework.cli --config config.json validate-system
 ```
 
 ## Examples
@@ -674,23 +674,23 @@ python -m ipi_framework.cli --config config.json validate-system
 
 ```bash
 # 1. Generate configuration
-python -m ipi_framework.cli generate-config --output my_config.json
+python -m apgi_framework.cli generate-config --output my_config.json
 
 # 2. Validate system
-python -m ipi_framework.cli --config my_config.json validate-system
+python -m apgi_framework.cli --config my_config.json validate-system
 
 # 3. Run primary test
-python -m ipi_framework.cli --config my_config.json run-test primary --trials 1000
+python -m apgi_framework.cli --config my_config.json run-test primary --trials 1000
 
 # 4. Check status
-python -m ipi_framework.cli status
+python -m apgi_framework.cli status
 ```
 
 ### Example 2: Batch Processing
 
 ```bash
 # Run all tests with custom configuration
-python -m ipi_framework.cli \
+python -m apgi_framework.cli \
     --config my_config.json \
     --output-dir results/batch_001 \
     run-batch --all-tests
@@ -701,8 +701,8 @@ python -m ipi_framework.cli \
 ```bash
 # Test different threshold values
 for threshold in 2.0 2.5 3.0 3.5 4.0; do
-    python -m ipi_framework.cli set-params --threshold $threshold
-    python -m ipi_framework.cli run-test primary \
+    python -m apgi_framework.cli set-params --threshold $threshold
+    python -m apgi_framework.cli run-test primary \
         --trials 1000 \
         --output-dir results/threshold_$threshold
 done
@@ -712,14 +712,14 @@ done
 
 ```bash
 # Set up reproducible experiment
-python -m ipi_framework.cli generate-config \
+python -m apgi_framework.cli generate-config \
     --template comprehensive \
     --output experiment_config.json
 
 # Edit config to set random_seed: 42
 
 # Run with fixed seed
-python -m ipi_framework.cli \
+python -m apgi_framework.cli \
     --config experiment_config.json \
     run-test primary \
     --seed 42 \
@@ -730,7 +730,7 @@ python -m ipi_framework.cli \
 
 ```bash
 # Run high-power test with detailed logging
-python -m ipi_framework.cli \
+python -m apgi_framework.cli \
     --log-level DEBUG \
     --output-dir results/high_power \
     run-test primary \
@@ -753,21 +753,21 @@ The CLI uses standard exit codes:
 
 ```bash
 # Bash
-python -m ipi_framework.cli run-test primary
+python -m apgi_framework.cli run-test primary
 echo $?  # Prints exit code
 
 # PowerShell
-python -m ipi_framework.cli run-test primary
+python -m apgi_framework.cli run-test primary
 echo $LASTEXITCODE  # Prints exit code
 ```
 
 ### Using Exit Codes in Scripts
 
-```bash
+```
 #!/bin/bash
 
 # Run test and check result
-if python -m ipi_framework.cli run-test primary --trials 1000; then
+if python -m apgi_framework.cli run-test primary --trials 1000; then
     echo "Test completed successfully"
 else
     echo "Test failed with exit code $?"
@@ -798,7 +798,7 @@ Always set random seeds for:
 Always validate the system before important experiments:
 
 ```bash
-python -m ipi_framework.cli validate-system --detailed
+python -m apgi_framework.cli validate-system --detailed
 ```
 
 ### 4. Use Descriptive Output Directories
@@ -806,7 +806,7 @@ python -m ipi_framework.cli validate-system --detailed
 Organize results with descriptive names:
 
 ```bash
-python -m ipi_framework.cli run-test primary \
+python -m apgi_framework.cli run-test primary \
     --output-dir results/2025-01-07_primary_threshold_exploration
 ```
 
@@ -815,7 +815,7 @@ python -m ipi_framework.cli run-test primary \
 When encountering issues:
 
 ```bash
-python -m ipi_framework.cli --log-level DEBUG run-test primary
+python -m apgi_framework.cli --log-level DEBUG run-test primary
 ```
 
 ### 6. Save Configurations with Results
@@ -824,10 +824,10 @@ Keep configuration files with results for documentation:
 
 ```bash
 # Generate config
-python -m ipi_framework.cli generate-config --output results/experiment_001/config.json
+python -m apgi_framework.cli generate-config --output results/experiment_001/config.json
 
 # Run with that config
-python -m ipi_framework.cli \
+python -m apgi_framework.cli \
     --config results/experiment_001/config.json \
     --output-dir results/experiment_001 \
     run-test primary

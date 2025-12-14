@@ -1,12 +1,12 @@
 """
-IPI Framework Experiments
+APGI Framework Experiments
 
-This script demonstrates the IPI model through several experiments that explore different aspects of the ignition threshold mechanism.
+This script demonstrates the APGI model through several experiments that explore different aspects of the ignition threshold mechanism.
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
-from ipi_model import IPIModel, IPIParams, plot_simulation
+from apgi_model import APGIModel, APGIParams, plot_simulation
 from typing import List, Dict, Any, Tuple
 import argparse
 import importlib
@@ -69,8 +69,8 @@ def experiment_threshold_effects():
     plt.figure(figsize=(12, 6))
     
     for theta in thresholds:
-        params = IPIParams(theta_base=theta, n_steps=500)
-        model = IPIModel(params)
+        params = APGIParams(theta_base=theta, n_steps=500)
+        model = APGIModel(params)
         
         # Run multiple simulations for each threshold
         all_B = []
@@ -103,8 +103,8 @@ def experiment_somatic_markers():
     
     # Test different somatic marker values
     mc_a_values = [0.1, 0.5, 1.0, 2.0]
-    params = IPIParams(n_steps=1000)
-    model = IPIModel(params)
+    params = APGIParams(n_steps=1000)
+    model = APGIModel(params)
     
     plt.figure(figsize=(12, 8))
     
@@ -146,13 +146,13 @@ def experiment_precision_effects():
     axes = axes.flatten()
     
     for idx, (sigma_pe, sigma_pi) in enumerate(precision_combinations):
-        params = IPIParams(
+        params = APGIParams(
             n_steps=n_steps,
             sigma_pe=sigma_pe,
             sigma_pi=sigma_pi,
             theta_base=5.0
         )
-        model = IPIModel(params)
+        model = APGIModel(params)
         
         # Run multiple simulations
         ignition_counts = np.zeros(n_steps)
@@ -181,9 +181,9 @@ def experiment_dynamic_threshold():
     """Experiment 4: Dynamic threshold based on context."""
     print("Running Experiment 4: Dynamic Threshold")
     
-    class DynamicThresholdModel(IPIModel):
-        """Extends IPIModel with dynamic threshold based on surprise history."""
-        def __init__(self, params: IPIParams):
+    class DynamicThresholdModel(APGIModel):
+        """Extends APGIModel with dynamic threshold based on surprise history."""
+        def __init__(self, params: APGIParams):
             super().__init__(params)
             self.theta = params.theta_base
             self.adaptation_rate = 0.01
@@ -195,8 +195,8 @@ def experiment_dynamic_threshold():
             return self.theta
     
     # Create models
-    static_model = IPIModel(IPIParams(n_steps=1000, theta_base=5.0))
-    dynamic_model = DynamicThresholdModel(IPIParams(n_steps=1000, theta_base=5.0))
+    static_model = APGIModel(APGIParams(n_steps=1000, theta_base=5.0))
+    dynamic_model = DynamicThresholdModel(APGIParams(n_steps=1000, theta_base=5.0))
     
     # Run simulations
     S_static, B_static, theta_static = static_model.simulate()
@@ -258,7 +258,7 @@ def experiment_dynamic_threshold():
 
 def main_demo():
     """Run all experiments."""
-    print("Starting IPI Framework Experiments")
+    print("Starting APGI Framework Experiments")
     print("-" * 50)
     
     # Run experiments
@@ -275,7 +275,7 @@ def main():
         # No arguments: run the demo suite
         return main_demo()
 
-    parser = argparse.ArgumentParser(description='Run IPI consciousness experiments')
+    parser = argparse.ArgumentParser(description='Run APGI consciousness experiments')
     
     # Add common arguments
     parser.add_argument('experiment', 

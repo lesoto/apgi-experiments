@@ -10,7 +10,7 @@ from core.experiment import BaseExperiment
 
 class SomaticMarkerPrimingExperiment(BaseExperiment):
     """
-    Implements the Somatic Marker Priming experiment from the IPI framework.
+    Implements the Somatic Marker Priming experiment from the APGI framework.
     
     This experiment tests if unconsciously presented somatic markers can bias 
     subsequent conscious decisions by modulating precision.

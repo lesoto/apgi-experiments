@@ -1,6 +1,6 @@
-# IPI Framework - Quick Start Guide
+# APGI Framework - Quick Start Guide
 
-Get up and running with the IPI Framework Falsification Testing System in 5 minutes.
+Get up and running with the APGI Framework Falsification Testing System in 5 minutes.
 
 ## Installation (2 minutes)
 
@@ -13,7 +13,7 @@ pip install -r requirements.txt
 ### Step 2: Verify Installation
 
 ```bash
-python -m ipi_framework.cli validate-system
+python -m apgi_framework.cli validate-system
 ```
 
 Expected output:
@@ -49,7 +49,7 @@ python launch_gui.py
 
 **1. Run a test:**
 ```bash
-python -m ipi_framework.cli run-test primary --trials 1000
+python -m apgi_framework.cli run-test primary --trials 1000
 ```
 
 **2. View results:**
@@ -59,7 +59,7 @@ Results are displayed in the terminal and saved to `results/` directory.
 
 **1. Create a script:**
 ```python
-from ipi_framework.main_controller import MainApplicationController
+from apgi_framework.main_controller import MainApplicationController
 
 # Initialize
 controller = MainApplicationController()
@@ -131,7 +131,7 @@ Statistical Power: 0.85
 **Goal:** Run a single test with default settings.
 
 ```bash
-python -m ipi_framework.cli run-test primary --trials 1000
+python -m apgi_framework.cli run-test primary --trials 1000
 ```
 
 **Time:** ~1 minute
@@ -141,7 +141,7 @@ python -m ipi_framework.cli run-test primary --trials 1000
 **Goal:** Test all falsification criteria.
 
 ```bash
-python -m ipi_framework.cli run-batch --all-tests
+python -m apgi_framework.cli run-batch --all-tests
 ```
 
 **Time:** ~5 minutes
@@ -150,13 +150,13 @@ python -m ipi_framework.cli run-batch --all-tests
 
 **Goal:** Test different threshold values.
 
-```bash
+```
 # Create configuration
-python -m ipi_framework.cli generate-config --output config.json
+python -m apgi_framework.cli generate-config --output config.json
 
 # Edit config.json to set different threshold values
 # Then run:
-python -m ipi_framework.cli --config config.json run-test primary
+python -m apgi_framework.cli --config config.json run-test primary
 ```
 
 **Time:** ~2 minutes per configuration
@@ -166,7 +166,7 @@ python -m ipi_framework.cli --config config.json run-test primary
 **Goal:** Get exactly reproducible results.
 
 ```bash
-python -m ipi_framework.cli run-test primary --trials 2000 --seed 42
+python -m apgi_framework.cli run-test primary --trials 2000 --seed 42
 ```
 
 **Time:** ~2 minutes
@@ -239,7 +239,7 @@ pip install PyQt5
 **Solution:**
 ```bash
 # Reduce trial count for testing
-python -m ipi_framework.cli run-test primary --trials 100
+python -m apgi_framework.cli run-test primary --trials 100
 ```
 
 ### More Help
@@ -252,19 +252,19 @@ See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for comprehensive troubleshooting g
 
 ```bash
 # Validate system
-python -m ipi_framework.cli validate-system
+python -m apgi_framework.cli validate-system
 
 # Run primary test
-python -m ipi_framework.cli run-test primary --trials 1000
+python -m apgi_framework.cli run-test primary --trials 1000
 
 # Run all tests
-python -m ipi_framework.cli run-batch --all-tests
+python -m apgi_framework.cli run-batch --all-tests
 
 # Generate config
-python -m ipi_framework.cli generate-config --output config.json
+python -m apgi_framework.cli generate-config --output config.json
 
 # Check status
-python -m ipi_framework.cli status
+python -m apgi_framework.cli status
 
 # Launch GUI
 python launch_gui.py
@@ -307,22 +307,22 @@ python launch_gui.py
 
 2. **Run Diagnostics:**
    ```bash
-   python -m ipi_framework.cli validate-system --detailed
+   python -m apgi_framework.cli validate-system --detailed
    ```
 
 3. **Enable Debug Logging:**
    ```bash
-   python -m ipi_framework.cli --log-level DEBUG run-test primary
+   python -m apgi_framework.cli --log-level DEBUG run-test primary
    ```
 
 4. **Check Logs:**
    ```bash
-   cat results/ipi_framework.log
+   cat results/apgi_framework.log
    ```
 
 ---
 
-**Congratulations!** You're now ready to use the IPI Framework Falsification Testing System.
+**Congratulations!** You're now ready to use the APGI Framework Falsification Testing System.
 
 For detailed information, see the [Full Documentation Index](DOCUMENTATION_INDEX.md).
 

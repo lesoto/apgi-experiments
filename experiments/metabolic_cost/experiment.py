@@ -11,7 +11,7 @@ from core.experiment import BaseExperiment
 
 class MetabolicCostExperiment(BaseExperiment):
     """
-    Implements the Metabolic Cost of Ignition experiment from the IPI framework.
+    Implements the Metabolic Cost of Ignition experiment from the APGI framework.
     
     This experiment measures the metabolic expenditure associated with different
     levels of conscious processing using simulated fMRI/fNIRS data.

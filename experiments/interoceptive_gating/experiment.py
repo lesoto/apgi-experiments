@@ -13,7 +13,7 @@ from core.experiment import BaseExperiment
 
 class InteroceptiveGatingExperiment(BaseExperiment):
     """
-    Implements the Interoceptive Gating Paradigm from the IPI framework.
+    Implements the Interoceptive Gating Paradigm from the APGI framework.
     
     This experiment tests how interoceptive precision gates conscious access to
     exteroceptive stimuli using a cardiac discrimination task.

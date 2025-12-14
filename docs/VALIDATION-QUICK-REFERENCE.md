@@ -4,11 +4,11 @@
 
 ### 1. Validate Parameters
 
-```python
-from ipi_framework.validation import get_validator
+```
+from apgi_framework.validation import get_validator
 
 validator = get_validator()
-result = validator.validate_ipi_parameters(
+result = validator.validate_apgi_parameters(
     extero_precision=2.0,
     intero_precision=1.5,
     threshold=3.5
@@ -20,8 +20,8 @@ if not result.is_valid:
 
 ### 2. Run Health Check
 
-```python
-from ipi_framework.validation import get_health_checker
+```
+from apgi_framework.validation import get_health_checker
 
 health_checker = get_health_checker()
 result = health_checker.run_full_health_check()
@@ -31,7 +31,7 @@ print(result.get_report())
 ### 3. Use Safe Test Execution
 
 ```python
-from ipi_framework.falsification.primary_falsification_test import PrimaryFalsificationTest
+from apgi_framework.falsification.primary_falsification_test import PrimaryFalsificationTest
 
 # Tests now have automatic error handling
 
@@ -44,33 +44,33 @@ result = test.run_falsification_test(n_trials=100, n_participants=20)
 ### Health Check
 
 ```bash
-python -m ipi_framework.validation.diagnostics_cli health-check
+python -m apgi_framework.validation.diagnostics_cli health-check
 ```
 
 ### Validate Parameters
 
 ```bash
-python -m ipi_framework.validation.diagnostics_cli validate --params extero_precision=2.0 threshold=3.5
+python -m apgi_framework.validation.diagnostics_cli validate --params extero_precision=2.0 threshold=3.5
 ```
 
 ### Get Parameter Info
 
 ```bash
-python -m ipi_framework.validation.diagnostics_cli param-info --parameter threshold
+python -m apgi_framework.validation.diagnostics_cli param-info --parameter threshold
 ```
 
 ## Common Validation Patterns
 
 ### Validate Before Creating Config
 
-```python
-from ipi_framework.validation import get_validator
-from ipi_framework.config import IPIParameters
+```
+from apgi_framework.validation import get_validator
+from apgi_framework.config import APGIParameters
 
 validator = get_validator()
 
 # Validate first
-result = validator.validate_ipi_parameters(
+result = validator.validate_apgi_parameters(
     extero_precision=2.0,
     intero_precision=1.5,
     # ... other params
@@ -78,7 +78,7 @@ result = validator.validate_ipi_parameters(
 
 if result.is_valid:
     # Create config
-    params = IPIParameters(
+    params = APGIParameters(
         extero_precision=2.0,
         intero_precision=1.5,
         # ... other params
@@ -88,7 +88,7 @@ if result.is_valid:
 ### Check Specific Component
 
 ```python
-from ipi_framework.validation import get_health_checker
+from apgi_framework.validation import get_health_checker
 
 health_checker = get_health_checker()
 result = health_checker.check_component("python")
@@ -100,7 +100,7 @@ if result.overall_status != "healthy":
 ### Add Retry to Custom Function
 
 ```python
-from ipi_framework.validation import with_retry, RetryConfig
+from apgi_framework.validation import with_retry, RetryConfig
 
 config = RetryConfig(max_attempts=3, initial_delay=1.0)
 
@@ -112,7 +112,7 @@ def my_function():
 
 ## Parameter Ranges
 
-### IPI Parameters
+### APGI Parameters
 
 - `extero_precision`: 0.01 - 10.0 (typical: 0.5-5.0)
 - `intero_precision`: 0.01 - 10.0 (typical: 0.5-5.0)
@@ -201,5 +201,5 @@ def my_function():
 
 - Run examples: `python examples/validation_and_error_handling_example.py`
 - Read full documentation: `VALIDATION_AND_ERROR_HANDLING_SUMMARY.md`
-- Check parameter info: `python -m ipi_framework.validation.diagnostics_cli param-info --parameter <name>`
-- Run health check: `python -m ipi_framework.validation.diagnostics_cli health-check`
+- Check parameter info: `python -m apgi_framework.validation.diagnostics_cli param-info --parameter <name>`
+- Run health check: `python -m apgi_framework.validation.diagnostics_cli health-check`

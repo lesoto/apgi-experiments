@@ -1,31 +1,31 @@
 {
   "random": {
-    "mean_survival_time": 172.66,
-    "std_survival_time": 205.02937448082898,
+    "mean_survival_time": 139.55333333333334,
+    "std_survival_time": 183.1894842930553,
     "mean_food_consumed": 0.0,
     "std_food_consumed": 0.0,
     "mean_final_energy": 0.0,
     "n_episodes": 100
   },
   "reactive": {
-    "mean_survival_time": 205.04,
-    "std_survival_time": 219.56857334327248,
+    "mean_survival_time": 154.02333333333334,
+    "std_survival_time": 187.03358732828949,
     "mean_food_consumed": 0.0,
     "std_food_consumed": 0.0,
     "mean_final_energy": 0.0,
     "n_episodes": 100
   },
   "dqn": {
-    "mean_survival_time": 188.56,
-    "std_survival_time": 200.5942332172089,
+    "mean_survival_time": 136.77333333333334,
+    "std_survival_time": 179.27063885521122,
     "mean_food_consumed": 0.0,
     "std_food_consumed": 0.0,
     "mean_final_energy": 0.0,
     "n_episodes": 100
   },
   "ipi": {
-    "mean_survival_time": 192.73,
-    "std_survival_time": 220.19445292740684,
+    "mean_survival_time": 145.36333333333334,
+    "std_survival_time": 185.61859997197362,
     "mean_food_consumed": 0.0,
     "std_food_consumed": 0.0,
     "mean_final_energy": 0.0,

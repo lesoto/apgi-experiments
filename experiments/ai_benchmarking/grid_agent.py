@@ -15,13 +15,13 @@ class CellType(Enum):
     RESOURCE = 1
     THREAT = 2
 
-# --- IPI Agent Class ---
-class IPIAgent:
+# --- APGI Agent Class ---
+class APGIAgent:
     def __init__(self, world):
         self.world = world
         self.pos = np.array([WORLD_SIZE // 2, WORLD_SIZE // 2])
         
-        # Core IPI Variables
+        # Core APGI Variables
         self.viability = 75.0  # Allostatic state (0-100)
         self.viability_setpoint = 75.0
         
@@ -83,7 +83,7 @@ class IPIAgent:
         current_cell_type = self.world[self.pos[1], self.pos[0]]
         somatic_gain_M = abs(self.somatic_markers[current_cell_type])  # Use absolute value for magnitude
         
-        # The Core IPI Equation: S_t = Π^e * |ε^e| + (Π^i * M(c,a)) * |ε^i|
+        # The Core APGI Equation: S_t = Π^e * |ε^e| + (Π^i * M(c,a)) * |ε^i|
         self.surprise_magnitude_S = (
             self.precision_extero * self.prediction_error_extero +
             (self.precision_intero * somatic_gain_M) * self.prediction_error_intero
@@ -226,7 +226,7 @@ class Simulation:
             x, y = np.random.randint(0, WORLD_SIZE, 2)
             self.world[y, x] = CellType.THREAT
         
-        self.agent = IPIAgent(self.world)
+        self.agent = APGIAgent(self.world)
         self.step_count = 0
 
     def draw(self):
@@ -288,7 +288,7 @@ class Simulation:
         running = True
         paused = False
         
-        print("=== IPI Framework Simulation ===")
+        print("=== APGI Framework Simulation ===")
         print("Blue agent = Unconscious, Red agent = Conscious (Ignited)")
         print("Watch the console for ignition events!")
         print("-" * 50)

@@ -260,7 +260,7 @@ class DQNAgent(BaseAgent):
         self.steps_done += 1
         return loss.item()
 
-class IPIAgent(BaseAgent):
+class APGIAgent(BaseAgent):
     """Agent using the Integrated Predictive Ignition framework."""
     
     def __init__(self, config: Optional[AgentConfig] = None):

@@ -2,9 +2,9 @@
 
 ## Overview
 
-The IPI Framework Implementation is a comprehensive computational neuroscience platform designed to validate the Interoceptive Predictive Ignition theory through empirical testing. The system implements a modular architecture supporting seven priority levels of validation, from direct threshold estimation to cross-species comparative analysis.
+The APGI Framework Implementation is a comprehensive computational neuroscience platform designed to validate the Interoceptive Predictive Ignition theory through empirical testing. The system implements a modular architecture supporting seven priority levels of validation, from direct threshold estimation to cross-species comparative analysis.
 
-The core architecture centers around the IPI mathematical model (Sₜ = Πₑ·|εₑ| + Πᵢ(M_{c,a})·|εᵢ|) and provides integrated tools for experimental control, data collection, neural analysis, computational simulation, and clinical assessment. The platform is designed for multi-site deployment with standardized protocols ensuring reproducible research across laboratories.
+The core architecture centers around the APGI mathematical model (Sₜ = Πₑ·|εₑ| + Πᵢ(M_{c,a})·|εᵢ|) and provides integrated tools for experimental control, data collection, neural analysis, computational simulation, and clinical assessment. The platform is designed for multi-site deployment with standardized protocols ensuring reproducible research across laboratories.
 
 ## Architecture
 
@@ -12,8 +12,8 @@ The core architecture centers around the IPI mathematical model (Sₜ = Πₑ·|
 
 ```mermaid
 graph TB
-    subgraph "Core IPI Engine"
-        IPIModel[IPI Mathematical Model]
+    subgraph "Core APGI Engine"
+        IPIModel[APGI Mathematical Model]
         ThresholdEngine[Threshold Dynamics Engine]
         SomaticMarkers[Somatic Marker System]
         PrecisionWeighting[Precision Weighting Module]
@@ -41,7 +41,7 @@ graph TB
     end
     
     subgraph "Computational Simulation"
-        AgentSimulation[IPI Agent Simulation]
+        AgentSimulation[APGI Agent Simulation]
         EnvironmentModeling[Environment Modeling]
         ComparativeAnalysis[Agent Performance Analysis]
         ParameterOptimization[Parameter Optimization]
@@ -96,7 +96,7 @@ sequenceDiagram
     participant Experiment as Experimental Control
     participant Acquisition as Data Acquisition
     participant Analysis as Neural Analysis
-    participant Model as IPI Model
+    participant Model as APGI Model
     participant Clinical as Clinical Assessment
     participant Stats as Statistical Framework
     
@@ -114,7 +114,7 @@ sequenceDiagram
 
 ## Components and Interfaces
 
-### 1. Core IPI Mathematical Engine
+### 1. Core APGI Mathematical Engine
 
 **IPIModel Class**
 - Implements core equation: Sₜ = Πₑ·|εₑ| + Πᵢ(M_{c,a})·|εᵢ|
@@ -183,7 +183,7 @@ sequenceDiagram
 ### 4. Computational Agent Framework
 
 **IPIAgent Class**
-- Implements full IPI architecture with configurable parameters
+- Implements full APGI architecture with configurable parameters
 - Supports somatic marker learning and application
 - Provides embodied decision-making in simulated environments
 - Enables parameter sensitivity analysis
@@ -360,7 +360,7 @@ class NeuralSignatures:
 ### Unit Testing
 
 **Core Mathematical Functions**
-- IPI equation implementation accuracy
+- APGI equation implementation accuracy
 - Threshold dynamics computation
 - Somatic marker updates
 - Precision weighting calculations
@@ -427,4 +427,4 @@ class NeuralSignatures:
 - Parameter extraction reliability
 - Longitudinal tracking consistency
 
-This comprehensive design provides the technical foundation for implementing all seven priority levels of IPI framework validation while ensuring scientific rigor, clinical utility, and computational efficiency.
+This comprehensive design provides the technical foundation for implementing all seven priority levels of APGI framework validation while ensuring scientific rigor, clinical utility, and computational efficiency.

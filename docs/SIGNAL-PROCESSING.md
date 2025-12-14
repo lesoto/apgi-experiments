@@ -1,6 +1,6 @@
 # Real-Time Signal Processing Pipeline
 
-This module implements a comprehensive real-time signal processing pipeline for multi-modal data acquisition in IPI parameter estimation experiments.
+This module implements a comprehensive real-time signal processing pipeline for multi-modal data acquisition in APGI parameter estimation experiments.
 
 ## Overview
 
@@ -20,7 +20,7 @@ The signal processing pipeline integrates:
 Real-time EEG signal processor with bandpass filtering (0.1-30 Hz) and notch filtering for power line noise.
 
 ```python
-from ipi_framework.neural import EEGProcessor
+from apgi_framework.neural import EEGProcessor
 
 processor = EEGProcessor(
     sampling_rate=1000.0,
@@ -38,7 +38,7 @@ processed = processor.process_realtime(raw_eeg_data, timestamps, channels)
 Fully Automated Statistical Thresholding for EEG artifact Rejection.
 
 ```python
-from ipi_framework.neural import FASTERArtifactDetector
+from apgi_framework.neural import FASTERArtifactDetector
 
 detector = FASTERArtifactDetector(z_threshold=3.0)
 cleaned_data, artifact_report = detector.clean(eeg_data)
@@ -49,7 +49,7 @@ cleaned_data, artifact_report = detector.clean(eeg_data)
 Extract event-related potentials (P3b at Pz: 250-500ms, HEP: 250-400ms post R-peak).
 
 ```python
-from ipi_framework.neural import ERPExtractor
+from apgi_framework.neural import ERPExtractor
 
 erp_extractor = ERPExtractor(sampling_rate=1000.0)
 
@@ -73,7 +73,7 @@ print(f"HEP amplitude: {features.hep_amplitude} µV")
 Integrates blink detection and artifact interpolation for clean pupil signals.
 
 ```python
-from ipi_framework.neural import PupillometryProcessor
+from apgi_framework.neural import PupillometryProcessor
 
 processor = PupillometryProcessor(sampling_rate=1000.0)
 
@@ -92,7 +92,7 @@ processed = processor.process_trial(
 Extract pupil dilation features from post-stimulus windows (200-500ms).
 
 ```python
-from ipi_framework.neural import PupilFeatureExtractor
+from apgi_framework.neural import PupilFeatureExtractor
 
 extractor = PupilFeatureExtractor(sampling_rate=1000.0)
 
@@ -113,7 +113,7 @@ print(f"Percent change: {features.percent_change}%")
 Comprehensive data quality assessment for pupillometry.
 
 ```python
-from ipi_framework.neural import PupilQualityScorer
+from apgi_framework.neural import PupilQualityScorer
 
 scorer = PupilQualityScorer(sampling_rate=1000.0)
 
@@ -135,7 +135,7 @@ print(f"Recommendation: {quality.recommendation}")
 Multi-algorithm R-peak detection (Pan-Tompkins, adaptive threshold).
 
 ```python
-from ipi_framework.neural import CardiacProcessor, RPeakAlgorithm
+from apgi_framework.neural import CardiacProcessor, RPeakAlgorithm
 
 processor = CardiacProcessor(
     sampling_rate=1000.0,
@@ -151,7 +151,7 @@ r_peaks = processor.detect_r_peaks(ecg_signal, timestamps)
 Comprehensive HRV analysis with time and frequency domain metrics.
 
 ```python
-from ipi_framework.neural import HRVAnalyzer
+from apgi_framework.neural import HRVAnalyzer
 
 analyzer = HRVAnalyzer(sampling_rate=1000.0)
 
@@ -169,7 +169,7 @@ print(f"LF/HF ratio: {hrv_metrics.lf_hf_ratio}")
 Extract heartbeat-evoked potentials from EEG data.
 
 ```python
-from ipi_framework.neural import HEPExtractor
+from apgi_framework.neural import HEPExtractor
 
 extractor = HEPExtractor(sampling_rate=1000.0)
 
@@ -188,7 +188,7 @@ hep_epochs, hep_amplitudes = extractor.extract_hep(
 Real-time quality monitoring integrating all modalities.
 
 ```python
-from ipi_framework.neural import SignalQualityMonitor
+from apgi_framework.neural import SignalQualityMonitor
 
 monitor = SignalQualityMonitor(update_interval=1.0)
 
@@ -209,7 +209,7 @@ print(f"Continue recording: {quality_metrics.continue_recording}")
 Real-time alerts and recovery suggestions for operators.
 
 ```python
-from ipi_framework.neural import OperatorNotificationSystem
+from apgi_framework.neural import OperatorNotificationSystem
 
 notification_system = OperatorNotificationSystem()
 
@@ -238,7 +238,7 @@ notification_system.send_quality_update(quality_metrics)
 Automatically adjust protocols based on quality metrics.
 
 ```python
-from ipi_framework.neural import AdaptiveProtocolManager
+from apgi_framework.neural import AdaptiveProtocolManager
 
 manager = AdaptiveProtocolManager()
 
@@ -256,7 +256,7 @@ if adjustments['adjustments_needed']:
 ### Complete Parameter Estimation Pipeline
 
 ```python
-from ipi_framework.neural import (
+from apgi_framework.neural import (
     EEGProcessor, PupillometryProcessor, CardiacProcessor,
     ERPExtractor, PupilFeatureExtractor, HRVAnalyzer,
     SignalQualityMonitor, OperatorNotificationSystem
@@ -342,7 +342,7 @@ See `example_signal_processing.py` for complete working examples of:
 Run the examples:
 
 ```bash
-python -m ipi_framework.neural.example_signal_processing
+python -m apgi_framework.neural.example_signal_processing
 ```
 
 ## Requirements
@@ -401,6 +401,6 @@ The extracted features feed directly into the hierarchical Bayesian modeling pip
 If you use this signal processing pipeline in your research, please cite:
 
 ```text
-[IPI Framework Parameter Estimation Pipeline]
+[APGI Framework Parameter Estimation Pipeline]
 Real-time multi-modal signal processing for interoceptive parameter estimation
 ```

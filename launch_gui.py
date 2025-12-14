@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Launcher script for IPI Framework Falsification Testing System GUI.
+Launcher script for APGI Framework Falsification Testing System GUI.
 
 This script provides a simple way to launch the GUI application with
 proper error handling and dependency checking.
@@ -35,12 +35,12 @@ def check_dependencies():
 
 def main():
     """Main launcher function."""
-    print("IPI Framework Falsification Testing System")
+    print("APGI Framework Falsification Testing System")
     print("=" * 50)
     
     # Check if we're in the right directory
-    if not Path("ipi_framework").exists():
-        print("Error: ipi_framework directory not found.")
+    if not Path("apgi_framework").exists():
+        print("Error: apgi_framework directory not found.")
         print("Please run this script from the project root directory.")
         sys.exit(1)
     
@@ -55,11 +55,11 @@ def main():
     
     try:
         print("Starting GUI application...")
-        from ipi_falsification_gui import main as gui_main
+        from apgi_falsification_gui import main as gui_main
         gui_main()
     except ImportError as e:
         print(f"Error importing GUI module: {e}")
-        print("Please ensure all IPI Framework components are properly installed.")
+        print("Please ensure all APGI Framework components are properly installed.")
         sys.exit(1)
     except Exception as e:
         print(f"Error starting GUI: {e}")

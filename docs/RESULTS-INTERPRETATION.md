@@ -1,4 +1,4 @@
-# IPI Framework Falsification Results - Interpretation Guide
+# APGI Framework Falsification Results - Interpretation Guide
 
 ## Table of Contents
 
@@ -12,7 +12,7 @@
 
 ## Introduction
 
-This guide helps you interpret the results of IPI Framework falsification tests. Proper interpretation is crucial for:
+This guide helps you interpret the results of APGI Framework falsification tests. Proper interpretation is crucial for:
 
 - Understanding what the results mean for the framework
 - Making informed decisions about next steps
@@ -33,7 +33,7 @@ Falsification testing follows Karl Popper's philosophy: we attempt to **disprove
 **Criterion**: Full ignition signatures WITHOUT consciousness
 
 **Logic**:
-- IPI Framework predicts: Ignition → Consciousness
+- APGI Framework predicts: Ignition → Consciousness
 - Falsification occurs if: Ignition ∧ ¬Consciousness
 - If falsified: Framework is decisively refuted
 
@@ -50,7 +50,7 @@ Falsification testing follows Karl Popper's philosophy: we attempt to **disprove
 **Criterion**: Consciousness WITHOUT ignition signatures
 
 **Logic**:
-- IPI Framework predicts: Consciousness → Ignition
+- APGI Framework predicts: Consciousness → Ignition
 - Falsification occurs if: Consciousness ∧ ¬Ignition
 - If falsified: Alternative routes to consciousness exist
 
@@ -66,7 +66,7 @@ Falsification testing follows Karl Popper's philosophy: we attempt to **disprove
 **Criterion**: Threshold unaffected by neuromodulation
 
 **Logic**:
-- IPI Framework predicts: Neuromodulators → Threshold changes
+- APGI Framework predicts: Neuromodulators → Threshold changes
 - Falsification occurs if: Neuromodulation ∧ ¬Threshold change
 - If falsified: Threshold is fixed, not dynamic
 
@@ -81,7 +81,7 @@ Falsification testing follows Karl Popper's philosophy: we attempt to **disprove
 **Criterion**: No preferential interoceptive weighting
 
 **Logic**:
-- IPI Framework predicts: Interoceptive signals have special status (β > 1)
+- APGI Framework predicts: Interoceptive signals have special status (β > 1)
 - Falsification occurs if: β ≈ 1 (no bias)
 - If falsified: Interoception has no special role
 
@@ -544,7 +544,7 @@ When reporting falsification test results, always include:
 
 1. **Test Type**: Which falsification criterion was tested
 2. **Sample Size**: Number of trials and participants
-3. **Parameters**: All IPI parameter values used
+3. **Parameters**: All APGI parameter values used
 4. **Falsification Status**: Whether framework was falsified
 5. **Statistical Metrics**: Confidence, p-value, effect size, power
 6. **Interpretation**: What the results mean for the framework
@@ -576,7 +576,7 @@ Detailed Metrics:
 - Unconscious with ignition: 2/1847 (0.1%)
 
 Interpretation:
-The IPI Framework was NOT falsified in this test. Full ignition 
+The APGI Framework was NOT falsified in this test. Full ignition 
 signatures reliably predicted consciousness, with only 0.1% of 
 trials showing ignition without consciousness. This rate is well 
 below the falsification threshold and likely represents measurement 

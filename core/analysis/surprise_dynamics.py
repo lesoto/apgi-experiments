@@ -19,7 +19,7 @@ plt.plot(theta_t, label='θ_t (Dynamic Threshold)')
 plt.scatter(np.where(ignitions)[0], S_t[ignitions], color='red', label='Ignition Events')
 plt.xlabel('Time Steps')
 plt.ylabel('Value')
-plt.title('IPI Framework: Surprise Dynamics and Ignition Threshold')
+plt.title('APGI Framework: Surprise Dynamics and Ignition Threshold')
 plt.legend()
-plt.savefig('ipi_demo_visualization.png')  # Save for viewing
+plt.savefig('apgi_demo_visualization.png')  # Save for viewing
 print('Ignition steps:', np.where(ignitions)[0])

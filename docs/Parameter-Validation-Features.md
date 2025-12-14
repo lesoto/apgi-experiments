@@ -6,7 +6,7 @@
 
 ```text
 ┌─────────────────────────────────────┐
-│ IPI Parameters                      │
+│ APGI Parameters                      │
 ├─────────────────────────────────────┤
 │ Exteroceptive Precision: [2.0    ] │
 │ Interoceptive Precision: [1.5    ] │
@@ -19,7 +19,7 @@
 
 ```text
 ┌──────────────────────────────────────────┐
-│ IPI Parameters                           │
+│ APGI Parameters                           │
 ├──────────────────────────────────────────┤
 │ Exteroceptive Precision: [2.0    ] ✓    │  ← Valid indicator
 │ Interoceptive Precision: [1.5    ] ✓    │
@@ -201,7 +201,7 @@ SUGGESTIONS:
 
 ## Parameter Categories
 
-### IPI Equation Parameters (7 parameters)
+### APGI Equation Parameters (7 parameters)
 
 ```text
 ┌─────────────────────────────────────┐

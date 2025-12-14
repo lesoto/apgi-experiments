@@ -2,7 +2,7 @@
 Example: Using Validation and Error Handling Features
 
 This example demonstrates how to use the new validation and error handling
-features in the IPI Framework.
+features in the APGI Framework.
 """
 
 import sys
@@ -11,18 +11,19 @@ import os
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from ipi_framework.validation import (
-    get_validator,
+from apgi_framework.validation import (
+    get_validator, 
     get_health_checker,
-    get_recovery_manager
+    with_retry, 
+    RetryConfig
 )
-from ipi_framework.config import IPIParameters, ExperimentalConfig, ConfigManager
-from ipi_framework.falsification.primary_falsification_test import PrimaryFalsificationTest
-from ipi_framework.falsification.error_handling_wrapper import (
-    create_safe_test_controller,
+from apgi_framework.config import APGIParameters, ExperimentalConfig, ConfigManager
+from apgi_framework.falsification.primary_falsification_test import PrimaryFalsificationTest
+from apgi_framework.falsification.error_handling_wrapper import (
+    with_error_handling,
     ErrorHandlingTestWrapper
 )
-from ipi_framework.exceptions import ValidationError, ConfigurationError
+from apgi_framework.exceptions import ValidationError, ConfigurationError
 
 
 def example_1_parameter_validation():
@@ -33,9 +34,9 @@ def example_1_parameter_validation():
     
     validator = get_validator()
     
-    # Validate IPI parameters
-    print("\nValidating IPI parameters...")
-    result = validator.validate_ipi_parameters(
+    # Validate APGI parameters
+    print("\nValidating APGI parameters...")
+    result = validator.validate_apgi_parameters(
         extero_precision=2.0,
         intero_precision=1.5,
         extero_error=1.2,
@@ -97,7 +98,7 @@ def example_3_safe_configuration():
     # Create valid configuration
     print("\n1. Creating valid configuration...")
     try:
-        ipi_params = IPIParameters(
+        apgi_params = APGIParameters(
             extero_precision=2.0,
             intero_precision=1.5,
             extero_error=1.2,
@@ -106,7 +107,7 @@ def example_3_safe_configuration():
             threshold=3.5,
             steepness=2.0
         )
-        print("✓ Valid IPI parameters created")
+        print("✓ Valid APGI parameters created")
         
         exp_config = ExperimentalConfig(
             n_trials=100,
@@ -121,7 +122,7 @@ def example_3_safe_configuration():
     # Try to create invalid configuration
     print("\n2. Attempting to create invalid configuration...")
     try:
-        invalid_params = IPIParameters(
+        invalid_params = APGIParameters(
             extero_precision=-1.0,  # Invalid: negative
             intero_precision=1.5,
             extero_error=1.2,
@@ -208,7 +209,7 @@ def example_6_error_recovery():
     
     # Simulate an error
     print("\n1. Simulating error...")
-    from ipi_framework.exceptions import SimulationError
+    from apgi_framework.exceptions import SimulationError
     test_error = SimulationError("Example simulation error")
     context = {
         'function': 'example_function',
@@ -231,7 +232,7 @@ def example_6_error_recovery():
 def main():
     """Run all examples"""
     print("\n" + "=" * 60)
-    print("IPI FRAMEWORK VALIDATION & ERROR HANDLING EXAMPLES")
+    print("APGI FRAMEWORK VALIDATION & ERROR HANDLING EXAMPLES")
     print("=" * 60)
     
     try:

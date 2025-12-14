@@ -12,7 +12,7 @@ from datetime import datetime
 
 from core.experiment import BaseExperiment
 from .environment import GridWorld
-from .agents import RandomAgent, ReactiveAgent, DQNAgent, IPIAgent, AgentConfig
+from .agents import RandomAgent, ReactiveAgent, DQNAgent, APGIAgent, AgentConfig
 
 @dataclass
 class AIBenchmarkingConfig:
@@ -129,7 +129,7 @@ class AIBenchmarkingExperiment(BaseExperiment):
                 elif agent_type == 'dqn':
                     agent = DQNAgent()
                 elif agent_type == 'ipi':
-                    agent = IPIAgent()
+                    agent = APGIAgent()
                 else:
                     raise ValueError(f"Unknown agent type: {agent_type}")
                 

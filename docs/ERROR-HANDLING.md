@@ -5,7 +5,7 @@
 ### Initialize Error Handling (Application Startup)
 
 ```python
-from ipi_framework.falsification.error_handling_wrapper import initialize_error_handling
+from apgi_framework.falsification.error_handling_wrapper import initialize_error_handling
 
 # Call once at application startup
 initialize_error_handling()
@@ -14,7 +14,7 @@ initialize_error_handling()
 ### Using the Decorator
 
 ```python
-from ipi_framework.falsification.error_handling_wrapper import with_error_handling
+from apgi_framework.falsification.error_handling_wrapper import with_error_handling
 
 @with_error_handling(validate_params=True, enable_retry=True, log_errors=True, max_retries=3)
 def my_test_function(n_trials: int, n_participants: int):
@@ -25,8 +25,8 @@ def my_test_function(n_trials: int, n_participants: int):
 ### Using the Wrapper Class
 
 ```python
-from ipi_framework.falsification.error_handling_wrapper import ErrorHandlingTestWrapper
-from ipi_framework.falsification.primary_falsification_test import PrimaryFalsificationTest
+from apgi_framework.falsification.error_handling_wrapper import ErrorHandlingTestWrapper
+from apgi_framework.falsification.primary_falsification_test import PrimaryFalsificationTest
 
 # Create and wrap controller
 controller = PrimaryFalsificationTest()
@@ -69,7 +69,7 @@ if summary['total_errors'] > 0:
 ### Retry Configuration
 
 ```python
-from ipi_framework.validation.error_recovery import RetryConfig
+from apgi_framework.validation.error_recovery import RetryConfig
 
 config = RetryConfig(
     max_attempts=3,                    # Maximum retry attempts
@@ -90,7 +90,7 @@ config = RetryConfig(
 ### Get Error Handling System Status
 
 ```python
-from ipi_framework.falsification.error_handling_wrapper import get_error_handling_status
+from apgi_framework.falsification.error_handling_wrapper import get_error_handling_status
 
 status = get_error_handling_status()
 print(f"Logging configured: {status['logging_configured']}")
@@ -120,8 +120,8 @@ summary = wrapped_controller.get_error_summary()
 ### Register Custom Recovery
 
 ```python
-from ipi_framework.validation.error_recovery import get_recovery_manager
-from ipi_framework.exceptions import SimulationError
+from apgi_framework.validation.error_recovery import get_recovery_manager
+from apgi_framework.exceptions import SimulationError
 
 def my_recovery_strategy(error: Exception, context: dict):
     """Custom recovery logic"""
@@ -167,7 +167,7 @@ logger.critical("Critical error")
 ### Generate Error Report
 
 ```python
-from ipi_framework.falsification.error_handling_wrapper import create_error_report
+from apgi_framework.falsification.error_handling_wrapper import create_error_report
 
 error_report = create_error_report(
     test_name="my_test",
@@ -275,7 +275,7 @@ result = test.run_test(n_trials=10000)  # ✅ More reasonable
 7. **Validate parameters before running tests**
 
    ```python
-   from ipi_framework.validation import get_validator
+   from apgi_framework.validation import get_validator
    
    validator = get_validator()
    result = validator.validate_experimental_config(n_trials=100)
@@ -304,12 +304,12 @@ If you encounter persistent errors:
 ## Example: Complete Error Handling Setup
 
 ```python
-from ipi_framework.falsification.error_handling_wrapper import (
+from apgi_framework.falsification.error_handling_wrapper import (
     initialize_error_handling,
     ErrorHandlingTestWrapper,
     get_error_handling_status
 )
-from ipi_framework.falsification.primary_falsification_test import PrimaryFalsificationTest
+from apgi_framework.falsification.primary_falsification_test import PrimaryFalsificationTest
 
 # 1. Initialize error handling system
 initialize_error_handling()

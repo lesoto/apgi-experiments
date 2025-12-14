@@ -1,9 +1,9 @@
-# IPI Framework Falsification Testing System - GUI Application
+# APGI Framework Falsification Testing System - GUI Application
 
 
 ## Overview
 
-The IPI Framework Falsification Testing System GUI provides a comprehensive graphical interface for conducting falsification tests on the Interoceptive Predictive Integration (IPI) Framework. The application features a tabbed interface for different test types, parameter configuration, real-time progress tracking, and results visualization.
+The APGI Framework Falsification Testing System GUI provides a comprehensive graphical interface for conducting falsification tests on the Interoceptive Predictive Integration (APGI) Framework. The application features a tabbed interface for different test types, parameter configuration, real-time progress tracking, and results visualization.
 
 
 ## Features
@@ -11,7 +11,7 @@ The IPI Framework Falsification Testing System GUI provides a comprehensive grap
 
 ### 1. Configuration Management
 
-- **IPI Parameters**: Configure core equation parameters (precision, errors, gains, thresholds)
+- **APGI Parameters**: Configure core equation parameters (precision, errors, gains, thresholds)
 - **Experimental Settings**: Set trial counts, participant numbers, statistical thresholds
 - **Load/Save**: Import and export configuration files in JSON format
 - **Reset to Defaults**: Quickly restore default parameter values
@@ -101,7 +101,7 @@ The IPI Framework Falsification Testing System GUI provides a comprehensive grap
 #### Option 1: Direct Launch
 
 ```bash
-python ipi_gui.py
+python apgi_gui.py
 ```
 
 
@@ -128,7 +128,7 @@ The launcher script provides dependency checking and better error handling.
 ### 2. Configuration
 
 1. Go to the "Configuration" tab
-2. Adjust IPI parameters and experimental settings as needed
+2. Adjust APGI parameters and experimental settings as needed
 3. Click "Apply Changes" to update the configuration
 4. Optionally save your configuration using "File → Save Configuration"
 
@@ -168,7 +168,7 @@ Configuration files are saved in JSON format with the following structure:
 
 ```json
 {
-  "ipi_parameters": {
+  "apgi_parameters": {
     "extero_precision": 2.0,
     "intero_precision": 1.5,
     "extero_error": 1.2,
@@ -223,7 +223,7 @@ Configuration files are saved in JSON format with the following structure:
 ## Technical Details
 
 ### Architecture
-- **Main Application**: `IPIFalsificationGUI` class manages the overall application
+- **Main Application**: `APIFalsificationGUI` class manages the overall application
 - **Configuration Panel**: `ParameterConfigPanel` handles parameter management
 - **Test Panels**: `FalsificationTestPanel` instances for each test type
 - **Visualization**: `ResultsVisualizationPanel` with matplotlib integration
@@ -243,7 +243,7 @@ Configuration files are saved in JSON format with the following structure:
 
 ## Development Notes
 
-The GUI application integrates with the existing IPI Framework components:
+The GUI application integrates with the existing APGI Framework components:
 - `MainApplicationController` for system orchestration
 - `ConfigManager` for parameter management
 - Falsification test controllers for test execution

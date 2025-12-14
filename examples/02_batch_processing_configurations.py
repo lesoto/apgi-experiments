@@ -21,8 +21,8 @@ import numpy as np
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from ipi_framework.main_controller import MainApplicationController
-from ipi_framework.config import ConfigManager
+from apgi_framework.main_controller import MainApplicationController
+from apgi_framework.config import ConfigManager
 import logging
 
 # Setup logging
@@ -56,7 +56,7 @@ def batch_process_threshold_variations():
             controller.initialize_system()
             
             # Set threshold parameter
-            controller.config_manager.update_ipi_parameters(
+            controller.config_manager.update_apgi_parameters(
                 threshold=threshold,
                 extero_precision=2.0,
                 intero_precision=1.5,
@@ -145,7 +145,7 @@ def batch_process_precision_combinations():
                 controller.initialize_system()
                 
                 # Set precision parameters
-                controller.config_manager.update_ipi_parameters(
+                controller.config_manager.update_apgi_parameters(
                     extero_precision=extero_p,
                     intero_precision=intero_p,
                     threshold=3.5,
@@ -249,7 +249,7 @@ def batch_process_comprehensive_sweep():
             controller.initialize_system()
             
             # Set parameters (with defaults for missing values)
-            controller.config_manager.update_ipi_parameters(
+            controller.config_manager.update_apgi_parameters(
                 threshold=config.get('threshold', 3.5),
                 extero_precision=config.get('extero_precision', 2.0),
                 intero_precision=config.get('intero_precision', 1.5),
@@ -336,7 +336,7 @@ def save_batch_results(results, batch_name):
 
 if __name__ == '__main__':
     print("\n" + "="*70)
-    print("IPI Framework - Batch Processing Examples")
+    print("APGI Framework - Batch Processing Examples")
     print("="*70 + "\n")
     
     # Run batch processing examples

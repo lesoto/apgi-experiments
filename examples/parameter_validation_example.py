@@ -2,7 +2,7 @@
 Parameter Validation Example
 
 This example demonstrates how to use the parameter validation system
-in the IPI Framework, including:
+in the APGI Framework, including:
 - Validating individual parameters
 - Validating complete configurations
 - Handling validation errors and warnings
@@ -15,9 +15,9 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from ipi_framework.validation import get_validator
-from ipi_framework.config import IPIParameters, ExperimentalConfig, ConfigManager
-from ipi_framework.exceptions import ConfigurationError
+from apgi_framework.validation import get_validator
+from apgi_framework.config import APGIParameters, ExperimentalConfig, ConfigManager
+from apgi_framework.exceptions import ConfigurationError
 
 def example_1_basic_validation():
     """Example 1: Basic parameter validation."""
@@ -27,8 +27,8 @@ def example_1_basic_validation():
     
     validator = get_validator()
     
-    # Validate IPI parameters
-    result = validator.validate_ipi_parameters(
+    # Validate APGI parameters
+    result = validator.validate_apgi_parameters(
         extero_precision=2.0,
         intero_precision=1.5,
         extero_error=1.2,
@@ -50,7 +50,7 @@ def example_2_handling_errors():
     validator = get_validator()
     
     # Try to validate invalid parameters
-    result = validator.validate_ipi_parameters(
+    result = validator.validate_apgi_parameters(
         extero_precision=-1.0,  # Invalid: negative
         intero_precision=1.5,
         extero_error=1.2,
@@ -108,7 +108,7 @@ def example_4_config_manager_integration():
     # ConfigManager automatically validates on creation
     print("\n1. Creating valid configuration:")
     try:
-        params = IPIParameters(
+        params = APGIParameters(
             extero_precision=2.0,
             intero_precision=1.5,
             extero_error=1.2,
@@ -124,7 +124,7 @@ def example_4_config_manager_integration():
     # Try to create invalid configuration
     print("\n2. Attempting to create invalid configuration:")
     try:
-        params = IPIParameters(
+        params = APGIParameters(
             extero_precision=-1.0,  # Invalid
             intero_precision=1.5,
             extero_error=1.2,
@@ -148,7 +148,7 @@ def example_5_comprehensive_validation():
     
     # Validate all parameter types at once
     result = validator.validate_all(
-        ipi_params={
+        apgi_params={
             'extero_precision': 2.0,
             'intero_precision': 1.5,
             'extero_error': 1.2,
@@ -205,7 +205,7 @@ def example_7_validation_history():
     validator = get_validator()
     
     # Perform several validations
-    validator.validate_ipi_parameters(extero_precision=2.0, intero_precision=1.5,
+    validator.validate_apgi_parameters(extero_precision=2.0, intero_precision=1.5,
                                      extero_error=1.2, intero_error=0.8,
                                      somatic_gain=1.3, threshold=3.5, steepness=2.0)
     
@@ -221,7 +221,7 @@ def example_7_validation_history():
 def main():
     """Run all examples."""
     print("\n" + "=" * 60)
-    print("IPI Framework Parameter Validation Examples")
+    print("APGI Framework Parameter Validation Examples")
     print("=" * 60)
     
     example_1_basic_validation()

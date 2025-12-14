@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Clinical Parameter Extraction module provides a rapid 30-minute assessment battery for extracting individual IPI parameters from experimental data. This system is designed for clinical research and precision medicine applications.
+The Clinical Parameter Extraction module provides a rapid 30-minute assessment battery for extracting individual APGI parameters from experimental data. This system is designed for clinical research and precision medicine applications.
 
 ## Core Features
 
@@ -36,7 +36,7 @@ The battery includes 6 standardized tasks:
 
 ### 2. Extracted Parameters
 
-The system extracts four core IPI parameters:
+The system extracts four core APGI parameters:
 
 - **θₜ (Ignition Threshold)**: Range 1.0-6.0
   - Lower values indicate heightened sensitivity
@@ -69,7 +69,7 @@ The system provides comprehensive psychometric evaluation:
 ### Basic Parameter Extraction
 
 ```python
-from ipi_framework.clinical.parameter_extraction import ClinicalParameterExtractor
+from apgi_framework.clinical.parameter_extraction import ClinicalParameterExtractor
 
 # Initialize extractor
 extractor = ClinicalParameterExtractor(participant_id="P001")
@@ -108,7 +108,7 @@ print(f"Interoceptive Precision: {params.pi_i:.2f}")
 For rapid assessment without full battery setup:
 
 ```python
-from ipi_framework.clinical.parameter_extraction import extract_parameters_quick
+from apgi_framework.clinical.parameter_extraction import extract_parameters_quick
 
 params = extract_parameters_quick(
     participant_id="P001",
@@ -214,4 +214,4 @@ The parameter extraction module integrates with:
 
 ## References
 
-See the IPI Framework requirements and design documents for theoretical background and validation criteria.
+See the APGI Framework requirements and design documents for theoretical background and validation criteria.
