@@ -7,8 +7,6 @@
 .kiro/steering/byterover-rules.md
 .qoder/rules/byterover-rules.md
 .augment/rules/byterover-rules.md
-
-# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -29,12 +27,37 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-
-# Jupyter Notebook
+apgi_env/
+venv/
+env/
+ENV/
 .ipynb_checkpoints
-
-# Data files (experiment outputs)
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+logs/
+*.log
 data/processed/*.csv
 data/processed/*.png
 data/ai_benchmarking/*.json
 data/ai_benchmarking/plots/*.png
+results/
+test_storage/
+*.npz
+*.png
+*.jpg
+*.jpeg
+*.pdf
+*.svg
+tmp/
+temp/
+*.tmp
