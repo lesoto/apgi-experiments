@@ -20,10 +20,10 @@ plt.rcParams['figure.facecolor'] = 'white'
 sys.path.append(str(Path(__file__).parent))
 
 EXPERIMENTS = {
-    "interoceptive_gating": "experiments.interoceptive_gating.experiment",
-    "somatic_marker_priming": "experiments.somatic_marker_priming.experiment",
-    "metabolic_cost": "experiments.metabolic_cost.experiment",
-    "ai_benchmarking": "experiments.ai_benchmarking.experiment",
+    "interoceptive_gating": "research.interoceptive_gating.experiments.interoceptive_gating.experiment",
+    "somatic_marker_priming": "research.somatic_marker_priming.experiments.experiment",
+    "metabolic_cost": "research.metabolic_cost.experiments.experiment",
+    "ai_benchmarking": "research.ai_benchmarking.experiments.experiment",
 }
 
 def get_available_experiments() -> Dict[str, str]:
