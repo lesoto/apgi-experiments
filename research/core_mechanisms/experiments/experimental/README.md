@@ -17,7 +17,7 @@ Coordinates presentation of visual, auditory, and interoceptive stimuli with pre
 
 **Example:**
 ```python
-from apgi_framework.experimental import MultiModalTaskManager, ModalityType
+from research.core_mechanisms.experiments.experimental import MultiModalTaskManager, ModalityType
 
 # Initialize manager
 manager = MultiModalTaskManager(
@@ -58,7 +58,7 @@ Implements multiple adaptive algorithms for efficient threshold estimation.
 
 **Example:**
 ```python
-from apgi_framework.experimental import (
+from research.core_mechanisms.experiments.experimental import (
     create_staircase,
     StaircaseType,
     StaircaseParameters
@@ -106,7 +106,7 @@ High-resolution timing with sub-millisecond accuracy.
 
 **Example:**
 ```python
-from apgi_framework.experimental import PrecisionTimer, TimingMode
+from research.core_mechanisms.experiments.experimental import PrecisionTimer, TimingMode
 
 # Initialize timer
 timer = PrecisionTimer(
@@ -144,7 +144,7 @@ Manages trial ordering with randomization and blocking.
 
 **Example:**
 ```python
-from apgi_framework.experimental import TrialSequencer
+from research.core_mechanisms.experiments.experimental import TrialSequencer
 
 sequencer = TrialSequencer()
 
@@ -188,7 +188,7 @@ Manages synchronization markers for neural data integration.
 
 **Example:**
 ```python
-from apgi_framework.experimental import (
+from research.core_mechanisms.experiments.experimental import (
     SynchronizationManager,
     SyncMarkerType
 )
@@ -226,7 +226,7 @@ Integrated timing control combining all components.
 
 **Example:**
 ```python
-from apgi_framework.experimental import TimingController, TimingMode
+from research.core_mechanisms.experiments.experimental import TimingController, TimingMode
 
 # Initialize controller
 controller = TimingController(
@@ -249,7 +249,7 @@ summary = controller.get_comprehensive_summary()
 ## Complete Example: Detection Threshold Experiment
 
 ```python
-from apgi_framework.experimental import (
+from research.core_mechanisms.experiments.experimental import (
     MultiModalTaskManager,
     ModalityType,
     create_staircase,

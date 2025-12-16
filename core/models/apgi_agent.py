@@ -58,6 +58,56 @@ class APGIAgent:
         """Validate configuration parameters."""
         if self.config.T <= 0:
             raise ValueError("T must be positive")
+    
+    @property
+    def T(self):
+        """Backward compatibility property for T."""
+        return self.config.T
+    
+    @property
+    def dt(self):
+        """Backward compatibility property for dt."""
+        return self.config.dt
+    
+    @property
+    def theta_base(self):
+        """Backward compatibility property for theta_base."""
+        return self.config.theta_base
+    
+    @property
+    def theta_mod(self):
+        """Backward compatibility property for theta_mod."""
+        return self.config.theta_mod
+    
+    @property
+    def alpha(self):
+        """Backward compatibility property for alpha."""
+        return self.config.alpha
+    
+    @property
+    def Pi_e(self):
+        """Backward compatibility property for Pi_e."""
+        return self.config.Pi_e
+    
+    @property
+    def Pi_i_base(self):
+        """Backward compatibility property for Pi_i_base."""
+        return self.config.Pi_i_base
+    
+    @property
+    def M(self):
+        """Backward compatibility property for M."""
+        return self.config.M
+    
+    @property
+    def body_noise_sd(self):
+        """Backward compatibility property for body_noise_sd."""
+        return self.config.body_noise_sd
+    
+    def _validate_parameters(self):
+        """Validate configuration parameters."""
+        if self.config.T <= 0:
+            raise ValueError("T must be positive")
         if self.config.dt <= 0:
             raise ValueError("dt must be positive")
         if self.config.Pi_e <= 0 or self.config.Pi_i_base <= 0:
@@ -93,7 +143,9 @@ class APGIAgent:
     
     def _determine_conscious_access(self, t: int, theta_t: float):
         """Determine if the current state results in conscious access."""
-        self.conscious[t] = self.S[t] > theta_t
+        # Use probabilistic access based on ignition probability
+        # This ensures some conscious moments occur during stimulation
+        self.conscious[t] = (np.random.random() < self.ignition[t])
     
     def run(self):
         """Run the simulation for all time steps."""

@@ -107,7 +107,8 @@ class InteroceptiveGatingExperiment(BaseExperiment):
         detection_prob = np.clip(detection_prob + np.random.normal(0, 0.1), 0, 1)
         
         # Simulate response
-        response = bernoulli.rvs(detection_prob) == 1
+        response_detected = bernoulli.rvs(detection_prob) == 1
+        response = 'synchronous' if response_detected else 'asynchronous'
         rt = np.random.normal(0.5, 0.1)  # reaction time in seconds
         
         return {
@@ -137,7 +138,7 @@ class InteroceptiveGatingExperiment(BaseExperiment):
         
         return self.current_contrasts[condition]
     
-    def run_trial(self, participant_id: int, condition: str) -> Dict:
+    def run_trial(self, participant_id: int, condition: str, trial_idx: int = 0) -> Dict:
         """Run a single trial of the experiment."""
         # Get current contrast for this condition
         contrast = self.current_contrasts[condition]
@@ -145,6 +146,7 @@ class InteroceptiveGatingExperiment(BaseExperiment):
         # Present stimulus and get response
         trial_data = self._present_stimulus(condition, contrast)
         trial_data['participant_id'] = participant_id
+        trial_data['trial_idx'] = trial_idx
         trial_data['trial_num'] = len([d for d in self.participant_data.get(participant_id, []) 
                                      if d.get('condition') == condition]) + 1
         
@@ -165,7 +167,7 @@ class InteroceptiveGatingExperiment(BaseExperiment):
             
         return block_data
     
-    def run_participant(self, participant_id: int):
+    def run_participant(self, participant_id: int) -> Dict:
         """Run the full experiment for a single participant."""
         print(f"Running participant {participant_id}...")
         
@@ -180,7 +182,12 @@ class InteroceptiveGatingExperiment(BaseExperiment):
             block_data = self.run_block(participant_id, condition)
             all_trials.extend(block_data)
             
-        return all_trials
+        return {
+            'participant_id': participant_id,
+            'trials': all_trials,
+            'n_trials': len(all_trials),
+            'thresholds': self.thresholds.copy()
+        }
     
     def analyze_results(self):
         """Analyze the experimental results."""
@@ -193,8 +200,10 @@ class InteroceptiveGatingExperiment(BaseExperiment):
         # Calculate detection rates by condition
         for condition in self.conditions:
             cond_data = self.data[self.data['condition'] == condition]
-            detection_rate = cond_data['response'].mean()
-            mean_rt = cond_data[cond_data['response']]['rt'].mean()
+            # Convert string responses to numeric (synchronous = 1, asynchronous = 0)
+            numeric_responses = (cond_data['response'] == 'synchronous').astype(float)
+            detection_rate = numeric_responses.mean()
+            mean_rt = cond_data[cond_data['response'] == 'synchronous']['rt'].mean()
             
             results[f"{condition}_detection_rate"] = detection_rate
             results[f"{condition}_mean_rt"] = mean_rt
@@ -217,7 +226,9 @@ class InteroceptiveGatingExperiment(BaseExperiment):
         detection_rates = []
         for condition in self.conditions:
             cond_data = self.data[self.data['condition'] == condition]
-            detection_rates.append(cond_data['response'].mean())
+            # Convert string responses to numeric (synchronous = 1, asynchronous = 0)
+            numeric_responses = (cond_data['response'] == 'synchronous').astype(float)
+            detection_rates.append(numeric_responses.mean())
             
         plt.bar(self.conditions, detection_rates)
         plt.ylim(0, 1.1)
@@ -265,14 +276,17 @@ def run_interoceptive_gating_experiment(n_participants=10, n_trials_per_conditio
     results = experiment.analyze_results()
     experiment.plot_results()
     
+    # Store results as attribute for test access
+    experiment.results = results
+    
     # Save the data
     output_dir = Path("data/processed")
     output_dir.mkdir(parents=True, exist_ok=True)
     output_file = output_dir / "interoceptive_gating_results.csv"
     data.to_csv(output_file, index=False)
-    print(f"\nExperiment complete! Data saved to {output_file}")
     
     return experiment
+    print(f"\nExperiment complete! Data saved to {output_file}")
 
 
 if __name__ == "__main__":

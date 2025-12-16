@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(if [ ! -d \".fpf\" ])",
+      "Bash(then)",
+      "Bash(else)",
+      "Bash(MISSING=\"\")",
+      "Bash([ ! -f \".fpf/context.md\" ])",
+      "Bash(MISSING=\"$MISSING context.md\")",
+      "Bash([ ! -f \".fpf/session.md\" ])",
+      "Bash(MISSING=\"$MISSING session.md\")",
+      "Bash(__NEW_LINE__ if [ -z \"$MISSING\" ])",
+      "Bash(echo:*)",
+      "Bash(fi)",
+      "Bash(mkdir:*)"
+    ]
+  }
+}

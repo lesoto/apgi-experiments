@@ -29,7 +29,7 @@ Measures baseline ignition threshold using an adaptive visual/auditory detection
 
 ### Usage Example
 ```python
-from apgi_framework.experimental import DetectionTask
+from research.core_mechanisms.experiments.experimental import DetectionTask
 
 task = DetectionTask(
     task_id="detection_001",
@@ -74,7 +74,7 @@ Measures interoceptive precision through heartbeat detection with confidence rat
 
 ### Usage Example
 ```python
-from apgi_framework.experimental import HeartbeatDetectionTask
+from research.core_mechanisms.experiments.experimental import HeartbeatDetectionTask
 
 task = HeartbeatDetectionTask(
     task_id="heartbeat_001",
@@ -120,7 +120,7 @@ Measures somatic bias through precision-matched interoceptive and exteroceptive 
 
 ### Usage Example
 ```python
-from apgi_framework.experimental import DualModalityOddballTask
+from research.core_mechanisms.experiments.experimental import DualModalityOddballTask
 
 task = DualModalityOddballTask(
     task_id="oddball_001",

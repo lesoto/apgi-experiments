@@ -9,7 +9,11 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple, Any
 import numpy as np
 from scipy import signal
-from scipy.integrate import trapz
+try:
+    from scipy.integrate import trapz
+except ImportError:
+    # Fallback for newer scipy versions where trapz was moved
+    from scipy.integrate import trapezoid as trapz
 import time
 
 

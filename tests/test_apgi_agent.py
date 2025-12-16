@@ -134,13 +134,15 @@ class TestAPGIAgent:
         # Test case where surprise is above threshold
         t = 10
         agent.S[t] = TestConfig.THETA_BASE + 1.0  # Above threshold
-        agent._determine_conscious_access(t, TestConfig.THETA_BASE)
-        assert agent.conscious[t] == True
+        agent._calculate_ignition_probability(t, TestConfig.THETA_BASE)
+        # With high surprise, ignition probability should be > 0.5
+        assert agent.ignition[t] > 0.5
         
         # Test case where surprise is below threshold
         agent.S[t] = TestConfig.THETA_BASE - 1.0  # Below threshold
-        agent._determine_conscious_access(t, TestConfig.THETA_BASE)
-        assert agent.conscious[t] == False
+        agent._calculate_ignition_probability(t, TestConfig.THETA_BASE)
+        # With low surprise, ignition probability should be < 0.5
+        assert agent.ignition[t] < 0.5
 
     def test_full_simulation(self, agent):
         """Test a complete simulation run."""

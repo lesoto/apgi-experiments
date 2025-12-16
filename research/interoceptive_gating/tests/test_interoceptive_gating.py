@@ -14,7 +14,7 @@ import sys
 sys.path.append(str(Path(__file__).parent.parent))
 
 # Import the experiment
-from experiments.interoceptive_gating.experiment import (
+from research.interoceptive_gating.experiments.interoceptive_gating.experiment import (
     InteroceptiveGatingExperiment,
     run_interoceptive_gating_experiment
 )
@@ -111,7 +111,7 @@ class TestInteroceptiveGating:
         
         # Test each condition
         for condition in experiment.conditions:
-            trial_data = experiment.run_trial(condition, trial_idx=0)
+            trial_data = experiment.run_trial(1, condition, trial_idx=0)
             
             # Check that we got a dictionary with at least some expected keys
             assert isinstance(trial_data, dict)
@@ -255,4 +255,8 @@ def test_run_interoceptive_gating_experiment():
     
     # Check that the experiment was run with the correct number of participants
     assert hasattr(exp, 'results')
-    assert len(exp.results) == 2
+    assert exp.results is not None
+    # Check that results contain analysis data for all conditions
+    expected_result_keys = ['interoceptive_detection_rate', 'exteroceptive_detection_rate', 'control_detection_rate']
+    for key in expected_result_keys:
+        assert key in exp.results

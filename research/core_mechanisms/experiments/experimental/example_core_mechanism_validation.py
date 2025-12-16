@@ -8,11 +8,11 @@ surprise accumulation dynamics analyzer to validate APGI framework predictions.
 import numpy as np
 from typing import List
 
-from apgi_framework.experimental.neuromodulatory_blockade import (
+from research.core_mechanisms.experiments.experimental.neuromodulatory_blockade import (
     NeuromodulatoryBlockadeSimulator,
     NeuromodulatorEffect
 )
-from apgi_framework.experimental.surprise_accumulation_dynamics import (
+from research.core_mechanisms.experiments.experimental.surprise_accumulation_dynamics import (
     SurpriseAccumulationAnalyzer,
     TrialSurpriseEstimate
 )

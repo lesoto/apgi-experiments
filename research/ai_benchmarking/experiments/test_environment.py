@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(project_root)
 
-from experiments.ai_benchmarking.environment import GridWorld, GameObject, ObjectType
-from experiments.ai_benchmarking.agents import RandomAgent
+from research.ai_benchmarking.experiments.environment import GridWorld, GameObject, ObjectType
+from research.ai_benchmarking.experiments.agents import RandomAgent
 
 def test_environment():
     # Create a small test environment

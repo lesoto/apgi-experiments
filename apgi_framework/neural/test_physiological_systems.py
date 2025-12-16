@@ -7,14 +7,14 @@ and PhysiologicalMonitoring classes.
 
 import numpy as np
 import time
-from pupillometry_interface import (
+from .pupillometry_interface import (
     PupillometryInterface,
     PupillometryConfig,
     PupilSample,
     EyeType,
     BlinkDetectionMethod
 )
-from physiological_monitoring import (
+from .physiological_monitoring import (
     PhysiologicalMonitoring,
     PhysiologicalConfig,
     SignalType

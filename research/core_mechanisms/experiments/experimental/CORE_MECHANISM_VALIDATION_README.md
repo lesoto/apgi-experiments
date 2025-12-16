@@ -37,12 +37,12 @@ This module implements Priority 2 core mechanism validation for the APGI Framewo
 
 ```python
 # Import required modules
-from apgi_framework.experimental import (
+from research.core_mechanisms.experiments.experimental import (
     NeuromodulatoryBlockadeSimulator,
     SurpriseAccumulationAnalyzer
 )
 from apgi_framework.core import APGIEquation
-from apgi_framework.neural import ERPAnalysis
+from research.core_mechanisms.experiments.experimental import ERPAnalysis
 ```
 
 ### Example 1: Test Propranolol Effects
@@ -60,11 +60,11 @@ result = simulator.simulate_blockade_experiment(
 
 # Check if predictions are met
 if result.meets_p3b_reduction_prediction:
-    print("✓ P3b reduction prediction validated")
+    print(" P3b reduction prediction validated")
 if result.meets_early_preservation_prediction:
-    print("✓ Early ERP preservation validated")
+    print(" Early ERP preservation validated")
 if result.meets_emotional_selectivity_prediction:
-    print("✓ Emotional selectivity validated")
+    print(" Emotional selectivity validated")
 
 # Generate detailed report
 print(simulator.generate_report(result))
@@ -89,11 +89,11 @@ result = analyzer.analyze_trial_by_trial(
 
 # Check validation criteria
 if result.ignition_prediction_accuracy > 0.7:
-    print("✓ Prediction accuracy validated")
+    print(" Prediction accuracy validated")
 if result.ignition_prediction_auc > 0.7:
-    print("✓ Discrimination ability validated")
+    print(" Discrimination ability validated")
 if abs(result.rt_surprise_correlation) > 0.3:
-    print("✓ RT correlation validated")
+    print(" RT correlation validated")
 
 # Generate detailed report
 print(analyzer.generate_report(result))
@@ -103,7 +103,7 @@ print(analyzer.generate_report(result))
 
 ```python
 # Run complete validation pipeline
-from apgi_framework.experimental.example_core_mechanism_validation import (
+from research.core_mechanisms.experiments.experimental.neural_threshold_validation import (
     example_neuromodulatory_blockade,
     example_surprise_accumulation_dynamics,
     example_combined_validation
@@ -229,7 +229,7 @@ RT CORRELATIONS:
 
 **Symptom**: Accuracy < 0.7 despite good AUC
 
-**Solution**: 
+**Solution**:
 ```python
 # Calibrate neural-to-surprise mapping
 weights = analyzer.calibrate_neural_to_surprise_mapping(
@@ -265,7 +265,7 @@ To use with real experimental data:
 
 ```python
 # 1. Load your EEG data
-from apgi_framework.neural import EEGInterface, ERPAnalysis
+from research.core_mechanisms.experiments.experimental import EEGInterface, ERPAnalysis
 
 eeg_interface = EEGInterface(sampling_rate=1000)
 erp_analyzer = ERPAnalysis(sampling_rate=1000)
@@ -280,7 +280,7 @@ for trial_data in your_eeg_trials:
     erp_components.append(erp)
 
 # 3. Extract gamma power
-from apgi_framework.neural import GammaSynchronyAnalysis
+from research.core_mechanisms.experiments.experimental import GammaSynchronyAnalysis
 
 gamma_analyzer = GammaSynchronyAnalysis(sampling_rate=1000)
 gamma_powers = []

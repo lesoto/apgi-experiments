@@ -193,7 +193,7 @@ agent.run_example()  # Runs simulation and shows plots
 ### Running an Experiment
 
 ```python
-from experiments.interoceptive_gating.experiment import run_interoceptive_gating_experiment
+from research.interoceptive_gating.experiments.experiment import run_interoceptive_gating_experiment
 
 # Run experiment with custom parameters
 experiment = run_interoceptive_gating_experiment(

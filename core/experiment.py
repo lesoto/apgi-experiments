@@ -44,7 +44,10 @@ class BaseExperiment(ABC):
         """Compile all participant data into a single DataFrame."""
         all_data = []
         for participant, data in self.participant_data.items():
-            if isinstance(data, list):
+            if isinstance(data, dict) and 'trials' in data:
+                # Handle nested structure with 'trials' key
+                all_data.extend(data['trials'])
+            elif isinstance(data, list):
                 all_data.extend(data)
             else:
                 all_data.append(data)
