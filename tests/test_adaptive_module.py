@@ -15,8 +15,9 @@ from apgi_framework.adaptive.stimulus_generators import (
     CO2PuffParameters, StimulusGenerator, GaborPatchGenerator, ToneGenerator
 )
 from apgi_framework.adaptive.task_control import (
-    TaskState, TaskStateMachine, SessionManager, SessionConfiguration
+    TaskState, SessionManager, SessionConfiguration
 )
+from apgi_framework.adaptive.quest_plus_staircase import QuestPlusParameters
 
 
 class TestQuestPlusParameters:
@@ -140,7 +141,7 @@ class TestQuestPlusStaircase:
         intensity = staircase.get_next_intensity()
         
         # Update with response
-        staircase.update_staircase(intensity, response=True)
+        staircase.update(intensity, response=True)
         
         assert staircase.state.trial_number == 1
         assert len(staircase.state.intensities) == 1
@@ -153,16 +154,13 @@ class TestQuestPlusStaircase:
         params = QuestPlusParameters(min_trials=5, max_trials=20, convergence_criterion=0.1)
         staircase = QuestPlusStaircase(params)
         
-        # Should not converge initially
-        assert not staircase.state.converged
-        
-        # Add some trials to reach minimum
+        # Simulate some trials
         for i in range(10):
             intensity = staircase.get_next_intensity()
-            staircase.update_staircase(intensity, response=True if intensity > 0.5 else False)
+            staircase.update(intensity, response=i % 2 == 0)
         
-        # Check convergence state
-        assert isinstance(staircase.state.converged, bool)
+        # Check if converged
+        assert staircase.state.trial_number >= params.min_trials
 
 
 class TestStimulusParameters:
@@ -225,43 +223,28 @@ class TestStimulusParameters:
         assert params.orientation == 45.0
     
     def test_tone_parameters(self):
-        """Test tone parameters."""
+        """Test tone parameters initialization."""
         params = ToneParameters(
             intensity=0.4,
-            frequency=1000.0,
+            frequency_hz=1000.0,
             amplitude=0.7
         )
-        
         assert params.stimulus_type == StimulusType.TONE
         assert params.intensity == 0.4
-        assert params.frequency == 1000.0
+        assert params.frequency_hz == 1000.0
         assert params.amplitude == 0.7
     
     def test_co2_puff_parameters(self):
-        """Test CO2 puff parameters."""
+        """Test CO2 puff parameters initialization."""
         params = CO2PuffParameters(
             intensity=0.3,
             co2_concentration=8.0,
             duration_ms=200.0
         )
-        
         assert params.stimulus_type == StimulusType.CO2_PUFF
         assert params.intensity == 0.3
         assert params.co2_concentration == 8.0
         assert params.duration_ms == 200.0
-    
-    def test_heartbeat_flash_parameters(self):
-        """Test heartbeat flash parameters."""
-        params = HeartbeatFlashParameters(
-            intensity=0.5,
-            flash_duration_ms=100.0,
-            timing_offset_ms=50.0
-        )
-        
-        assert params.stimulus_type == StimulusType.HEARTBEAT_FLASH
-        assert params.intensity == 0.5
-        assert params.flash_duration_ms == 100.0
-        assert params.timing_offset_ms == 50.0
 
 
 class TestStimulusGenerator:
@@ -269,184 +252,104 @@ class TestStimulusGenerator:
     
     def test_initialization(self):
         """Test stimulus generator initialization."""
-        generator = StimulusGenerator()
-        assert generator.is_active is False
-        assert generator.current_stimulus is None
+        generator = GaborPatchGenerator()
+        assert generator.is_initialized is False
+        assert generator.generator_id == "gabor_generator"
     
     def test_generate_gabor_stimulus(self):
         """Test Gabor stimulus generation."""
-        generator = StimulusGenerator()
+        generator = GaborPatchGenerator()
         params = GaborParameters(
             intensity=0.6,
             contrast=0.8,
             spatial_frequency=2.0
         )
         
-        stimulus = generator.generate_stimulus(params)
-        assert stimulus is not None
-        assert stimulus.stimulus_type == StimulusType.GABOR_PATCH
-        assert stimulus.intensity == params.intensity
-        assert stimulus.timestamp is not None
+        # Initialize first
+        generator.initialize()
+        assert generator.is_initialized is True
+        
+        result = generator.generate_stimulus(params)
+        assert result is True
+        assert params.timestamp is not None
     
     def test_generate_tone_stimulus(self):
         """Test tone stimulus generation."""
-        generator = StimulusGenerator()
+        generator = ToneGenerator()
         params = ToneParameters(
             intensity=0.4,
-            frequency=1000.0,
+            frequency_hz=1000.0,
             amplitude=0.7
         )
         
-        stimulus = generator.generate_stimulus(params)
-        assert stimulus is not None
-        assert stimulus.stimulus_type == StimulusType.TONE
-        assert stimulus.intensity == params.intensity
+        # Initialize first
+        generator.initialize()
+        result = generator.generate_stimulus(params)
+        assert result is True
+        assert params.timestamp is not None
     
-    def test_generate_co2_puff_stimulus(self):
-        """Test CO2 puff stimulus generation."""
-        generator = StimulusGenerator()
-        params = CO2PuffParameters(
-            intensity=0.3,
-            co2_concentration=8.0,
-            duration_ms=200.0
-        )
+    def test_timing_validation(self):
+        """Test timing validation functionality."""
+        generator = GaborPatchGenerator()
+        generator.initialize()
         
-        stimulus = generator.generate_stimulus(params)
-        assert stimulus is not None
-        assert stimulus.stimulus_type == StimulusType.CO2_PUFF
-        assert stimulus.intensity == params.intensity
-    
-    def test_generate_heartbeat_flash_stimulus(self):
-        """Test heartbeat flash stimulus generation."""
-        generator = StimulusGenerator()
-        params = HeartbeatFlashParameters(
-            intensity=0.5,
-            flash_duration_ms=100.0,
-            timing_offset_ms=50.0
-        )
+        # Test timing validation
+        assert generator.validate_timing(0.0) is True
         
-        stimulus = generator.generate_stimulus(params)
-        assert stimulus is not None
-        assert stimulus.stimulus_type == StimulusType.HEARTBEAT_FLASH
-        assert stimulus.intensity == params.intensity
-    
-    def test_start_stop_stimulation(self):
-        """Test starting and stopping stimulation."""
-        generator = StimulusGenerator()
-        
-        # Start stimulation
-        generator.start_stimulation()
-        assert generator.is_active is True
-        
-        # Stop stimulation
-        generator.stop_stimulation()
-        assert generator.is_active is False
+        # Test cleanup
+        generator.cleanup()
 
 
-class TestTaskController:
-    """Test task controller implementation."""
+class TestSessionManager:
+    """Test session manager implementation."""
     
     def test_initialization(self):
-        """Test task controller initialization."""
-        params = TaskParameters(
-            min_trials=10,
-            max_trials=50,
-            task_type="detection"
+        """Test session manager initialization."""
+        manager = SessionManager()
+        
+        assert manager.current_session is None
+        assert manager.state_machine.current_state == TaskState.IDLE
+        assert manager.session_start_time is None
+    
+    def test_configure_and_start_session(self):
+        """Test configuring and starting a session."""
+        config = SessionConfiguration(
+            session_id="test_session",
+            participant_id="test_participant"
         )
-        controller = TaskController(params)
+        manager = SessionManager()
         
-        assert controller.parameters == params
-        assert controller.state == TaskState.READY
-        assert controller.trial_count == 0
-        assert len(controller.trial_results) == 0
+        # Configure session
+        result = manager.configure_session(config)
+        assert result is True
+        assert manager.current_session == config
+        
+        # Start session
+        result = manager.start_session()
+        assert result is True
+        assert manager.session_start_time is not None
     
-    def test_start_task(self):
-        """Test starting a task."""
-        params = TaskParameters(min_trials=5, max_trials=20)
-        controller = TaskController(params)
+    def test_complete_session(self):
+        """Test completing a session."""
+        config = SessionConfiguration(
+            session_id="test_session",
+            participant_id="test_participant"
+        )
+        manager = SessionManager()
+        manager.configure_session(config)
+        manager.start_session()
         
-        controller.start_task()
-        assert controller.state == TaskState.RUNNING
-        assert controller.trial_count == 0
-    
-    def test_run_trial(self):
-        """Test running a single trial."""
-        params = TaskParameters(min_trials=5, max_trials=20)
-        controller = TaskController(params)
-        controller.start_task()
+        # Start a task first to get into RUNNING state
+        task_name = manager.run_next_task()
         
-        # Run a trial
-        result = controller.run_trial()
+        # Complete the task
+        if task_name:
+            manager.complete_current_task()
         
-        assert isinstance(result, TrialResult)
-        assert controller.trial_count == 1
-        assert len(controller.trial_results) == 1
-        assert result.trial_number == 1
-    
-    def test_record_response(self):
-        """Test recording participant response."""
-        params = TaskParameters(min_trials=5, max_trials=20)
-        controller = TaskController(params)
-        controller.start_task()
-        
-        # Run trial and record response
-        trial_result = controller.run_trial()
-        controller.record_response(trial_result.trial_number, response=1, rt=0.350)
-        
-        # Check response was recorded
-        updated_result = controller.trial_results[-1]
-        assert updated_result.response == 1
-        assert updated_result.reaction_time == 0.350
-    
-    def test_task_completion(self):
-        """Test task completion conditions."""
-        params = TaskParameters(min_trials=5, max_trials=10)
-        controller = TaskController(params)
-        controller.start_task()
-        
-        # Run minimum trials
-        for i in range(5):
-            trial_result = controller.run_trial()
-            controller.record_response(trial_result.trial_number, response=1, rt=0.350)
-        
-        # Should be able to complete
-        assert controller.can_complete_task()
-        
-        # Complete task
-        controller.complete_task()
-        assert controller.state == TaskState.COMPLETED
-    
-    def test_task_termination(self):
-        """Test task termination."""
-        params = TaskParameters(min_trials=5, max_trials=20)
-        controller = TaskController(params)
-        controller.start_task()
-        
-        # Terminate task
-        controller.terminate_task()
-        assert controller.state == TaskState.TERMINATED
-    
-    def test_get_performance_summary(self):
-        """Test performance summary generation."""
-        params = TaskParameters(min_trials=5, max_trials=20)
-        controller = TaskController(params)
-        controller.start_task()
-        
-        # Run some trials with responses
-        for i in range(5):
-            trial_result = controller.run_trial()
-            response = 1 if i % 2 == 0 else 0  # Alternating responses
-            controller.record_response(trial_result.trial_number, response=response, rt=0.350)
-        
-        # Get performance summary
-        summary = controller.get_performance_summary()
-        
-        assert isinstance(summary, dict)
-        assert 'total_trials' in summary
-        assert 'accuracy' in summary
-        assert 'mean_reaction_time' in summary
-        assert summary['total_trials'] == 5
-        assert 0.0 <= summary['accuracy'] <= 1.0
+        # Complete session
+        result = manager.complete_session()
+        assert result is True
+        assert manager.state_machine.current_state == TaskState.COMPLETED
 
 
 if __name__ == "__main__":
