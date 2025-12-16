@@ -1,0 +1,19 @@
+{
+  "session_id": "test_session",
+  "participant_id": "test_participant",
+  "protocol_version": "1.0.0",
+  "start_time": "2025-12-15T22:23:51.121295",
+  "end_time": "2025-12-15T22:24:51.127375",
+  "tasks": {
+    "detection": {
+      "start_time": "2025-12-15T22:23:51.121501",
+      "trials": [],
+      "parameters": {},
+      "quality_metrics": {},
+      "end_time": "2025-12-15T22:23:51.121573"
+    }
+  },
+  "quality_metrics": {},
+  "events": [],
+  "duration_minutes": 1.0001013333333333
+}
