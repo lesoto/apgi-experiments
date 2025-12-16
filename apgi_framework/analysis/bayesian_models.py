@@ -1,19 +1,28 @@
 """
 Hierarchical Bayesian modeling framework for APGI parameter estimation.
 
-This module implements the core Bayesian modeling infrastructure for joint
+This module implements the core Bayesian modeling infrastructure for joint 
 parameter estimation of θ₀ (baseline ignition threshold), Πᵢ (interoceptive precision),
 and β (somatic bias) using Stan/PyMC3.
 """
 
 import numpy as np
-from typing import Dict, Optional, Tuple, Any, List
-from dataclasses import dataclass
-import pickle
-import hashlib
-import os
+import pandas as pd
+from scipy import stats
+from scipy.optimize import minimize
+from typing import Dict, List, Tuple, Optional, Any
+import matplotlib.pyplot as plt
+import seaborn as sns
 from pathlib import Path
+import warnings
+from dataclasses import dataclass
 
+# Import standardized logging and security
+from ..logging.standardized_logging import get_logger
+from ..security.secure_pickle import safe_pickle_load, safe_pickle_dump, SecurePickleError
+
+# Initialize logger
+logger = get_logger(__name__)
 
 @dataclass
 class ParameterDistribution:
@@ -344,11 +353,11 @@ class StanModelCompiler:
         if cache_path.exists() and not force_recompile:
             try:
                 with open(cache_path, 'rb') as f:
-                    model = pickle.load(f)
+                    model = safe_pickle_load(f)
                 self._compiled_models[model_hash] = model
                 return model
             except Exception as e:
-                print(f"Warning: Failed to load cached model: {e}")
+                logger.warning(f"Failed to load cached model: {e}")
         
         # Compile new model
         try:
@@ -358,9 +367,9 @@ class StanModelCompiler:
             # Cache to disk
             try:
                 with open(cache_path, 'wb') as f:
-                    pickle.dump(model, f)
+                    safe_pickle_dump(model, f)
             except Exception as e:
-                print(f"Warning: Failed to cache model: {e}")
+                logger.warning(f"Failed to cache model: {e}")
             
             self._compiled_models[model_hash] = model
             return model

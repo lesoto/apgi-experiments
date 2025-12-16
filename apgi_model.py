@@ -1,3 +1,6 @@
+from apgi_framework.logging.standardized_logging import get_logger
+
+logger = get_logger("apgi_model")
 import numpy as np
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
@@ -114,8 +117,8 @@ def run_demo():
     plot_simulation(S_t, B_t, theta_t, "APGI Model Demonstration")
     
     # Print some statistics
-    print(f"Mean surprise: {np.mean(S_t):.2f} ± {np.std(S_t):.2f}")
-    print(f"Ignition probability: {np.mean(B_t > 0.5) * 100:.1f}% of time steps")
+    logger.info(f"Mean surprise: {np.mean(S_t):.2f} ± {np.std(S_t):.2f}")
+    logger.info(f"Ignition probability: {np.mean(B_t > 0.5) * 100:.1f}% of time steps")
 
 if __name__ == "__main__":
     run_demo()

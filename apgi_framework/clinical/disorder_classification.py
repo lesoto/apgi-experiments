@@ -178,7 +178,7 @@ class DisorderClassification:
                                  gamma_data: Dict[str, float],
                                  microstate_data: Dict[str, float],
                                  pupil_data: Dict[str, float],
-                                 apgi_params: Dict[str, float},
+                                 apgi_params: Dict[str, float],
                                  behavioral_data: Dict[str, float]) -> NeuralSignatureProfile:
         """
         Extract neural signature profile from experimental data.
@@ -347,7 +347,7 @@ class DisorderClassification:
                 auc = roc_auc_score(y_true, y_proba[:, 1])
             else:
                 auc = roc_auc_score(y_true, y_proba, multi_class='ovr', average='weighted')
-        except:
+        except (ValueError, IndexError):
             auc = None
         
         # Get feature importance

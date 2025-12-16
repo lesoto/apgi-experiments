@@ -280,7 +280,7 @@ class SurpriseAccumulationAnalyzer:
             # Fallback: compute AUC manually using trapezoidal rule
             predicted_probs = [est.predicted_ignition_probability for est in trial_estimates]
             ignition_prediction_auc = self._compute_auc_manual(actual_ignitions, predicted_probs)
-        except:
+        except (ValueError, IndexError, RuntimeError):
             ignition_prediction_auc = 0.5  # Fallback if AUC cannot be computed
         
         # Reaction time correlations

@@ -7,6 +7,9 @@ from scipy.stats import norm, bernoulli
 import random
 
 from core.experiment import BaseExperiment
+from apgi_framework.logging.standardized_logging import get_logger
+
+logger = get_logger("somatic_marker_priming_experiment")
 
 class SomaticMarkerPrimingExperiment(BaseExperiment):
     """
@@ -212,7 +215,7 @@ class SomaticMarkerPrimingExperiment(BaseExperiment):
     
     def run_participant(self, participant_id: int):
         """Run the full experiment for a single participant."""
-        print(f"Running participant {participant_id}...")
+        logger.info(f"Running participant {participant_id}...")
         
         # Practice trials (not analyzed)
         practice_trials = [
@@ -227,17 +230,17 @@ class SomaticMarkerPrimingExperiment(BaseExperiment):
         # Run experimental trials
         trial_data = []
         for i, trial_params in enumerate(self.trial_sequence, 1):
-            print(f"  Trial {i}/{len(self.trial_sequence)}", end='\r')
+            logger.debug(f"  Trial {i}/{len(self.trial_sequence)}")
             trial_result = self.run_trial(participant_id, trial_params)
             trial_data.append(trial_result)
         
-        print("\nParticipant complete!")
+        logger.info("Participant complete!")
         return trial_data
     
     def analyze_results(self):
         """Analyze the experimental results."""
         if self.data.empty:
-            print("No data to analyze. Run the experiment first.")
+            logger.warning("No data to analyze. Run the experiment first.")
             return None
             
         results = {}
@@ -256,21 +259,21 @@ class SomaticMarkerPrimingExperiment(BaseExperiment):
                     results[f"{prime_type}_coh{coherence:.1f}_rt"] = mean_rt
         
         # Print summary
-        print("\nResults by Prime Type and Coherence:")
+        logger.info("\nResults by Prime Type and Coherence:")
         for prime in self.prime_types:
-            print(f"\n{prime.capitalize()} Primes:")
+            logger.info(f"\n{prime.capitalize()} Primes:")
             for coh in self.coherence_levels:
                 acc_key = f"{prime}_coh{coh:.1f}_acc"
                 rt_key = f"{prime}_coh{coh:.1f}_rt"
                 if acc_key in results and rt_key in results:
-                    print(f"  Coherence {coh:.1f}: Accuracy = {results[acc_key]:.2f}, RT = {results[rt_key]:.3f}s")
+                    logger.info(f"  Coherence {coh:.1f}: Accuracy = {results[acc_key]:.2f}, RT = {results[rt_key]:.3f}s")
         
         return results
     
     def plot_results(self):
         """Plot the experimental results."""
         if self.data.empty:
-            print("No data to plot. Run the experiment first.")
+            logger.warning("No data to plot. Run the experiment first.")
             return
         
         plt.figure(figsize=(15, 5))

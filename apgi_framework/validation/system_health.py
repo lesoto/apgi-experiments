@@ -508,14 +508,14 @@ class SystemHealthChecker:
         try:
             import numpy
             info['numpy_version'] = numpy.__version__
-        except:
-            pass
+        except ImportError:
+            info['numpy_version'] = 'Not installed'
         
         try:
             import scipy
             info['scipy_version'] = scipy.__version__
-        except:
-            pass
+        except ImportError:
+            info['scipy_version'] = 'Not installed'
         
         return info
     

@@ -9,6 +9,10 @@ proper error handling and dependency checking.
 import sys
 import os
 from pathlib import Path
+from apgi_framework.logging.standardized_logging import get_logger
+
+# Initialize logger
+logger = get_logger("launch_gui")
 
 def check_dependencies():
     """Check if required dependencies are available."""
@@ -27,21 +31,21 @@ def check_dependencies():
             missing_modules.append(module)
     
     if missing_modules:
-        print(f"Error: Missing required modules: {', '.join(missing_modules)}")
-        print("Please install them using: pip install -r requirements.txt")
+        logger.error(f"Missing required modules: {', '.join(missing_modules)}")
+        logger.error("Please install them using: pip install -r requirements.txt")
         return False
     
     return True
 
 def main():
     """Main launcher function."""
-    print("APGI Framework Falsification Testing System")
-    print("=" * 50)
+    logger.info("APGI Framework Falsification Testing System")
+    logger.info("=" * 50)
     
     # Check if we're in the right directory
     if not Path("apgi_framework").exists():
-        print("Error: apgi_framework directory not found.")
-        print("Please run this script from the project root directory.")
+        logger.error("apgi_framework directory not found.")
+        logger.error("Please run this script from the project root directory.")
         sys.exit(1)
     
     # Check dependencies
@@ -54,15 +58,15 @@ def main():
         sys.path.insert(0, str(current_dir))
     
     try:
-        print("Starting GUI application...")
+        logger.info("Starting GUI application...")
         from apgi_falsification_gui import main as gui_main
         gui_main()
     except ImportError as e:
-        print(f"Error importing GUI module: {e}")
-        print("Please ensure all APGI Framework components are properly installed.")
+        logger.error(f"Error importing GUI module: {e}")
+        logger.error("Please ensure all APGI Framework components are properly installed.")
         sys.exit(1)
     except Exception as e:
-        print(f"Error starting GUI: {e}")
+        logger.error(f"Error starting GUI: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":

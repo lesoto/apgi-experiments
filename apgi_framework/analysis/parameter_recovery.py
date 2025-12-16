@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from scipy import stats
 import pandas as pd
 
+from ..logging.standardized_logging import get_logger
 from .bayesian_models import ParameterEstimates
 from .parameter_estimation import JointParameterFitter
 
@@ -86,6 +87,7 @@ class SyntheticDataGenerator:
             random_seed: Random seed for reproducibility
         """
         self.rng = np.random.RandomState(random_seed)
+        self.logger = get_logger(__name__)
     
     def generate_detection_task_data(
         self,
@@ -505,6 +507,7 @@ class ParameterRecoveryValidator:
         self.validation_criteria = validation_criteria
         self.generator = SyntheticDataGenerator(random_seed)
         self.analyzer = RecoveryAnalyzer()
+        self.logger = get_logger(__name__)
     
     def run_validation(
         self,
@@ -528,7 +531,7 @@ class ParameterRecoveryValidator:
             RecoveryResults with validation outcome
         """
         if verbose:
-            print(f"Generating {n_datasets} synthetic datasets...")
+            self.logger.info(f"Generating {n_datasets} synthetic datasets...")
         
         # Generate synthetic datasets
         datasets = self.generator.generate_multiple_datasets(
@@ -543,7 +546,7 @@ class ParameterRecoveryValidator:
         
         for i, (ground_truth, detection, heartbeat, oddball) in enumerate(datasets):
             if verbose and (i + 1) % 10 == 0:
-                print(f"Processing dataset {i + 1}/{n_datasets}...")
+                self.logger.info(f"Processing dataset {i + 1}/{n_datasets}...")
             
             try:
                 # Fit model
@@ -561,12 +564,12 @@ class ParameterRecoveryValidator:
                 
             except Exception as e:
                 if verbose:
-                    print(f"Warning: Failed to fit dataset {i}: {e}")
+                    self.logger.warning(f"Warning: Failed to fit dataset {i}: {e}")
                 continue
         
         if verbose:
-            print(f"Successfully fit {len(recovered_list)}/{n_datasets} datasets")
-            print("Analyzing parameter recovery...")
+            self.logger.info(f"Successfully fit {len(recovered_list)}/{n_datasets} datasets")
+            self.logger.info("Analyzing parameter recovery...")
         
         # Analyze recovery
         metrics = self.analyzer.analyze_recovery(
@@ -589,7 +592,7 @@ class ParameterRecoveryValidator:
         )
         
         if verbose:
-            print("\n" + results.summary())
+            self.logger.info("\n" + results.summary())
         
         return results
 

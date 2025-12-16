@@ -242,10 +242,16 @@ def main(argv: List[str] = None):
 
     if not args.yes and not dry_run:
         print(f"About to clean temporary files under: {root_directory}")
-        resp = input("Proceed? [y/N]: ").strip().lower()
-        if resp not in ("y", "yes"):
-            print("Aborted by user.")
-            return 1
+        while True:
+            resp = input("Proceed? [y/N]: ").strip().lower()
+            if resp in ("y", "yes"):
+                break
+            elif resp in ("n", "no", ""):
+                print("Aborted by user.")
+                return 1
+            else:
+                print("Please enter 'y' or 'n'.")
+                continue
 
     if verbose:
         print("Starting cleanup process...")

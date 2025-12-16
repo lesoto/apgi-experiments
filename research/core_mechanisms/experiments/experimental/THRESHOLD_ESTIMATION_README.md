@@ -4,20 +4,6 @@
 
 This module implements the Priority 1 direct threshold estimation system for the APGI (Interoceptive Predictive Ignition) framework. It provides psychophysical threshold estimation protocols across visual, auditory, and interoceptive modalities with integrated neural validation.
 
-## Requirements Fulfilled
-
-### Requirement 2.1-2.5: Psychophysical Threshold Estimation
-- **2.1**: Adaptive staircase procedures across visual, auditory, and interoceptive modalities
-- **2.2**: Systematic stimulus intensity variation with 50-500ms delays before awareness probes
-- **2.3**: 50% conscious detection threshold calculation normalized to sensory detection thresholds
-- **2.4**: Test-retest reliability with ICC > 0.70 over 1-week intervals
-- **2.5**: Cross-modal threshold consistency with r > 0.5 correlation across modalities
-
-### Requirement 3.1, 3.3: Neural Validation
-- **3.1**: P3b amplitude, latency, and gamma-band activity extraction
-- **3.3**: Neural correlates validation (lower θₜ predicts higher P3b amplitude r > 0.5, gamma power r > 0.4)
-- **2.5**: P3b stochastic appearance detection on threshold trials
-
 ## Components
 
 ### 1. Threshold Estimation System (`threshold_estimation_system.py`)

@@ -2,6 +2,9 @@ from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Tuple
 import numpy as np
 import pandas as pd
+from apgi_framework.logging.standardized_logging import get_logger
+
+logger = get_logger("experiment")
 
 class BaseExperiment(ABC):
     """Base class for all experimental paradigms."""
@@ -60,6 +63,6 @@ class BaseExperiment(ABC):
         """Save the experiment data to a file."""
         if not self.data.empty:
             self.data.to_csv(filename, index=False)
-            print(f"Data saved to {filename}")
+            logger.info(f"Data saved to {filename}")
         else:
-            print("No data to save.")
+            logger.warning("No data to save.")

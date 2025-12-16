@@ -16,6 +16,10 @@ from .bayesian_models import (
     ParameterEstimates,
     ParameterDistribution
 )
+from ..logging.standardized_logging import get_logger
+
+# Initialize logger
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -506,13 +510,13 @@ class JointParameterFitter:
         )
         
         # Fit model
-        print(f"Fitting hierarchical Bayesian model for {n_subjects} subjects...")
+        logger.info(f"Fitting hierarchical Bayesian model for {n_subjects} subjects...")
         fit_result = self.model.fit(
             stan_data, chains=chains, iter=iter, warmup=warmup, **kwargs
         )
         
         # Extract parameters
-        print("Extracting parameter estimates...")
+        logger.info("Extracting parameter estimates...")
         parameter_estimates = self.extractor.extract_all_parameters(
             fit_result, n_subjects, participant_ids, session_ids
         )
@@ -523,7 +527,7 @@ class JointParameterFitter:
         )
         
         # Compute convergence diagnostics
-        print("Computing convergence diagnostics...")
+        logger.info("Computing convergence diagnostics...")
         convergence = self.diagnostics_calculator.assess_convergence(
             fit_result
         )

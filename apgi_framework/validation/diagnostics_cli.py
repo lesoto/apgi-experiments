@@ -11,10 +11,13 @@ from datetime import datetime
 from .system_health import get_health_checker
 from .parameter_validator import get_validator
 from ..config import get_config_manager
+from ..logging.standardized_logging import get_logger
 
 
 def run_health_check(args):
     """Run system health check"""
+    logger = get_logger(__name__)
+    
     print("\n" + "=" * 60)
     print("APGI FRAMEWORK SYSTEM HEALTH CHECK")
     print("=" * 60 + "\n")

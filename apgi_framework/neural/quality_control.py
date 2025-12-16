@@ -12,6 +12,8 @@ import numpy as np
 import time
 from collections import deque
 
+from ..logging.standardized_logging import get_logger
+
 
 class QualityLevel(Enum):
     """Data quality levels."""
@@ -482,6 +484,9 @@ class AdaptiveProtocolManager:
         """Initialize adaptive protocol manager."""
         self.adjustment_history: List[Dict[str, Any]] = []
         self.current_adjustments: Dict[str, Any] = {}
+        
+        # Setup logging
+        self.logger = get_logger(__name__)
     
     def evaluate_protocol_adjustments(self, quality_metrics: MultiModalQualityMetrics) -> Dict[str, Any]:
         """
@@ -562,7 +567,7 @@ class AdaptiveProtocolManager:
         """
         # This would interface with the actual experimental control system
         # For now, just log the adjustment
-        print(f"Applying adjustment: {adjustment['action']} for {adjustment['modality']}")
+        self.logger.info(f"Applying adjustment: {adjustment['action']} for {adjustment['modality']}")
         return True
 
 
@@ -578,6 +583,9 @@ class OperatorNotificationSystem:
         """Initialize operator notification system."""
         self.notification_callbacks: List[Callable] = []
         self.notification_history: deque = deque(maxlen=100)
+        
+        # Setup logging
+        self.logger = get_logger(__name__)
     
     def register_callback(self, callback: Callable):
         """
@@ -612,7 +620,7 @@ class OperatorNotificationSystem:
             try:
                 callback(notification)
             except Exception as e:
-                print(f"Notification callback error: {e}")
+                self.logger.error(f"Notification callback error: {e}")
     
     def send_quality_update(self, quality_metrics: MultiModalQualityMetrics):
         """
@@ -641,7 +649,7 @@ class OperatorNotificationSystem:
             try:
                 callback(notification)
             except Exception as e:
-                print(f"Notification callback error: {e}")
+                self.logger.error(f"Notification callback error: {e}")
     
     def send_status_message(self, message: str, severity: str = "info"):
         """
@@ -666,7 +674,7 @@ class OperatorNotificationSystem:
             try:
                 callback(notification)
             except Exception as e:
-                print(f"Notification callback error: {e}")
+                self.logger.error(f"Notification callback error: {e}")
     
     def get_recent_notifications(self, n: int = 10) -> List[Dict[str, Any]]:
         """

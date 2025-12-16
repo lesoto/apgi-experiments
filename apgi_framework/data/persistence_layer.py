@@ -7,7 +7,6 @@ Provides unified interface for data storage using SQLite and HDF5 backends.
 import sqlite3
 import h5py
 import json
-import pickle
 import hashlib
 import shutil
 from pathlib import Path
@@ -18,6 +17,7 @@ import numpy as np
 
 from ..exceptions import APGIFrameworkError
 from .data_models import ExperimentalDataset, ExperimentMetadata, DataVersion, BackupInfo
+from ..security.secure_pickle import safe_pickle_load, safe_pickle_dump, SecurePickleError
 
 
 class PersistenceError(APGIFrameworkError):
@@ -406,7 +406,7 @@ class PersistenceLayer:
         }
         
         with open(data_file, 'wb') as f:
-            pickle.dump(data_to_store, f)
+            safe_pickle_dump(data_to_store, f)
     
     def _load_data_sqlite(self, experiment_id: str, version: Optional[str] = None) -> Dict[str, Any]:
         """Load dataset from SQLite format."""
@@ -416,7 +416,7 @@ class PersistenceLayer:
             return {}
         
         with open(data_file, 'rb') as f:
-            return pickle.load(f)
+            return safe_pickle_load(f)
     
     def _store_version(self, experiment_id: str, version: DataVersion):
         """Store version information."""

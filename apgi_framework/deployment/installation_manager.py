@@ -7,6 +7,7 @@ required for the APGI Framework parameter estimation system.
 
 import logging
 import subprocess
+import shlex
 import sys
 import platform
 import os
@@ -205,9 +206,10 @@ class InstallationManager:
             return dep
         
         try:
+            # Use shlex.split() to safely parse command arguments
+            command_args = shlex.split(dep.check_command)
             result = subprocess.run(
-                dep.check_command,
-                shell=True,
+                command_args,
                 capture_output=True,
                 text=True,
                 timeout=10
@@ -246,9 +248,10 @@ class InstallationManager:
         self.logger.info(f"Installing {dep.name}...")
         
         try:
+            # Use shlex.split() to safely parse command arguments
+            command_args = shlex.split(dep.install_command)
             result = subprocess.run(
-                dep.install_command,
-                shell=True,
+                command_args,
                 capture_output=True,
                 text=True,
                 timeout=300  # 5 minutes timeout

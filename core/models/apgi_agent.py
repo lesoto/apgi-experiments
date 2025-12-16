@@ -53,11 +53,7 @@ class APGIAgent:
         # External stimulus (can be set before running the simulation)
         self.ext_stim = np.zeros(self.config.T)
         self.context_onset = int(self.config.T * 0.2)  # Default context onset
-    
-    def _validate_parameters(self):
-        """Validate configuration parameters."""
-        if self.config.T <= 0:
-            raise ValueError("T must be positive")
+
     
     @property
     def T(self):
@@ -110,8 +106,10 @@ class APGIAgent:
             raise ValueError("T must be positive")
         if self.config.dt <= 0:
             raise ValueError("dt must be positive")
-        if self.config.Pi_e <= 0 or self.config.Pi_i_base <= 0:
-            raise ValueError("Precision values must be positive")
+        if self.config.Pi_e <= 0:
+            raise ValueError("Pi_e must be positive")
+        if self.config.Pi_i_base <= 0:
+            raise ValueError("Pi_i_base must be positive")
     
     def reset(self):
         """Reset the agent's internal state."""
@@ -149,6 +147,24 @@ class APGIAgent:
     
     def run(self):
         """Run the simulation for all time steps."""
+        if (
+            len(self.body_state) != self.config.T
+            or len(self.pred_body) != self.config.T
+            or len(self.eps_i) != self.config.T
+            or len(self.eps_e) != self.config.T
+            or len(self.Pi_i) != self.config.T
+            or len(self.S) != self.config.T
+            or len(self.ignition) != self.config.T
+            or len(self.conscious) != self.config.T
+            or len(self.ext_stim) != self.config.T
+        ):
+            raise ValueError("Array size mismatch")
+
+        if np.isnan(self.ext_stim).any():
+            raise ValueError("NaN values in ext_stim")
+        if np.isinf(self.ext_stim).any():
+            raise ValueError("infinite values in ext_stim")
+
         for t in range(1, self.config.T):
             # 1. Update context-dependent precision
             self._update_context(t)
@@ -235,6 +251,7 @@ class APGIAgent:
         plt.show()
         return fig
 
-# Example usage
-agent = APGIAgent()
-agent.run_example()
+
+if __name__ == "__main__":
+    agent = APGIAgent()
+    agent.run_example()

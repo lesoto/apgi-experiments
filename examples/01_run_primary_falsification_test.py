@@ -17,14 +17,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from apgi_framework.main_controller import MainApplicationController
 from apgi_framework.config import ConfigManager
-import logging
+from apgi_framework.logging.standardized_logging import get_logger
 
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+logger = get_logger("01_run_primary_falsification_test")
 
 
 def run_primary_falsification_test_basic():
@@ -202,24 +197,24 @@ def run_primary_falsification_test_with_validation():
 
 
 if __name__ == '__main__':
-    print("\n" + "="*70)
-    print("APGI Framework - Primary Falsification Test Examples")
-    print("="*70 + "\n")
+    logger.info("\n" + "="*70)
+    logger.info("APGI Framework - Primary Falsification Test Examples")
+    logger.info("="*70 + "\n")
     
     # Run all examples
-    print("Running Example 1A: Basic Test...")
+    logger.info("Running Example 1A: Basic Test...")
     result_basic = run_primary_falsification_test_basic()
     
-    print("\n" + "-"*70 + "\n")
+    logger.info("\n" + "-"*70 + "\n")
     
-    print("Running Example 1B: Custom Parameters...")
+    logger.info("Running Example 1B: Custom Parameters...")
     result_custom = run_primary_falsification_test_custom()
     
-    print("\n" + "-"*70 + "\n")
+    logger.info("\n" + "-"*70 + "\n")
     
-    print("Running Example 1C: With System Validation...")
+    logger.info("Running Example 1C: With System Validation...")
     result_validated = run_primary_falsification_test_with_validation()
     
-    print("\n" + "="*70)
-    print("All examples completed successfully!")
-    print("="*70 + "\n")
+    logger.info("\n" + "="*70)
+    logger.info("All examples completed successfully!")
+    logger.info("="*70 + "\n")

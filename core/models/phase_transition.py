@@ -1,4 +1,7 @@
 import numpy as np
+from apgi_framework.logging.standardized_logging import get_logger
+
+logger = get_logger("phase_transition")
 
 class SomaticAgent:
     def __init__(self, n_states, n_actions, n_contexts):
@@ -30,7 +33,7 @@ class SomaticAgent:
         # Check for ignition
         ignition_threshold = 1.5
         if surprise > ignition_threshold and np.std(G_modified) < 0.5:  # High uncertainty
-            print("CONSCIOUS IGNITION: Deliberating with full access")
+            logger.info("CONSCIOUS IGNITION: Deliberating with full access")
             # Simulate conscious deliberation - more thorough processing
             action_probs = np.exp(-G_modified * 5)  # Sharpened distribution
             action_probs = action_probs / np.sum(action_probs)
@@ -47,7 +50,7 @@ class SomaticAgent:
 agent = SomaticAgent(n_states=4, n_actions=3, n_contexts=2)
 
 # Train somatic markers
-print("Training somatic markers...")
+logger.info("Training somatic markers...")
 for episode in range(100):
     context = 0  # "Safe" context
     action = np.random.randint(3)
@@ -56,7 +59,7 @@ for episode in range(100):
         agent.update_somatic_marker(context, action, -1.0)  # Bad outcome
 
 # Test decision making
-print("\nTesting decisions...")
+logger.info("\nTesting decisions...")
 test_contexts = [0, 0, 1, 0]  # Last one is high surprise in safe context
 surprises = [0.5, 0.8, 0.3, 2.5]  # Precision-weighted surprise
 
@@ -64,8 +67,8 @@ for i, (context, surprise) in enumerate(zip(test_contexts, surprises)):
     beliefs = np.random.dirichlet(np.ones(4))  # Random beliefs
     action, conscious, G = agent.decide(beliefs, context, surprise)
     
-    print(f"Test {i+1}: Context={context}, Surprise={surprise:.2f}")
-    print(f"  Somatic biases: {agent.somatic_markers[context]}")
-    print(f"  Modified EFE: {G}")
-    print(f"  Chose action {action} {'CONSCIOUSLY' if conscious else 'unconsciously'}")
-    print()
+    logger.info(f"Test {i+1}: Context={context}, Surprise={surprise:.2f}")
+    logger.info(f"  Somatic biases: {agent.somatic_markers[context]}")
+    logger.info(f"  Modified EFE: {G}")
+    logger.info(f"  Chose action {action} {'CONSCIOUSLY' if conscious else 'unconsciously'}")
+    logger.info("")

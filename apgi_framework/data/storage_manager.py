@@ -12,6 +12,7 @@ from typing import Dict, List, Any, Optional, Union, Tuple
 import logging
 
 from ..exceptions import APGIFrameworkError
+from ..logging.standardized_logging import get_logger
 from .data_models import (
     ExperimentalDataset, ExperimentMetadata, DataVersion, 
     BackupInfo, QueryFilter, StorageStats
@@ -54,7 +55,7 @@ class StorageManager:
         self.validator = DataValidator(strict_mode=True)
         
         # Setup logging
-        self.logger = logging.getLogger(__name__)
+        self.logger = get_logger(__name__)
         
         # Storage statistics
         self._stats_cache = None
@@ -425,10 +426,9 @@ class StorageManager:
             if not dataset_files:
                 raise StorageError("No dataset file found in backup")
             
-            # Load the dataset
-            import pickle
-            with open(dataset_files[0], 'rb') as f:
-                dataset = pickle.load(f)
+            # Load the dataset securely
+            from ..security.secure_pickle import safe_pickle_load
+            dataset = safe_pickle_load(dataset_files[0], expected_types={type(dataset)})
             
             return dataset
     
@@ -599,7 +599,7 @@ class StorageManager:
                 return f"{major}.{minor}.{patch + 1}"
             else:
                 return "1.0.1"
-        except:
+        except (ValueError, TypeError, AttributeError):
             return "1.0.1"
     
     def _invalidate_stats_cache(self):

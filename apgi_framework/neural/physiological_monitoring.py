@@ -13,6 +13,8 @@ from collections import deque
 import threading
 import time
 
+from ..logging.standardized_logging import get_logger
+
 
 class SignalType(Enum):
     """Physiological signal types."""
@@ -568,6 +570,9 @@ class PhysiologicalMonitoring:
         """
         self.config = config
         
+        # Setup logging
+        self.logger = get_logger(__name__)
+        
         # Initialize component monitors
         self.heart_rate_monitor = HeartRateMonitor(config)
         self.scr_monitor = SkinConductanceMonitor(config)
@@ -722,7 +727,7 @@ class PhysiologicalMonitoring:
                     try:
                         callback(sample)
                     except Exception as e:
-                        print(f"Callback error: {e}")
+                        self.logger.error(f"Callback error: {e}")
                 
                 # Sleep to match sampling rate
                 time.sleep(1.0 / self.config.sampling_rate)

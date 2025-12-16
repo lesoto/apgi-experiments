@@ -18,6 +18,7 @@ import threading
 from contextlib import contextmanager
 
 from .data_models import ExperimentMetadata, ExperimentalDataset
+from ..logging.standardized_logging import get_logger
 
 
 @dataclass
@@ -125,7 +126,8 @@ class ExperimentTracker:
                 logging.StreamHandler()
             ]
         )
-        self.logger = logging.getLogger(__name__)
+        # Setup logging
+        self.logger = get_logger(__name__)
         
     def create_session(self, 
                       experiment_name: str,
@@ -535,20 +537,20 @@ class ExperimentTracker:
         return output_path
         
     def _save_session(self, session: ExperimentSession):
-        """Save session to disk."""
+        """Save session to disk using secure pickle."""
         session_file = self.storage_path / f"session_{session.session_id}.pkl"
-        with open(session_file, 'wb') as f:
-            pickle.dump(session, f)
+        from ..security.secure_pickle import safe_pickle_dump
+        safe_pickle_dump(session, session_file)
             
     def _load_session(self, session_id: str) -> Optional[ExperimentSession]:
-        """Load session from disk."""
+        """Load session from disk using secure pickle."""
         session_file = self.storage_path / f"session_{session_id}.pkl"
         if not session_file.exists():
             return None
             
         try:
-            with open(session_file, 'rb') as f:
-                return pickle.load(f)
+            from ..security.secure_pickle import safe_pickle_load
+            return safe_pickle_load(session_file, expected_types={ExperimentSession})
         except Exception as e:
             self.logger.error(f"Failed to load session {session_id}: {e}")
             return None

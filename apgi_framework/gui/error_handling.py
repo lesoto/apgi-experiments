@@ -11,12 +11,12 @@ from typing import Dict, Any, Optional, List, Callable
 from pathlib import Path
 from datetime import datetime
 import json
-import pickle
 import logging
 import traceback
 
 from ..data.parameter_estimation_models import SessionData
 from ..data.parameter_estimation_dao import ParameterEstimationDAO
+from ..security.secure_pickle import safe_pickle_load, safe_pickle_dump, SecurePickleError
 
 logger = logging.getLogger(__name__)
 
@@ -190,7 +190,7 @@ class SessionStateManager:
         
         # Save state
         with open(state_file, 'wb') as f:
-            pickle.dump(state_data, f)
+            safe_pickle_dump(state_data, f)
         
         self.current_state = state_data
         
@@ -215,7 +215,7 @@ class SessionStateManager:
         
         try:
             with open(state_file, 'rb') as f:
-                state_data = pickle.load(f)
+                state_data = safe_pickle_load(f)
             
             self.current_state = state_data
             logger.info(f"Loaded session state from {state_file}")
@@ -250,7 +250,7 @@ class SessionStateManager:
         for state_file in self.state_dir.glob("*_state.pkl"):
             try:
                 with open(state_file, 'rb') as f:
-                    state_data = pickle.load(f)
+                    state_data = safe_pickle_load(f)
                 
                 states.append({
                     'session_id': state_data.get('session_id'),

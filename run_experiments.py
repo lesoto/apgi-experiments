@@ -4,7 +4,7 @@ APGI Framework Experiments
 This script demonstrates the APGI model through several experiments that explore different aspects of the ignition threshold mechanism.
 """
 
-import numpy as np
+import ast
 import matplotlib.pyplot as plt
 from apgi_model import APGIModel, APGIParams, plot_simulation
 from typing import List, Dict, Any, Tuple
@@ -13,11 +13,15 @@ import importlib
 import sys
 from pathlib import Path
 import seaborn as sns
+from apgi_framework.logging.standardized_logging import get_logger
 
 plt.style.use('ggplot')
 plt.rcParams['figure.facecolor'] = 'white'
  
 sys.path.append(str(Path(__file__).parent))
+
+# Initialize logger
+logger = get_logger("run_experiments")
 
 EXPERIMENTS = {
     "interoceptive_gating": "research.interoceptive_gating.experiments.interoceptive_gating.experiment",
@@ -25,6 +29,37 @@ EXPERIMENTS = {
     "metabolic_cost": "research.metabolic_cost.experiments.experiment",
     "ai_benchmarking": "research.ai_benchmarking.experiments.experiment",
 }
+
+def _is_safe_data_structure(data) -> bool:
+    """
+    Validate that nested data structures don't contain dangerous elements.
+    
+    Args:
+        data: Data structure to validate (list, dict, or tuple)
+        
+    Returns:
+        True if safe, False if potentially dangerous
+    """
+    dangerous_patterns = [
+        '__import__', 'eval(', 'exec(', 'compile(',
+        'subprocess', 'os.system', 'os.popen', 'open(',
+        'socket', 'urllib', 'http', 'ftplib',
+        'pickle.loads', 'pickle.load', 'pickle.dump'
+    ]
+    
+    def check_string_safety(safety_string):
+        if not isinstance(safety_string, str):
+            return True
+        return not any(pattern in safety_string.lower() for pattern in dangerous_patterns)
+    
+    if isinstance(data, (list, tuple)):
+        return all(_is_safe_data_structure(item) for item in data)
+    elif isinstance(data, dict):
+        return all(check_string_safety(k) and _is_safe_data_structure(v) for k, v in data.items())
+    elif isinstance(data, str):
+        return check_string_safety(data)
+    else:
+        return True
 
 def get_available_experiments() -> Dict[str, str]:
     """Return a dictionary of available experiments."""
@@ -48,19 +83,19 @@ def run_experiment(experiment_name: str, **kwargs):
         run_func = getattr(module, run_func_name)
         
         # Run the experiment with the provided kwargs
-        print(f"Running {experiment_name} experiment with parameters: {kwargs}")
+        logger.info(f"Running {experiment_name} experiment with parameters: {kwargs}")
         return run_func(**kwargs)
         
     except ImportError as e:
-        print(f"Error importing experiment module: {e}")
+        logger.error(f"Error importing experiment module: {e}")
         raise
     except Exception as e:
-        print(f"Error running experiment: {e}")
+        logger.error(f"Error running experiment: {e}")
         raise
 
 def experiment_threshold_effects():
     """Experiment 1: How does the threshold θₜ affect ignition probability?"""
-    print("Running Experiment 1: Threshold Effects")
+    logger.info("Running Experiment 1: Threshold Effects")
     
     # Test different threshold values
     thresholds = [3.0, 5.0, 7.0]
@@ -99,7 +134,7 @@ def experiment_threshold_effects():
 
 def experiment_somatic_markers():
     """Experiment 2: How do somatic markers (M_{c,a}) influence ignition?"""
-    print("Running Experiment 2: Somatic Marker Effects")
+    logger.info("Running Experiment 2: Somatic Marker Effects")
     
     # Test different somatic marker values
     mc_a_values = [0.1, 0.5, 1.0, 2.0]
@@ -129,7 +164,7 @@ def experiment_somatic_markers():
 
 def experiment_precision_effects():
     """Experiment 3: How do precision parameters affect ignition?"""
-    print("Running Experiment 3: Precision Effects")
+    logger.info("Running Experiment 3: Precision Effects")
     
     # Test different precision values
     precision_combinations = [
@@ -179,7 +214,7 @@ def experiment_precision_effects():
 
 def experiment_dynamic_threshold():
     """Experiment 4: Dynamic threshold based on context."""
-    print("Running Experiment 4: Dynamic Threshold")
+    logger.info("Running Experiment 4: Dynamic Threshold")
     
     class DynamicThresholdModel(APGIModel):
         """Extends APGIModel with dynamic threshold based on surprise history."""
@@ -258,8 +293,8 @@ def experiment_dynamic_threshold():
 
 def main_demo():
     """Run all experiments."""
-    print("Starting APGI Framework Experiments")
-    print("-" * 50)
+    logger.info("Starting APGI Framework Experiments")
+    logger.info("-" * 50)
     
     # Run experiments
     experiment_threshold_effects()
@@ -267,7 +302,7 @@ def main_demo():
     experiment_precision_effects()
     experiment_dynamic_threshold()
     
-    print("\nAll experiments completed!")
+    logger.info("\nAll experiments completed!")
 
 def main():
     """If no CLI args are provided, run all demos; otherwise run a specific experiment module."""
@@ -300,10 +335,23 @@ def main():
         if remaining_args[i].startswith('--'):
             key = remaining_args[i][2:]
             if i + 1 < len(remaining_args) and not remaining_args[i+1].startswith('--'):
-                # Try to evaluate the value (to handle numbers, lists, etc.)
+                # Try to parse the value safely with strict validation
                 try:
-                    experiment_kwargs[key] = eval(remaining_args[i+1])
-                except (NameError, SyntaxError):
+                    # Only allow specific safe types: numbers, strings, booleans, lists, dicts
+                    parsed_value = ast.literal_eval(remaining_args[i+1])
+                    # Additional validation to prevent code execution
+                    if isinstance(parsed_value, (int, float, str, bool, list, dict, tuple)):
+                        # Validate nested structures don't contain dangerous elements
+                        if isinstance(parsed_value, (list, dict, tuple)):
+                            if _is_safe_data_structure(parsed_value):
+                                experiment_kwargs[key] = parsed_value
+                            else:
+                                logger.warning(f"Unsafe data structure in parameter {key}, skipping")
+                        else:
+                            experiment_kwargs[key] = parsed_value
+                    else:
+                        logger.warning(f"Unsupported type {type(parsed_value)} for parameter {key}, skipping")
+                except (ValueError, SyntaxError):
                     experiment_kwargs[key] = remaining_args[i+1]
                 i += 2
             else:
@@ -325,10 +373,10 @@ def main():
     # Run the experiment
     try:
         result = run_experiment(args.experiment, **experiment_kwargs)
-        print("\nExperiment completed successfully!")
+        logger.info("\nExperiment completed successfully!")
         return 0
     except Exception as e:
-        print(f"\nError running experiment: {e}", file=sys.stderr)
+        logger.error(f"\nError running experiment: {e}")
         return 1
 
 if __name__ == "__main__":

@@ -649,7 +649,7 @@ class ClinicalParameterExtractor:
         try:
             corr, _ = pearsonr(values1, values2)
             return float(corr)
-        except:
+        except (ValueError, TypeError, RuntimeError):
             return 0.0
     
     def calculate_internal_consistency(self,

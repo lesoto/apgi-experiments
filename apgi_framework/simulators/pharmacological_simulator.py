@@ -49,8 +49,9 @@ class DrugProfile:
     
     # Physiological effects for validation
     physiological_effects: Dict[str, Tuple[float, float]]  # effect_name: (min_change, max_change)
-@
-dataclass
+
+
+@dataclass
 class DrugAdministration:
     """Drug administration parameters"""
     drug_profile: DrugProfile

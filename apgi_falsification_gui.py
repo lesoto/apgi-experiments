@@ -11,7 +11,9 @@ from tkinter import ttk, messagebox, filedialog
 import threading
 import queue
 import json
-import logging
+from apgi_framework.logging.standardized_logging import get_logger
+
+logger = get_logger("apgi_falsification_gui")
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 from datetime import datetime
@@ -1376,7 +1378,7 @@ This GUI provides an interface for:
             
             self.destroy()
         except Exception as e:
-            print(f"Error during shutdown: {e}")
+            logger.error(f"Error during shutdown: {e}")
             self.destroy()
 
 
@@ -1386,7 +1388,7 @@ def main():
         app = APGIFalsificationGUI()
         app.mainloop()
     except Exception as e:
-        print(f"Failed to start GUI application: {e}")
+        logger.error(f"Failed to start GUI application: {e}")
         messagebox.showerror("Fatal Error", f"Failed to start application: {e}")
 
 
