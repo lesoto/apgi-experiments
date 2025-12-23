@@ -11,6 +11,7 @@ from tkinter import ttk, messagebox, filedialog
 import threading
 import queue
 import json
+import logging
 from apgi_framework.logging.standardized_logging import get_logger
 
 logger = get_logger("apgi_falsification_gui")

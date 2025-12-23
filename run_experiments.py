@@ -6,6 +6,7 @@ This script demonstrates the APGI model through several experiments that explore
 
 import ast
 import matplotlib.pyplot as plt
+import numpy as np
 from apgi_model import APGIModel, APGIParams, plot_simulation
 from typing import List, Dict, Any, Tuple
 import argparse
