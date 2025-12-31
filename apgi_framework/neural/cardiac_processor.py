@@ -13,6 +13,20 @@ from scipy import signal
 from scipy.stats import zscore
 import time
 
+# Try to import numba for optimization
+try:
+    from numba import jit, prange
+    NUMBA_AVAILABLE = True
+except ImportError:
+    NUMBA_AVAILABLE = False
+    # Fallback decorators that do nothing
+    def jit(*args, **kwargs):
+        def decorator(func):
+            return func
+        return decorator
+    def prange(x):
+        return range(x)
+
 
 class RPeakAlgorithm(Enum):
     """R-peak detection algorithms."""
@@ -20,6 +34,68 @@ class RPeakAlgorithm(Enum):
     PAN_TOMPKINS = "pan_tompkins"
     WAVELET = "wavelet"
     ADAPTIVE = "adaptive"
+
+
+@jit(nopython=True, cache=True)
+def _optimized_derivative(signal_data):
+    """Optimized derivative calculation using numba."""
+    n = len(signal_data)
+    derivative = np.zeros(n)
+    for i in range(1, n):
+        derivative[i] = signal_data[i] - signal_data[i-1]
+    return derivative
+
+
+@jit(nopython=True, cache=True)
+def _optimized_moving_average(signal_data, window_size):
+    """Optimized moving average using cumulative sum."""
+    n = len(signal_data)
+    result = np.zeros(n)
+    cumsum = np.zeros(n + 1)
+    cumsum[1:] = np.cumsum(signal_data)
+    
+    half_window = window_size // 2
+    for i in range(n):
+        start = max(0, i - half_window)
+        end = min(n, i + half_window + 1)
+        result[i] = (cumsum[end] - cumsum[start]) / (end - start)
+    
+    return result
+
+
+@jit(nopython=True, cache=True)
+def _find_peaks_vectorized(signal_data, threshold, min_distance):
+    """Vectorized peak finding using numba."""
+    n = len(signal_data)
+    peaks = []
+    
+    for i in range(min_distance, n - min_distance):
+        if signal_data[i] > threshold:
+            # Check if it's a local maximum
+            is_peak = True
+            for j in range(i - min_distance, i + min_distance + 1):
+                if j != i and signal_data[j] >= signal_data[i]:
+                    is_peak = False
+                    break
+            
+            if is_peak:
+                peaks.append(i)
+    
+    return np.array(peaks)
+
+
+@jit(nopython=True, cache=True)
+def _filter_peaks_physiological(peak_times, min_interval):
+    """Filter peaks based on physiological constraints."""
+    if len(peak_times) <= 1:
+        return peak_times
+    
+    filtered = [peak_times[0]]
+    for i in range(1, len(peak_times)):
+        if peak_times[i] - filtered[-1] >= min_interval:
+            filtered.append(peak_times[i])
+    
+    return np.array(filtered)
 
 
 @dataclass
@@ -100,7 +176,7 @@ class CardiacProcessor:
     def detect_r_peaks_pan_tompkins(self, ecg_signal: np.ndarray,
                                     timestamps: np.ndarray) -> np.ndarray:
         """
-        Detect R-peaks using Pan-Tompkins algorithm.
+        Detect R-peaks using optimized Pan-Tompkins algorithm.
         
         Args:
             ecg_signal: Preprocessed ECG signal
@@ -109,51 +185,66 @@ class CardiacProcessor:
         Returns:
             Array of R-peak timestamps
         """
-        # Derivative (emphasizes QRS slope)
-        derivative = np.diff(ecg_signal)
-        derivative = np.pad(derivative, (0, 1), mode='edge')
+        # Use optimized derivative calculation
+        if NUMBA_AVAILABLE:
+            derivative = _optimized_derivative(ecg_signal)
+        else:
+            # Fallback to numpy
+            derivative = np.diff(ecg_signal)
+            derivative = np.pad(derivative, (0, 1), mode='edge')
         
-        # Squaring (emphasizes higher frequencies)
+        # Squaring (emphasizes higher frequencies) - vectorized
         squared = derivative ** 2
         
-        # Moving window integration
+        # Optimized moving window integration
         window_size = int(0.15 * self.sampling_rate)  # 150ms window
-        integrated = np.convolve(squared, np.ones(window_size) / window_size, mode='same')
         
-        # Adaptive thresholding
-        threshold = np.mean(integrated) + 0.5 * np.std(integrated)
+        if NUMBA_AVAILABLE and len(squared) < 100000:  # Only use numba for smaller arrays
+            integrated = _optimized_moving_average(squared, window_size)
+        else:
+            # Use numpy convolution for large arrays
+            kernel = np.ones(window_size) / window_size
+            integrated = np.convolve(squared, kernel, mode='same')
         
-        # Find peaks above threshold
-        peaks = []
-        above_threshold = integrated > threshold
+        # Vectorized adaptive thresholding
+        signal_mean = np.mean(integrated)
+        signal_std = np.std(integrated)
+        threshold = signal_mean + 0.5 * signal_std
         
-        in_peak = False
-        peak_start = 0
+        # Use optimized peak finding
+        min_distance = int(0.3 * self.sampling_rate)  # Min 300ms between peaks
         
-        for i in range(len(above_threshold)):
-            if above_threshold[i] and not in_peak:
-                in_peak = True
-                peak_start = i
-            elif not above_threshold[i] and in_peak:
-                # Find maximum in original signal within this region
-                peak_region = ecg_signal[peak_start:i]
-                if len(peak_region) > 0:
-                    peak_idx = peak_start + np.argmax(peak_region)
-                    peaks.append(timestamps[peak_idx])
-                in_peak = False
+        if NUMBA_AVAILABLE and len(integrated) < 100000:
+            peak_indices = _find_peaks_vectorized(integrated, threshold, min_distance)
+        else:
+            # Fallback to scipy
+            peak_indices, _ = signal.find_peaks(
+                integrated, 
+                height=threshold, 
+                distance=min_distance
+            )
         
-        # Filter by physiological constraints (40-200 bpm)
-        if len(peaks) > 1:
-            min_rr_interval = 60.0 / 200.0  # 200 bpm max
-            filtered_peaks = [peaks[0]]
-            
-            for peak in peaks[1:]:
-                if peak - filtered_peaks[-1] >= min_rr_interval:
-                    filtered_peaks.append(peak)
-            
-            peaks = filtered_peaks
+        # Convert to timestamps
+        if len(peak_indices) > 0:
+            peaks = timestamps[peak_indices]
+        else:
+            peaks = np.array([])
         
-        return np.array(peaks)
+        # Apply physiological constraints using optimized function
+        min_rr_interval = 60.0 / 200.0  # 200 bpm max
+        
+        if NUMBA_AVAILABLE and len(peaks) > 0:
+            peaks = _filter_peaks_physiological(peaks, min_rr_interval)
+        else:
+            # Fallback for empty or large arrays
+            if len(peaks) > 1:
+                filtered_peaks = [peaks[0]]
+                for peak in peaks[1:]:
+                    if peak - filtered_peaks[-1] >= min_rr_interval:
+                        filtered_peaks.append(peak)
+                peaks = np.array(filtered_peaks)
+        
+        return peaks
     
     def detect_r_peaks_adaptive(self, ecg_signal: np.ndarray,
                                timestamps: np.ndarray) -> np.ndarray:
@@ -717,3 +808,66 @@ class CardiacQualityAssessor:
             noise_level=float(noise_level),
             recommendation=recommendation
         )
+    
+    def benchmark_performance(self, signal_length: int = 60000, 
+                          n_iterations: int = 10) -> Dict[str, float]:
+        """
+        Benchmark cardiac processing performance.
+        
+        Args:
+            signal_length: Length of test signal in samples (default: 60s at 1kHz)
+            n_iterations: Number of iterations to average
+            
+        Returns:
+            Dictionary with performance metrics
+        """
+        # Generate synthetic ECG signal
+        t = np.linspace(0, signal_length / self.sampling_rate, signal_length)
+        ecg_signal = (
+            np.sin(2 * np.pi * 1.2 * t) +  # 1.2 Hz heart rhythm
+            0.2 * np.sin(2 * np.pi * 10 * t) +  # QRS component
+            0.1 * np.random.randn(signal_length)  # Noise
+        )
+        timestamps = t
+        
+        # Preprocess once
+        preprocessed = self.preprocess_ecg(ecg_signal)
+        
+        # Benchmark different algorithms
+        algorithms = [
+            (RPeakAlgorithm.PAN_TOMPKINS, self.detect_r_peaks_pan_tompkins),
+            (RPeakAlgorithm.ADAPTIVE, self.detect_r_peaks_adaptive)
+        ]
+        
+        results = {}
+        
+        for algorithm_name, algorithm_func in algorithms:
+            times = []
+            
+            # Warm up
+            algorithm_func(preprocessed, timestamps)
+            
+            # Benchmark
+            for _ in range(n_iterations):
+                start_time = time.perf_counter()
+                peaks = algorithm_func(preprocessed, timestamps)
+                end_time = time.perf_counter()
+                times.append(end_time - start_time)
+            
+            # Calculate statistics
+            mean_time = np.mean(times)
+            std_time = np.std(times)
+            samples_per_second = signal_length / mean_time
+            
+            results[f"{algorithm_name.value}_mean_time"] = mean_time
+            results[f"{algorithm_name.value}_std_time"] = std_time
+            results[f"{algorithm_name.value}_samples_per_second"] = samples_per_second
+            results[f"{algorithm_name.value}_realtime_factor"] = samples_per_second / self.sampling_rate
+        
+        # Overall performance summary
+        results["numba_available"] = NUMBA_AVAILABLE
+        results["signal_length"] = signal_length
+        results["sampling_rate"] = self.sampling_rate
+        results["n_iterations"] = n_iterations
+        
+        return results

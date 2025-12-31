@@ -931,25 +931,25 @@ class APGIFrameworkGUI(ctk.CTk):
         main.grid_rowconfigure(0, weight=1)
         main.grid_columnconfigure(0, weight=1)
 
-        # Server Console Frame
-        console_frame = ctk.CTkFrame(main, fg_color="#2b2b2b")
-        console_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
-        console_frame.grid_rowconfigure(0, weight=1)
-        console_frame.grid_columnconfigure(0, weight=1)
+        # Output Display Frame - takes up most of the space
+        output_frame = ctk.CTkFrame(main, fg_color="#2b2b2b")
+        output_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+        output_frame.grid_rowconfigure(1, weight=1)
+        output_frame.grid_columnconfigure(0, weight=1)
         
-        # Console Title
-        console_title = ctk.CTkLabel(
-            console_frame,
-            text="Server Console",
+        # Output Title
+        output_title = ctk.CTkLabel(
+            output_frame,
+            text="Output Console",
             font=("Arial", 14, "bold"),
             text_color="white",
             fg_color="#2b2b2b"
         )
-        console_title.grid(row=0, column=0, sticky="nw", padx=10, pady=10)
+        output_title.grid(row=0, column=0, sticky="nw", padx=10, pady=10)
         
-        # Console Text Area
+        # Output Text Area
         self.console_text = ctk.CTkTextbox(
-            console_frame,
+            output_frame,
             fg_color="black",
             text_color="white",
             font=("Courier", 10)
@@ -957,7 +957,7 @@ class APGIFrameworkGUI(ctk.CTk):
         self.console_text.grid(row=1, column=0, sticky="nsew", padx=10, pady=(0, 10))
         
         # Add initial console message
-        self.log_to_console("API Framework GUI Initialized")
+        self.log_to_console("APGI Framework GUI Initialized")
         self.log_to_console("Ready to run consciousness evaluation tests")
         self.log_to_console("System time: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
@@ -988,8 +988,15 @@ class APGIFrameworkGUI(ctk.CTk):
     def log_to_console(self, message):
         """Add message to console with timestamp"""
         timestamp = datetime.datetime.now().strftime("%H:%M:%S")
-        self.console_text.insert("end", f"[{timestamp}] {message}\n")
-        self.console_text.see("end")
+        formatted_message = f"[{timestamp}] {message}\n"
+        
+        # Display in GUI console
+        if hasattr(self, 'console_text'):
+            self.console_text.insert("end", formatted_message)
+            self.console_text.see("end")
+        
+        # Also print to terminal for backup
+        print(formatted_message.rstrip())
 
     # ------------------------------------------------------------------
     # COMPREHENSIVE TEST METHODS

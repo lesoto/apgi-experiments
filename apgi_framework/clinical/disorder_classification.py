@@ -193,7 +193,17 @@ class DisorderClassification:
             
         Returns:
             NeuralSignatureProfile object
+            
+        Raises:
+            ValueError: If input data is invalid or missing required fields
+            TypeError: If input data types are incorrect
         """
+        # Input validation
+        self._validate_neural_signature_inputs(
+            p3b_data, gamma_data, microstate_data, 
+            pupil_data, apgi_params, behavioral_data
+        )
+        
         return NeuralSignatureProfile(
             p3b_amplitude_extero=p3b_data.get('amplitude_extero', 0.0),
             p3b_amplitude_intero=p3b_data.get('amplitude_intero', 0.0),
@@ -215,6 +225,178 @@ class DisorderClassification:
             reaction_time_mean=behavioral_data.get('rt_mean', 500.0),
             reaction_time_variability=behavioral_data.get('rt_variability', 100.0)
         )
+    
+    def _validate_neural_signature_inputs(self,
+                                     p3b_data: Dict[str, float],
+                                     gamma_data: Dict[str, float],
+                                     microstate_data: Dict[str, float],
+                                     pupil_data: Dict[str, float],
+                                     apgi_params: Dict[str, float],
+                                     behavioral_data: Dict[str, float]) -> None:
+        """
+        Validate inputs for neural signature extraction.
+        
+        Args:
+            All input data dictionaries
+            
+        Raises:
+            ValueError: If any input is invalid
+            TypeError: If any input has wrong type
+        """
+        # Type validation
+        for name, data in [
+            ("p3b_data", p3b_data),
+            ("gamma_data", gamma_data),
+            ("microstate_data", microstate_data),
+            ("pupil_data", pupil_data),
+            ("apgi_params", apgi_params),
+            ("behavioral_data", behavioral_data)
+        ]:
+            if not isinstance(data, dict):
+                raise TypeError(f"{name} must be a dictionary, got {type(data).__name__}")
+            
+            if len(data) == 0:
+                raise ValueError(f"{name} cannot be empty")
+        
+        # P3b data validation
+        self._validate_p3b_data(p3b_data)
+        
+        # Gamma data validation
+        self._validate_gamma_data(gamma_data)
+        
+        # Microstate data validation
+        self._validate_microstate_data(microstate_data)
+        
+        # Pupil data validation
+        self._validate_pupil_data(pupil_data)
+        
+        # APGI parameters validation
+        self._validate_apgi_params(apgi_params)
+        
+        # Behavioral data validation
+        self._validate_behavioral_data(behavioral_data)
+    
+    def _validate_p3b_data(self, p3b_data: Dict[str, float]) -> None:
+        """Validate P3b data."""
+        amplitude_keys = ['amplitude_extero', 'amplitude_intero']
+        latency_keys = ['latency_extero', 'latency_intero']
+        
+        for key in amplitude_keys:
+            if key in p3b_data:
+                value = p3b_data[key]
+                if not isinstance(value, (int, float)):
+                    raise TypeError(f"P3b {key} must be numeric, got {type(value).__name__}")
+                if not (0 <= value <= 50):  # P3b amplitude typically 0-50 μV
+                    raise ValueError(f"P3b {key} must be between 0 and 50 μV, got {value}")
+        
+        for key in latency_keys:
+            if key in p3b_data:
+                value = p3b_data[key]
+                if not isinstance(value, (int, float)):
+                    raise TypeError(f"P3b {key} must be numeric, got {type(value).__name__}")
+                if not (200 <= value <= 800):  # P3b latency typically 200-800 ms
+                    raise ValueError(f"P3b {key} must be between 200 and 800 ms, got {value}")
+    
+    def _validate_gamma_data(self, gamma_data: Dict[str, float]) -> None:
+        """Validate gamma data."""
+        power_keys = ['power_frontal', 'power_posterior']
+        
+        for key in power_keys:
+            if key in gamma_data:
+                value = gamma_data[key]
+                if not isinstance(value, (int, float)):
+                    raise TypeError(f"Gamma {key} must be numeric, got {type(value).__name__}")
+                if not (0 <= value <= 100):  # Power normalized 0-100
+                    raise ValueError(f"Gamma {key} must be between 0 and 100, got {value}")
+        
+        if 'coherence' in gamma_data:
+            value = gamma_data['coherence']
+            if not isinstance(value, (int, float)):
+                raise TypeError(f"Gamma coherence must be numeric, got {type(value).__name__}")
+            if not (0 <= value <= 1):  # Coherence 0-1
+                raise ValueError(f"Gamma coherence must be between 0 and 1, got {value}")
+    
+    def _validate_microstate_data(self, microstate_data: Dict[str, float]) -> None:
+        """Validate microstate data."""
+        if 'duration' in microstate_data:
+            value = microstate_data['duration']
+            if not isinstance(value, (int, float)):
+                raise TypeError(f"Microstate duration must be numeric, got {type(value).__name__}")
+            if not (10 <= value <= 200):  # Duration 10-200 ms
+                raise ValueError(f"Microstate duration must be between 10 and 200 ms, got {value}")
+        
+        if 'transitions' in microstate_data:
+            value = microstate_data['transitions']
+            if not isinstance(value, (int, float)):
+                raise TypeError(f"Microstate transitions must be numeric, got {type(value).__name__}")
+            if not (0 <= value <= 50):  # Transitions per second
+                raise ValueError(f"Microstate transitions must be between 0 and 50, got {value}")
+    
+    def _validate_pupil_data(self, pupil_data: Dict[str, float]) -> None:
+        """Validate pupil data."""
+        if 'dilation_intero' in pupil_data:
+            value = pupil_data['dilation_intero']
+            if not isinstance(value, (int, float)):
+                raise TypeError(f"Pupil dilation must be numeric, got {type(value).__name__}")
+            if not (-5 <= value <= 5):  # Dilation in mm, -5 to 5
+                raise ValueError(f"Pupil dilation must be between -5 and 5 mm, got {value}")
+        
+        if 'latency' in pupil_data:
+            value = pupil_data['latency']
+            if not isinstance(value, (int, float)):
+                raise TypeError(f"Pupil latency must be numeric, got {type(value).__name__}")
+            if not (200 <= value <= 2000):  # Latency 200-2000 ms
+                raise ValueError(f"Pupil latency must be between 200 and 2000 ms, got {value}")
+    
+    def _validate_apgi_params(self, apgi_params: Dict[str, float]) -> None:
+        """Validate APGI parameters."""
+        if 'threshold' in apgi_params:
+            value = apgi_params['threshold']
+            if not isinstance(value, (int, float)):
+                raise TypeError(f"APGI threshold must be numeric, got {type(value).__name__}")
+            if not (0.1 <= value <= 10):  # Threshold 0.1-10
+                raise ValueError(f"APGI threshold must be between 0.1 and 10, got {value}")
+        
+        precision_keys = ['intero_precision', 'extero_precision']
+        for key in precision_keys:
+            if key in apgi_params:
+                value = apgi_params[key]
+                if not isinstance(value, (int, float)):
+                    raise TypeError(f"APGI {key} must be numeric, got {type(value).__name__}")
+                if not (0.1 <= value <= 10):  # Precision 0.1-10
+                    raise ValueError(f"APGI {key} must be between 0.1 and 10, got {value}")
+        
+        if 'somatic_gain' in apgi_params:
+            value = apgi_params['somatic_gain']
+            if not isinstance(value, (int, float)):
+                raise TypeError(f"APGI somatic_gain must be numeric, got {type(value).__name__}")
+            if not (0.0 <= value <= 5.0):  # Gain 0-5
+                raise ValueError(f"APGI somatic_gain must be between 0.0 and 5.0, got {value}")
+    
+    def _validate_behavioral_data(self, behavioral_data: Dict[str, float]) -> None:
+        """Validate behavioral data."""
+        threshold_keys = ['detection_threshold_intero', 'detection_threshold_extero']
+        for key in threshold_keys:
+            if key in behavioral_data:
+                value = behavioral_data[key]
+                if not isinstance(value, (int, float)):
+                    raise TypeError(f"Behavioral {key} must be numeric, got {type(value).__name__}")
+                if not (0.0 <= value <= 1.0):  # Threshold 0-1
+                    raise ValueError(f"Behavioral {key} must be between 0.0 and 1.0, got {value}")
+        
+        if 'rt_mean' in behavioral_data:
+            value = behavioral_data['rt_mean']
+            if not isinstance(value, (int, float)):
+                raise TypeError(f"Behavioral rt_mean must be numeric, got {type(value).__name__}")
+            if not (100 <= value <= 3000):  # RT 100-3000 ms
+                raise ValueError(f"Behavioral rt_mean must be between 100 and 3000 ms, got {value}")
+        
+        if 'rt_variability' in behavioral_data:
+            value = behavioral_data['rt_variability']
+            if not isinstance(value, (int, float)):
+                raise TypeError(f"Behavioral rt_variability must be numeric, got {type(value).__name__}")
+            if not (0 <= value <= 1000):  # Variability 0-1000 ms
+                raise ValueError(f"Behavioral rt_variability must be between 0 and 1000 ms, got {value}")
     
     def train(self,
              profiles: List[NeuralSignatureProfile],
