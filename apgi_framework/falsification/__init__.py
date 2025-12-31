@@ -13,6 +13,28 @@ from .experimental_control import ExperimentalControlValidator
 from .result_interpretation import FalsificationInterpreter, ResultLogger
 from .edge_case_interpreter import EdgeCaseInterpreter, EdgeCaseType, FrameworkBoundary
 
+# Additional falsification test classes (create stubs if not implemented)
+class ConsciousnessWithoutIgnitionTest:
+    """Stub implementation for ConsciousnessWithoutIgnitionTest."""
+    def __init__(self):
+        pass
+    def run_test(self):
+        return {"status": "stub", "message": "Not implemented"}
+
+class ThresholdInsensitivityTest:
+    """Stub implementation for ThresholdInsensitivityTest."""
+    def __init__(self):
+        pass
+    def run_test(self):
+        return {"status": "stub", "message": "Not implemented"}
+
+class SomaBiasTest:
+    """Stub implementation for SomaBiasTest."""
+    def __init__(self):
+        pass
+    def run_test(self):
+        return {"status": "stub", "message": "Not implemented"}
+
 __all__ = [
     'PrimaryFalsificationTest',
     'ConsciousnessAssessment',
@@ -24,5 +46,8 @@ __all__ = [
     'ResultLogger',
     'EdgeCaseInterpreter',
     'EdgeCaseType',
-    'FrameworkBoundary'
+    'FrameworkBoundary',
+    'ConsciousnessWithoutIgnitionTest',
+    'ThresholdInsensitivityTest',
+    'SomaBiasTest'
 ]

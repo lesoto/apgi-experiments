@@ -345,14 +345,66 @@ class AutomaticBackupSystem:
                 session_dict = json.load(f)
             
             # TODO: Convert dictionary back to SessionData
-            # This would require implementing a from_dict method
+            session_data = self._dict_to_session_data(session_dict)
             
             logger.info(f"Restored session from backup: {backup_file}")
-            return None  # Placeholder
+            return session_data
             
         except Exception as e:
             logger.error(f"Failed to restore from backup: {e}")
             return None
+    
+    def _dict_to_session_data(self, session_dict: Dict[str, Any]) -> SessionData:
+        """Convert dictionary back to SessionData object."""
+        try:
+            # Handle datetime conversion
+            session_date = session_dict.get('session_date')
+            if isinstance(session_date, str):
+                session_date = datetime.fromisoformat(session_date.replace('Z', '+00:00'))
+            
+            # Convert trial data lists
+            detection_trials = []
+            for trial_dict in session_dict.get('detection_trials', []):
+                # Convert nested datetime objects
+                if 'timestamp' in trial_dict and isinstance(trial_dict['timestamp'], str):
+                    trial_dict['timestamp'] = datetime.fromisoformat(trial_dict['timestamp'].replace('Z', '+00:00'))
+                detection_trials.append(trial_dict)
+            
+            heartbeat_trials = []
+            for trial_dict in session_dict.get('heartbeat_trials', []):
+                if 'timestamp' in trial_dict and isinstance(trial_dict['timestamp'], str):
+                    trial_dict['timestamp'] = datetime.fromisoformat(trial_dict['timestamp'].replace('Z', '+00:00'))
+                heartbeat_trials.append(trial_dict)
+            
+            oddball_trials = []
+            for trial_dict in session_dict.get('oddball_trials', []):
+                if 'timestamp' in trial_dict and isinstance(trial_dict['timestamp'], str):
+                    trial_dict['timestamp'] = datetime.fromisoformat(trial_dict['timestamp'].replace('Z', '+00:00'))
+                oddball_trials.append(trial_dict)
+            
+            # Create SessionData object
+            session_data = SessionData(
+                session_id=session_dict.get('session_id', ''),
+                participant_id=session_dict.get('participant_id', ''),
+                session_date=session_date,
+                protocol_version=session_dict.get('protocol_version', '1.0.0'),
+                completion_status=session_dict.get('completion_status', 'in_progress'),
+                total_duration_minutes=session_dict.get('total_duration_minutes'),
+                detection_trials=detection_trials,
+                heartbeat_trials=heartbeat_trials,
+                oddball_trials=oddball_trials,
+                parameter_estimates=session_dict.get('parameter_estimates'),
+                session_quality_score=session_dict.get('session_quality_score', 1.0),
+                technical_issues=session_dict.get('technical_issues', []),
+                researcher=session_dict.get('researcher', ''),
+                notes=session_dict.get('notes', '')
+            )
+            
+            return session_data
+            
+        except Exception as e:
+            logger.error(f"Failed to convert dict to SessionData: {e}")
+            raise
     
     def list_backups(self, session_id: Optional[str] = None) -> List[Dict[str, Any]]:
         """

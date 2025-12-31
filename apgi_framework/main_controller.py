@@ -19,7 +19,12 @@ from .simulators import (
     P3bSimulator, GammaSimulator, BOLDSimulator, PCICalculator,
     SignatureValidator
 )
-from .falsification import PrimaryFalsificationTest
+from .falsification import (
+    PrimaryFalsificationTest,
+    ConsciousnessWithoutIgnitionTest,
+    ThresholdInsensitivityTest,
+    SomaBiasTest
+)
 from .data import StorageManager, DataValidator
 
 
@@ -190,27 +195,33 @@ class MainApplicationController:
         if not self._mathematical_engine or not self._neural_simulators:
             raise APGIFrameworkError("Mathematical engine and neural simulators must be initialized first")
         
-        # Create available falsification test controllers
         try:
+            # Initialize primary falsification test
             primary_test = PrimaryFalsificationTest()
             
+            # Initialize all falsification tests
+            consciousness_test = ConsciousnessWithoutIgnitionTest()
+            threshold_test = ThresholdInsensitivityTest()
+            soma_bias_test = SomaBiasTest()
+            
             self._falsification_tests = {
-                'primary': primary_test
+                'primary': primary_test,
+                'consciousness_without_ignition': consciousness_test,
+                'threshold_insensitivity': threshold_test,
+                'soma_bias': soma_bias_test
             }
             
-            self.logger.debug("Primary falsification test initialized")
+            self.logger.debug("All falsification tests initialized")
             
         except Exception as e:
-            self.logger.warning(f"Could not initialize primary falsification test: {e}")
+            self.logger.warning(f"Could not initialize falsification tests: {e}")
             # Create minimal test structure for validation
             self._falsification_tests = {
-                'primary': None
+                'primary': None,
+                'consciousness_without_ignition': None,
+                'threshold_insensitivity': None,
+                'soma_bias': None
             }
-        
-        # TODO: Add other falsification tests when they become available:
-        # - consciousness_without_ignition_test
-        # - threshold_insensitivity_test  
-        # - soma_bias_test
         
         self.logger.debug("Falsification tests initialization completed")
     

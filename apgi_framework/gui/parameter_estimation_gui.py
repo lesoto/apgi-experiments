@@ -6,7 +6,7 @@ heartbeat detection, and dual-modality oddball).
 """
 
 import tkinter as tk
-from tkinter import ttk, messagebox, scrolledtext
+from tkinter import ttk, messagebox, scrolledtext, filedialog
 from typing import Dict, Any, Optional, Callable
 from datetime import datetime
 from pathlib import Path
@@ -66,6 +66,9 @@ class ParameterEstimationGUI:
         # Task execution state
         self.task_running = False
         self.task_thread: Optional[threading.Thread] = None
+        self.sequential_execution = False
+        self.task_stop_requested = False
+        self.current_session_id: Optional[str] = None
         
         # Build UI
         self._build_ui()
@@ -274,8 +277,105 @@ class ParameterEstimationGUI:
     
     def _load_session(self) -> None:
         """Load existing session."""
-        # TODO: Implement session loading dialog
-        messagebox.showinfo("Load Session", "Session loading not yet implemented")
+        try:
+            # Get list of available sessions
+            sessions = self.dao.list_sessions(limit=50)
+            
+            if not sessions:
+                messagebox.showinfo("Load Session", "No saved sessions found")
+                return
+            
+            # Create session selection dialog
+            dialog = tk.Toplevel(self.root)
+            dialog.title("Load Session")
+            dialog.geometry("600x400")
+            dialog.transient(self.root)
+            dialog.grab_set()
+            
+            # Session list
+            ttk.Label(dialog, text="Select session to load:").pack(pady=5)
+            
+            list_frame = ttk.Frame(dialog)
+            list_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+            
+            scrollbar = ttk.Scrollbar(list_frame)
+            scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+            
+            session_listbox = tk.Listbox(list_frame, yscrollcommand=scrollbar.set)
+            session_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+            scrollbar.config(command=session_listbox.yview)
+            
+            # Populate session list with details
+            for session_id in sessions:
+                try:
+                    session_data = self.dao.get_session(session_id)
+                    if session_data:
+                        display_text = f"{session_id[:8]}... - {session_data.participant_id} - {session_data.start_time.strftime('%Y-%m-%d %H:%M')}"
+                        session_listbox.insert(tk.END, display_text)
+                        session_listbox.insert(tk.END, session_id)  # Store full ID as hidden item
+                except Exception:
+                    session_listbox.insert(tk.END, f"{session_id[:8]}... - (Error loading details)")
+            
+            def load_selected():
+                selection = session_listbox.curselection()
+                if not selection:
+                    messagebox.showwarning("No Selection", "Please select a session to load")
+                    return
+                
+                # Get the full session ID (it's the item after the display text)
+                selected_index = selection[0]
+                if selected_index % 2 == 0:  # Display text
+                    session_id = sessions[selected_index // 2]
+                else:  # Should not happen, but just in case
+                    session_id = sessions[selected_index // 2]
+                
+                try:
+                    session_data = self.dao.get_session(session_id)
+                    if session_data:
+                        self._restore_session_state(session_data)
+                        dialog.destroy()
+                        messagebox.showinfo("Success", f"Session {session_id[:8]}... loaded successfully")
+                    else:
+                        messagebox.showerror("Error", "Failed to load session data")
+                except Exception as e:
+                    messagebox.showerror("Error", f"Failed to load session: {str(e)}")
+            
+            # Buttons
+            button_frame = ttk.Frame(dialog)
+            button_frame.pack(pady=10)
+            
+            ttk.Button(button_frame, text="Load", command=load_selected).pack(side=tk.LEFT, padx=5)
+            ttk.Button(button_frame, text="Cancel", command=dialog.destroy).pack(side=tk.LEFT, padx=5)
+            
+        except Exception as e:
+            logger.error(f"Session loading failed: {e}")
+            messagebox.showerror("Error", f"Failed to load session: {str(e)}")
+    
+    def _restore_session_state(self, session_data: SessionData) -> None:
+        """Restore GUI state from loaded session data."""
+        try:
+            # Restore basic session info
+            self.participant_id_var.set(session_data.participant_id)
+            self.researcher_var.set(session_data.researcher_name)
+            
+            # Restore session metadata
+            self.current_session_id = session_data.session_id
+            
+            # Update status
+            self.status_var.set(f"Session loaded: {session_data.session_id[:8]}...")
+            
+            # Enable task controls
+            self._enable_task_controls()
+            
+            # Load task-specific data if available
+            if session_data.task_type:
+                self._restore_task_data(session_data)
+            
+            logger.info(f"Session state restored for {session_data.session_id}")
+            
+        except Exception as e:
+            logger.error(f"Failed to restore session state: {e}")
+            raise
     
     def _start_new_session(self) -> None:
         """Start a new parameter estimation session."""
@@ -505,8 +605,24 @@ class ParameterEstimationGUI:
             messagebox.showwarning("Warning", "A task is already running")
             return
         
-        # TODO: Implement sequential task execution
-        messagebox.showinfo("Run All Tasks", "Sequential task execution not yet implemented")
+        # Confirm sequential execution
+        result = messagebox.askyesno(
+            "Run All Tasks", 
+            "This will run all three tasks sequentially:\n\n"
+            "1. Detection Task\n"
+            "2. Heartbeat Detection Task\n" 
+            "3. Dual-Modality Oddball Task\n\n"
+            "This may take 30-45 minutes. Continue?"
+        )
+        
+        if not result:
+            return
+        
+        # Start sequential execution in background thread
+        self.task_running = True
+        self.sequential_execution = True
+        self.task_thread = threading.Thread(target=self._execute_sequential_tasks)
+        self.task_thread.start()
     
     def _stop_current_task(self) -> None:
         """Stop currently running task."""
@@ -514,8 +630,91 @@ class ParameterEstimationGUI:
             messagebox.showinfo("Info", "No task is currently running")
             return
         
-        # TODO: Implement graceful task stopping
-        messagebox.showinfo("Stop Task", "Task stopping not yet implemented")
+        # Confirm stopping
+        result = messagebox.askyesno(
+            "Stop Task", 
+            "Are you sure you want to stop the current task?\n\n"
+            "Any unsaved data will be lost."
+        )
+        
+        if not result:
+            return
+        
+        try:
+            # Set stop flag for tasks to check
+            self.task_stop_requested = True
+            
+            # Update status
+            self.status_var.set("Stopping task...")
+            
+            # Give tasks a moment to clean up
+            if hasattr(self, 'detection_task') and self.detection_task:
+                self.detection_task.stop()
+            if hasattr(self, 'heartbeat_task') and self.heartbeat_task:
+                self.heartbeat_task.stop()
+            if hasattr(self, 'oddball_task') and self.oddball_task:
+                self.oddball_task.stop()
+            
+            # Wait for thread to finish (with timeout)
+            if self.task_thread and self.task_thread.is_alive():
+                self.task_thread.join(timeout=5.0)
+            
+            # Reset state
+            self.task_running = False
+            self.sequential_execution = False
+            self.task_stop_requested = False
+            
+            self.status_var.set("Task stopped")
+            messagebox.showinfo("Success", "Task stopped successfully")
+            
+        except Exception as e:
+            logger.error(f"Error stopping task: {e}")
+            messagebox.showerror("Error", f"Failed to stop task: {str(e)}")
+    
+    def _execute_sequential_tasks(self) -> None:
+        """Execute all three tasks sequentially."""
+        tasks = [
+            ("Detection Task", self._run_detection_task),
+            ("Heartbeat Detection Task", self._run_heartbeat_task),
+            ("Dual-Modality Oddball Task", self._run_oddball_task)
+        ]
+        
+        for task_name, task_method in tasks:
+            if self.task_stop_requested:
+                logger.info(f"Sequential execution stopped before {task_name}")
+                break
+                
+            try:
+                logger.info(f"Starting {task_name}")
+                self.root.after(0, lambda: self.status_var.set(f"Running {task_name}..."))
+                
+                # Run the task
+                task_method()
+                
+                # Check if stop was requested during task
+                if self.task_stop_requested:
+                    break
+                    
+                logger.info(f"Completed {task_name}")
+                self.root.after(0, lambda tn=task_name: self.status_var.set(f"Completed {tn}"))
+                
+                # Brief pause between tasks
+                import time
+                time.sleep(2)
+                
+            except Exception as e:
+                logger.error(f"Error in {task_name}: {e}")
+                self.root.after(0, lambda tn=task_name, err=str(e): 
+                    messagebox.showerror(f"{tn} Error", f"Error in {tn}: {err}"))
+                break
+        
+        # Reset sequential execution state
+        self.sequential_execution = False
+        self.task_running = False
+        self.task_stop_requested = False
+        
+        self.root.after(0, lambda: self.status_var.set("All tasks completed"))
+        self.root.after(0, lambda: messagebox.showinfo("Complete", "Sequential task execution finished"))
     
     def _task_completed(self, message: str) -> None:
         """Handle task completion."""
@@ -579,6 +778,32 @@ through behavioral tasks and neural measurements.
         """Run the GUI application."""
         self.root.protocol("WM_DELETE_WINDOW", self._on_closing)
         self.root.mainloop()
+    
+    def _enable_task_controls(self) -> None:
+        """Enable task control buttons when session is active."""
+        # This would enable task buttons in the UI
+        # Implementation depends on the specific UI structure
+        pass
+    
+    def _restore_task_data(self, session_data: SessionData) -> None:
+        """Restore task-specific data from loaded session."""
+        try:
+            # Restore task-specific state based on session data
+            if session_data.detection_trials:
+                logger.info(f"Restored {len(session_data.detection_trials)} detection trials")
+            
+            if session_data.heartbeat_trials:
+                logger.info(f"Restored {len(session_data.heartbeat_trials)} heartbeat trials")
+            
+            if session_data.oddball_trials:
+                logger.info(f"Restored {len(session_data.oddball_trials)} oddball trials")
+            
+            # Update UI to reflect loaded data
+            # This would update progress displays, charts, etc.
+            
+        except Exception as e:
+            logger.error(f"Failed to restore task data: {e}")
+            raise
 
 
 def launch_gui(db_path: Path) -> None:

@@ -1,178 +1,81 @@
 # APGI Framework - TODO List
 
-This document contains all the experimental paradigms and features that are planned but not yet fully implemented.
+- **GUI System**: Modern customtkinter interface implemented but components missing
+- **Adaptive Testing**: Framework exists, 93 failing tests need fixes
+- **Falsification Testing**: Core logic implemented, integration issues remain
+- **Pharmacological Simulators**: Implementation exists, signature mismatches need fixing
+- **Neural Simulators**: Multiple simulators implemented, some integration issues
 
-## Experimental Paradigms (Not Yet Implemented)
+- **Real-time Monitoring Dashboard**: Basic structure only
+- **Advanced Visualization**: Limited plotting capabilities
+- **Deployment Automation**: No automation system
+- **Performance Optimization**: No optimization implemented
 
-### 1. Somatic Marker Priming and Decision Ignition
+### Experimental Paradigms
 
-**Status**: Partial implementation (basic structure exists)
+- **Somatic Marker Priming and Decision Ignition**: Status: Partial implementation (basic structure exists)
+- **Metabolic Cost of Ignition**: Status: Partial implementation (basic structure exists)
+- **Clinical Biomarkers for Disorders of Consciousness**: Status: Stub implementation only
+- **Phase Transitions in Consciousness**: Status: Not implemented
+- **Cross-Species Validation**: Status: Not implemented
+- **Threshold Detection Paradigm**: Status: Directory exists but no implementation
+- **Advanced Computational Models**: Status: Partial implementation
 
-**Idea**: Test if unconscious somatic markers bias conscious decisions through interoceptive precision.
+### Better Neural Simulation
 
-**Method**:
+- Realistic neural dynamics
+- Noise models for different brain regions
+- Neuromodulatory effects
 
-- Use backward masking to pair neutral decision cues (e.g., abstract symbols) with unconsciously presented affective images (positive/negative from IAPS database)
-- Followed by a conscious perceptual decision task under uncertainty (e.g., random dot motion discrimination)
-- Manipulate interoceptive awareness via heartbeat counting during the task
+### Advanced Analysis Tools
 
-**APGI Prediction**:
+- EEG/MEG analysis pipelines
+- Connectivity analysis methods
+- Statistical testing frameworks
+- Machine learning classification tools
 
-- Decisions on trials primed with negative somatic markers will show:
-  1. Higher interoceptive precision (measured via skin conductance response, pupil dilation)
-  2. Increased likelihood of conscious "ignition" (P3b) during the decision period
-  3. A behavioral bias toward more conservative or avoidant choices
-- This effect will be stronger in individuals with higher baseline interoceptive accuracy
+### Data Management
 
-**Falsification**: If somatic markers don't bias perception or interact with interoceptive awareness, it challenges their proposed role in conscious access.
+- Database integration for large datasets
 
-### 2. Metabolic Cost of Ignition
+### Priority Tasks
 
-**Status**: Partial implementation (basic structure exists)
+1. Fix pharmacological simulator method signatures
+2. Resolve adaptive module integration issues
+3. Update mock controller interfaces
+4. Complete GUI component implementation
+5. Add missing experimental paradigm logic
 
-**Idea**: Directly measure the metabolic expenditure of conscious processing to validate its proposed "expensive" nature.
+### Implementation Status
 
-**Method**:
+- **Somatic Marker Priming**: Basic structure exists, needs experimental logic
+- **Metabolic Cost of Ignition**: Basic structure exists, needs fMRI/fNIRS integration
+- **AI Benchmarking**: Agent and environment systems implemented, needs validation
+- **Interoceptive Gating**: Basic framework exists, needs detailed implementation
 
-- Use calibrated fMRI or fNIRS to quantify the glucose/oxygen cost of neural processing
-- Compare brain metabolism during:
-  1. Subliminal word processing (masked primes, no ignition)
-  2. Supraliminal word recognition (ignition)
-  3. Semantic decision-making (sustained ignition)
-- Vary cognitive load and interoceptive demand (e.g., concurrent heartbeat counting)
+- **Clinical Biomarkers for Disorders of Consciousness**: Directory exists, minimal implementation
+- **Phase Transitions in Consciousness**: Not implemented
+- **Cross-Species Validation**: Not implemented
+- **Threshold Detection Paradigm**: Directory exists but no implementation
 
-**APGI Prediction**:
+### Technical Components
 
-- A significant, non-linear increase in metabolic rate will be observed specifically in the frontoparietal "workspace" network during ignition trials (2 & 3)
-- High interoceptive demand will amplify this effect in the PFC but reduce it in sensory regions
-- The metabolic cost will correlate with the amplitude of the global broadcast signal
+- **Neural Simulation**: Multiple simulators (P3b, Gamma, BOLD) implemented, integration issues
+- **Analysis Tools**: Bayesian models, effect size calculators, statistical tools exist
+- **Hardware Integration**: Basic structure, needs EEG/MEG acquisition system integration
+- **Real-time Capabilities**: Framework exists, needs psychophysics toolbox integration
+- **Stimulus Generation**: Basic generators, needs advanced visual/auditory synthesis
 
-**Falsification**: If the metabolic cost of conscious ignition is minimal or linear with neural activity, the framework's evolutionary rationale (costly threshold) is weakened.
+### Data Infrastructure
 
-### 3. Clinical Biomarkers for Disorders of Consciousness
+- **Database Integration**: No large dataset database system
+- **Version Control for Protocols**: No experimental protocol versioning
+- **Machine Learning Classification**: No ML tools implemented
+- **Connectivity Analysis**: Limited connectivity analysis methods
+- **EEG/MEG Analysis Pipelines**: No complete analysis pipelines
 
-**Status**: Stub implementation only
+### Stimulus Generation
 
-**Idea**: Develop a diagnostic panel based on APGI components to distinguish between states of consciousness.
-
-**Method**:
-
-Multi-modal assessment in DoC patients:
-
-- **fMRI/EEG**: Measure global workspace connectivity (ignition capacity)
-- **Heartbeat Evoked Potentials (HEP)**: Measure interoceptive precision
-- **Pupillometry/SCR**: Measure autonomic (somatic) reactivity to emotional stimuli
-- **Behavioral scales**: CRS-R for clinical correlation
-
-**APGI Prediction**:
-
-This multi-dimensional APGI Consciousness Index will:
-
-1. Have higher prognostic accuracy than single-modality tools (e.g., PCI alone)
-2. Show that patients with preserved interoceptive precision but disrupted ignition (e.g., severe TBI) have better recovery prospects
-3. Reveal distinct neural signatures for different DoC states (VS, MCS, EMCS)
-
-### 4. Phase Transitions in Consciousness
-
-**Status**: Not implemented
-
-**Idea**: Test if anesthetic transitions follow critical slowing dynamics predicted by APGI.
-
-**Method**:
-
-- High-temporal EEG during propofol induction/recovery
-- Measure:
-  1. Critical slowing (autocorrelation, variance)
-  2. Functional connectivity (wPLI)
-  3. Perturbation complexity index
-
-**Prediction**:
-
-- Loss of consciousness will show hallmarks of critical slowing
-- Recovery will be more variable, reflecting multi-stable attractors
-- Individual differences in transition dynamics will correlate with baseline precision
-
-### 5. Cross-Species Validation
-
-**Status**: Not implemented
-
-**Test**: Whether APGI generalizes to non-human consciousness.
-
-**Approach**:
-
-- Train macaques in a confidence-based visual task
-- Simultaneous recordings:
-  1. Prefrontal LFPs (ignition)
-  2. Pupillometry (LC activity)
-  3. Autonomic measures (heart rate, skin conductance)
-
-**Prediction**:
-- Confidence reports will correlate with PFC ignition signatures
-- These will be modulated by interoceptive signals
-- Pharmacological disruption of NE will decouple the relationship
-
-### 6. Threshold Detection Paradigm
-
-**Status**: Directory exists but no implementation
-
-**Idea**: Systematic investigation of the ignition threshold mechanism.
-
-**Method**:
-
-- Parametric manipulation of stimulus intensity around perceptual threshold
-- EEG/MEG recording to capture ignition signatures
-- Manipulation of interoceptive precision through various means
-
-### 7. Advanced Computational Models
-
-**Status**: Partial implementation
-
-**Needed Implementations**:
-
-- Full hierarchical predictive coding network
-- Realistic neural mass models
-- Energy-dependent gating mechanisms
-- Integration with existing neuroscience simulation frameworks (e.g., Brian, NEST)
-
-## Technical Improvements Needed
-
-### Core Framework Enhancements
-
-1. **Better Neural Simulation**
-
-   - Implement realistic neural dynamics
-   - Add noise models for different brain regions
-   - Include neuromodulatory effects (dopamine, norepinephrine, acetylcholine)
-
-2. **Advanced Analysis Tools**
-
-   - EEG/MEG analysis pipelines
-   - Connectivity analysis methods
-   - Statistical testing frameworks
-   - Machine learning classification tools
-
-3. **Data Management**
-
-   - Database integration for large datasets
-   - Standardized data formats (BIDS compliance)
-   - Version control for experimental protocols
-
-### Experimental Infrastructure
-
-1. **Real-time Capabilities**
-
-   - Integration with psychophysics toolboxes (PsychoPy, Psychtoolbox)
-   - Real-time physiological monitoring
-   - Closed-loop experimental control
-
-2. **Hardware Integration**
-
-   - EEG/MEG acquisition systems
-   - Eye tracking integration
-   - Physiological monitoring (ECG, GSR, pupillometry)
-
-3. **Stimulus Generation**
-
-   - Advanced visual stimulus generation
-   - Auditory stimulus synthesis
-   - Haptic/tactile stimulus control
+- **Advanced visual stimulus generation**
+- **Auditory stimulus synthesis**
+- **Haptic/tactile stimulus control**
