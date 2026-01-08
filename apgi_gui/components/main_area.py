@@ -5,6 +5,9 @@ import tkinter as tk
 from pathlib import Path
 from typing import Dict, Any, Optional
 import json
+import logging
+
+from ..config import DefaultParameters, ParameterConfig
 
 
 class MainArea(ctk.CTkFrame):
@@ -20,6 +23,12 @@ class MainArea(ctk.CTkFrame):
         super().__init__(parent)
         self.app = app
         self.current_data: Dict[str, Any] = {}
+        self.logger = logging.getLogger(__name__)
+        
+        # Load default parameters
+        self.defaults = DefaultParameters()
+        self.ui_config = self.defaults.UI_CONFIG
+        
         self.setup_ui()
     
     def setup_ui(self):
@@ -30,7 +39,8 @@ class MainArea(ctk.CTkFrame):
         
         # Header with tabs
         self.tabview = ctk.CTkTabview(self)
-        self.tabview.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
+        self.tabview.grid(row=0, column=0, padx=self.ui_config["spacing"]["padding_x"], 
+                          pady=self.ui_config["spacing"]["padding_x"], sticky="ew")
         self.tabview.grid_columnconfigure(0, weight=1)
         
         # Create tabs
@@ -38,7 +48,8 @@ class MainArea(ctk.CTkFrame):
         
         # Main content area with scrollable frame
         self.scrollable_frame = ctk.CTkScrollableFrame(self)
-        self.scrollable_frame.grid(row=1, column=0, padx=10, pady=(0, 10), sticky="nsew")
+        self.scrollable_frame.grid(row=1, column=0, padx=self.ui_config["spacing"]["padding_x"], 
+                                  pady=(0, self.ui_config["spacing"]["padding_x"]), sticky="nsew")
         self.scrollable_frame.grid_columnconfigure(0, weight=1)
         
         # Create content for default tab
@@ -58,158 +69,183 @@ class MainArea(ctk.CTkFrame):
         # Results tab
         self.results_tab = self.tabview.add("Results")
         
-        # Note: Tab binding removed due to customtkinter compatibility issues
-        # Tab content will be created on demand
+        # Configure tab change event
+        self.tabview._segmented_button.configure(command=self.on_tab_changed)
+        
+        # Note: Tab content will be created on demand
     
     def create_configuration_content(self):
         """Create the configuration tab content."""
+        self.logger.debug("Creating configuration content")
+        
         # Clear existing content
         for widget in self.scrollable_frame.winfo_children():
             widget.destroy()
         
         # APGI Parameters Section
         params_frame = ctk.CTkFrame(self.scrollable_frame)
-        params_frame.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
+        params_frame.grid(row=0, column=0, padx=self.ui_config["spacing"]["padding_x"], 
+                         pady=self.ui_config["spacing"]["padding_x"], sticky="ew")
         params_frame.grid_columnconfigure(1, weight=1)
         
         params_label = ctk.CTkLabel(
             params_frame,
             text="APGI Parameters",
-            font=ctk.CTkFont(size=18, weight="bold")
+            font=ctk.CTkFont(size=self.ui_config["font_sizes"]["title"], weight="bold")
         )
-        params_label.grid(row=0, column=0, columnspan=2, padx=10, pady=(10, 20))
+        params_label.grid(row=0, column=0, columnspan=2, 
+                        padx=self.ui_config["spacing"]["padding_x"], 
+                        pady=self.ui_config["spacing"]["padding_section_y"])
         
-        # Parameter inputs
+        # Parameter inputs using configuration
         self.param_entries = {}
         
-        parameters = [
-            ("Learning Rate", "learning_rate", "0.01"),
-            ("Precision Weight", "precision_weight", "1.0"),
-            ("Prediction Error Threshold", "prediction_error_threshold", "0.5"),
-            ("Interoceptive Gain", "interoceptive_gain", "1.0"),
-            ("Somatic Bias", "somatic_bias", "0.0"),
-            ("Ignition Threshold", "ignition_threshold", "2.0"),
-        ]
-        
-        for i, (label, key, default) in enumerate(parameters, start=1):
+        for i, param_config in enumerate(self.defaults.APGI_PARAMETERS, start=1):
             # Label
-            param_label = ctk.CTkLabel(params_frame, text=label)
-            param_label.grid(row=i, column=0, padx=10, pady=5, sticky="w")
+            param_label = ctk.CTkLabel(params_frame, text=param_config.label)
+            param_label.grid(row=i, column=0, padx=self.ui_config["spacing"]["padding_x"], 
+                            pady=self.ui_config["spacing"]["padding_y"], sticky="w")
             
-            # Entry
-            entry = ctk.CTkEntry(params_frame, placeholder_text=default)
-            entry.grid(row=i, column=1, padx=10, pady=5, sticky="ew")
-            self.param_entries[key] = entry
+            # Entry with validation
+            entry = ctk.CTkEntry(params_frame, placeholder_text=param_config.default_value)
+            entry.grid(row=i, column=1, padx=self.ui_config["spacing"]["padding_x"], 
+                      pady=self.ui_config["spacing"]["padding_y"], sticky="ew")
+            
+            # Bind validation
+            entry.bind('<FocusOut>', lambda e, key=param_config.key: self._validate_parameter(key))
+            
+            self.param_entries[param_config.key] = entry
         
         # Neural Signatures Section
         neural_frame = ctk.CTkFrame(self.scrollable_frame)
-        neural_frame.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
+        neural_frame.grid(row=1, column=0, padx=self.ui_config["spacing"]["padding_x"], 
+                         pady=self.ui_config["spacing"]["padding_x"], sticky="ew")
         neural_frame.grid_columnconfigure(1, weight=1)
         
         neural_label = ctk.CTkLabel(
             neural_frame,
             text="Neural Signatures",
-            font=ctk.CTkFont(size=18, weight="bold")
+            font=ctk.CTkFont(size=self.ui_config["font_sizes"]["title"], weight="bold")
         )
-        neural_label.grid(row=0, column=0, columnspan=2, padx=10, pady=(10, 20))
+        neural_label.grid(row=0, column=0, columnspan=2, 
+                        padx=self.ui_config["spacing"]["padding_x"], 
+                        pady=self.ui_config["spacing"]["padding_section_y"])
         
-        # Neural signature checkboxes
+        # Neural signature checkboxes using configuration
         self.neural_vars = {}
         
-        signatures = [
-            ("P3b Component", "p3b"),
-            ("Gamma Oscillations", "gamma"),
-            ("Microstate Dynamics", "microstate"),
-            ("Pupillometry", "pupil"),
-        ]
-        
-        for i, (label, key) in enumerate(signatures, start=1):
+        for i, (label, key, description) in enumerate(self.defaults.NEURAL_SIGNATURES, start=1):
             var = tk.BooleanVar(value=True)
             checkbox = ctk.CTkCheckBox(neural_frame, text=label, variable=var)
-            checkbox.grid(row=i, column=0, columnspan=2, padx=10, pady=5, sticky="w")
+            checkbox.grid(row=i, column=0, columnspan=2, 
+                         padx=self.ui_config["spacing"]["padding_x"], 
+                         pady=self.ui_config["spacing"]["padding_y"], sticky="w")
             self.neural_vars[key] = var
         
         # Experimental Settings Section
         exp_frame = ctk.CTkFrame(self.scrollable_frame)
-        exp_frame.grid(row=2, column=0, padx=10, pady=10, sticky="ew")
+        exp_frame.grid(row=2, column=0, padx=self.ui_config["spacing"]["padding_x"], 
+                       pady=self.ui_config["spacing"]["padding_x"], sticky="ew")
         exp_frame.grid_columnconfigure(1, weight=1)
         
         exp_label = ctk.CTkLabel(
             exp_frame,
             text="Experimental Settings",
-            font=ctk.CTkFont(size=18, weight="bold")
+            font=ctk.CTkFont(size=self.ui_config["font_sizes"]["title"], weight="bold")
         )
-        exp_label.grid(row=0, column=0, columnspan=2, padx=10, pady=(10, 20))
+        exp_label.grid(row=0, column=0, columnspan=2, 
+                      padx=self.ui_config["spacing"]["padding_x"], 
+                      pady=self.ui_config["spacing"]["padding_section_y"])
         
-        # Experimental settings
+        # Experimental settings using configuration
         self.exp_entries = {}
         
-        settings = [
-            ("Sample Rate (Hz)", "sample_rate", "1000"),
-            ("Epoch Duration (s)", "epoch_duration", "2.0"),
-            ("Number of Trials", "num_trials", "100"),
-            ("Baseline Duration (s)", "baseline_duration", "0.5"),
-        ]
-        
-        for i, (label, key, default) in enumerate(settings, start=1):
+        for i, setting_config in enumerate(self.defaults.EXPERIMENTAL_SETTINGS, start=1):
             # Label
-            setting_label = ctk.CTkLabel(exp_frame, text=label)
-            setting_label.grid(row=i, column=0, padx=10, pady=5, sticky="w")
+            setting_label = ctk.CTkLabel(exp_frame, text=setting_config.label)
+            setting_label.grid(row=i, column=0, padx=self.ui_config["spacing"]["padding_x"], 
+                             pady=self.ui_config["spacing"]["padding_y"], sticky="w")
             
-            # Entry
-            entry = ctk.CTkEntry(exp_frame, placeholder_text=default)
-            entry.grid(row=i, column=1, padx=10, pady=5, sticky="ew")
-            self.exp_entries[key] = entry
+            # Entry with validation
+            entry = ctk.CTkEntry(exp_frame, placeholder_text=setting_config.default_value)
+            entry.grid(row=i, column=1, padx=self.ui_config["spacing"]["padding_x"], 
+                      pady=self.ui_config["spacing"]["padding_y"], sticky="ew")
+            
+            # Bind validation
+            entry.bind('<FocusOut>', lambda e, key=setting_config.key: self._validate_parameter(key))
+            
+            self.exp_entries[setting_config.key] = entry
         
         # Action buttons
         button_frame = ctk.CTkFrame(self.scrollable_frame)
-        button_frame.grid(row=3, column=0, padx=10, pady=20, sticky="ew")
+        button_frame.grid(row=3, column=0, padx=self.ui_config["spacing"]["padding_x"], 
+                          pady=self.ui_config["spacing"]["padding_large_y"], sticky="ew")
         button_frame.grid_columnconfigure((0, 1, 2), weight=1)
         
         self.apply_btn = ctk.CTkButton(
             button_frame,
             text="Apply Changes",
             command=self.apply_changes,
-            height=40
+            height=self.ui_config["button_height"]
         )
-        self.apply_btn.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
+        self.apply_btn.grid(row=0, column=0, padx=self.ui_config["spacing"]["padding_x"], 
+                           pady=self.ui_config["spacing"]["padding_y"], sticky="ew")
         
         self.reset_btn = ctk.CTkButton(
             button_frame,
             text="Reset to Defaults",
             command=self.reset_to_defaults,
-            height=40
+            height=self.ui_config["button_height"]
         )
-        self.reset_btn.grid(row=0, column=1, padx=10, pady=10, sticky="ew")
+        self.reset_btn.grid(row=0, column=1, padx=self.ui_config["spacing"]["padding_x"], 
+                           pady=self.ui_config["spacing"]["padding_y"], sticky="ew")
         
         self.run_btn = ctk.CTkButton(
             button_frame,
             text="Run Analysis",
             command=self.run_analysis,
-            height=40
+            height=self.ui_config["button_height"]
         )
-        self.run_btn.grid(row=0, column=2, padx=10, pady=10, sticky="ew")
+        self.run_btn.grid(row=0, column=2, padx=self.ui_config["spacing"]["padding_x"], 
+                         pady=self.ui_config["spacing"]["padding_y"], sticky="ew")
+        
+        self.logger.debug("Configuration content created successfully")
     
-    def on_tab_changed(self, event):
+    def on_tab_changed(self, selected_tab: str = None):
         """Handle tab change events.
         
         Args:
-            event: Tab change event
+            selected_tab: The selected tab name (from button command)
         """
         try:
-            current_tab = self.tabview.get()
+            # Get current tab from tabview if not provided
+            if selected_tab is None:
+                current_tab = self.tabview.get()
+            else:
+                current_tab = selected_tab
             
+            # Clear existing content
+            for widget in self.scrollable_frame.winfo_children():
+                widget.destroy()
+            
+            # Create content based on selected tab
             if current_tab == "Analysis":
                 self.create_analysis_content()
             elif current_tab == "Visualization":
                 self.create_visualization_content()
             elif current_tab == "Results":
                 self.create_results_content()
-            else:
+            else:  # Configuration tab or default
                 self.create_configuration_content()
+                
+            # Update status
+            self.app.update_status(f"Switched to {current_tab} tab")
+            
         except Exception as e:
-            # Fallback if tab handling fails
-            pass
+            # Log error and fallback to configuration
+            print(f"Tab change error: {e}")
+            self.create_configuration_content()
+            self.app.update_status("Tab change failed, showing configuration")
     
     def create_analysis_content(self):
         """Create the analysis tab content."""
@@ -364,8 +400,61 @@ class MainArea(ctk.CTkFrame):
     
     def reset_to_defaults(self) -> None:
         """Reset all fields to default values."""
-        self.clear()
+        self.logger.info("Resetting to default values")
+        
+        # Clear APGI parameters and set defaults
+        for key, entry in self.param_entries.items():
+            entry.delete(0, tk.END)
+            default_value = self.defaults.get_parameter_defaults().get(key, "")
+            entry.insert(0, str(default_value))
+        
+        # Reset neural signatures
+        for var in self.neural_vars.values():
+            var.set(True)
+        
+        # Clear experimental settings and set defaults
+        for key, entry in self.exp_entries.items():
+            entry.delete(0, tk.END)
+            default_value = self.defaults.get_parameter_defaults().get(key, "")
+            entry.insert(0, str(default_value))
+        
+        self.current_data = {}
         self.app.update_status("Reset to default values")
+        self.logger.debug("Reset to defaults completed")
+    
+    def _validate_parameter(self, key: str) -> None:
+        """Validate a parameter value.
+        
+        Args:
+            key: Parameter key to validate
+        """
+        try:
+            # Get the entry widget for this key
+            if key in self.param_entries:
+                entry = self.param_entries[key]
+            elif key in self.exp_entries:
+                entry = self.exp_entries[key]
+            else:
+                return
+            
+            value = entry.get()
+            if not value:
+                return  # Empty values are allowed
+            
+            # Validate using the defaults configuration
+            is_valid, error_message = self.defaults.validate_parameter(key, value)
+            
+            if not is_valid:
+                # Show validation error
+                self.app.update_status(f"Validation error for {key}: {error_message}", "error")
+                self.logger.warning(f"Parameter validation failed: {key} = {value} - {error_message}")
+            else:
+                # Clear any previous error
+                self.logger.debug(f"Parameter validation passed: {key} = {value}")
+                
+        except Exception as e:
+            self.logger.error(f"Error validating parameter {key}: {e}")
+            self.app.update_status(f"Error validating {key}", "error")
     
     def run_analysis(self) -> None:
         """Run the analysis with current configuration."""

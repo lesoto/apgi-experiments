@@ -78,93 +78,115 @@ This directory contains comprehensive documentation for using, understanding, an
 
 ## 🎯 Documentation by Task
 
-### I want to...
+### I want to
 
 #### Run my first test
+
 1. [Quick Start Guide](QUICK_START_GUIDE.md)
 2. [GUI Visual Guide](GUI_VISUAL_GUIDE.md) (if using GUI)
 3. [Example 01](../examples/01_run_primary_falsification_test.py)
 
 #### Understand my results
+
 1. [Results Interpretation Guide](RESULTS_INTERPRETATION_GUIDE.md)
 2. [Quick Start Guide - Understanding Results](QUICK_START_GUIDE.md#understanding-your-results)
 
 #### Use the GUI
+
 1. [Quick Start Guide - GUI Section](QUICK_START_GUIDE.md#option-a-using-the-gui-recommended-for-beginners)
 2. [GUI Visual Guide](GUI_VISUAL_GUIDE.md)
 3. [User Guide - GUI Section](USER_GUIDE.md#gui-user-guide)
 
 #### Use the CLI
+
 1. [Quick Start Guide - CLI Section](QUICK_START_GUIDE.md#option-b-using-the-cli-recommended-for-automation)
 2. [CLI Reference](CLI_REFERENCE.md)
 
 #### Use the Python API
+
 1. [Quick Start Guide - Python API Section](QUICK_START_GUIDE.md#option-c-using-python-api-recommended-for-integration)
 2. [Examples](../examples/README.md)
 
 #### Run batch tests
+
 1. [User Guide - Batch Processing](USER_GUIDE.md#batch-processing)
 2. [Example 02](../examples/02_batch_processing_configurations.py)
 
 #### Analyze saved results
+
 1. [User Guide - Loading Results](USER_GUIDE.md#loading-previous-results)
 2. [Example 03](../examples/03_custom_analysis_saved_results.py)
 
 #### Troubleshoot problems
+
 1. [Troubleshooting Guide](TROUBLESHOOTING.md)
 2. [User Guide - Troubleshooting Section](USER_GUIDE.md#troubleshooting)
 
 #### Understand the theory
+
 1. [APGI Falsification](../APGI-Falsification.md)
 2. [APGI Ignition Equation](../APGI-Ignition-Equation.md)
 3. [APGI Testable Predictions](../APGI-Testable-Predictions.md)
 
 #### Extend the framework
+
 1. [Example 04](../examples/04_extending_falsification_criteria.py)
 2. [Error Handling Quick Reference](ERROR_HANDLING_QUICK_REFERENCE.md)
 
 ## 📊 Documentation by User Type
 
 ### Researchers
+
 **Start here:**
+
 1. [Quick Start Guide](QUICK_START_GUIDE.md)
 2. [Results Interpretation Guide](RESULTS_INTERPRETATION_GUIDE.md)
 3. [APGI Falsification](../APGI-Falsification.md)
 
 **Then explore:**
+
 - [User Guide](USER_GUIDE.md) - Complete reference
 - [Examples](../examples/README.md) - Working code
 - [CLI Reference](CLI_REFERENCE.md) - Automation
 
 ### Students/Learners
+
 **Start here:**
+
 1. [Quick Start Guide](QUICK_START_GUIDE.md)
 2. [GUI Visual Guide](GUI_VISUAL_GUIDE.md)
 3. [Examples](../examples/README.md)
 
 **Then explore:**
+
 - [User Guide](USER_GUIDE.md) - Detailed instructions
 - [APGI Falsification](../APGI-Falsification.md) - Theory
 - [Results Interpretation Guide](RESULTS_INTERPRETATION_GUIDE.md) - Understanding results
 
 ### Developers
+
 **Start here:**
+
 1. [Error Handling Quick Reference](ERROR_HANDLING_QUICK_REFERENCE.md)
 2. [Validation Quick Reference](../VALIDATION_QUICK_REFERENCE.md)
 3. [Example 04](../examples/04_extending_falsification_criteria.py)
 
 **Then explore:**
+
 - Implementation summaries
 - Code in `apgi_framework/`
 - [Parameter Validation Guide](parameter_validation_guide.md)
 
 ### System Administrators
+
 **Start here:**
+
 1. [Quick Start Guide - Installation](QUICK_START_GUIDE.md#installation-2-minutes)
 2. [Troubleshooting Guide](TROUBLESHOOTING.md)
 3. [CLI Reference](CLI_REFERENCE.md)
 
 **Then explore:**
+
 - [User Guide](USER_GUIDE.md) - Complete reference
 - System validation procedures
 
@@ -211,6 +233,7 @@ python launch_gui.py
 ## 📝 Documentation Standards
 
 All documentation follows these standards:
+
 - **Markdown format** for easy reading and version control
 - **Table of contents** for long documents
 - **Working code examples** that can be run directly
@@ -239,11 +262,13 @@ All documentation follows these standards:
    - Diagnostic commands
 
 5. **Enable Debug Logging**
+
    ```bash
    python -m apgi_framework.cli --log-level DEBUG run-test primary
    ```
 
 6. **Run System Validation**
+
    ```bash
    python -m apgi_framework.cli validate-system --detailed
    ```
@@ -257,7 +282,7 @@ All documentation follows these standards:
 
 ## 📦 Documentation Structure
 
-```
+```text
 docs/
 ├── README.md                                    ← You are here
 ├── DOCUMENTATION_INDEX.md                       ← Complete index
@@ -293,6 +318,7 @@ docs/
 **Last Updated:** 2025-01-07
 
 ### Recent Additions
+
 - ✨ Quick Start Guide - 5-minute introduction
 - ✨ GUI Visual Guide - Visual walkthrough with ASCII diagrams
 - ✨ Enhanced Documentation Index
@@ -301,6 +327,7 @@ docs/
 ### Contributing to Documentation
 
 To improve documentation:
+
 1. Identify gaps or unclear sections
 2. Follow existing documentation style
 3. Include working examples
@@ -310,6 +337,7 @@ To improve documentation:
 ## 🎓 Learning Path
 
 ### Beginner Path (1-2 hours)
+
 1. [Quick Start Guide](QUICK_START_GUIDE.md) - 5 min
 2. [GUI Visual Guide](GUI_VISUAL_GUIDE.md) - 15 min
 3. Run first test - 5 min
@@ -317,6 +345,7 @@ To improve documentation:
 5. [Examples](../examples/README.md) - 30 min
 
 ### Intermediate Path (3-4 hours)
+
 1. Complete Beginner Path
 2. [User Guide](USER_GUIDE.md) - 1 hour
 3. [CLI Reference](CLI_REFERENCE.md) - 30 min
@@ -324,6 +353,7 @@ To improve documentation:
 5. [Custom Analysis Example](../examples/03_custom_analysis_saved_results.py) - 30 min
 
 ### Advanced Path (5-8 hours)
+
 1. Complete Intermediate Path
 2. [APGI Falsification Theory](../APGI-Falsification.md) - 1 hour
 3. [APGI Ignition Equation](../APGI-Ignition-Equation.md) - 1 hour
@@ -334,6 +364,7 @@ To improve documentation:
 ## 📞 Contact and Support
 
 For questions, issues, or contributions:
+
 1. Check documentation first
 2. Review examples for similar use cases
 3. Run system validation

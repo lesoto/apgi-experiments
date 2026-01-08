@@ -4,6 +4,7 @@ import customtkinter as ctk
 import tkinter as tk
 from datetime import datetime
 from typing import Optional
+import logging
 
 
 class StatusBar(ctk.CTkFrame):
@@ -18,10 +19,13 @@ class StatusBar(ctk.CTkFrame):
         """
         super().__init__(parent)
         self.app = app
+        self.logger = logging.getLogger(__name__)
         self.setup_ui()
     
     def setup_ui(self):
         """Set up the status bar UI components."""
+        self.logger.debug("Setting up status bar UI")
+        
         # Configure frame
         self.configure(height=40)
         self.grid_columnconfigure(1, weight=1)
@@ -62,37 +66,73 @@ class StatusBar(ctk.CTkFrame):
         
         # Start time updates
         self.update_time()
+        
+        self.logger.debug("Status bar UI setup completed")
     
-    def set_status(self, message: str, level: str = "info") -> None:
+    def set_status(self, message: str, level: str = "info", color: Optional[str] = None) -> None:
         """Set the status message with optional level indicator.
         
         Args:
             message: Status message to display
             level: Message level (info, warning, error, success)
+            color: Optional explicit color override
         """
+        self.logger.debug(f"Setting status: {message} (level: {level})")
+        
         # Add level indicator if specified
         if level == "warning":
             prefix = "⚠️ "
-            color = "orange"
+            text_color = color or "#FFA500"  # Orange
         elif level == "error":
             prefix = "❌ "
-            color = "red"
+            text_color = color or "#FF4444"  # Red
         elif level == "success":
             prefix = "✅ "
-            color = "green"
+            text_color = color or "#44FF44"  # Green
         else:
             prefix = ""
-            color = "gray"
+            text_color = color or None
         
         full_message = f"{prefix}{message}"
-        self.status_label.configure(text=full_message)
         
-        # Set text color if specified
-        if color and color != "gray":
+        # Update status label with proper color handling
+        try:
+            if text_color:
+                # Try to set text color for customtkinter
+                self.status_label.configure(
+                    text=full_message,
+                    text_color=text_color
+                )
+            else:
+                # Just set text without color
+                self.status_label.configure(text=full_message)
+            
+            self.logger.debug(f"Status updated successfully: {full_message}")
+                
+        except Exception as e:
+            # Fallback: just set text without color
             try:
-                self.status_label.configure(text_color=color)
-            except:
-                pass  # Fallback if color not supported
+                self.status_label.configure(text=full_message)
+                self.logger.warning(f"Failed to set status color: {e}")
+            except Exception as e2:
+                # Ultimate fallback: print to console
+                print(f"Status: {full_message}")
+                self.logger.error(f"Failed to set status text: {e2}")
+    
+    def reset_status_color(self) -> None:
+        """Reset status label color to default."""
+        try:
+            # Reset to default theme color
+            self.status_label.configure(text_color=None)
+            self.logger.debug("Status color reset to default")
+        except Exception as e:
+            # If reset fails, set to a neutral color
+            try:
+                self.status_label.configure(text_color="gray")
+                self.logger.warning(f"Failed to reset status color, using gray: {e}")
+            except Exception as e2:
+                self.logger.error(f"Failed to set fallback status color: {e2}")
+                pass
     
     def set_file(self, file_path: Optional[str]) -> None:
         """Update the current file display.
@@ -101,6 +141,8 @@ class StatusBar(ctk.CTkFrame):
             file_path: Path to current file, or None if no file
         """
         if file_path:
+            self.logger.debug(f"Setting file display: {file_path}")
+            
             # Show just the filename if path is long
             if len(file_path) > 50:
                 parts = file_path.split('/')
@@ -113,6 +155,7 @@ class StatusBar(ctk.CTkFrame):
             
             self.file_label.configure(text=f"📄 {display_name}")
         else:
+            self.logger.debug("Clearing file display")
             self.file_label.configure(text="No file loaded")
     
     def show_progress(self, value: float = 0.0) -> None:
@@ -121,11 +164,13 @@ class StatusBar(ctk.CTkFrame):
         Args:
             value: Progress value between 0.0 and 1.0
         """
+        self.logger.debug(f"Showing progress: {value}")
         self.progress_bar.grid()
         self.progress_bar.set(value)
     
     def hide_progress(self) -> None:
         """Hide the progress bar."""
+        self.logger.debug("Hiding progress bar")
         self.progress_bar.grid_remove()
     
     def update_time(self) -> None:
@@ -138,8 +183,6 @@ class StatusBar(ctk.CTkFrame):
     
     def clear_status(self) -> None:
         """Clear the status message."""
+        self.logger.debug("Clearing status message")
         self.status_label.configure(text="Ready")
-        try:
-            self.status_label.configure(text_color="gray")
-        except:
-            pass
+        self.reset_status_color()

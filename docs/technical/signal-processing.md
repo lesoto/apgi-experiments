@@ -30,6 +30,7 @@ processor = EEGProcessor(
 )
 
 # Process real-time data
+
 processed = processor.process_realtime(raw_eeg_data, timestamps, channels)
 ```
 
@@ -54,6 +55,7 @@ from apgi_framework.neural import ERPExtractor
 erp_extractor = ERPExtractor(sampling_rate=1000.0)
 
 # Extract P3b features
+
 features = erp_extractor.extract_features(
     eeg_data,
     event_times,
@@ -78,6 +80,7 @@ from apgi_framework.neural import PupillometryProcessor
 processor = PupillometryProcessor(sampling_rate=1000.0)
 
 # Process trial data
+
 processed = processor.process_trial(
     pupil_data,
     timestamps,
@@ -139,7 +142,7 @@ from apgi_framework.neural import CardiacProcessor, RPeakAlgorithm
 
 processor = CardiacProcessor(
     sampling_rate=1000.0,
-    algorithm=RPeakAlgorithm.ADAPTIVE
+    algorithm=RPeakAlgorithm.PAN_TOMPKINS
 )
 
 # Detect R-peaks
@@ -154,11 +157,8 @@ Comprehensive HRV analysis with time and frequency domain metrics.
 from apgi_framework.neural import HRVAnalyzer
 
 analyzer = HRVAnalyzer(sampling_rate=1000.0)
+hrv_metrics = analyzer.analyze_hrv(r_peaks, timestamps)
 
-# Compute HRV metrics
-hrv_metrics = analyzer.compute_comprehensive_hrv(rr_intervals, r_peak_times)
-
-print(f"Mean HR: {hrv_metrics.mean_hr} bpm")
 print(f"SDNN: {hrv_metrics.sdnn} ms")
 print(f"RMSSD: {hrv_metrics.rmssd} ms")
 print(f"LF/HF ratio: {hrv_metrics.lf_hf_ratio}")
@@ -172,12 +172,10 @@ Extract heartbeat-evoked potentials from EEG data.
 from apgi_framework.neural import HEPExtractor
 
 extractor = HEPExtractor(sampling_rate=1000.0)
-
-# Extract HEP epochs
-hep_epochs, hep_amplitudes = extractor.extract_hep(
+hep_features = extractor.extract_hep(
     eeg_data,
-    r_peak_times,
-    eeg_timestamps
+    eeg_timestamps,
+    r_peak_times
 )
 ```
 
@@ -193,6 +191,7 @@ from apgi_framework.neural import SignalQualityMonitor
 monitor = SignalQualityMonitor(update_interval=1.0)
 
 # Update quality metrics
+
 quality_metrics = monitor.update_quality_metrics(
     eeg_metrics,
     pupil_metrics,
@@ -213,24 +212,15 @@ from apgi_framework.neural import OperatorNotificationSystem
 
 notification_system = OperatorNotificationSystem()
 
-
- 
-
-# Register callback
 def handle_notification(notification):
     print(f"Alert: {notification['message']}")
     print(f"Suggestion: {notification.get('recovery_suggestion', 'N/A')}")
 
 notification_system.register_callback(handle_notification)
 
-
- 
-
 # Send quality update
+
 notification_system.send_quality_update(quality_metrics)
-
-
- 
 ```
 
 #### AdaptiveProtocolManager
@@ -243,6 +233,7 @@ from apgi_framework.neural import AdaptiveProtocolManager
 manager = AdaptiveProtocolManager()
 
 # Evaluate adjustments
+
 adjustments = manager.evaluate_protocol_adjustments(quality_metrics)
 
 if adjustments['adjustments_needed']:
@@ -263,15 +254,18 @@ from apgi_framework.neural import (
 )
 
 # Initialize processors
+
 eeg_processor = EEGProcessor(sampling_rate=1000.0)
 pupil_processor = PupillometryProcessor(sampling_rate=1000.0)
 cardiac_processor = CardiacProcessor(sampling_rate=1000.0)
 
 # Initialize quality control
+
 quality_monitor = SignalQualityMonitor()
 notification_system = OperatorNotificationSystem()
 
 # Process data in real-time
+
 while recording:
     # Acquire data
     eeg_data, eeg_timestamps = acquire_eeg()
@@ -309,18 +303,18 @@ while recording:
 
 Default quality thresholds (configurable):
 
-| Metric | Threshold | Description |
-|--------|-----------|-------------|
-| EEG Quality | ≥ 0.6 | Minimum acceptable EEG quality |
-| EEG Artifact Rate | ≤ 15% | Maximum artifact percentage |
-| EEG Bad Channels | ≤ 5 | Maximum number of bad channels |
-| Pupil Quality | ≥ 0.6 | Minimum pupillometry quality |
-| Pupil Data Loss | ≤ 20% | Maximum data loss percentage |
-| Pupil Tracking Confidence | ≥ 0.7 | Minimum tracking confidence |
-| Cardiac Quality | ≥ 0.6 | Minimum cardiac signal quality |
-| Cardiac SQI | ≥ 0.7 | Minimum signal quality index |
-| Cardiac Ectopic Rate | ≤ 5% | Maximum ectopic beat percentage |
-| Overall Quality | ≥ 0.5 | Minimum overall quality to continue |
+| Metric | Threshold | Description | Units |
+|--------|-----------|-------------|-------|
+| EEG Quality | ≥ 0.6 | Minimum acceptable EEG quality | - |
+| EEG Artifact Rate | ≤ 15% | Maximum artifact percentage | % |
+| EEG Bad Channels | ≤ 5 | Maximum number of bad channels | count |
+| Pupil Quality | ≥ 0.6 | Minimum pupillometry quality | - |
+| Pupil Data Loss | ≤ 20% | Maximum data loss percentage | % |
+| Pupil Tracking Confidence | ≥ 0.7 | Minimum tracking confidence | - |
+| Cardiac Quality | ≥ 0.6 | Minimum cardiac signal quality | - |
+| Cardiac SQI | ≥ 0.7 | Minimum signal quality index | - |
+| Cardiac Ectopic Rate | ≤ 5% | Maximum ectopic beat percentage | % |
+| Overall Quality | ≥ 0.5 | Minimum overall quality to continue | - |
 
 ## Quality Levels
 

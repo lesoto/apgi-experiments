@@ -1,5 +1,7 @@
 import tkinter as tk
 import customtkinter as ctk
+import matplotlib
+matplotlib.use('TkAgg')  # Set matplotlib backend before importing pyplot
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import json
@@ -151,9 +153,18 @@ class ValidationError:
 
 
 class ConfigurationValidator:
-    """Validates GUI configuration parameters"""
+    """Validates GUI configuration parameters using real ConfigManager when available"""
     
     def __init__(self):
+        # Initialize real config manager if available
+        self.config_manager = None
+        if ConfigManager is not None:
+            try:
+                self.config_manager = ConfigManager()
+            except Exception as e:
+                print(f"Warning: Could not initialize ConfigManager: {e}")
+        
+        # Fallback validation rules
         self.validation_rules = {
             'gamma_oscillation_power': {'min': 0.0, 'max': 10.0, 'type': float},
             'p3b_amplitude': {'min': 0.0, 'max': 50.0, 'type': float},
@@ -165,11 +176,59 @@ class ConfigurationValidator:
             'precision_weight': {'min': 0.0, 'max': 1.0, 'type': float},
             'num_trials': {'min': 1, 'max': 10000, 'type': int},
             'sample_rate': {'min': 100, 'max': 10000, 'type': int},
-            'duration': {'min': 0.1, 'max': 3600.0, 'type': float}
+            'duration': {'min': 0.1, 'max': 3600.0, 'type': float},
+            # APGI framework specific parameters
+            'exteroceptive_precision': {'min': 0.1, 'max': 10.0, 'type': float},
+            'interoceptive_precision': {'min': 0.1, 'max': 10.0, 'type': float},
+            'somatic_gain': {'min': 0.0, 'max': 5.0, 'type': float},
+            'threshold': {'min': 0.1, 'max': 10.0, 'type': float},
+            'steepness': {'min': 0.1, 'max': 10.0, 'type': float}
         }
     
     def validate_parameter(self, param_name: str, value: str) -> Tuple[bool, Optional[ValidationError]]:
-        """Validate a single parameter"""
+        """Validate a single parameter using ConfigManager if available"""
+        
+        # Try real framework validation first
+        if self.config_manager is not None:
+            try:
+                # Map GUI parameter names to framework names
+                param_mapping = {
+                    'exteroceptive_precision': 'extero_precision',
+                    'interoceptive_precision': 'intero_precision',
+                    'somatic_gain': 'somatic_gain',
+                    'threshold': 'threshold',
+                    'steepness': 'steepness'
+                }
+                
+                framework_param = param_mapping.get(param_name, param_name)
+                
+                # Try to validate using framework
+                try:
+                    converted_value = float(value)
+                    
+                    # Use framework validation if available
+                    if hasattr(self.config_manager, 'validate_apgi_parameter'):
+                        is_valid = self.config_manager.validate_apgi_parameter(framework_param, converted_value)
+                        if not is_valid:
+                            return False, ValidationError(
+                                field=param_name,
+                                message=f"Parameter {framework_param} failed framework validation",
+                                severity=ErrorSeverity.MEDIUM
+                            )
+                    
+                    # If no framework validation, continue with local validation
+                except ValueError:
+                    return False, ValidationError(
+                        field=param_name,
+                        message=f"Invalid numeric value: {value}",
+                        severity=ErrorSeverity.HIGH
+                    )
+                    
+            except Exception as e:
+                # Fallback to local validation if framework validation fails
+                print(f"Framework validation failed for {param_name}: {e}")
+        
+        # Local validation as fallback
         if param_name not in self.validation_rules:
             return True, None
         
@@ -207,18 +266,21 @@ class ConfigurationValidator:
             return False, ValidationError(
                 field=param_name,
                 message=f"Invalid value format: {str(e)}",
-                severity=ErrorSeverity.HIGH,
-                suggested_value=0.0 if rules['type'] == float else 1
+                severity=ErrorSeverity.HIGH
             )
     
-    def validate_all_parameters(self, params: Dict[str, str]) -> List[ValidationError]:
-        """Validate all parameters and return list of errors"""
+    def validate_all_parameters(self, params_dict: Dict[str, str]) -> Tuple[bool, List[ValidationError]]:
+        """Validate all parameters in a dictionary"""
         errors = []
-        for param_name, value in params.items():
+        all_valid = True
+        
+        for param_name, value in params_dict.items():
             is_valid, error = self.validate_parameter(param_name, value)
             if not is_valid and error:
                 errors.append(error)
-        return errors
+                all_valid = False
+        
+        return all_valid, errors
 
 
 class GUIErrorHandler:
@@ -666,17 +728,26 @@ class APGIFrameworkGUI(ctk.CTk):
     # SIDEBAR
     # ------------------------------------------------------------------
     def create_sidebar(self):
-        sidebar = ctk.CTkFrame(self, width=350, corner_radius=0, fg_color="#f0f0f0")
-        sidebar.grid(row=0, column=0, sticky="nsew", padx=0, pady=0)
-        sidebar.grid_propagate(False)
+        # Create scrollable sidebar container
+        sidebar_container = ctk.CTkFrame(self, width=350, corner_radius=0, fg_color="#f0f0f0")
+        sidebar_container.grid(row=0, column=0, sticky="nsew", padx=0, pady=0)
+        sidebar_container.grid_propagate(False)
         
-        # Configure sidebar grid
-        sidebar.grid_columnconfigure(0, weight=1)
-        for i in range(11):  # We'll have 10 sections plus padding
-            sidebar.grid_rowconfigure(i, weight=0)
-        sidebar.grid_rowconfigure(11, weight=1)  # Bottom padding
-
-        # Create comprehensive sections for all APGI modules
+        # Configure container grid
+        sidebar_container.grid_columnconfigure(0, weight=1)
+        sidebar_container.grid_rowconfigure(0, weight=1)
+        
+        # Create scrollable frame within container
+        self.sidebar_scrollable = ctk.CTkScrollableFrame(
+            sidebar_container,
+            fg_color="#f0f0f0",
+            scrollbar_button_color="#3a7ebf",
+            scrollbar_button_hover_color="#1f538d"
+        )
+        self.sidebar_scrollable.grid(row=0, column=0, sticky="nsew", padx=0, pady=0)
+        self.sidebar_scrollable.grid_columnconfigure(0, weight=1)
+        
+        # Create sections in scrollable frame
         sections = [
             ("APGI Parameters", self.create_apgi_parameters_section),
             ("Experimental Setup", self.create_experimental_setup_section),
@@ -691,7 +762,7 @@ class APGIFrameworkGUI(ctk.CTk):
         ]
         
         for idx, (title, creator) in enumerate(sections):
-            section_frame = ctk.CTkFrame(sidebar, fg_color="#f0f0f0")
+            section_frame = ctk.CTkFrame(self.sidebar_scrollable, fg_color="#f0f0f0")
             section_frame.grid(row=idx, column=0, sticky="ew", padx=10, pady=(10, 0))
             section_frame.grid_columnconfigure(0, weight=1)
             
@@ -947,24 +1018,50 @@ class APGIFrameworkGUI(ctk.CTk):
         )
         output_title.grid(row=0, column=0, sticky="nw", padx=10, pady=10)
         
-        # Output Text Area
-        self.console_text = ctk.CTkTextbox(
+        # Create scrollable output console
+        self.console_scrollable = ctk.CTkScrollableFrame(
             output_frame,
             fg_color="black",
-            text_color="white",
-            font=("Courier", 10)
+            scrollbar_button_color="#555555",
+            scrollbar_button_hover_color="#777777",
+            height=400
         )
-        self.console_text.grid(row=1, column=0, sticky="nsew", padx=10, pady=(0, 10))
+        self.console_scrollable.grid(row=1, column=0, sticky="nsew", padx=10, pady=(0, 10))
+        self.console_scrollable.grid_columnconfigure(0, weight=1)
+        
+        # Output Text Area within scrollable frame
+        self.console_text = ctk.CTkTextbox(
+            self.console_scrollable,
+            fg_color="black",
+            text_color="white",
+            font=("Courier", 10),
+            wrap="word"
+        )
+        self.console_text.grid(row=0, column=0, sticky="nsew", padx=0, pady=0)
+        self.console_scrollable.grid_rowconfigure(0, weight=1)
+        self.console_scrollable.grid_columnconfigure(0, weight=1)
         
         # Add initial console message
         self.log_to_console("APGI Framework GUI Initialized")
         self.log_to_console("Ready to run consciousness evaluation tests")
         self.log_to_console("System time: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-        # Bottom button bar
-        bar = ctk.CTkFrame(main, fg_color="#e0e0e0", height=50)
-        bar.grid(row=1, column=0, sticky="ew", padx=10, pady=(0, 10))
-        bar.grid_columnconfigure(tuple(range(5)), weight=1)
+        # Bottom button bar with scrollable functionality
+        button_bar_container = ctk.CTkFrame(main, fg_color="#e0e0e0")
+        button_bar_container.grid(row=1, column=0, sticky="ew", padx=10, pady=(0, 10))
+        button_bar_container.grid_rowconfigure(0, weight=1)
+        button_bar_container.grid_columnconfigure(0, weight=1)
+        
+        # Create scrollable frame for buttons
+        self.button_bar_scrollable = ctk.CTkScrollableFrame(
+            button_bar_container,
+            fg_color="#e0e0e0",
+            orientation="horizontal",
+            scrollbar_button_color="#3a7ebf",
+            scrollbar_button_hover_color="#1f538d",
+            height=60
+        )
+        self.button_bar_scrollable.grid(row=0, column=0, sticky="ew", padx=0, pady=0)
 
         btn_info = [
             ("Load Test Data", self.load_test_data),
@@ -976,12 +1073,13 @@ class APGIFrameworkGUI(ctk.CTk):
         
         for idx, (txt, cmd) in enumerate(btn_info):
             btn = ctk.CTkButton(
-                bar,
+                self.button_bar_scrollable,
                 text=txt,
                 fg_color="#3a7ebf",
                 hover_color="#1f538d",
                 height=35,
-                command=cmd
+                command=cmd,
+                width=180
             )
             btn.grid(row=0, column=idx, padx=5, pady=5, sticky="nsew")
 
@@ -1009,7 +1107,10 @@ class APGIFrameworkGUI(ctk.CTk):
         try:
             # Import the actual example function
             try:
-                from examples01_run_primary_falsification_test import run_primary_falsification_test_basic
+                import sys
+                from pathlib import Path
+                sys.path.insert(0, str(Path(__file__).parent))
+                from examples.run_primary_falsification_test import run_primary_falsification_test_basic
             except ImportError:
                 # Fallback if import fails
                 run_primary_falsification_test_basic = None
@@ -1152,10 +1253,24 @@ class APGIFrameworkGUI(ctk.CTk):
         self.update_status("Running CWI Test...")
         
         try:
+            # Initialize CWI test if not already done
             if self.cwi_test is None:
-                self.log_to_console("Error: CWI test not initialized")
-                messagebox.showerror("Error", "Consciousness-Without-Ignition test not initialized")
-                return
+                try:
+                    from apgi_framework.main_controller import MainApplicationController
+                    controller = MainApplicationController()
+                    controller.initialize_system()
+                    
+                    tests = controller.get_falsification_tests()
+                    self.cwi_test = tests.get('consciousness_without_ignition')
+                    
+                    if self.cwi_test is None:
+                        self.log_to_console("Error: Consciousness-Without-Ignition test not available")
+                        messagebox.showerror("Error", "Consciousness-Without-Ignition test not available in framework")
+                        return
+                except Exception as e:
+                    self.log_to_console(f"Error initializing CWI test: {e}")
+                    messagebox.showerror("Error", f"Failed to initialize CWI test: {e}")
+                    return
             
             # Get parameters from GUI
             n_trials = int(self.exp_setup_params['n_trials'].get())
@@ -1174,11 +1289,16 @@ class APGIFrameworkGUI(ctk.CTk):
             # Run the test in a separate thread
             def run_test():
                 try:
-                    results = self.cwi_test.run_test(
-                        n_trials=n_trials,
-                        n_participants=n_participants,
-                        apgi_parameters=apgi_params
-                    )
+                    # Use the real framework method if available
+                    if hasattr(self.cwi_test, 'run_falsification_test'):
+                        results = self.cwi_test.run_falsification_test(n_trials=n_trials)
+                    else:
+                        # Fallback to run_test method
+                        results = self.cwi_test.run_test(
+                            n_trials=n_trials,
+                            n_participants=n_participants,
+                            apgi_parameters=apgi_params
+                        )
                     
                     self.current_results = {
                         'test': 'CWI Test',
@@ -1211,10 +1331,24 @@ class APGIFrameworkGUI(ctk.CTk):
         self.update_status("Running Threshold Test...")
         
         try:
+            # Initialize Threshold test if not already done
             if self.threshold_test is None:
-                self.log_to_console("Error: Threshold test not initialized")
-                messagebox.showerror("Error", "Threshold-insensitivity test not initialized")
-                return
+                try:
+                    from apgi_framework.main_controller import MainApplicationController
+                    controller = MainApplicationController()
+                    controller.initialize_system()
+                    
+                    tests = controller.get_falsification_tests()
+                    self.threshold_test = tests.get('threshold_insensitivity')
+                    
+                    if self.threshold_test is None:
+                        self.log_to_console("Error: Threshold-Insensitivity test not available")
+                        messagebox.showerror("Error", "Threshold-Insensitivity test not available in framework")
+                        return
+                except Exception as e:
+                    self.log_to_console(f"Error initializing Threshold test: {e}")
+                    messagebox.showerror("Error", f"Failed to initialize Threshold test: {e}")
+                    return
             
             # Get parameters from GUI
             n_trials = int(self.exp_setup_params['n_trials'].get())
@@ -1233,11 +1367,16 @@ class APGIFrameworkGUI(ctk.CTk):
             # Run the test in a separate thread
             def run_test():
                 try:
-                    results = self.threshold_test.run_test(
-                        n_trials=n_trials,
-                        n_participants=n_participants,
-                        apgi_parameters=apgi_params
-                    )
+                    # Use the real framework method if available
+                    if hasattr(self.threshold_test, 'run_falsification_test'):
+                        results = self.threshold_test.run_falsification_test(n_trials=n_trials)
+                    else:
+                        # Fallback to run_test method
+                        results = self.threshold_test.run_test(
+                            n_trials=n_trials,
+                            n_participants=n_participants,
+                            apgi_parameters=apgi_params
+                        )
                     
                     self.current_results = {
                         'test': 'Threshold Insensitivity',
@@ -1270,10 +1409,24 @@ class APGIFrameworkGUI(ctk.CTk):
         self.update_status("Running Soma-Bias Test...")
         
         try:
+            # Initialize Soma Bias test if not already done
             if self.soma_bias_test is None:
-                self.log_to_console("Error: Soma-bias test not initialized")
-                messagebox.showerror("Error", "Soma-bias test not initialized")
-                return
+                try:
+                    from apgi_framework.main_controller import MainApplicationController
+                    controller = MainApplicationController()
+                    controller.initialize_system()
+                    
+                    tests = controller.get_falsification_tests()
+                    self.soma_bias_test = tests.get('soma_bias')
+                    
+                    if self.soma_bias_test is None:
+                        self.log_to_console("Error: Soma-Bias test not available")
+                        messagebox.showerror("Error", "Soma-Bias test not available in framework")
+                        return
+                except Exception as e:
+                    self.log_to_console(f"Error initializing Soma Bias test: {e}")
+                    messagebox.showerror("Error", f"Failed to initialize Soma Bias test: {e}")
+                    return
             
             # Get parameters from GUI
             n_trials = int(self.exp_setup_params['n_trials'].get())
@@ -1292,11 +1445,16 @@ class APGIFrameworkGUI(ctk.CTk):
             # Run the test in a separate thread
             def run_test():
                 try:
-                    results = self.soma_bias_test.run_test(
-                        n_trials=n_trials,
-                        n_participants=n_participants,
-                        apgi_parameters=apgi_params
-                    )
+                    # Use the real framework method if available
+                    if hasattr(self.soma_bias_test, 'run_falsification_test'):
+                        results = self.soma_bias_test.run_falsification_test(n_trials=n_trials)
+                    else:
+                        # Fallback to run_test method
+                        results = self.soma_bias_test.run_test(
+                            n_trials=n_trials,
+                            n_participants=n_participants,
+                            apgi_parameters=apgi_params
+                        )
                     
                     self.current_results = {
                         'test': 'Soma-Bias Test',
@@ -2327,19 +2485,41 @@ class APGIFrameworkGUI(ctk.CTk):
                         'metadata': {
                             'export_timestamp': datetime.datetime.now().isoformat(),
                             'source_file': self.current_file,
-                            'apgi_framework_version': '1.0.0'
+                            'apgi_framework_version': '1.0.0',
+                            'gui_version': '1.0'
                         }
                     }
                     
-                    if self.data_manager:
-                        # Use APGI data manager to export
-                        self.data_manager.export_data(
-                            data=export_data,
-                            file_path=file_path,
-                            format='auto',
-                            include_metadata=True
-                        )
-                    else:
+                    # Try to use real framework data manager
+                    framework_export_success = False
+                    
+                    if IntegratedDataManager is not None:
+                        try:
+                            data_manager = IntegratedDataManager()
+                            
+                            # Use framework export if available
+                            if hasattr(data_manager, 'export_data'):
+                                framework_success = data_manager.export_data(
+                                    data=export_data,
+                                    file_path=file_path,
+                                    format='auto',
+                                    include_metadata=True
+                                )
+                                if framework_success:
+                                    framework_export_success = True
+                                    self.after(0, lambda: self._on_export_complete(file_path))
+                                    return
+                            elif hasattr(data_manager, 'save_results'):
+                                # Alternative framework method
+                                data_manager.save_results(export_data, file_path)
+                                framework_export_success = True
+                                self.after(0, lambda: self._on_export_complete(file_path))
+                                return
+                                
+                        except Exception as framework_error:
+                            self.log_to_console(f"Framework export failed, using fallback: {framework_error}")
+                    
+                    if not framework_export_success:
                         # Fallback export
                         if file_path.endswith('.json'):
                             # Convert non-serializable objects
@@ -2347,53 +2527,75 @@ class APGIFrameworkGUI(ctk.CTk):
                             with open(file_path, 'w') as f:
                                 json.dump(serializable_data, f, indent=2, default=str)
                         elif file_path.endswith('.csv'):
-                            if isinstance(self.current_data, pd.DataFrame):
-                                self.current_data.to_csv(file_path, index=False)
-                            else:
-                                # Convert results to CSV
-                                df = pd.DataFrame([self.current_results])
-                                df.to_csv(file_path, index=False)
-                        elif file_path.endswith(('.xlsx', '.xls')):
-                            if isinstance(self.current_data, pd.DataFrame):
-                                self.current_data.to_excel(file_path, index=False)
-                            else:
-                                messagebox.showwarning("Format Warning", "Excel export requires DataFrame data. Exporting as JSON instead.")
-                                json_path = file_path.rsplit('.', 1)[0] + '.json'
-                                serializable_data = self._make_serializable(export_data)
-                                with open(json_path, 'w') as f:
-                                    json.dump(serializable_data, f, indent=2, default=str)
-                                file_path = json_path
+                            # Convert to DataFrame and save as CSV
+                            df_data = self._flatten_for_csv(export_data)
+                            df = pd.DataFrame(df_data)
+                            df.to_csv(file_path, index=False)
+                        elif file_path.endswith('.xlsx'):
+                            # Export to Excel
+                            df_data = self._flatten_for_csv(export_data)
+                            df = pd.DataFrame(df_data)
+                            df.to_excel(file_path, index=False)
                         else:
-                            raise ValueError("Unsupported file format")
+                            # Default to JSON
+                            serializable_data = self._make_serializable(export_data)
+                            with open(file_path, 'w') as f:
+                                json.dump(serializable_data, f, indent=2, default=str)
                     
-                    self.after(0, self._on_export_complete, file_path)
+                    self.after(0, lambda: self._on_export_complete(file_path))
                     
                 except Exception as e:
-                    self.after(0, self._on_export_error, file_path, str(e))
+                    self.after(0, lambda: self._on_export_error(file_path, str(e)))
             
             threading.Thread(target=export_thread, daemon=True).start()
             
         except Exception as e:
-            self.log_to_console(f"Error initiating data export: {e}")
-            messagebox.showerror("Export Error", f"Failed to export data: {e}")
+            self.log_to_console(f"Error setting up export: {e}")
+            messagebox.showerror("Export Error", f"Failed to setup export: {e}")
             self.update_status("Ready")
     
     def _make_serializable(self, obj):
         """Convert objects to JSON-serializable format."""
-        if isinstance(obj, dict):
+        if hasattr(obj, '__dict__'):
+            return self._make_serializable(obj.__dict__)
+        elif isinstance(obj, dict):
             return {k: self._make_serializable(v) for k, v in obj.items()}
-        elif isinstance(obj, list):
-            import hashlib
+        elif isinstance(obj, (list, tuple)):
             return [self._make_serializable(item) for item in obj]
-        elif isinstance(obj, (np.integer, np.floating)):
-            return float(obj)
         elif isinstance(obj, np.ndarray):
             return obj.tolist()
-        elif hasattr(obj, '__dict__'):
-            return self._make_serializable(obj.__dict__)
+        elif isinstance(obj, (np.integer, np.floating)):
+            return obj.item()
+        elif hasattr(obj, 'isoformat'):  # datetime objects
+            return obj.isoformat()
         else:
             return str(obj)
     
+    def _flatten_for_csv(self, data):
+        """Flatten nested data for CSV export."""
+        flattened = []
+        
+        def _flatten(obj, parent_key='', sep='_'):
+            items = []
+            if isinstance(obj, dict):
+                for k, v in obj.items():
+                    new_key = f"{parent_key}{sep}{k}" if parent_key else k
+                    items.extend(_flatten(v, new_key, sep=sep))
+            elif isinstance(obj, (list, tuple)):
+                for i, v in enumerate(obj):
+                    new_key = f"{parent_key}{sep}{i}" if parent_key else str(i)
+                    items.extend(_flatten(v, new_key, sep=sep))
+            else:
+                items.append((parent_key, self._make_serializable(obj)))
+            return items
+        
+        # Flatten the data
+        flat_items = _flatten(data)
+        flattened_dict = dict(flat_items)
+        
+        # Convert to list of dicts for DataFrame
+        return [flattened_dict]
+
     def _on_export_complete(self, file_path):
         """Handle successful data export."""
         self.log_to_console(f"Successfully exported data to {file_path}")
@@ -3454,7 +3656,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 messagebox.showerror("Error", f"Failed to save PDF: {str(e)}")
 
     def export_as_csv(self):
-        """Export the current results as a CSV file."""
+        """Export the current results as a CSV file using real framework data manager."""
         if not hasattr(self, 'current_results') or self.current_results is None:
             messagebox.showerror("Error", "No test results to export. Please run a test first.")
             return
@@ -3462,17 +3664,69 @@ class APGIFrameworkGUI(ctk.CTk):
         file_path = filedialog.asksaveasfilename(
             defaultextension=".csv",
             filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
-            initialfile="test_results.csv"
+            initialfile=f"apgi_results_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
         )
         if file_path:
             try:
-                df = pd.DataFrame([self.current_results['metrics']])
-                df['test'] = self.current_results['test']
-                df['timestamp'] = self.current_results['timestamp']
+                # Try to use real framework data manager if available
+                if IntegratedDataManager is not None:
+                    try:
+                        data_manager = IntegratedDataManager()
+                        
+                        # Prepare data for framework export
+                        export_data = {
+                            'test_results': self.current_results,
+                            'metadata': {
+                                'export_timestamp': datetime.datetime.now().isoformat(),
+                                'gui_version': '1.0',
+                                'framework_version': 'APGI Framework'
+                            }
+                        }
+                        
+                        # Use framework export if available
+                        if hasattr(data_manager, 'export_results'):
+                            framework_success = data_manager.export_results(export_data, file_path, format='csv')
+                            if framework_success:
+                                self.log_to_console(f"Exported results using framework data manager: {file_path}")
+                                messagebox.showinfo("Success", f"Results saved using framework: {file_path}")
+                                return
+                        
+                    except Exception as framework_error:
+                        self.log_to_console(f"Framework export failed, using fallback: {framework_error}")
+                
+                # Fallback export using pandas
+                metrics_data = self.current_results.get('metrics', {})
+                if isinstance(metrics_data, dict):
+                    # Flatten metrics for CSV export
+                    flattened_data = {
+                        'test': self.current_results.get('test', 'Unknown'),
+                        'timestamp': self.current_results.get('timestamp', ''),
+                        'participant_id': self.current_results.get('parameters', {}).get('participant_id', 'N/A')
+                    }
+                    
+                    # Add all metrics
+                    for key, value in metrics_data.items():
+                        flattened_data[f'metric_{key}'] = value
+                    
+                    # Add framework results if available
+                    results_data = self.current_results.get('results', {})
+                    if isinstance(results_data, dict):
+                        for key, value in results_data.items():
+                            if isinstance(value, (int, float, str, bool)):
+                                flattened_data[f'result_{key}'] = value
+                    
+                    df = pd.DataFrame([flattened_data])
+                else:
+                    # Simple fallback
+                    df = pd.DataFrame([self.current_results])
+                
                 df.to_csv(file_path, index=False)
                 self.log_to_console(f"Exported results to CSV: {file_path}")
+                self.log_to_console(f"Exported {len(df.columns)} columns of data")
                 messagebox.showinfo("Success", f"Results saved as CSV: {file_path}")
+                
             except Exception as e:
+                self.log_to_console(f"Error exporting CSV: {e}")
                 messagebox.showerror("Error", f"Failed to save CSV: {str(e)}")
 
     # ------------------------------------------------------------------
@@ -3738,26 +3992,92 @@ class APGIFrameworkGUI(ctk.CTk):
         """Load test data for experiments."""
         self.log_to_console("Loading test data...")
         try:
-            # Try to load sample data if available
-            data_file = "session_data/test_session_test_participant.json"
-            if os.path.exists(data_file):
-                with open(data_file, 'r') as f:
-                    self.current_session_data = json.load(f)
-                self.log_to_console(f"Test data loaded from {data_file}")
-                self.log_to_console(f"Data contains {len(self.current_session_data)} entries")
-            else:
-                self.log_to_console("No test data file found, generating sample data...")
+            # Check for real example data files
+            example_data_sources = [
+                "session_data/test_session_test_participant.json",
+                "data/processed/test_data.json",
+                "examples/sample_data.json"
+            ]
+            
+            data_loaded = False
+            for data_file in example_data_sources:
+                if os.path.exists(data_file):
+                    with open(data_file, 'r') as f:
+                        self.current_session_data = json.load(f)
+                    self.log_to_console(f"Test data loaded from {data_file}")
+                    self.log_to_console(f"Data contains {len(self.current_session_data)} entries")
+                    data_loaded = True
+                    break
+            
+            if not data_loaded:
+                self.log_to_console("No test data file found, checking for example results...")
+                
+                # Try to load from example results
+                try:
+                    # Run a quick example to generate data
+                    from examples.run_primary_falsification_test import run_primary_falsification_test_basic
+                    self.log_to_console("Running example test to generate data...")
+                    
+                    # Run in background thread
+                    def generate_example_data():
+                        try:
+                            result = run_primary_falsification_test_basic()
+                            self.current_session_data = {
+                                'participant_id': 'gui_generated',
+                                'session_start': datetime.datetime.now().isoformat(),
+                                'example_result': result.__dict__ if hasattr(result, '__dict__') else str(result),
+                                'source': 'example_test'
+                            }
+                            self.after(0, self._on_data_loaded)
+                        except Exception as e:
+                            self.after(0, lambda: self._on_data_error(str(e)))
+                    
+                    threading.Thread(target=generate_example_data, daemon=True).start()
+                    self.log_to_console("Generating example data in background...")
+                    return
+                    
+                except ImportError:
+                    self.log_to_console("Example modules not available, generating sample data...")
+            
+            if not data_loaded:
                 # Generate sample data
                 self.current_session_data = {
-                    'participant_id': 'test_participant',
+                    'participant_id': 'gui_sample',
                     'session_start': datetime.datetime.now().isoformat(),
-                    'trials': []
+                    'trials': [],
+                    'neural_signatures': {
+                        'p3b_amplitude': np.random.normal(5.2, 1.5),
+                        'gamma_power': np.random.normal(2.8, 0.8),
+                        'bold_signal': np.random.normal(1.2, 0.3),
+                        'pci_value': np.random.uniform(0.3, 0.7)
+                    },
+                    'source': 'sample_data'
                 }
                 self.log_to_console("Sample test data generated")
-            messagebox.showinfo("Data Loaded", "Test data loaded successfully.")
+            
+            self._on_data_loaded()
+            
         except Exception as e:
             self.log_to_console(f"Error loading test data: {e}")
             messagebox.showerror("Error", f"Failed to load test data: {e}")
+    
+    def _on_data_loaded(self):
+        """Handle successful data loading."""
+        self.log_to_console("Test data loaded successfully")
+        if hasattr(self, 'current_session_data'):
+            # Display summary of loaded data
+            if 'neural_signatures' in self.current_session_data:
+                signatures = self.current_session_data['neural_signatures']
+                self.log_to_console("Neural signatures:")
+                for key, value in signatures.items():
+                    self.log_to_console(f"  {key}: {value:.3f}")
+        
+        messagebox.showinfo("Data Loaded", "Test data loaded successfully.")
+    
+    def _on_data_error(self, error_msg):
+        """Handle data loading error."""
+        self.log_to_console(f"Error generating example data: {error_msg}")
+        messagebox.showerror("Data Error", f"Failed to generate example data: {error_msg}")
 
     def run_surprise_dynamics_analysis(self):
         """Run surprise dynamics analysis using actual framework."""
@@ -4031,15 +4351,95 @@ For detailed documentation, please refer to the user manual.
 
     def execute_script(self, script_name):
         """Execute a Python script."""
+        # Check for known experiment scripts
+        experiment_scripts = {
+            'run_experiments.py': 'Main experiment runner',
+            'examples/01_run_primary_falsification_test.py': 'Primary falsification test example',
+            'examples/02_batch_processing_configurations.py': 'Batch processing example',
+            'examples/03_custom_analysis_saved_results.py': 'Custom analysis example',
+            'examples/04_extending_falsification_criteria.py': 'Extended falsification example',
+            'run_tests.py': 'Test suite runner',
+            'launch_gui.py': 'GUI launcher'
+        }
+        
+        script_path = None
+        
+        # Check if script is in current directory
         if script_name in self.get_python_files():
+            script_path = script_name
+        # Check examples directory
+        elif script_name.startswith('examples/'):
+            full_path = script_name
+            if os.path.exists(full_path):
+                script_path = full_path
+        # Check if script is in known experiment scripts
+        elif script_name in experiment_scripts:
+            for potential_path in [script_name, f"examples/{script_name}", f"examples/{script_name.replace('.py', '')}.py"]:
+                if os.path.exists(potential_path):
+                    script_path = potential_path
+                    break
+        
+        if script_path:
             try:
-                subprocess.Popen(['python', script_name])
-                self.log_to_console(f"Executing script: {script_name}")
+                # Log script information
+                description = experiment_scripts.get(script_name, 'Unknown script')
+                self.log_to_console(f"Executing: {description}")
+                self.log_to_console(f"Script path: {script_path}")
+                
+                # Execute script with proper environment
+                process = subprocess.Popen(
+                    ['python', script_path],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    cwd=os.path.dirname(os.path.abspath(script_path)) if script_name.startswith('examples/') else '.'
+                )
+                
+                # Start a thread to monitor output
+                def monitor_process():
+                    try:
+                        stdout, stderr = process.communicate()
+                        
+                        # Update GUI from main thread
+                        def update_gui():
+                            if stdout:
+                                self.log_to_console(f"Output:\n{stdout}")
+                            if stderr:
+                                self.log_to_console(f"Errors:\n{stderr}")
+                            
+                            if process.returncode == 0:
+                                self.log_to_console(f"Script {script_name} completed successfully")
+                            else:
+                                self.log_to_console(f"Script {script_name} failed with code {process.returncode}")
+                        
+                        self.after(0, update_gui)
+                    except Exception as e:
+                        self.after(0, lambda: self.log_to_console(f"Error monitoring process: {e}"))
+                
+                threading.Thread(target=monitor_process, daemon=True).start()
+                self.log_to_console(f"Started execution of {script_name}...")
+                
             except Exception as e:
                 self.log_to_console(f"Error executing {script_name}: {str(e)}")
+                messagebox.showerror("Execution Error", f"Failed to execute {script_name}: {e}")
         else:
             self.log_to_console(f"Script not found: {script_name}")
-            messagebox.showerror("Error", f"Script {script_name} not found.")
+            
+            # Provide suggestions
+            available_scripts = []
+            for script in self.get_python_files():
+                if script in experiment_scripts:
+                    available_scripts.append(f"{script} - {experiment_scripts[script]}")
+                else:
+                    available_scripts.append(script)
+            
+            if available_scripts:
+                suggestion = "Available scripts:\n" + "\n".join(available_scripts[:10])
+                if len(available_scripts) > 10:
+                    suggestion += f"\n... and {len(available_scripts) - 10} more"
+                messagebox.showinfo("Available Scripts", suggestion)
+            else:
+                messagebox.showerror("Error", f"Script {script_name} not found and no other scripts available.")
 
 
 if __name__ == "__main__":

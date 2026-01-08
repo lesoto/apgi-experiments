@@ -25,10 +25,13 @@ python -m apgi_framework.cli [GLOBAL_OPTIONS] COMMAND [COMMAND_OPTIONS]
 ### Getting Help
 
 ```bash
+
 # General help
+
 python -m apgi_framework.cli --help
 
 # Command-specific help
+
 python -m apgi_framework.cli run-test --help
 python -m apgi_framework.cli run-batch --help
 ```
@@ -149,16 +152,21 @@ python -m apgi_framework.cli run-test primary --seed 42
 #### Examples
 
 ```bash
+
 # Basic primary test
+
 python -m apgi_framework.cli run-test primary
 
 # High-power test with reproducibility
+
 python -m apgi_framework.cli run-test primary --trials 5000 --seed 42
 
 # Soma-bias test with many participants
+
 python -m apgi_framework.cli run-test soma-bias --participants 500
 
 # With custom output directory
+
 python -m apgi_framework.cli run-test primary \
     --trials 2000 \
     --output-dir results/experiment_001
@@ -217,16 +225,21 @@ python -m apgi_framework.cli run-batch --all-tests --parallel
 #### Examples
 
 ```bash
+
 # Run all tests
+
 python -m apgi_framework.cli run-batch --all-tests
 
 # Run specific tests
+
 python -m apgi_framework.cli run-batch --tests primary consciousness-without-ignition
 
 # Run all tests with custom config
+
 python -m apgi_framework.cli --config my_config.json run-batch --all-tests
 
 # Parallel execution (experimental)
+
 python -m apgi_framework.cli run-batch --all-tests --parallel
 ```
 
@@ -268,6 +281,7 @@ python -m apgi_framework.cli generate-config --template comprehensive
 **Required**: No
 
 **Template Descriptions**:
+
 - **default**: Standard configuration with commonly used parameters
 - **minimal**: Minimal configuration with only essential parameters
 - **comprehensive**: Full configuration with all available options
@@ -275,19 +289,23 @@ python -m apgi_framework.cli generate-config --template comprehensive
 #### Examples
 
 ```bash
+
 # Generate default configuration
+
 python -m apgi_framework.cli generate-config
 
 # Generate minimal configuration
+
 python -m apgi_framework.cli generate-config \
     --template minimal \
     --output minimal_config.json
 
 # Generate comprehensive configuration
+
 python -m apgi_framework.cli generate-config \
     --template comprehensive \
     --output full_config.json
-```
+```json
 
 ### validate-system
 
@@ -316,13 +334,17 @@ python -m apgi_framework.cli validate-system --detailed
 #### Examples
 
 ```bash
+
 # Basic validation
+
 python -m apgi_framework.cli validate-system
 
 # Detailed validation
+
 python -m apgi_framework.cli validate-system --detailed
 
 # Validate with specific configuration
+
 python -m apgi_framework.cli --config my_config.json validate-system --detailed
 ```
 
@@ -360,6 +382,7 @@ python -m apgi_framework.cli status
 #### Examples
 
 ```bash
+
 # Show system status
 python -m apgi_framework.cli status
 
@@ -464,16 +487,20 @@ python -m apgi_framework.cli set-params --somatic-gain 1.5
 #### Examples
 
 ```bash
+
 # Set single parameter
+
 python -m apgi_framework.cli set-params --threshold 3.0
 
 # Set multiple parameters
+
 python -m apgi_framework.cli set-params \
     --extero-precision 2.5 \
     --intero-precision 2.0 \
     --threshold 3.0
 
 # Set all parameters
+
 python -m apgi_framework.cli set-params \
     --extero-precision 2.5 \
     --intero-precision 2.0 \
@@ -495,6 +522,7 @@ Precision (inverse variance) of exteroceptive (external sensory) prediction erro
 **Units**: Dimensionless (inverse variance)
 
 **Interpretation**:
+
 - Higher values = more reliable external sensory signals
 - Lower values = noisier external signals
 - Affects weighting in surprise calculation
@@ -508,6 +536,7 @@ Precision (inverse variance) of interoceptive (internal bodily) prediction error
 **Units**: Dimensionless (inverse variance)
 
 **Interpretation**:
+
 - Higher values = more reliable internal bodily signals
 - Lower values = noisier internal signals
 - Affects weighting in surprise calculation
@@ -521,6 +550,7 @@ Ignition threshold for conscious access.
 **Units**: Dimensionless (surprise units)
 
 **Interpretation**:
+
 - Higher values = harder to trigger ignition (more conservative)
 - Lower values = easier to trigger ignition (more liberal)
 - Critical parameter for conscious access
@@ -534,6 +564,7 @@ Steepness of sigmoid function for ignition probability.
 **Units**: Dimensionless
 
 **Interpretation**:
+
 - Higher values = sharper threshold (more all-or-none)
 - Lower values = gradual threshold (more graded)
 - Affects transition from unconscious to conscious
@@ -547,6 +578,7 @@ Gain factor for somatic marker modulation of interoceptive precision.
 **Units**: Dimensionless (multiplicative factor)
 
 **Interpretation**:
+
 - Higher values = stronger emotional/motivational modulation
 - Lower values = weaker modulation
 - Affects context-dependent precision weighting
@@ -562,6 +594,7 @@ Number of trials to simulate in a test.
 **Units**: Count
 
 **Recommendations**:
+
 - 1000: Standard testing
 - 2000+: High-power analyses
 - 5000+: Publication-quality results
@@ -575,6 +608,7 @@ Number of participants to simulate (for multi-participant tests).
 **Units**: Count
 
 **Recommendations**:
+
 - 100: Standard testing
 - 200+: High-power analyses
 - 500+: Publication-quality results
@@ -588,6 +622,7 @@ Random seed for reproducible results.
 **Units**: Integer
 
 **Usage**:
+
 - Set to specific value (e.g., 42) for reproducibility
 - Leave unset for different results each run
 - Document seed value in publications
@@ -600,6 +635,7 @@ Directory path for saving results.
 **Default**: "results"
 
 **Usage**:
+
 - Use descriptive names (e.g., "results/experiment_001")
 - Organize by experiment or date
 - Ensure write permissions
@@ -613,6 +649,7 @@ Logging verbosity level.
 **Default**: INFO
 
 **Usage**:
+
 - DEBUG: Troubleshooting and development
 - INFO: Normal operation
 - WARNING: Important warnings only
@@ -658,13 +695,17 @@ Configuration files use JSON format.
 ### Using Configuration Files
 
 ```bash
+
 # Run test with configuration
+
 python -m apgi_framework.cli --config config.json run-test primary
 
 # Generate configuration template
+
 python -m apgi_framework.cli generate-config --output config.json
 
 # Validate configuration
+
 python -m apgi_framework.cli --config config.json validate-system
 ```
 
@@ -673,23 +714,30 @@ python -m apgi_framework.cli --config config.json validate-system
 ### Example 1: Basic Workflow
 
 ```bash
+
 # 1. Generate configuration
+
 python -m apgi_framework.cli generate-config --output my_config.json
 
 # 2. Validate system
+
 python -m apgi_framework.cli --config my_config.json validate-system
 
 # 3. Run primary test
+
 python -m apgi_framework.cli --config my_config.json run-test primary --trials 1000
 
 # 4. Check status
+
 python -m apgi_framework.cli status
 ```
 
 ### Example 2: Batch Processing
 
 ```bash
+
 # Run all tests with custom configuration
+
 python -m apgi_framework.cli \
     --config my_config.json \
     --output-dir results/batch_001 \
@@ -699,7 +747,9 @@ python -m apgi_framework.cli \
 ### Example 3: Parameter Exploration
 
 ```bash
+
 # Test different threshold values
+
 for threshold in 2.0 2.5 3.0 3.5 4.0; do
     python -m apgi_framework.cli set-params --threshold $threshold
     python -m apgi_framework.cli run-test primary \
@@ -711,7 +761,9 @@ done
 ### Example 4: Reproducible Research
 
 ```bash
+
 # Set up reproducible experiment
+
 python -m apgi_framework.cli generate-config \
     --template comprehensive \
     --output experiment_config.json
@@ -719,6 +771,7 @@ python -m apgi_framework.cli generate-config \
 # Edit config to set random_seed: 42
 
 # Run with fixed seed
+
 python -m apgi_framework.cli \
     --config experiment_config.json \
     run-test primary \
@@ -729,7 +782,9 @@ python -m apgi_framework.cli \
 ### Example 5: High-Power Analysis
 
 ```bash
+
 # Run high-power test with detailed logging
+
 python -m apgi_framework.cli \
     --log-level DEBUG \
     --output-dir results/high_power \
@@ -752,21 +807,25 @@ The CLI uses standard exit codes:
 ### Checking Exit Codes
 
 ```bash
+
 # Bash
+
 python -m apgi_framework.cli run-test primary
 echo $?  # Prints exit code
 
 # PowerShell
+
 python -m apgi_framework.cli run-test primary
 echo $LASTEXITCODE  # Prints exit code
 ```
 
 ### Using Exit Codes in Scripts
 
-```
+```bash
 #!/bin/bash
 
 # Run test and check result
+
 if python -m apgi_framework.cli run-test primary --trials 1000; then
     echo "Test completed successfully"
 else
@@ -780,6 +839,7 @@ fi
 ### 1. Use Configuration Files
 
 Store parameters in configuration files rather than command-line arguments for:
+
 - Reproducibility
 - Documentation
 - Version control
@@ -788,6 +848,7 @@ Store parameters in configuration files rather than command-line arguments for:
 ### 2. Set Random Seeds
 
 Always set random seeds for:
+
 - Published results
 - Reproducible research
 - Debugging
@@ -823,10 +884,13 @@ python -m apgi_framework.cli --log-level DEBUG run-test primary
 Keep configuration files with results for documentation:
 
 ```bash
+
 # Generate config
+
 python -m apgi_framework.cli generate-config --output results/experiment_001/config.json
 
 # Run with that config
+
 python -m apgi_framework.cli \
     --config results/experiment_001/config.json \
     --output-dir results/experiment_001 \

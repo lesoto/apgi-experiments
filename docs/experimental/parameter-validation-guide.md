@@ -34,34 +34,34 @@ The APGI Framework includes a comprehensive parameter validation system that ens
 
 ### APGI Equation Parameters
 
-| Parameter | Range | Typical Values | Description |
-|-----------|-------|----------------|-------------|
-| `extero_precision` | 0.01 - 10.0 | 0.5 - 5.0 | Precision of exteroceptive signals |
-| `intero_precision` | 0.01 - 10.0 | 0.5 - 5.0 | Precision of interoceptive signals |
-| `extero_error` | -10.0 - 10.0 | -3.0 - 3.0 | Exteroceptive prediction error (z-score) |
-| `intero_error` | -10.0 - 10.0 | -3.0 - 3.0 | Interoceptive prediction error (z-score) |
-| `somatic_gain` | 0.01 - 5.0 | 0.5 - 2.0 | Somatic marker gain |
-| `threshold` | 0.1 - 10.0 | 2.0 - 5.0 | Ignition threshold |
-| `steepness` | 0.1 - 10.0 | 1.0 - 3.0 | Sigmoid steepness |
+ | Parameter | Range | Typical Values | Description |
+ | ----------- | ------- | ---------------- | ------------- |
+ | `extero_precision` | 0.01 - 10.0 | 0.5 - 5.0 | Precision of exteroceptive signals |
+ | `intero_precision` | 0.01 - 10.0 | 0.5 - 5.0 | Precision of interoceptive signals |
+ | `extero_error` | -10.0 - 10.0 | -3.0 - 3.0 | Exteroceptive prediction error (z-score) |
+ | `intero_error` | -10.0 - 10.0 | -3.0 - 3.0 | Interoceptive prediction error (z-score) |
+ | `somatic_gain` | 0.01 - 5.0 | 0.5 - 2.0 | Somatic marker gain |
+ | `threshold` | 0.1 - 10.0 | 2.0 - 5.0 | Ignition threshold |
+ | `steepness` | 0.1 - 10.0 | 1.0 - 3.0 | Sigmoid steepness |
 
 ### Experimental Configuration Parameters
 
-| Parameter | Range | Typical Values | Description |
-|-----------|-------|----------------|-------------|
-| `n_trials` | 1 - 100,000 | 50 - 1,000 | Number of trials per test |
-| `n_participants` | 1 - 10,000 | 20 - 200 | Number of participants |
-| `alpha_level` | 0.001 - 0.1 | 0.05 | Statistical significance level |
-| `effect_size_threshold` | 0.1 - 2.0 | 0.3 - 0.8 | Minimum effect size |
-| `power_threshold` | 0.5 - 0.99 | 0.8 - 0.95 | Statistical power threshold |
+ | Parameter | Range | Typical Values | Description |
+ | ----------- | ------- | ---------------- | ------------- |
+ | `n_trials` | 1 - 100,000 | 50 - 1,000 | Number of trials per test |
+ | `n_participants` | 1 - 10,000 | 20 - 200 | Number of participants |
+ | `alpha_level` | 0.001 - 0.1 | 0.05 | Statistical significance level |
+ | `effect_size_threshold` | 0.1 - 2.0 | 0.3 - 0.8 | Minimum effect size |
+ | `power_threshold` | 0.5 - 0.99 | 0.8 - 0.95 | Statistical power threshold |
 
 ### Neural Signature Thresholds
 
-| Parameter | Range | Typical Values | Description |
-|-----------|-------|----------------|-------------|
-| `p3b_threshold` | 1.0 - 20.0 μV | 3.0 - 7.0 μV | P3b amplitude threshold |
-| `gamma_plv_threshold` | 0.05 - 0.8 | 0.2 - 0.4 | Gamma phase-locking value |
-| `bold_z_threshold` | 1.0 - 5.0 | 2.3 - 3.5 | BOLD Z-score threshold |
-| `pci_threshold` | 0.1 - 0.8 | 0.3 - 0.5 | PCI threshold |
+ | Parameter | Range | Typical Values | Description |
+ | ----------- | ------- | ---------------- | ------------- |
+ | `p3b_threshold` | 1.0 - 20.0 μV | 3.0 - 7.0 μV | P3b amplitude threshold |
+ | `gamma_plv_threshold` | 0.05 - 0.8 | 0.2 - 0.4 | Gamma phase-locking value |
+ | `bold_z_threshold` | 1.0 - 5.0 | 2.3 - 3.5 | BOLD Z-score threshold |
+ | `pci_threshold` | 0.1 - 0.8 | 0.3 - 0.5 | PCI threshold |
 
 ## Using Validation in the GUI
 
@@ -102,7 +102,7 @@ The validation status panel shows:
 
 ### Basic Validation
 
-``python
+```python
 from apgi_framework.validation import get_validator
 
 validator = get_validator()
@@ -111,8 +111,6 @@ validator = get_validator()
 result = validator.validate_apgi_parameters(
     extero_precision=2.0,
     intero_precision=1.5,
-    extero_error=1.2,
-    intero_error=0.8,
     somatic_gain=1.3,
     threshold=3.5,
     steepness=2.0
@@ -123,6 +121,7 @@ if result.is_valid:
 else:
     print("✗ Validation failed:")
     print(result.get_message())
+    print(result.get_details())
 ```
 
 ### Handling Validation Results
@@ -170,7 +169,7 @@ result = validator.validate_all(
 
 ### Using with ConfigManager
 
-``python
+```python
 from apgi_framework.config import APGIParameters, ConfigurationError
 
 # ConfigManager automatically validates on creation
@@ -195,7 +194,7 @@ except ConfigurationError as e:
 
 **Problem**: Parameter value is outside valid range
 
-``text
+```text
 Error: extero_precision: Value -1.0 outside valid range [0.01, 10.0]
 ```
 
@@ -205,7 +204,7 @@ Error: extero_precision: Value -1.0 outside valid range [0.01, 10.0]
 
 **Problem**: Trial count is too low for reliable results
 
-``text
+```text
 Warning: Low trial count (30) may have insufficient statistical power
 ```
 
@@ -215,7 +214,7 @@ Warning: Low trial count (30) may have insufficient statistical power
 
 **Problem**: Parameter is valid but unusual
 
-``text
+```text
 Warning: Very low precision (0.2) may indicate weak signal
 ```
 
@@ -225,7 +224,7 @@ Warning: Very low precision (0.2) may indicate weak signal
 
 **Problem**: Parameter combination is problematic
 
-``text
+```text
 Suggestion: Interoceptive precision is 7.5x higher than exteroceptive - strong interoceptive bias
 ```
 
@@ -234,26 +233,31 @@ Suggestion: Interoceptive precision is 7.5x higher than exteroceptive - strong i
 ## Best Practices
 
 ### 1. Validate Early and Often
+
 - Validate parameters before running experiments
 - Use real-time validation in GUI
 - Check validation status regularly
 
 ### 2. Pay Attention to Warnings
+
 - Warnings indicate unusual but valid values
 - Review warnings to ensure intentional choices
 - Consider suggestions for optimization
 
 ### 3. Use Typical Values as Starting Points
+
 - Start with typical values from documentation
 - Adjust based on experimental needs
 - Validate after each adjustment
 
 ### 4. Document Parameter Choices
+
 - Save validated configurations
 - Document reasons for unusual values
 - Track parameter changes over time
 
 ### 5. Test with Validation
+
 - Always validate before running tests
 - Use comprehensive validation for final checks
 - Review validation history for patterns
@@ -275,7 +279,6 @@ Suggestion: Interoceptive precision is 7.5x higher than exteroceptive - strong i
 3. Ensure all required parameters are provided
 4. Review parameter ranges in documentation
 
-
 ### Problem: Too Many Warnings
 
 **Possible Causes**:
@@ -291,7 +294,6 @@ Suggestion: Interoceptive precision is 7.5x higher than exteroceptive - strong i
 3. Document reasons if warnings are intentional
 4. Consider suggestions for optimization
 
-
 ### Problem: Validation Passes but Tests Fail
 
 **Possible Causes**:
@@ -306,7 +308,6 @@ Suggestion: Interoceptive precision is 7.5x higher than exteroceptive - strong i
 2. Check system status and health
 3. Validate test controller initialization
 4. Review test-specific requirements
-
 
 ## API Reference
 
@@ -332,7 +333,7 @@ Suggestion: Interoceptive precision is 7.5x higher than exteroceptive - strong i
 - `warnings`: List of warning messages
 - `suggestions`: List of suggestion messages
 
-#### Methods
+#### ValidationResult Methods
 
 - `get_message()`: Get formatted validation message
 - `__bool__()`: Returns `is_valid` for boolean checks
@@ -340,6 +341,7 @@ Suggestion: Interoceptive precision is 7.5x higher than exteroceptive - strong i
 ## Examples
 
 See `examples/parameter_validation_example.py` for comprehensive examples of:
+
 - Basic validation
 - Error handling
 - Working with warnings and suggestions

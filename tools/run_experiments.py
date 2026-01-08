@@ -7,7 +7,7 @@ This script demonstrates the APGI model through several experiments that explore
 import ast
 import matplotlib.pyplot as plt
 import numpy as np
-from apgi_model import APGIModel, APGIParams, plot_simulation
+from models.apgi_model import APGIModel, APGIParams, plot_simulation
 from typing import List, Dict, Any, Tuple
 import argparse
 import importlib
@@ -19,7 +19,7 @@ from apgi_framework.logging.standardized_logging import get_logger
 plt.style.use('ggplot')
 plt.rcParams['figure.facecolor'] = 'white'
  
-sys.path.append(str(Path(__file__).parent))
+sys.path.append(str(Path(__file__).parent.parent))
 
 # Initialize logger
 logger = get_logger("run_experiments")

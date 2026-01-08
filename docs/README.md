@@ -25,7 +25,7 @@ apgi-consciousness/
 │   └── processed/             # Processed data
 ├── docs/                      # Documentation
 └── tests/                     # Unit tests
-```
+```python
 
 ## Getting Started
 
@@ -33,7 +33,9 @@ apgi-consciousness/
 
 **New to the system?** See the [Quick Start Guide](docs/QUICK_START_GUIDE.md) for a 5-minute introduction.
 
-**Using the GUI?** Check out the [GUI Visual Guide](docs/GUI_VISUAL_GUIDE.md) for a visual walkthrough.
+**Using GUI?** Check out the [GUI Visual Guide](docs/GUI_VISUAL_GUIDE.md) for a visual walkthrough.
+
+**Using Web Interface?** Visit [APGI-Experiments.html](../../apgi-web/APGI-Experiments.html) for interactive web-based experiments and visualizations.
 
 **Need help?** See the [Documentation Index](docs/DOCUMENTATION_INDEX.md) for complete documentation.
 
@@ -51,31 +53,31 @@ apgi-consciousness/
 
    ```bash
    pip install -r requirements.txt
-   ```
+```bash
 
 2. **Validate installation**
 
    ```bash
    python -m apgi_framework.cli validate-system
-   ```
+```python
 
 3. **Run the APGI Agent example**
 
    ```bash
    python -m core.models.apgi_agent
-   ```
+```python
 
 4. **Run the Somatic Agent example**
 
    ```bash
    python -m core.models.phase_transition
-   ```
+```python
 
 5. **Run experiments via GUI**
 
    ```bash
    python gui.py
-   ```
+```python
 
 6. **Run experiments via command line**
 
@@ -85,7 +87,7 @@ apgi-consciousness/
    
    # Run AI benchmarking experiment
    python run_experiments.py ai_benchmarking --n_episodes 100 --n_agents_per_type 3
-   ```
+```python
 
 ## Currently Implemented
 
@@ -133,13 +135,20 @@ apgi-consciousness/
    - Parameter configuration and real-time logging
    - Supports all implemented experiments
 
+3. **Web Interface** (`../../apgi-web/APGI-Experiments.html`)
+   - Interactive web-based experiments and visualizations
+   - Modern responsive design with real-time particle animations
+   - Neural network visualizations and interactive parameter controls
+   - Cross-platform accessibility through web browser
+
 ## Key Features
 
 - **Modular Architecture**: Clean separation between models, experiments, and utilities
 - **Standardized Experiments**: All experiments inherit from `BaseExperiment` for consistency
-- **Multiple Interfaces**: Command-line, GUI, and programmatic access
+- **Multiple Interfaces**: Command-line, GUI, web interface, and programmatic access
 - **Data Management**: Automatic data saving and visualization
 - **Extensible Design**: Easy to add new models and experiments
+- **Web-Based Visualization**: Interactive experiments with real-time neural animations
 
 ## Example Usage
 
@@ -149,17 +158,20 @@ apgi-consciousness/
 
 ```bash
 python launch_gui.py
-```
+```python
 
 **Using the CLI:**
 
 ```bash
+
 # Run primary falsification test
+
 python -m apgi_framework.cli run-test primary --trials 1000
 
 # Run all tests
+
 python -m apgi_framework.cli run-batch --all-tests
-```
+```python
 
 **Using Python API:**
 
@@ -167,18 +179,21 @@ python -m apgi_framework.cli run-batch --all-tests
 from apgi_framework.main_controller import MainApplicationController
 
 # Initialize system
+
 controller = MainApplicationController()
 controller.initialize_system()
 
 # Run test
+
 tests = controller.get_falsification_tests()
 result = tests['primary'].run_test(n_trials=1000)
 print(f"Falsified: {result.is_falsified}")
 print(f"Confidence: {result.confidence_level:.2f}")
 
 # Cleanup
+
 controller.shutdown_system()
-```
+```python
 
 ## Running the APGI Agent
 
@@ -186,9 +201,10 @@ controller.shutdown_system()
 from core.models.apgi_agent import APGIAgent
 
 # Create and run agent with default parameters
+
 agent = APGIAgent()
 agent.run_example()  # Runs simulation and shows plots
-```
+```python
 
 ### Running an Experiment
 
@@ -196,18 +212,20 @@ agent.run_example()  # Runs simulation and shows plots
 from research.interoceptive_gating.experiments.experiment import run_interoceptive_gating_experiment
 
 # Run experiment with custom parameters
+
 experiment = run_interoceptive_gating_experiment(
     n_participants=20,
     n_trials_per_condition=100
 )
-```
+```python
 
 ## Documentation
 
-Complete documentation is available in the `docs/` directory:
+Complete documentation is available in the `docs/` directory and web interface:
 
+- **[APGI-Experiments.html](../../apgi-web/APGI-Experiments.html)** - Interactive web-based experiments and visualizations
 - **[Quick Start Guide](docs/QUICK_START_GUIDE.md)** - Get started in 5 minutes
-- **[GUI Visual Guide](docs/GUI_VISUAL_GUIDE.md)** - Visual walkthrough of the GUI
+- **[GUI Visual Guide](docs/GUI_VISUAL_GUIDE.md)** - Visual walkthrough of GUI
 - **[User Guide](docs/USER_GUIDE.md)** - Complete user manual
 - **[CLI Reference](docs/CLI_REFERENCE.md)** - Command-line interface documentation
 - **[Results Interpretation Guide](docs/RESULTS_INTERPRETATION_GUIDE.md)** - Understanding test results

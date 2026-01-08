@@ -61,7 +61,7 @@ class TestConsciousnessWithoutIgnitionTest:
         test = ConsciousnessWithoutIgnitionTest()
         
         assert test is not None
-        assert hasattr(test, 'run_falsification_test')
+        assert hasattr(test, 'run_consciousness_without_ignition_test')
     
     def test_cwi_test_basic_functionality(self):
         """Test basic functionality of CWI test."""
@@ -76,7 +76,7 @@ class TestConsciousnessWithoutIgnitionTest:
             'beta': 1.2
         }
         
-        with patch.object(test, 'run_falsification_test') as mock_run:
+        with patch.object(test, 'run_consciousness_without_ignition_test') as mock_run:
             mock_run.return_value = {
                 'falsified': False,
                 'p_value': 0.12,
@@ -84,7 +84,7 @@ class TestConsciousnessWithoutIgnitionTest:
                 'confidence': 0.95
             }
             
-            result = test.run_falsification_test(n_trials=100, n_participants=20)
+            result = test.run_consciousness_without_ignition_test(n_trials=100, n_participants=20)
             
             assert result['falsified'] is False
             assert 'p_value' in result
@@ -99,7 +99,7 @@ class TestThresholdInsensitivityTest:
         test = ThresholdInsensitivityTest()
         
         assert test is not None
-        assert hasattr(test, 'run_falsification_test')
+        assert hasattr(test, 'run_threshold_insensitivity_test')
     
     def test_threshold_test_basic_functionality(self):
         """Test basic functionality of threshold insensitivity test."""
@@ -114,7 +114,7 @@ class TestThresholdInsensitivityTest:
             'beta': 1.2
         }
         
-        with patch.object(test, 'run_falsification_test') as mock_run:
+        with patch.object(test, 'run_threshold_insensitivity_test') as mock_run:
             mock_run.return_value = {
                 'falsified': False,
                 'p_value': 0.08,
@@ -122,7 +122,7 @@ class TestThresholdInsensitivityTest:
                 'confidence': 0.95
             }
             
-            result = test.run_falsification_test(n_trials=100, n_participants=20)
+            result = test.run_threshold_insensitivity_test(n_trials_per_condition=50, n_participants=20)
             
             assert result['falsified'] is False
             assert 'p_value' in result
@@ -137,7 +137,7 @@ class TestSomaBiasTest:
         test = SomaBiasTest()
         
         assert test is not None
-        assert hasattr(test, 'run_falsification_test')
+        assert hasattr(test, 'run_soma_bias_test')
     
     def test_soma_test_basic_functionality(self):
         """Test basic functionality of soma bias test."""
@@ -152,7 +152,7 @@ class TestSomaBiasTest:
             'beta': 1.2
         }
         
-        with patch.object(test, 'run_falsification_test') as mock_run:
+        with patch.object(test, 'run_soma_bias_test') as mock_run:
             mock_run.return_value = {
                 'falsified': False,
                 'p_value': 0.20,
@@ -160,7 +160,7 @@ class TestSomaBiasTest:
                 'confidence': 0.95
             }
             
-            result = test.run_falsification_test(n_trials=100, n_participants=20)
+            result = test.run_soma_bias_test(n_trials_per_participant=50, n_participants=20)
             
             assert result['falsified'] is False
             assert 'p_value' in result

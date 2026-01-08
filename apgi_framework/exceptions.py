@@ -70,3 +70,13 @@ class ReportGenerationError(APGIFrameworkError):
 class DataExportError(APGIFrameworkError):
     """Errors in data export operations."""
     pass
+
+
+class AnalysisError(APGIFrameworkError):
+    """Errors in data analysis operations."""
+    pass
+
+
+class ProcessingError(APGIFrameworkError):
+    """Errors in results processing operations."""
+    pass

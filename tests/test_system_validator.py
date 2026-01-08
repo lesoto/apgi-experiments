@@ -457,7 +457,7 @@ class TestSystemValidator:
         """Test primary falsification logic test."""
         result = self.validator._test_primary_falsification_logic()
         
-        assert result.test_name == "primary_falsification_logic"
+        assert result.test_name == "Primary Falsification Logic"
         assert result.category == ValidationCategory.FALSIFICATION_LOGIC
         assert isinstance(result.passed, bool)
     

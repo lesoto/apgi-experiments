@@ -32,6 +32,7 @@ from apgi_framework.neural import (
 )
 
 # Configure pupillometry
+
 config = PupillometryConfig(
     sampling_rate=1000.0,  # Hz
     eye_tracked=EyeType.BOTH,
@@ -40,12 +41,15 @@ config = PupillometryConfig(
 )
 
 # Initialize interface
+
 pupil_interface = PupillometryInterface(config)
 
 # Start streaming (with your eye tracker data source)
+
 pupil_interface.start_streaming(data_source=your_eye_tracker_callback)
 
 # Process data
+
 processed = pupil_interface.process_data(
     apply_blink_detection=True,
     apply_artifact_correction=True,
@@ -54,15 +58,18 @@ processed = pupil_interface.process_data(
 )
 
 # Get quality metrics
+
 quality = pupil_interface.get_quality_metrics()
 print(f"Data quality: {quality['status']}")
 
 # Export data
+
 pupil_interface.export_data("pupil_data.npz", format="numpy")
 
 # Stop streaming
+
 pupil_interface.stop_streaming()
-```
+```python
 
 ### Pupillometry Key Components
 
@@ -83,7 +90,7 @@ pupil_interface.stop_streaming()
 - **Real-time callbacks** for online processing
 - **Temporal synchronization** with external events (e.g., stimulus presentation)
 
-### Basic Usage
+### Physiological Monitoring Usage
 
 ```python
 from apgi_framework.neural import (
@@ -93,6 +100,7 @@ from apgi_framework.neural import (
 )
 
 # Configure physiological monitoring
+
 config = PhysiologicalConfig(
     sampling_rate=1000.0,  # Hz
     enable_ecg=True,
@@ -102,9 +110,11 @@ config = PhysiologicalConfig(
 )
 
 # Initialize monitoring system
+
 physio_monitor = PhysiologicalMonitoring(config)
 
 # Register callback for real-time processing
+
 def process_sample(sample):
     if sample.heart_rate:
         print(f"HR: {sample.heart_rate:.1f} bpm")
@@ -112,6 +122,7 @@ def process_sample(sample):
 physio_monitor.register_callback(process_sample)
 
 # Start streaming (with your biosignal data sources)
+
 data_sources = {
     SignalType.ECG: your_ecg_callback,
     SignalType.SCR: your_scr_callback,
@@ -120,6 +131,7 @@ data_sources = {
 physio_monitor.start_streaming(data_sources=data_sources)
 
 # Get comprehensive metrics
+
 metrics = physio_monitor.compute_comprehensive_metrics()
 print(f"Heart rate: {metrics['heart_rate']:.1f} bpm")
 print(f"HRV SDNN: {metrics['hrv']['sdnn']:.2f} ms")
@@ -127,15 +139,18 @@ print(f"SCR rate: {metrics['scr_rate']:.2f} events/min")
 print(f"Respiration rate: {metrics['respiration_rate']:.1f} breaths/min")
 
 # Synchronize with external event
+
 stimulus_time = time.time()
 synced_sample = physio_monitor.synchronize_with_external(stimulus_time)
 
 # Export data
+
 physio_monitor.export_data("physio_data.npz", format="numpy")
 
 # Stop streaming
+
 physio_monitor.stop_streaming()
-```
+```python
 
 ### Key Components
 
@@ -158,6 +173,7 @@ from apgi_framework.neural import (
 )
 
 # Create both systems with matched sampling rates
+
 pupil_config = PupillometryConfig(sampling_rate=1000.0)
 physio_config = PhysiologicalConfig(sampling_rate=1000.0)
 
@@ -165,17 +181,21 @@ pupil_interface = PupillometryInterface(pupil_config)
 physio_monitor = PhysiologicalMonitoring(physio_config)
 
 # Start synchronized streaming
+
 pupil_interface.start_streaming(data_source=eye_tracker)
 physio_monitor.start_streaming(data_sources=biosignal_sources)
 
 # During experiment, synchronize with stimulus events
+
 stimulus_time = present_stimulus()
 
 # Get synchronized measurements
+
 pupil_data = pupil_interface.process_data()
 physio_sample = physio_monitor.synchronize_with_external(stimulus_time)
 
 # Analyze interoceptive precision modulation
+
 if physio_sample and physio_sample.heart_rate:
     pupil_dilation = pupil_data['percent_change'][-1]
     hr_change = physio_sample.heart_rate - baseline_hr
@@ -184,7 +204,7 @@ if physio_sample and physio_sample.heart_rate:
     interoceptive_precision = compute_apgi_precision(
         pupil_dilation, hr_change, physio_sample.scr_response
     )
-```
+```python
 
 ### Implementation Requirements
 
@@ -200,14 +220,20 @@ This implementation addresses the following APGI framework requirements:
 Both systems include comprehensive quality assessment:
 
 ```python
+
 # Pupillometry quality
+
 pupil_quality = pupil_interface.get_quality_metrics()
+
 # Returns: status, quality_score, mean_confidence, blink_rate, artifact_rate
 
 # Physiological quality
+
 physio_quality = physio_monitor.get_quality_metrics()
+
 # Returns: status, overall_quality, heart_rate_quality, scr_quality, respiration_quality
-```
+
+```python
 
 ## System Testing
 
@@ -215,7 +241,7 @@ Run the test suite to verify functionality:
 
 ```bash
 python apgi_framework/neural/test_physiological_systems.py
-```
+```python
 
 This will test:
 

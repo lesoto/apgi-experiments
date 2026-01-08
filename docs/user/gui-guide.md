@@ -14,7 +14,7 @@ A visual walkthrough of the APGI Framework Falsification Testing System GUI.
 
 ## Main Window Layout
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────────┐
 │ File   Edit   View   Tools   Help                                       │
 ├─────────────────────────────────────────────────────────────────────────┤
@@ -90,27 +90,10 @@ The left panel contains buttons for each falsification test type.
 ### Button States
 
 **Normal State:**
-```
+```python
 ┌────────────────┐
 │   Primary      │
 │ Falsification  │
-└────────────────┘
-```
-
-**Selected State:**
-```
-┌════════════════┐
-║   Primary      ║  ← Highlighted border
-║ Falsification  ║
-└════════════════┘
-```
-
-**Running State:**
-```
-┌────────────────┐
-│   Primary      │  ← Disabled during test
-│ Falsification  │
-│   (Running)    │
 └────────────────┘
 ```
 
@@ -202,7 +185,7 @@ When hovering over [i] icons:
 ### Validation Feedback
 
 **Valid Input:**
-```
+```python
 Threshold:
 ┌─────────────┐
 │ 3.5         │  ← Normal border
@@ -210,7 +193,7 @@ Threshold:
 ```
 
 **Invalid Input:**
-```
+```python
 Threshold:
 ┌═════════════┐
 │ 15.0        │  ← Red border
@@ -222,7 +205,7 @@ Threshold:
 
 ### Before Test Starts
 
-```
+```python
 ┌───────────────────────────────┐
 │      Run Test                 │  ← Enabled button
 └───────────────────────────────┘
@@ -233,7 +216,7 @@ Status: Ready to run test
 
 ### During Test Execution
 
-```
+```python
 ┌───────────────────────────────┐
 │      Running...               │  ← Disabled button
 └───────────────────────────────┘
@@ -245,7 +228,7 @@ Time elapsed: 22.5 seconds
 
 ### Test Completed
 
-```
+```python
 ┌───────────────────────────────┐
 │      Run Test                 │  ← Re-enabled button
 └───────────────────────────────┘
@@ -258,38 +241,42 @@ Time: 45.2 seconds
 ### Progress Panel States
 
 **Idle:**
-```
-┌────────────────────────────────────────┐
+
+```python
+┌────────────────────────────────┐
 │ Progress: [                    ] 0%    │
 │ Status: Ready                          │
-└────────────────────────────────────────┘
+└────────────────────────────────┘
 ```
 
 **Running:**
-```
-┌────────────────────────────────────────┐
+
+```python
+┌────────────────────────────────┐
 │ Progress: [████████          ] 45%     │
 │ Status: Processing trial 450/1000      │
 │ Time elapsed: 22.5 seconds             │
-└────────────────────────────────────────┘
+└────────────────────────────────┘
 ```
 
 **Completed:**
-```
-┌────────────────────────────────────────┐
+
+```python
+┌────────────────────────────────┐
 │ Progress: [████████████████████] 100%  │
 │ Status: ✓ Test completed successfully  │
 │ Total time: 45.2 seconds               │
-└────────────────────────────────────────┘
+└────────────────────────────────┘
 ```
 
 **Error:**
-```
-┌────────────────────────────────────────┐
+
+```python
+┌────────────────────────────────┐
 │ Progress: [████████          ] 45%     │
 │ Status: ✗ Error: Invalid parameter     │
 │ See log for details                    │
-└────────────────────────────────────────┘
+└────────────────────────────────┘
 ```
 
 ## Viewing Results
@@ -361,7 +348,8 @@ The right panel displays test results and visualizations.
 ### Result Status Display
 
 **NOT FALSIFIED (Green):**
-```
+
+```python
 ┌─────────────────────────────┐
 │  ✓ NOT FALSIFIED            │  ← Green background
 └─────────────────────────────┘
@@ -369,7 +357,8 @@ Framework survived this test
 ```
 
 **FALSIFIED (Red):**
-```
+
+```python
 ┌─────────────────────────────┐
 │  ⚠ FALSIFIED                │  ← Red background
 └─────────────────────────────┘
@@ -377,7 +366,8 @@ Framework contradicted by evidence
 ```
 
 **INCONCLUSIVE (Yellow):**
-```
+
+```python
 ┌─────────────────────────────┐
 │  ? INCONCLUSIVE             │  ← Yellow background
 └─────────────────────────────┘
@@ -404,367 +394,19 @@ P-value: 0.002
 
 *** p < 0.001  (Extremely significant)
 **  p < 0.01   (Highly significant)
+
 *   p < 0.05   (Significant)
+
 ns  p ≥ 0.05   (Not significant)
 ```
 
 ## Menu Bar Functions
 
-```
+```python
 ┌─────────────────────────────────────────────────────────────┐
 │ File   Edit   View   Tools   Help                           │
 └─────────────────────────────────────────────────────────────┘
 ```
-
-### File Menu
-
-```
-File
-├─ New Test              Ctrl+N
-├─ Open Results...       Ctrl+O
-├─ Save Results          Ctrl+S
-├─ Save Results As...    Ctrl+Shift+S
-├─ ─────────────────
-├─ Export
-│  ├─ Export as JSON
-│  ├─ Export as CSV
-│  ├─ Export as HDF5
-│  └─ Export as PDF Report
-├─ ─────────────────
-├─ Recent Files
-│  ├─ primary_result_20250107.json
-│  ├─ soma_bias_result_20250106.json
-│  └─ ...
-├─ ─────────────────
-└─ Exit                  Ctrl+Q
-```
-
-### Edit Menu
-
-```
-Edit
-├─ Copy Results          Ctrl+C
-├─ ─────────────────
-├─ Preferences...        Ctrl+,
-│  ├─ Default Parameters
-│  ├─ Output Directory
-│  ├─ Visualization Settings
-│  └─ Advanced Options
-└─ Reset to Defaults
-```
-
-### View Menu
-
-```
-View
-├─ Show/Hide Test Panel       F1
-├─ Show/Hide Parameters       F2
-├─ Show/Hide Results          F3
-├─ Show/Hide Progress         F4
-├─ ─────────────────
-├─ Zoom In                    Ctrl++
-├─ Zoom Out                   Ctrl+-
-├─ Reset Zoom                 Ctrl+0
-├─ ─────────────────
-└─ Full Screen                F11
-```
-
-### Tools Menu
-
-```
-Tools
-├─ Batch Processing...
-├─ Parameter Sweep...
-├─ Compare Results...
-├─ ─────────────────
-├─ Validate System
-├─ Check for Updates
-├─ ─────────────────
-└─ Generate Configuration...
-```
-
-### Help Menu
-
-```
-Help
-├─ User Guide                 F1
-├─ Quick Start Guide
-├─ CLI Reference
-├─ Results Interpretation
-├─ Troubleshooting
-├─ ─────────────────
-├─ Examples
-│  ├─ Primary Falsification
-│  ├─ Batch Processing
-│  ├─ Custom Analysis
-│  └─ Extending Framework
-├─ ─────────────────
-├─ About APGI Framework
-└─ Check for Updates
-```
-
-## Workflow Examples
-
-### Workflow 1: Quick Single Test
-
-**Step-by-step visual guide:**
-
-**Step 1: Select Test**
-```
-┌──────────────┐
-│ [Primary]    │  ← Click here
-│ Falsification│
-└──────────────┘
-```
-
-**Step 2: Use Default Parameters**
-```
-Parameters:
-  Extero Precision: 2.0  ✓
-  Intero Precision: 1.5  ✓
-  Threshold: 3.5         ✓
-  Trials: 1000           ✓
-```
-
-**Step 3: Run Test**
-```
-┌───────────────┐
-│  Run Test     │  ← Click here
-└───────────────┘
-```
-
-**Step 4: Wait for Completion**
-```
-Progress: [████████████████████] 100%
-Status: ✓ Test completed
-```
-
-**Step 5: View Results**
-```
-Results Panel:
-  NOT FALSIFIED
-  Confidence: 0.87
-  P-value: 0.002
-```
-
-### Workflow 2: Parameter Exploration
-
-**Visual parameter sweep:**
-
-```
-Test 1: Threshold = 2.0
-┌─────────┐
-│ 2.0     │ → Run → Result 1
-└─────────┘
-
-Test 2: Threshold = 3.0
-┌─────────┐
-│ 3.0     │ → Run → Result 2
-└─────────┘
-
-Test 3: Threshold = 4.0
-┌─────────┐
-│ 4.0     │ → Run → Result 3
-└─────────┘
-
-Compare Results:
-Tools → Compare Results...
-```
-
-### Workflow 3: Batch Processing
-
-**Batch processing interface:**
-
-```
-┌─────────────────────────────────────┐
-│   Batch Processing Configuration    │
-├─────────────────────────────────────┤
-│                                     │
-│ Select Tests:                       │
-│ ☑ Primary Falsification             │
-│ ☑ Consciousness Without Ignition    │
-│ ☑ Threshold Insensitivity           │
-│ ☑ Soma-Bias Test                    │
-│                                     │
-│ Parameter Ranges:                   │
-│                                     │
-│ Threshold:                          │
-│ Min: [2.0] Max: [5.0] Step: [0.5]  │
-│                                     │
-│ Trials per configuration: [1000]    │
-│                                     │
-│ ┌─────────────────────────────┐    │
-│ │    Start Batch Processing   │    │
-│ └─────────────────────────────┘    │
-│                                     │
-└─────────────────────────────────────┘
-```
-
-**Progress display:**
-
-```
-┌─────────────────────────────────────┐
-│   Batch Processing Progress         │
-├─────────────────────────────────────┤
-│                                     │
-│ Overall: [████████          ] 45%   │
-│                                     │
-│ Completed:                          │
-│ ✓ Primary (threshold=2.0)           │
-│ ✓ Primary (threshold=2.5)           │
-│ ✓ Primary (threshold=3.0)           │
-│                                     │
-│ Running:                            │
-│ ⟳ Primary (threshold=3.5)           │
-│                                     │
-│ Pending:                            │
-│ ○ Primary (threshold=4.0)           │
-│ ○ Primary (threshold=4.5)           │
-│ ○ Primary (threshold=5.0)           │
-│                                     │
-└─────────────────────────────────────┘
-```
-
-### Workflow 4: Saving and Loading
-
-**Save dialog:**
-
-```
-┌─────────────────────────────────────┐
-│   Save Results                      │
-├─────────────────────────────────────┤
-│                                     │
-│ File name:                          │
-│ ┌─────────────────────────────┐    │
-│ │ primary_test_20250107.json  │    │
-│ └─────────────────────────────┘    │
-│                                     │
-│ Location:                           │
-│ ┌─────────────────────────────┐    │
-│ │ results/                    │    │
-│ └─────────────────────────────┘    │
-│                                     │
-│ Format:                             │
-│ ○ JSON (recommended)                │
-│ ○ CSV                               │
-│ ○ HDF5                              │
-│                                     │
-│ ☑ Include configuration             │
-│ ☑ Include metadata                  │
-│                                     │
-│ ┌──────────┐  ┌──────────┐         │
-│ │  Save    │  │  Cancel  │         │
-│ └──────────┘  └──────────┘         │
-│                                     │
-└─────────────────────────────────────┘
-```
-
-**Load dialog:**
-
-```
-┌─────────────────────────────────────┐
-│   Load Results                      │
-├─────────────────────────────────────┤
-│                                     │
-│ Recent Files:                       │
-│ ┌─────────────────────────────┐    │
-│ │ primary_test_20250107.json  │    │
-│ │ soma_bias_20250106.json     │    │
-│ │ threshold_sweep_20250105... │    │
-│ └─────────────────────────────┘    │
-│                                     │
-│ Or browse:                          │
-│ ┌──────────┐                        │
-│ │ Browse...│                        │
-│ └──────────┘                        │
-│                                     │
-│ ┌──────────┐  ┌──────────┐         │
-│ │  Load    │  │  Cancel  │         │
-│ └──────────┘  └──────────┘         │
-│                                     │
-└─────────────────────────────────────┘
-```
-
-## Keyboard Shortcuts
-
-```
-┌─────────────────────────────────────┐
-│   Keyboard Shortcuts                │
-├─────────────────────────────────────┤
-│                                     │
-│ File Operations:                    │
-│   Ctrl+N    New Test                │
-│   Ctrl+O    Open Results            │
-│   Ctrl+S    Save Results            │
-│   Ctrl+Q    Exit                    │
-│                                     │
-│ View:                               │
-│   F1        Show/Hide Test Panel    │
-│   F2        Show/Hide Parameters    │
-│   F3        Show/Hide Results       │
-│   F4        Show/Hide Progress      │
-│   F11       Full Screen             │
-│                                     │
-│ Test Execution:                     │
-│   Ctrl+R    Run Test                │
-│   Esc       Cancel Test             │
-│                                     │
-│ Navigation:                         │
-│   Tab       Next Field              │
-│   Shift+Tab Previous Field          │
-│                                     │
-└─────────────────────────────────────┘
-```
-
-## Tips and Tricks
-
-### Tip 1: Quick Parameter Reset
-
-```
-Right-click on any parameter field:
-┌─────────────────────┐
-│ Reset to Default    │
-│ Copy Value          │
-│ Paste Value         │
-└─────────────────────┘
-```
-
-### Tip 2: Parameter Presets
-
-```
-Edit → Preferences → Parameter Presets
-
-Save current parameters as preset:
-┌─────────────────────────────┐
-│ Preset name: [High Power]   │
-│ ┌─────────┐                 │
-│ │  Save   │                 │
-│ └─────────┘                 │
-└─────────────────────────────┘
-
-Load preset:
-┌─────────────────────────────┐
-│ Available Presets:          │
-│ ○ Default                   │
-│ ○ High Power                │
-│ ○ Quick Test                │
-│ ○ Conservative              │
-└─────────────────────────────┘
-```
-
-### Tip 3: Result Comparison
-
-```
-Tools → Compare Results
-
-Select results to compare:
-┌─────────────────────────────┐
-│ ☑ primary_test_1.json       │
-│ ☑ primary_test_2.json       │
-│ ☐ soma_bias_test.json       │
-└─────────────────────────────┘
-
-View side-by-side comparison:
 ┌──────────────┬──────────────┐
 │   Test 1     │   Test 2     │
 ├──────────────┼──────────────┤

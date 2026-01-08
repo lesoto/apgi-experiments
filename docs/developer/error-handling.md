@@ -8,8 +8,9 @@
 from apgi_framework.falsification.error_handling_wrapper import initialize_error_handling
 
 # Call once at application startup
+
 initialize_error_handling()
-```
+```python
 
 ### Using the Decorator
 
@@ -20,7 +21,7 @@ from apgi_framework.falsification.error_handling_wrapper import with_error_handl
 def my_test_function(n_trials: int, n_participants: int):
     # Your test implementation
     pass
-```
+```python
 
 ### Using the Wrapper Class
 
@@ -29,29 +30,32 @@ from apgi_framework.falsification.error_handling_wrapper import ErrorHandlingTes
 from apgi_framework.falsification.primary_falsification_test import PrimaryFalsificationTest
 
 # Create and wrap controller
+
 controller = PrimaryFalsificationTest()
 wrapped = ErrorHandlingTestWrapper(controller)
 
 # Use normally - errors handled automatically
+
 result = wrapped.run_falsification_test(n_trials=100, n_participants=20)
 
 # Check for errors
+
 summary = wrapped.get_error_summary()
 if summary['total_errors'] > 0:
     print(f"Encountered {summary['total_errors']} errors")
     print(f"Recovery success rate: {summary['recovery_success_rate']}")
-```
+```json
 
 ## Common Error Types
 
-| Error Type | Description | Auto-Retry | Recovery Strategy |
-|------------|-------------|------------|-------------------|
-| ValidationError | Invalid parameters | No | Fix parameters |
-| ConfigurationError | Invalid config | No | Fix configuration |
-| SimulationError | Simulation failure | Yes | Reset random seed |
-| StatisticalError | Statistical issue | No | Check sample size |
-| MemoryError | Out of memory | No | Reduce data size |
-| IOError/OSError | File system error | Yes | Create directories |
+ | Error Type | Description | Auto-Retry | Recovery Strategy |
+ | ------------ | ------------- | ------------ | ------------------- |
+ | ValidationError | Invalid parameters | No | Fix parameters |
+ | ConfigurationError | Invalid config | No | Fix configuration |
+ | SimulationError | Simulation failure | Yes | Reset random seed |
+ | StatisticalError | Statistical issue | No | Check sample size |
+ | MemoryError | Out of memory | No | Reduce data size |
+ | IOError/OSError | File system error | Yes | Create directories |
 
 ## Error Handling Parameters
 
@@ -64,7 +68,7 @@ if summary['total_errors'] > 0:
     log_errors=True,         # Log errors to file and console
     max_retries=3           # Maximum retry attempts
 )
-```
+```python
 
 ### Retry Configuration
 
@@ -83,7 +87,7 @@ config = RetryConfig(
         RuntimeError
     ]
 )
-```
+```python
 
 ## Checking Error Status
 
@@ -96,24 +100,34 @@ status = get_error_handling_status()
 print(f"Logging configured: {status['logging_configured']}")
 print(f"Recovery manager active: {status['recovery_manager_active']}")
 print(f"Total errors logged: {status['total_errors_logged']}")
-```
+```json
 
 ### Get Error Summary from Wrapper
 
 ```python
 summary = wrapped_controller.get_error_summary()
 
-# Available fields:
+# Available fields
+
 # - total_errors: Total number of errors
+
 # - error_types: Dictionary of error types and counts
+
 # - error_methods: Dictionary of methods and error counts
+
 # - recovery_attempts: Number of recovery attempts
+
 # - successful_recoveries: Number of successful recoveries
+
 # - failed_recoveries: Number of failed recoveries
+
 # - recovery_success_rate: Success rate as percentage string
+
 # - most_common_error: Most frequent error type
+
 # - most_problematic_method: Method with most errors
-```
+
+```python
 
 ## Custom Recovery Strategies
 
@@ -132,7 +146,7 @@ def my_recovery_strategy(error: Exception, context: dict):
 
 manager = get_recovery_manager()
 manager.register_recovery_strategy(SimulationError, my_recovery_strategy)
-```
+```python
 
 ## Logging
 
@@ -160,7 +174,7 @@ logger.info("General information")
 logger.warning("Warning message")
 logger.error("Error message")
 logger.critical("Critical error")
-```
+```json
 
 ## Error Report Generation
 
@@ -176,62 +190,83 @@ error_report = create_error_report(
 )
 
 print(error_report)  # Formatted error report with troubleshooting
-```
+```python
 
 ### Export Error Log
 
 ```python
 wrapped_controller.export_error_log('error_log.json')
-```
+```json
 
 ## Troubleshooting Common Issues
 
 ### ValidationError: Invalid Parameters
 
 ```python
+
 # Problem: Negative or zero values
+
 result = test.run_test(n_trials=-10)  # ❌ Error
 
 # Solution: Use positive values
+
 result = test.run_test(n_trials=100)  # ✅ Correct
-```
+```python
 
 ### SimulationError: Simulation Failed
 
 ```python
-# The system will automatically:
+
+# The system will automatically
+
 # 1. Reset random seed
+
 # 2. Retry up to max_retries times
+
 # 3. Log each attempt
 
-# If all retries fail, check:
+# If all retries fail, check
+
 # - Simulation parameters are reasonable
+
 # - Input data is not corrupted
+
 # - System has sufficient resources
-```
+
+```python
 
 ### MemoryError: Out of Memory
 
 ```python
+
 # Problem: Too much data
+
 result = test.run_test(n_trials=1000000)  # ❌ May run out of memory
 
 # Solution: Reduce data size
+
 result = test.run_test(n_trials=10000)  # ✅ More reasonable
-```
+```python
 
 ### IOError: File Not Found
 
 ```python
-# The system will automatically:
+
+# The system will automatically
+
 # 1. Create missing directories
+
 # 2. Retry the operation
 
-# If it still fails, check:
+# If it still fails, check
+
 # - File paths are correct
+
 # - Permissions allow read/write
+
 # - Disk space is available
-```
+
+```python
 
 ## Best Practices
 
@@ -239,7 +274,7 @@ result = test.run_test(n_trials=10000)  # ✅ More reasonable
 
    ```python
    initialize_error_handling()
-   ```
+```python
 
 2. **Use the decorator for all test methods**
 
@@ -249,39 +284,41 @@ result = test.run_test(n_trials=10000)  # ✅ More reasonable
        pass
    ```
 
-3. **Check error summaries after test runs**
+1. **Check error summaries after test runs**
 
    ```python
    summary = wrapped.get_error_summary()
    if summary['total_errors'] > 0:
-       # Handle errors
+       print("Error occurred")
+       print(summary)
    ```
 
-4. **Export error logs for analysis**
+2. **Export error logs for analysis**
 
    ```python
    wrapped.export_error_log('errors.json')
+   print("Error log exported")
    ```
 
-5. **Review log files regularly**
+3. **Review log files regularly**
    - Check `logs/` directory
    - Look for patterns in errors
    - Address recurring issues
 
-6. **Use appropriate retry counts**
+4. **Use appropriate retry counts**
    - Transient failures: 3-5 retries
    - Non-transient: 0-1 retries
 
-7. **Validate parameters before running tests**
+5. **Validate parameters before running tests**
 
    ```python
    from apgi_framework.validation import get_validator
-   
+
    validator = get_validator()
    result = validator.validate_experimental_config(n_trials=100)
    if not result.is_valid:
        print(result.get_message())
-   ```
+   ```python
 
 ## Performance Considerations
 
@@ -312,17 +349,21 @@ from apgi_framework.falsification.error_handling_wrapper import (
 from apgi_framework.falsification.primary_falsification_test import PrimaryFalsificationTest
 
 # 1. Initialize error handling system
+
 initialize_error_handling()
 
 # 2. Check system status
+
 status = get_error_handling_status()
 print(f"Error handling ready: {status['recovery_manager_active']}")
 
 # 3. Create and wrap test controller
+
 controller = PrimaryFalsificationTest()
 wrapped = ErrorHandlingTestWrapper(controller)
 
 # 4. Run test (errors handled automatically)
+
 try:
     result = wrapped.run_falsification_test(n_trials=100, n_participants=20)
     print(f"Test completed: {result.test_id}")
@@ -330,14 +371,16 @@ except Exception as e:
     print(f"Test failed after all retries: {e}")
 
 # 5. Check error summary
+
 summary = wrapped.get_error_summary()
 print(f"Total errors: {summary['total_errors']}")
 print(f"Recovery success rate: {summary['recovery_success_rate']}")
 
 # 6. Export error log if needed
+
 if summary['total_errors'] > 0:
     wrapped.export_error_log('test_errors.json')
-```
+```json
 
 ## Quick Checklist
 

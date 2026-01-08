@@ -5,7 +5,7 @@ Conscious access is formalized through a precision-gated threshold mechanism:
 ```math
 Sₜ = Πₑ·|εₑ| + Πᵢ(M_{c,a})·|εᵢ|
 Bₜ = σ(α(Sₜ - θₜ))
-```
+```python
 
 Ignition occurs if $Sₜ > θₜ$
 

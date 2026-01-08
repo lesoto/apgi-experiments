@@ -91,6 +91,7 @@ During implementation, the following bugs were discovered and fixed:
 ## Testing
 
 Created `test_gui_integration.py` to verify:
+
 - All modules can be imported successfully
 - All test controllers can be initialized
 - GUI can be created with all test panels
@@ -104,7 +105,7 @@ To run the GUI with integrated test controllers:
 
 ```bash
 python apgi_falsification_gui.py
-```
+```python
 
 Or use the main entry point:
 
@@ -112,7 +113,7 @@ Or use the main entry point:
 from apgi_falsification_gui import main
 
 main()
-```
+```python
 
 ## Workflow
 
@@ -127,7 +128,7 @@ main()
 
 ## Architecture
 
-```
+```python
 APIFalsificationGUI
 ├── ParameterConfigPanel (Configuration)
 ├── FalsificationTestPanel (Primary)
@@ -140,11 +141,12 @@ APIFalsificationGUI
 │   └── SomaBiasTest controller
 ├── ResultsVisualizationPanel
 └── LoggingPanel
-```
+```python
 
 ## Next Steps
 
 The following tasks remain in the specification:
+
 - Task 1: Complete end-to-end integration testing
 - Task 3: Add comprehensive error handling and validation
 - Task 4: Create example workflows and documentation

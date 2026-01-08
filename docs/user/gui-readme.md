@@ -163,6 +163,7 @@ gui.task_configurator.update_oddball_config(
 ## Data Storage
 
 All data is stored in SQLite database with the following structure:
+
 - `parameter_estimation_sessions`: Session metadata
 - `parameter_estimation_trials`: Trial-level data
 - `detection_trials`: Detection task specific data
@@ -201,16 +202,19 @@ The system provides multiple levels of error recovery:
 ## Troubleshooting
 
 ### EEG Issues
+
 - Check electrode impedances (should be < 10 kΩ)
 - Verify amplifier connection
 - Check for electrical interference
 
 ### Eye Tracker Issues
+
 - Recalibrate if tracking quality drops
 - Check lighting conditions
 - Verify participant positioning
 
 ### Cardiac Issues
+
 - Check sensor placement
 - Verify cable connections
 - Try repositioning sensor
@@ -218,6 +222,7 @@ The system provides multiple levels of error recovery:
 ## Future Enhancements
 
 ### Potential Improvements
+
 1. **Advanced Visualizations**: Real-time EEG/pupil waveforms
 2. **Remote Monitoring**: Web-based monitoring dashboard
 3. **Automated Analysis**: Post-session parameter estimation pipeline

@@ -34,8 +34,7 @@ result = validator.validate_apgi_parameters(
 
 if not result.is_valid:
     print(result.get_message())
-```
-
+```python
 
 ### 2. System Health Checker (`apgi_framework/validation/system_health.py`)
 
@@ -64,8 +63,7 @@ from apgi_framework.validation import get_health_checker
 health_checker = get_health_checker()
 result = health_checker.run_full_health_check()
 print(result.get_report())
-```
-
+```python
 
 ### 3. Error Recovery Module (`apgi_framework/validation/error_recovery.py`)
 
@@ -100,7 +98,7 @@ config = RetryConfig(max_attempts=3, initial_delay=1.0)
 def potentially_failing_function():
     # Function that might fail transiently
     pass
-```
+```python
 
 ### 4. Error Handling Wrapper (`apgi_framework/falsification/error_handling_wrapper.py`)
 
@@ -131,7 +129,7 @@ from apgi_framework.falsification.error_handling_wrapper import with_error_handl
 def run_test(n_trials, n_participants):
     # Test implementation
     pass
-```
+```python
 
 ### 5. Configuration Integration
 
@@ -145,16 +143,17 @@ def run_test(n_trials, n_participants):
 - Provides detailed error messages with validation results
 - Falls back to basic validation if validator not available
 
-
 ### 6. Falsification Test Updates
 
 **Updated Files**:
+
 - `apgi_framework/falsification/primary_falsification_test.py`
 - `apgi_framework/falsification/consciousness_without_ignition_test.py`
 - `apgi_framework/falsification/threshold_insensitivity_test.py`
 - `apgi_framework/falsification/soma_bias_test.py`
 
 **Changes**:
+
 - Added `@with_error_handling` decorator to main test methods
 - Added parameter validation at method entry
 - Added try-catch blocks for individual trial failures
@@ -175,18 +174,23 @@ def run_test(n_trials, n_participants):
 
 **Usage Examples**:
 ```bash
+
 # Run full health check
+
 python -m apgi_framework.validation.diagnostics_cli health-check
 
 # Check specific component
+
 python -m apgi_framework.validation.diagnostics_cli health-check --component python
 
 # Validate parameters
+
 python -m apgi_framework.validation.diagnostics_cli validate --params extero_precision=2.0 threshold=3.5
 
 # Get parameter info
+
 python -m apgi_framework.validation.diagnostics_cli param-info --parameter threshold
-```
+```python
 
 ## Error Handling Strategy
 
@@ -228,6 +232,7 @@ python -m apgi_framework.validation.diagnostics_cli param-info --parameter thres
 ### Logging
 
 All errors are logged with:
+
 - Timestamp
 - Error type and message
 - Function/method name
@@ -237,6 +242,7 @@ All errors are logged with:
 ## Validation Coverage
 
 ### APGI Parameters
+
 - ✓ Exteroceptive precision (0.01-10.0)
 - ✓ Interoceptive precision (0.01-10.0)
 - ✓ Exteroceptive error (-10.0-10.0)
@@ -246,6 +252,7 @@ All errors are logged with:
 - ✓ Steepness (0.1-10.0)
 
 ### Experimental Configuration
+
 - ✓ Number of trials (1-100000)
 - ✓ Number of participants (1-10000)
 - ✓ Alpha level (0.001-0.1)
@@ -253,12 +260,14 @@ All errors are logged with:
 - ✓ Power threshold (0.5-0.99)
 
 ### Neural Signature Thresholds
+
 - ✓ P3b threshold (1.0-20.0 μV)
 - ✓ Gamma PLV threshold (0.05-0.8)
 - ✓ BOLD Z-score threshold (1.0-5.0)
 - ✓ PCI threshold (0.1-0.8)
 
 ### Pharmacological Conditions
+
 - ✓ Drug type validation
 - ✓ Dosage range validation
 - ✓ Administration time validation
@@ -267,6 +276,7 @@ All errors are logged with:
 ## System Health Checks
 
 ### Components Checked
+
 1. **Python Environment**: Version, platform compatibility
 2. **Dependencies**: Required and optional packages
 3. **Configuration**: Parameter validity, config file integrity
@@ -275,6 +285,7 @@ All errors are logged with:
 6. **Core Components**: Module imports, basic functionality
 
 ### Health Status Levels
+
 - **Healthy**: All checks passed
 - **Warning**: Some non-critical issues detected
 - **Critical**: Critical issues that prevent operation
@@ -282,7 +293,9 @@ All errors are logged with:
 ## Testing
 
 ### Test Script
+
 `test_validation_and_error_handling.py` - Comprehensive test suite covering:
+
 - Parameter validation (valid and invalid cases)
 - Configuration integration
 - System health checks
@@ -290,7 +303,9 @@ All errors are logged with:
 - Parameter information retrieval
 
 ### Test Results
+
 All tests passed successfully:
+
 - ✓ Parameter validation tests
 - ✓ Configuration integration tests
 - ✓ System health check tests
@@ -309,6 +324,7 @@ All tests passed successfully:
 ## Future Enhancements
 
 Potential improvements for future iterations:
+
 1. Add more sophisticated recovery strategies
 2. Implement parameter auto-correction for common mistakes
 3. Add performance monitoring and profiling
@@ -322,18 +338,21 @@ Potential improvements for future iterations:
 This implementation satisfies all requirements from Task 3:
 
 ### Task 3.1: Implement parameter validation ✓
+
 - ✓ Validate parameter ranges before test execution
 - ✓ Check for invalid configurations and warn users
 - ✓ Provide helpful error messages for common mistakes
 - ✓ Add parameter range tooltips/documentation
 
 ### Task 3.2: Add robust error handling ✓
+
 - ✓ Wrap test execution in try-catch blocks
 - ✓ Log detailed error information for debugging
 - ✓ Implement automatic retry for transient failures
 - ✓ Add error recovery mechanisms
 
 ### Task 3: Add comprehensive error handling and validation ✓
+
 - ✓ Add input validation for all parameter fields
 - ✓ Implement graceful error recovery in test execution
 - ✓ Add detailed error messages and troubleshooting guidance

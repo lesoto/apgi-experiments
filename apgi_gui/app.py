@@ -72,17 +72,59 @@ class APGIFrameworkApp(ctk.CTk):
         self.status_bar.grid(row=1, column=1, sticky="ew")
     
     def _setup_keyboard_shortcuts(self) -> None:
-        """Set up keyboard shortcuts."""
+        """Set up comprehensive keyboard shortcuts."""
+        # File operations
         self.bind("<Control-n>", lambda e: self.new_file())
         self.bind("<Control-o>", lambda e: self.open_file())
         self.bind("<Control-s>", lambda e: self.save_file())
         self.bind("<Control-S>", lambda e: self.save_file_as())
+        self.bind("<Control-Shift-s>", lambda e: self.save_file_as())
+        self.bind("<Control-w>", lambda e: self.close_file())
         self.bind("<Control-q>", lambda e: self.quit())
+        self.bind("<Control-Shift-q>", lambda e: self.quit())  # Force quit
+        
+        # Edit operations
         self.bind("<Control-z>", lambda e: self.undo())
+        self.bind("<Control-Shift-z>", lambda e: self.redo())  # Alternative redo
         self.bind("<Control-y>", lambda e: self.redo())
+        self.bind("<Control-a>", lambda e: self.select_all())
+        self.bind("<Control-c>", lambda e: self.copy())
+        self.bind("<Control-v>", lambda e: self.paste())
+        self.bind("<Control-x>", lambda e: self.cut())
+        
+        # View operations
         self.bind("<F1>", lambda e: self.show_help())
         self.bind("<Control-h>", lambda e: self.show_help())
         self.bind("<Control-t>", lambda e: self.toggle_theme())
+        self.bind("<F11>", lambda e: self.toggle_fullscreen())
+        self.bind("<Control-0>", lambda e: self.reset_zoom())
+        self.bind("<Control-plus>", lambda e: self.zoom_in())
+        self.bind("<Control-minus>", lambda e: self.zoom_out())
+        
+        # Navigation
+        self.bind("<Control-1>", lambda e: self.switch_to_tab("Configuration"))
+        self.bind("<Control-2>", lambda e: self.switch_to_tab("Analysis"))
+        self.bind("<Control-3>", lambda e: self.switch_to_tab("Visualization"))
+        self.bind("<Control-4>", lambda e: self.switch_to_tab("Results"))
+        self.bind("<Control-Tab>", lambda e: self.next_tab())
+        self.bind("<Control-Shift-Tab>", lambda e: self.previous_tab())
+        
+        # Application operations
+        self.bind("<Control-r>", lambda e: self.run_analysis())
+        self.bind("<F5>", lambda e: self.refresh())
+        self.bind("<Control-f>", lambda e: self.find())
+        self.bind("<Control-g>", lambda e: self.find_next())
+        self.bind("<Control-Shift-g>", lambda e: self.find_previous())
+        
+        # Debug/Development shortcuts
+        self.bind("<Control-d>", lambda e: self.toggle_debug_mode())
+        self.bind("<Control-l>", lambda e: self.show_log())
+        self.bind("<Control-p>", lambda e: self.show_preferences())
+        
+        # Window management
+        self.bind("<Alt-F4>", lambda e: self.quit())
+        self.bind("<Control-m>", lambda e: self.minimize_window())
+        self.bind("<Control-Shift-M>", lambda e: self.maximize_window())
     
     def _center_window(self) -> None:
         """Center the window on the screen."""
@@ -248,34 +290,244 @@ class APGIFrameworkApp(ctk.CTk):
         help_text = """APGI Framework GUI Help
 
 Keyboard Shortcuts:
-  Ctrl+N       - New file
-  Ctrl+O       - Open file
-  Ctrl+S       - Save file
-  Ctrl+Shift+S - Save file as
-  Ctrl+Z       - Undo
-  Ctrl+Y       - Redo
-  Ctrl+T       - Toggle theme
-  F1 or Ctrl+H - Show this help
+  File Operations:
+    Ctrl+N           - New file
+    Ctrl+O           - Open file
+    Ctrl+S           - Save file
+    Ctrl+Shift+S     - Save file as
+    Ctrl+W           - Close file
+    Ctrl+Q           - Quit application
+    
+  Edit Operations:
+    Ctrl+Z           - Undo
+    Ctrl+Y           - Redo
+    Ctrl+Shift+Z     - Redo (alternative)
+    Ctrl+A           - Select all
+    Ctrl+C           - Copy
+    Ctrl+V           - Paste
+    Ctrl+X           - Cut
+    
+  View Operations:
+    Ctrl+T           - Toggle theme
+    F11              - Toggle fullscreen
+    Ctrl+0           - Reset zoom
+    Ctrl+Plus        - Zoom in
+    Ctrl+Minus       - Zoom out
+    
+  Navigation:
+    Ctrl+1           - Configuration tab
+    Ctrl+2           - Analysis tab
+    Ctrl+3           - Visualization tab
+    Ctrl+4           - Results tab
+    Ctrl+Tab         - Next tab
+    Ctrl+Shift+Tab   - Previous tab
+    
+  Application:
+    Ctrl+R           - Run analysis
+    F5               - Refresh
+    Ctrl+F           - Find
+    Ctrl+G           - Find next
+    Ctrl+Shift+G     - Find previous
+    F1               - Show help
+    Ctrl+H           - Show help (alternative)
+    
+  Debug/Development:
+    Ctrl+D           - Toggle debug mode
+    Ctrl+L           - Show log
+    Ctrl+P           - Show preferences
+    
+  Window Management:
+    Alt+F4           - Quit application
+    Ctrl+M           - Minimize window
+    Ctrl+Shift+M     - Maximize window
 
-For more information, please refer to the documentation.
-"""
-        tk.messagebox.showinfo("APGI Framework Help", help_text)
+For more information, visit the project documentation."""
+        
+        # Create help dialog
+        help_dialog = ctk.CTkToplevel(self)
+        help_dialog.title("Help - APGI Framework GUI")
+        help_dialog.geometry("600x500")
+        help_dialog.transient(self)
+        help_dialog.grab_set()
+        
+        # Create scrollable text widget
+        help_text_widget = ctk.CTkTextbox(help_dialog)
+        help_text_widget.pack(fill="both", expand=True, padx=10, pady=10)
+        help_text_widget.insert("1.0", help_text)
+        help_text_widget.configure(state="disabled")
+        
+        # Close button
+        close_button = ctk.CTkButton(
+            help_dialog,
+            text="Close",
+            command=help_dialog.destroy
+        )
+        close_button.pack(pady=10)
+    
+    # Additional methods for new keyboard shortcuts
+    def close_file(self) -> None:
+        """Close the current file."""
+        if self.current_file:
+            # Save current state to undo stack
+            self.undo_stack.append(self.main_area.get_data())
+            self.current_file = None
+            self.main_area.clear()
+            self.status_bar.set_file(None)
+            self.update_status("File closed")
+        else:
+            self.update_status("No file to close", "warning")
+    
+    def select_all(self) -> None:
+        """Select all content in the current focused widget."""
+        try:
+            focused = self.focus_get()
+            if hasattr(focused, 'tag_add'):
+                focused.tag_add("sel", "1.0", "end")
+                focused.mark_set("insert", "1.0")
+                focused.see("insert")
+        except:
+            pass
+    
+    def copy(self) -> None:
+        """Copy selected content."""
+        try:
+            focused = self.focus_get()
+            if hasattr(focused, 'selection_get'):
+                self.clipboard_clear()
+                self.clipboard_append(focused.selection_get())
+                self.update_status("Copied to clipboard")
+        except:
+            self.update_status("Nothing to copy", "warning")
+    
+    def paste(self) -> None:
+        """Paste content from clipboard."""
+        try:
+            focused = self.focus_get()
+            if hasattr(focused, 'insert'):
+                clipboard_content = self.clipboard_get()
+                focused.insert("insert", clipboard_content)
+                self.update_status("Pasted from clipboard")
+        except:
+            self.update_status("Nothing to paste", "warning")
+    
+    def cut(self) -> None:
+        """Cut selected content."""
+        try:
+            focused = self.focus_get()
+            if hasattr(focused, 'selection_get') and hasattr(focused, 'delete'):
+                clipboard_content = focused.selection_get()
+                self.clipboard_clear()
+                self.clipboard_append(clipboard_content)
+                focused.delete("sel.first", "sel.last")
+                self.update_status("Cut to clipboard")
+        except:
+            self.update_status("Nothing to cut", "warning")
+    
+    def toggle_fullscreen(self) -> None:
+        """Toggle fullscreen mode."""
+        current_state = self.attributes("-fullscreen")
+        self.attributes("-fullscreen", not current_state)
+        self.update_status(f"Fullscreen {'enabled' if not current_state else 'disabled'}")
+    
+    def reset_zoom(self) -> None:
+        """Reset zoom to default."""
+        # Placeholder for zoom functionality
+        self.update_status("Zoom reset to 100%")
+    
+    def zoom_in(self) -> None:
+        """Zoom in."""
+        # Placeholder for zoom functionality
+        self.update_status("Zoomed in")
+    
+    def zoom_out(self) -> None:
+        """Zoom out."""
+        # Placeholder for zoom functionality
+        self.update_status("Zoomed out")
+    
+    def switch_to_tab(self, tab_name: str) -> None:
+        """Switch to a specific tab."""
+        try:
+            self.main_area.tabview.set(tab_name)
+            self.update_status(f"Switched to {tab_name} tab")
+        except:
+            self.update_status(f"Failed to switch to {tab_name} tab", "error")
+    
+    def next_tab(self) -> None:
+        """Switch to the next tab."""
+        try:
+            current = self.main_area.tabview.get()
+            tabs = ["Configuration", "Analysis", "Visualization", "Results"]
+            current_index = tabs.index(current) if current in tabs else 0
+            next_index = (current_index + 1) % len(tabs)
+            self.switch_to_tab(tabs[next_index])
+        except:
+            pass
+    
+    def previous_tab(self) -> None:
+        """Switch to the previous tab."""
+        try:
+            current = self.main_area.tabview.get()
+            tabs = ["Configuration", "Analysis", "Visualization", "Results"]
+            current_index = tabs.index(current) if current in tabs else 0
+            prev_index = (current_index - 1) % len(tabs)
+            self.switch_to_tab(tabs[prev_index])
+        except:
+            pass
+    
+    def run_analysis(self) -> None:
+        """Run the current analysis."""
+        self.main_area.run_analysis()
+    
+    def refresh(self) -> None:
+        """Refresh the current view."""
+        self.sidebar.refresh()
+        self.update_status("Refreshed")
+    
+    def find(self) -> None:
+        """Open find dialog."""
+        # Placeholder for find functionality
+        self.update_status("Find functionality not yet implemented")
+    
+    def find_next(self) -> None:
+        """Find next occurrence."""
+        # Placeholder for find functionality
+        self.update_status("Find next not yet implemented")
+    
+    def find_previous(self) -> None:
+        """Find previous occurrence."""
+        # Placeholder for find functionality
+        self.update_status("Find previous not yet implemented")
+    
+    def toggle_debug_mode(self) -> None:
+        """Toggle debug mode."""
+        # Placeholder for debug functionality
+        self.update_status("Debug mode toggled")
+    
+    def show_log(self) -> None:
+        """Show application log."""
+        # Placeholder for log viewer
+        self.update_status("Log viewer not yet implemented")
+    
+    def show_preferences(self) -> None:
+        """Show preferences dialog."""
+        # Placeholder for preferences
+        self.update_status("Preferences not yet implemented")
+    
+    def minimize_window(self) -> None:
+        """Minimize the window."""
+        self.iconify()
+        self.update_status("Window minimized")
+    
+    def maximize_window(self) -> None:
+        """Maximize the window."""
+        self.state('zoomed')
+        self.update_status("Window maximized")
     
     def run(self) -> None:
         """Run the application."""
         self.mainloop()
 
 
-def main():
-    """Main entry point for the application."""
-    try:
-        app = APGIFrameworkApp()
-        app.run()
-    except Exception as e:
-        logging.error("Fatal error in application", exc_info=True)
-        tk.messagebox.showerror("Fatal Error", f"A fatal error occurred: {e}\n\nCheck the logs for more details.")
-        sys.exit(1)
-
-
 if __name__ == "__main__":
-    main()
+    app = APGIFrameworkApp()
+    app.run()

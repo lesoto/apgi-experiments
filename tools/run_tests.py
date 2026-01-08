@@ -13,8 +13,8 @@ from pathlib import Path
 
 def setup_python_path():
     """Set up the Python path to include the project root."""
-    # Get the project root directory
-    project_root = Path(__file__).parent.absolute()
+    # Get the project root directory (go up one level from tools/)
+    project_root = Path(__file__).parent.parent.absolute()
     
     # Add project root to Python path if not already there
     if str(project_root) not in sys.path:
@@ -55,7 +55,7 @@ def run_pytest(args=None):
     
     # Run pytest
     try:
-        result = subprocess.run(cmd, env=env, cwd=Path(__file__).parent)
+        result = subprocess.run(cmd, env=env, cwd=Path(__file__).parent.parent)
         return result.returncode
     except KeyboardInterrupt:
         print("\nTest execution interrupted by user")

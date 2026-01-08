@@ -90,7 +90,7 @@ User types: extero_precision = 2.0
 Real-time validation triggered
             ↓
 Indicator updates: ✓
-```
+```python
 
 ### Step 2: Review Validation Status
 
@@ -126,7 +126,7 @@ Pre-validation check
 If invalid: Show error dialog
 If warnings: Prompt for confirmation
 If valid: Save configuration
-```
+```python
 
 ## Test Execution Validation
 
@@ -183,14 +183,14 @@ User decides whether to proceed
 ```text
 ERRORS:
   ❌ parameter_name: Value X outside valid range [min, max]. Description
-```
+```python
 
 ### Warning Message Format
 
 ```text
 WARNINGS:
   ⚠️  parameter_name: Unusual value (X) - explanation
-```
+```python
 
 ### Suggestion Message Format
 
@@ -216,7 +216,8 @@ SUGGESTIONS:
 ```
 
 ### Experimental Configuration (10 parameters)
-```
+
+```python
 ┌─────────────────────────────────────┐
 │ n_trials            [1 - 100,000]   │
 │ n_participants      [1 - 10,000]    │
@@ -234,34 +235,41 @@ SUGGESTIONS:
 ## Common Scenarios
 
 ### Scenario 1: All Valid
-```
+
+```python
 Status: ✓ All parameters valid
 Action: Proceed with confidence
-```
+```python
 
 ### Scenario 2: Some Warnings
-```
+
+```python
 Status: ⚠ Parameters valid with warnings
 Action: Review warnings, decide if intentional
-```
+```python
 
 ### Scenario 3: Some Errors
-```
+
+```python
 Status: ✗ Validation failed
 Action: Correct errors before proceeding
-```
+```python
 
 ### Scenario 4: Mixed Errors and Warnings
-```
+
+```python
 Status: ✗ Validation failed
 Action: 1. Fix errors first
+
         2. Then review warnings
         3. Validate again
-```
+
+```python
 
 ## Benefits Summary
 
 ### For Users
+
 - ✅ Immediate feedback on parameter validity
 - ✅ Clear guidance on valid ranges
 - ✅ Helpful suggestions for optimization
@@ -269,6 +277,7 @@ Action: 1. Fix errors first
 - ✅ Reduces trial-and-error
 
 ### For Developers
+
 - ✅ Consistent validation across system
 - ✅ Reusable validation components
 - ✅ Comprehensive error handling
@@ -276,6 +285,7 @@ Action: 1. Fix errors first
 - ✅ Well-documented API
 
 ### For Research
+
 - ✅ Ensures valid experimental parameters
 - ✅ Promotes best practices
 - ✅ Reduces experimental errors
@@ -285,22 +295,26 @@ Action: 1. Fix errors first
 ## Quick Reference
 
 ### Validation Levels
+
 1. **Real-time**: As you type
 2. **On-demand**: Click "Validate All"
 3. **Pre-execution**: Before running tests
 4. **On-save**: Before applying changes
 
 ### Visual Indicators
+
 - ✓ = Valid
 - ⚠ = Warning
 - ✗ = Error
 
 ### Message Types
+
 - ❌ = Error (must fix)
 - ⚠️ = Warning (review)
 - 💡 = Suggestion (optimize)
 
 ### Actions
+
 - Hover = See tooltip
 - Type = Real-time validation
 - Click "Validate All" = Comprehensive check

@@ -1,0 +1,12 @@
+{
+  "n_episodes": 100,
+  "max_steps": 1000,
+  "n_agents_per_type": 5,
+  "world_size": 20,
+  "n_food": 30,
+  "n_obstacles": 20,
+  "n_predators": 3,
+  "render": false,
+  "render_every": 10,
+  "save_dir": "data/ai_benchmarking/gui_run_20260108_123502"
+}

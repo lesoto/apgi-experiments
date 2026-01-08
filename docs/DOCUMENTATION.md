@@ -16,7 +16,7 @@ Complete documentation for the APGI Framework Falsification Testing System.
 ### User Guides
 
 | Document | Description | Audience |
-|----------|-------------|----------|
+| ---------- | ------------- | ---------- |
 | [Quick Start Guide](QUICK_START_GUIDE.md) | Get started in 5 minutes | New users |
 | [User Guide](USER_GUIDE.md) | Complete user guide covering GUI, CLI, and API usage | All users |
 | [GUI Visual Guide](GUI_VISUAL_GUIDE.md) | Visual walkthrough of GUI with diagrams | GUI users |
@@ -27,7 +27,7 @@ Complete documentation for the APGI Framework Falsification Testing System.
 ### Technical Documentation
 
 | Document | Description | Audience |
-|----------|-------------|----------|
+| ---------- | ------------- | ---------- |
 | [Error Handling Quick Reference](ERROR_HANDLING_QUICK_REFERENCE.md) | Error handling patterns and best practices | Developers |
 | [Validation Quick Reference](../VALIDATION_QUICK_REFERENCE.md) | Parameter validation reference | Developers |
 | [Parameter Validation Guide](parameter_validation_guide.md) | Detailed validation documentation | Developers |
@@ -35,7 +35,7 @@ Complete documentation for the APGI Framework Falsification Testing System.
 ### Theoretical Background
 
 | Document | Description | Audience |
-|----------|-------------|----------|
+| ---------- | ------------- | ---------- |
 | [APGI Falsification](../APGI-Falsification.md) | Theoretical basis for falsification testing | Researchers |
 | [APGI Ignition Equation](../APGI-Ignition-Equation.md) | Mathematical framework documentation | Researchers |
 | [APGI Testable Predictions](../APGI-Testable-Predictions.md) | Framework predictions and tests | Researchers |
@@ -47,7 +47,7 @@ Complete documentation for the APGI Framework Falsification Testing System.
 Located in `examples/` directory:
 
 | Example | Description | Difficulty |
-|---------|-------------|------------|
+| --------- | ------------- | ------------ |
 | [01_run_primary_falsification_test.py](../examples/01_run_primary_falsification_test.py) | Running primary falsification test | Beginner |
 | [02_batch_processing_configurations.py](../examples/02_batch_processing_configurations.py) | Batch processing multiple configurations | Intermediate |
 | [03_custom_analysis_saved_results.py](../examples/03_custom_analysis_saved_results.py) | Custom analysis of saved results | Intermediate |
@@ -72,10 +72,10 @@ See [Examples README](../examples/README.md) for detailed descriptions and usage
 2. Read [CLI Reference](CLI_REFERENCE.md) for complete documentation
 3. Try basic commands:
 
-    ```bash
-    python -m apgi_framework.cli validate-system
-    python -m apgi_framework.cli run-test primary --trials 1000
-    ```
+```bash
+python -m apgi_framework.cli validate-system
+python -m apgi_framework.cli run-test primary --trials 1000
+```
 
 **I want to use the GUI:**
 
@@ -264,7 +264,7 @@ controller.shutdown_system()
 ### Parameter Ranges
 
 | Parameter | Range | Default | Units |
-|-----------|-------|---------|-------|
+| ----------- | ------- | --------- | ------- |
 | extero_precision | 0.1-10.0 | 2.0 | dimensionless |
 | intero_precision | 0.1-10.0 | 1.5 | dimensionless |
 | threshold | 0.5-10.0 | 3.5 | dimensionless |
@@ -274,7 +274,7 @@ controller.shutdown_system()
 ### Statistical Thresholds
 
 | Metric | Threshold | Interpretation |
-|--------|-----------|----------------|
+| -------- | ----------- | ---------------- |
 | Confidence | ≥ 0.8 | High confidence |
 | P-value | < 0.05 | Significant |
 | Effect Size | ≥ 0.5 | Medium effect |
@@ -310,10 +310,10 @@ To improve documentation:
 
 ### External Resources
 
-- [Python Documentation](https://docs.python.org/3/)
-- [NumPy Documentation](https://numpy.org/doc/)
-- [SciPy Documentation](https://docs.scipy.org/doc/)
-- [Matplotlib Documentation](https://matplotlib.org/stable/contents.html)
+- [Python Documentation](<https://docs.python.org/3/>)
+- [NumPy Documentation](<https://numpy.org/doc/>)
+- [SciPy Documentation](<https://docs.scipy.org/doc/>)
+- [Matplotlib Documentation](<https://matplotlib.org/stable/contents.html>)
 
 ### Related Projects
 
@@ -324,8 +324,8 @@ To improve documentation:
 ### Support Channels
 
 1. **Documentation**: Start here
-2. [GitHub Issues](https://github.com/your-org/ipi-framework/issues): Report bugs
-3. **Email**: support@ipiframework.org
+2. [GitHub Issues](<https://github.com/your-org/ipi-framework/issues>): Report bugs
+3. **Email**: [support@ipiframework.org](mailto:support@ipiframework.org)
 4. **Validation**: System diagnostics
 5. **Logs**: Debug information
 
@@ -340,6 +340,7 @@ To improve documentation:
 5. Enable debug logging for detailed information
 
 **Quick Links:**
+
 - [Quick Start Guide](QUICK_START_GUIDE.md) - Get started fast
 - [GUI Visual Guide](GUI_VISUAL_GUIDE.md) - Visual walkthrough
 - [User Guide](USER_GUIDE.md) - Complete documentation

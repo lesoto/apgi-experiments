@@ -72,12 +72,15 @@ The system provides comprehensive psychometric evaluation:
 from apgi_framework.clinical.parameter_extraction import ClinicalParameterExtractor
 
 # Initialize extractor
+
 extractor = ClinicalParameterExtractor(participant_id="P001")
 
 # Create standard battery
+
 battery = extractor.create_standard_battery()
 
 # After data collection, extract parameters
+
 behavioral_data = {
     'visual_threshold': 0.45,
     'auditory_threshold': 0.50,
@@ -101,7 +104,7 @@ params = extractor.extract_parameters_from_battery(
 
 print(f"Threshold: {params.theta_t:.2f}")
 print(f"Interoceptive Precision: {params.pi_i:.2f}")
-```
+```json
 
 ### Quick Extraction
 
@@ -115,32 +118,38 @@ params = extract_parameters_quick(
     behavioral_data=behavioral_data,
     neural_data=neural_data
 )
-```
+```python
 
 ### Generate Clinical Report
 
 ```python
+
 # Generate comprehensive clinical report
+
 report = extractor.generate_clinical_report(params, reliability_metrics)
 print(report)
-```
+```python
 
 ### Longitudinal Tracking
 
 ```python
+
 # Track parameter changes over time
+
 parameter_history = [params_week0, params_week4, params_week8, params_week12]
 
 trends = extractor.track_longitudinal_changes(parameter_history)
 
 for param, stats in trends.items():
     print(f"{param}: {stats['change']:.2f} ({stats['percent_change']:.1f}%)")
-```
+```json
 
 ### Calculate Reliability Metrics
 
 ```python
+
 # Test-retest reliability
+
 reliability = extractor.calculate_reliability_metrics(
     params_time1, 
     params_time2,
@@ -148,7 +157,7 @@ reliability = extractor.calculate_reliability_metrics(
 )
 
 print(f"Test-retest ICC: {reliability.test_retest_icc}")
-```
+```json
 
 ## Clinical Interpretation Guidelines
 
@@ -195,13 +204,13 @@ For reliable parameter extraction:
 
 ```python
 extractor.save_parameters(params, "participant_P001_params.json")
-```
+```json
 
 ### Load Parameters
 
 ```python
 params = extractor.load_parameters("participant_P001_params.json")
-```
+```json
 
 ## Integration with Other Modules
 

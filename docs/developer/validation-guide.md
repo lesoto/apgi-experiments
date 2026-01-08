@@ -4,7 +4,7 @@
 
 ### 1. Validate Parameters
 
-```
+```python
 from apgi_framework.validation import get_validator
 
 validator = get_validator()
@@ -20,7 +20,7 @@ if not result.is_valid:
 
 ### 2. Run Health Check
 
-```
+```python
 from apgi_framework.validation import get_health_checker
 
 health_checker = get_health_checker()
@@ -37,7 +37,7 @@ from apgi_framework.falsification.primary_falsification_test import PrimaryFalsi
 
 test = PrimaryFalsificationTest()
 result = test.run_falsification_test(n_trials=100, n_participants=20)
-```
+```python
 
 ## Command Line Tools
 
@@ -45,31 +45,32 @@ result = test.run_falsification_test(n_trials=100, n_participants=20)
 
 ```bash
 python -m apgi_framework.validation.diagnostics_cli health-check
-```
+```python
 
 ### Validate Parameters
 
 ```bash
 python -m apgi_framework.validation.diagnostics_cli validate --params extero_precision=2.0 threshold=3.5
-```
+```python
 
 ### Get Parameter Info
 
 ```bash
 python -m apgi_framework.validation.diagnostics_cli param-info --parameter threshold
-```
+```python
 
 ## Common Validation Patterns
 
 ### Validate Before Creating Config
 
-```
+```python
 from apgi_framework.validation import get_validator
 from apgi_framework.config import APGIParameters
 
 validator = get_validator()
 
 # Validate first
+
 result = validator.validate_apgi_parameters(
     extero_precision=2.0,
     intero_precision=1.5,
@@ -83,7 +84,7 @@ if result.is_valid:
         intero_precision=1.5,
         # ... other params
     )
-```
+```python
 
 ### Check Specific Component
 
@@ -95,7 +96,7 @@ result = health_checker.check_component("python")
 
 if result.overall_status != "healthy":
     print("Python environment issues detected")
-```
+```python
 
 ### Add Retry to Custom Function
 
@@ -108,7 +109,7 @@ config = RetryConfig(max_attempts=3, initial_delay=1.0)
 def my_function():
     # Function that might fail transiently
     pass
-```
+```python
 
 ## Parameter Ranges
 

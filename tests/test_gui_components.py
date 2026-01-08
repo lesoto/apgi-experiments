@@ -10,6 +10,8 @@ from unittest.mock import Mock, patch, MagicMock
 import tkinter as tk
 import sys
 import os
+import logging
+from pathlib import Path
 
 # Add the project root to the path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -20,6 +22,7 @@ try:
     from apgi_gui.components.main_area import MainArea
     from apgi_gui.components.status_bar import StatusBar
     from apgi_gui.utils.config import AppConfig
+    from apgi_gui.config import DefaultParameters, ParameterConfig
     GUI_AVAILABLE = True
 except ImportError as e:
     print(f"GUI components not available: {e}")
@@ -432,6 +435,305 @@ class TestGUIIntegration(unittest.TestCase):
         self.assertIn('apgi_parameters', retrieved_data)
         self.assertIn('neural_signatures', retrieved_data)
         self.assertIn('experimental_settings', retrieved_data)
+
+
+@unittest.skipUnless(GUI_AVAILABLE, "GUI components not available")
+class TestDefaultParameters(unittest.TestCase):
+    """Test cases for the DefaultParameters configuration."""
+    
+    def setUp(self):
+        """Set up test fixtures."""
+        self.defaults = DefaultParameters()
+    
+    def test_parameter_defaults_structure(self):
+        """Test that parameter defaults have correct structure."""
+        # Check APGI parameters
+        self.assertIsInstance(self.defaults.APGI_PARAMETERS, list)
+        self.assertGreater(len(self.defaults.APGI_PARAMETERS), 0)
+        
+        for param in self.defaults.APGI_PARAMETERS:
+            self.assertIsInstance(param, ParameterConfig)
+            self.assertIsNotNone(param.label)
+            self.assertIsNotNone(param.key)
+            self.assertIsNotNone(param.default_value)
+    
+    def test_neural_signatures_structure(self):
+        """Test neural signatures configuration."""
+        self.assertIsInstance(self.defaults.NEURAL_SIGNATURES, list)
+        self.assertGreater(len(self.defaults.NEURAL_SIGNATURES), 0)
+        
+        for signature in self.defaults.NEURAL_SIGNATURES:
+            self.assertEqual(len(signature), 3)  # (label, key, description)
+            self.assertIsInstance(signature[0], str)  # label
+            self.assertIsInstance(signature[1], str)  # key
+            self.assertIsInstance(signature[2], str)  # description
+    
+    def test_experimental_settings_structure(self):
+        """Test experimental settings configuration."""
+        self.assertIsInstance(self.defaults.EXPERIMENTAL_SETTINGS, list)
+        self.assertGreater(len(self.defaults.EXPERIMENTAL_SETTINGS), 0)
+        
+        for setting in self.defaults.EXPERIMENTAL_SETTINGS:
+            self.assertIsInstance(setting, ParameterConfig)
+    
+    def test_get_parameter_defaults(self):
+        """Test getting all parameter defaults."""
+        defaults = self.defaults.get_parameter_defaults()
+        
+        self.assertIsInstance(defaults, dict)
+        self.assertGreater(len(defaults), 0)
+        
+        # Check that all APGI parameters are included
+        for param in self.defaults.APGI_PARAMETERS:
+            self.assertIn(param.key, defaults)
+            self.assertEqual(defaults[param.key], param.default_value)
+        
+        # Check that all experimental settings are included
+        for setting in self.defaults.EXPERIMENTAL_SETTINGS:
+            self.assertIn(setting.key, defaults)
+            self.assertEqual(defaults[setting.key], setting.default_value)
+    
+    def test_validate_parameter_valid_values(self):
+        """Test parameter validation with valid values."""
+        # Test valid learning rate
+        is_valid, error = self.defaults.validate_parameter('learning_rate', '0.05')
+        self.assertTrue(is_valid)
+        self.assertEqual(error, '')
+        
+        # Test valid sample rate
+        is_valid, error = self.defaults.validate_parameter('sample_rate', '500')
+        self.assertTrue(is_valid)
+        self.assertEqual(error, '')
+        
+        # Test valid somatic bias
+        is_valid, error = self.defaults.validate_parameter('somatic_bias', '-0.5')
+        self.assertTrue(is_valid)
+        self.assertEqual(error, '')
+    
+    def test_validate_parameter_invalid_values(self):
+        """Test parameter validation with invalid values."""
+        # Test invalid learning rate (too high)
+        is_valid, error = self.defaults.validate_parameter('learning_rate', '2.0')
+        self.assertFalse(is_valid)
+        self.assertIn('between', error.lower())
+        
+        # Test invalid sample rate (too low)
+        is_valid, error = self.defaults.validate_parameter('sample_rate', '50')
+        self.assertFalse(is_valid)
+        self.assertIn('between', error.lower())
+        
+        # Test invalid number format
+        is_valid, error = self.defaults.validate_parameter('learning_rate', 'abc')
+        self.assertFalse(is_valid)
+        self.assertIn('invalid', error.lower())
+    
+    def test_validate_parameter_unknown_key(self):
+        """Test parameter validation with unknown key."""
+        is_valid, error = self.defaults.validate_parameter('unknown_parameter', '1.0')
+        self.assertTrue(is_valid)  # Unknown parameters pass validation
+        self.assertEqual(error, '')
+    
+    def test_get_parameter_info(self):
+        """Test getting parameter information."""
+        # Test existing parameter
+        info = self.defaults.get_parameter_info('learning_rate')
+        self.assertIsNotNone(info)
+        self.assertIsInstance(info, ParameterConfig)
+        self.assertEqual(info.key, 'learning_rate')
+        
+        # Test non-existing parameter
+        info = self.defaults.get_parameter_info('nonexistent')
+        self.assertIsNone(info)
+    
+    def test_ui_config_structure(self):
+        """Test UI configuration structure."""
+        ui_config = self.defaults.UI_CONFIG
+        
+        self.assertIn('font_sizes', ui_config)
+        self.assertIn('spacing', ui_config)
+        self.assertIn('button_height', ui_config)
+        self.assertIn('frame_corner_radius', ui_config)
+        
+        # Check font sizes
+        font_sizes = ui_config['font_sizes']
+        self.assertIn('title', font_sizes)
+        self.assertIn('header', font_sizes)
+        self.assertIn('label', font_sizes)
+        self.assertIn('button', font_sizes)
+        
+        # Check spacing
+        spacing = ui_config['spacing']
+        self.assertIn('padding_x', spacing)
+        self.assertIn('padding_y', spacing)
+        self.assertIn('padding_large_y', spacing)
+        self.assertIn('padding_section_y', spacing)
+
+
+@unittest.skipUnless(GUI_AVAILABLE, "GUI components not available")
+class TestMainAreaWithConfiguration(unittest.TestCase):
+    """Test MainArea component with configuration system."""
+    
+    def setUp(self):
+        """Set up test fixtures."""
+        # Create a mock app
+        self.mock_app = Mock()
+        self.mock_app.update_status = Mock()
+        
+        # Create the root window and main area
+        self.root = ctk.CTk()
+        self.main_area = MainArea(self.root, self.mock_app)
+    
+    def tearDown(self):
+        """Clean up test fixtures."""
+        if hasattr(self, 'root'):
+            self.root.destroy()
+    
+    def test_main_area_uses_configuration(self):
+        """Test that MainArea uses DefaultParameters configuration."""
+        self.assertIsNotNone(self.main_area.defaults)
+        self.assertIsInstance(self.main_area.defaults, DefaultParameters)
+        self.assertIsNotNone(self.main_area.ui_config)
+    
+    def test_reset_to_defaults_uses_configuration(self):
+        """Test that reset to defaults uses configuration values."""
+        # Get default values
+        defaults = self.main_area.defaults.get_parameter_defaults()
+        
+        # Reset to defaults
+        self.main_area.reset_to_defaults()
+        
+        # Check that entries have default values
+        for key, entry in self.main_area.param_entries.items():
+            if key in defaults:
+                self.assertEqual(entry.get(), str(defaults[key]))
+        
+        for key, entry in self.main_area.exp_entries.items():
+            if key in defaults:
+                self.assertEqual(entry.get(), str(defaults[key]))
+    
+    def test_parameter_validation_on_focus_out(self):
+        """Test parameter validation when focus leaves entry."""
+        # Set an invalid value
+        self.main_area.param_entries['learning_rate'].delete(0, tk.END)
+        self.main_area.param_entries['learning_rate'].insert(0, '5.0')  # Too high
+        
+        # Trigger focus out event
+        event = Mock()
+        self.main_area._validate_parameter('learning_rate')
+        
+        # Check that status was updated with error
+        self.mock_app.update_status.assert_called()
+        call_args = self.mock_app.update_status.call_args[0]
+        self.assertIn('Validation error', call_args[0])
+        self.assertIn('learning_rate', call_args[0])
+    
+    def test_parameter_validation_valid_value(self):
+        """Test parameter validation with valid value."""
+        # Set a valid value
+        self.main_area.param_entries['learning_rate'].delete(0, tk.END)
+        self.main_area.param_entries['learning_rate'].insert(0, '0.05')
+        
+        # Trigger focus out event
+        self.main_area._validate_parameter('learning_rate')
+        
+        # Should not show error for valid value
+        # (We can't easily test absence of calls, but we can test no exception)
+        self.assertTrue(True)  # Test passes if no exception
+
+
+@unittest.skipUnless(GUI_AVAILABLE, "GUI components not available")
+class TestSidebarWithCustomTkinter(unittest.TestCase):
+    """Test Sidebar component with CustomTkinter implementation."""
+    
+    def setUp(self):
+        """Set up test fixtures."""
+        # Create a mock app
+        self.mock_app = Mock()
+        self.mock_app.new_file = Mock()
+        self.mock_app.open_file = Mock()
+        self.mock_app.save_file = Mock()
+        self.mock_app.undo = Mock()
+        self.mock_app.redo = Mock()
+        self.mock_app.toggle_theme = Mock()
+        self.mock_app.show_help = Mock()
+        self.mock_app.update_status = Mock()
+        self.mock_app.recent_files = []
+        
+        # Create the root window and sidebar
+        self.root = ctk.CTk()
+        self.sidebar = Sidebar(self.root, self.mock_app)
+    
+    def tearDown(self):
+        """Clean up test fixtures."""
+        if hasattr(self, 'root'):
+            self.root.destroy()
+    
+    def test_sidebar_uses_customtkinter_components(self):
+        """Test that sidebar uses CustomTkinter components instead of tkinter."""
+        # Check that recent_scrollable is a CustomTkinter component
+        self.assertIsNotNone(self.sidebar.recent_scrollable)
+        self.assertIsInstance(self.sidebar.recent_scrollable, ctk.CTkScrollableFrame)
+        
+        # Check that recent file buttons are CustomTkinter buttons
+        self.assertIsInstance(self.sidebar.recent_file_buttons, list)
+    
+    def test_recent_files_display_as_buttons(self):
+        """Test that recent files are displayed as buttons, not listbox items."""
+        # Add some recent files
+        test_files = [
+            Path('/test/file1.json'),
+            Path('/test/file2.json'),
+            Path('/test/very_long_filename_that_should_be_truncated.json')
+        ]
+        self.mock_app.recent_files = test_files
+        
+        # Update recent files
+        self.sidebar.update_recent_files()
+        
+        # Check that buttons were created
+        self.assertEqual(len(self.sidebar.recent_file_buttons), len(test_files))
+        
+        # Check that long filenames are truncated
+        long_file_button = self.sidebar.recent_file_buttons[2]
+        button_text = long_file_button.cget('text')
+        self.assertLess(len(button_text), 30)  # Should be truncated
+        self.assertTrue(button_text.endswith('...'))
+    
+    def test_recent_file_button_opens_file(self):
+        """Test that clicking recent file button opens the file."""
+        # Add a recent file
+        test_file = Path('/test/file1.json')
+        self.mock_app.recent_files = [test_file]
+        
+        # Update recent files
+        self.sidebar.update_recent_files()
+        
+        # Click the button
+        if self.sidebar.recent_file_buttons:
+            self.sidebar.recent_file_buttons[0].invoke()
+            
+            # Check that open_file was called with correct path
+            self.mock_app.open_file.assert_called_once_with(test_file)
+    
+    def test_tooltip_functionality(self):
+        """Test tooltip functionality for recent file buttons."""
+        # Add a recent file
+        test_file = Path('/test/long/path/to/file1.json')
+        self.mock_app.recent_files = [test_file]
+        
+        # Update recent files
+        self.sidebar.update_recent_files()
+        
+        # Test tooltip creation (by checking that the method exists and doesn't crash)
+        if self.sidebar.recent_file_buttons:
+            button = self.sidebar.recent_file_buttons[0]
+            # This should not raise an exception
+            self.sidebar._create_tooltip(button, str(test_file))
+            
+            # Test tooltip events
+            event = Mock()
+            self.sidebar._create_tooltip(button, str(test_file))
+            # The tooltip should be bound to the button
 
 
 if __name__ == '__main__':

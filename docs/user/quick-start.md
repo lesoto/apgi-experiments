@@ -30,7 +30,7 @@ System Validation: PASS
 
 **1. Launch the GUI:**
 
-```bash
+```python
 python launch_gui.py
 ```
 
@@ -42,13 +42,15 @@ python launch_gui.py
 - Wait 30-60 seconds
 
 **3. View results:**
+
 - Results appear in the right panel
 - Look for "Falsification Status: NOT FALSIFIED" or "FALSIFIED"
 
 ### Option B: Using the CLI (Recommended for Automation)
 
 **1. Run a test:**
-```bash
+
+```python
 python -m apgi_framework.cli run-test primary --trials 1000
 ```
 
@@ -58,6 +60,7 @@ Results are displayed in the terminal and saved to `results/` directory.
 ### Option C: Using Python API (Recommended for Integration)
 
 **1. Create a script:**
+
 ```python
 from apgi_framework.main_controller import MainApplicationController
 
@@ -78,7 +81,8 @@ controller.shutdown_system()
 ```
 
 **2. Run it:**
-```bash
+
+```python
 python my_first_test.py
 ```
 
@@ -87,19 +91,23 @@ python my_first_test.py
 ### Key Metrics
 
 **Falsification Status:**
+
 - `NOT FALSIFIED` = Framework survived this test ✅
 - `FALSIFIED` = Framework contradicted by evidence ⚠️
 
 **Confidence Level:**
+
 - `> 0.8` = High confidence in result
 - `0.5-0.8` = Moderate confidence
 - `< 0.5` = Low confidence (increase sample size)
 
 **P-value:**
+
 - `< 0.05` = Statistically significant
 - `≥ 0.05` = Not significant
 
 **Effect Size (Cohen's d):**
+
 - `> 0.8` = Large effect
 - `0.5-0.8` = Medium effect
 - `0.2-0.5` = Small effect
@@ -107,7 +115,7 @@ python my_first_test.py
 
 ### Example Result Interpretation
 
-```
+```text
 Falsification Status: NOT FALSIFIED
 Confidence Level: 0.87
 P-value: 0.002
@@ -116,6 +124,7 @@ Statistical Power: 0.85
 ```
 
 **What this means:**
+
 - ✅ Framework survived this test
 - ✅ High confidence (0.87)
 - ✅ Highly significant (p = 0.002)
@@ -130,7 +139,7 @@ Statistical Power: 0.85
 
 **Goal:** Run a single test with default settings.
 
-```bash
+```python
 python -m apgi_framework.cli run-test primary --trials 1000
 ```
 
@@ -140,7 +149,7 @@ python -m apgi_framework.cli run-test primary --trials 1000
 
 **Goal:** Test all falsification criteria.
 
-```bash
+```python
 python -m apgi_framework.cli run-batch --all-tests
 ```
 
@@ -150,12 +159,13 @@ python -m apgi_framework.cli run-batch --all-tests
 
 **Goal:** Test different threshold values.
 
-```
+```bash
 # Create configuration
 python -m apgi_framework.cli generate-config --output config.json
 
 # Edit config.json to set different threshold values
-# Then run:
+
+# Then run
 python -m apgi_framework.cli --config config.json run-test primary
 ```
 
@@ -165,7 +175,7 @@ python -m apgi_framework.cli --config config.json run-test primary
 
 **Goal:** Get exactly reproducible results.
 
-```bash
+```python
 python -m apgi_framework.cli run-test primary --trials 2000 --seed 42
 ```
 
@@ -192,19 +202,22 @@ python -m apgi_framework.cli run-test primary --trials 2000 --seed 42
 
 ### Try These Examples
 
-**Example 1: Batch Processing**
+#### Example 1: Batch Processing
+
 ```bash
 cd examples/
 python 02_batch_processing_configurations.py
 ```
 
-**Example 2: Custom Analysis**
+#### Example 2: Custom Analysis
+
 ```bash
 cd examples/
 python 03_custom_analysis_saved_results.py
 ```
 
-**Example 3: Validation and Error Handling**
+#### Example 3: Validation and Error Handling
+
 ```bash
 cd examples/
 python validation_and_error_handling_example.py
@@ -223,6 +236,7 @@ controller.initialize_system()  # Don't forget this!
 ### Problem: Import errors
 
 **Solution:**
+
 ```bash
 pip install -r requirements.txt
 ```
@@ -230,6 +244,7 @@ pip install -r requirements.txt
 ### Problem: GUI won't launch
 
 **Solution:**
+
 ```bash
 pip install PyQt5
 ```
@@ -237,6 +252,7 @@ pip install PyQt5
 ### Problem: Tests take too long
 
 **Solution:**
+
 ```bash
 # Reduce trial count for testing
 python -m apgi_framework.cli run-test primary --trials 100
@@ -250,7 +266,7 @@ See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for comprehensive troubleshooting g
 
 ### Common Commands
 
-```bash
+```
 # Validate system
 python -m apgi_framework.cli validate-system
 
@@ -306,16 +322,19 @@ python launch_gui.py
    - [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 
 2. **Run Diagnostics:**
+
    ```bash
    python -m apgi_framework.cli validate-system --detailed
    ```
 
 3. **Enable Debug Logging:**
+
    ```bash
    python -m apgi_framework.cli --log-level DEBUG run-test primary
    ```
 
 4. **Check Logs:**
+
    ```bash
    cat results/apgi_framework.log
    ```

@@ -16,7 +16,7 @@ Demonstrates how to run the primary falsification test from Python code:
 
 ```bash
 python examples/01_run_primary_falsification_test.py
-```
+```python
 
 **Key Features:**
 
@@ -37,9 +37,10 @@ Demonstrates batch processing across multiple parameter configurations:
 
 ```bash
 python examples/02_batch_processing_configurations.py
-```
+```python
 
 **Key Features:**
+
 - Systematic parameter exploration
 - Sensitivity analysis
 - Batch result aggregation
@@ -59,9 +60,10 @@ Demonstrates custom analysis of saved experimental results:
 
 ```bash
 python examples/03_custom_analysis_saved_results.py
-```
+```python
 
 **Key Features:**
+
 - Loading saved results from disk
 - Statistical re-analysis
 - Comparative analysis
@@ -80,9 +82,10 @@ Demonstrates how to extend the framework with custom falsification tests:
 
 ```bash
 python examples/04_extending_falsification_criteria.py
-```
+```python
 
 **Key Features:**
+
 - Creating custom falsification tests
 - Implementing novel test criteria
 - Custom result structures
@@ -105,7 +108,7 @@ Demonstrates the validation and error handling features:
 
 ```bash
 python examples/validation_and_error_handling_example.py
-```
+```python
 
 ### parameter_validation_example.py
 
@@ -115,7 +118,7 @@ Focused examples of parameter validation capabilities.
 
 ```bash
 python examples/parameter_validation_example.py
-```
+```python
 
 ## Quick Start Guide
 
@@ -125,23 +128,28 @@ python examples/parameter_validation_example.py
 from apgi_framework.main_controller import MainApplicationController
 
 # Initialize the system
+
 controller = MainApplicationController()
 controller.initialize_system()
 
 # Get falsification tests
+
 tests = controller.get_falsification_tests()
 
 # Run primary falsification test
+
 result = tests['primary'].run_test(n_trials=1000)
 
 # Display results
+
 print(f"Falsified: {result.is_falsified}")
 print(f"Confidence: {result.confidence_level:.3f}")
 print(f"P-value: {result.p_value:.6f}")
 
 # Cleanup
+
 controller.shutdown_system()
-```
+```python
 
 ### Batch Processing Multiple Configurations
 
@@ -164,7 +172,7 @@ for threshold in threshold_values:
     results.append(result)
     
     controller.shutdown_system()
-```
+```python
 
 ### Loading and Analyzing Saved Results
 
@@ -173,6 +181,7 @@ import json
 from pathlib import Path
 
 # Load results
+
 result_files = Path("results").glob("**/*_result_*.json")
 results = []
 
@@ -181,11 +190,12 @@ for file_path in result_files:
         results.append(json.load(f))
 
 # Analyze falsification rate
+
 falsified_count = sum(1 for r in results if r.get('is_falsified', False))
 falsification_rate = falsified_count / len(results)
 
 print(f"Falsification rate: {falsification_rate:.1%}")
-```
+```json
 
 ## CLI Usage Examples
 
@@ -194,40 +204,54 @@ The framework also provides a comprehensive CLI for running tests:
 ### Run Individual Test
 
 ```bash
+
 # Run primary falsification test
+
 python -m apgi_framework.cli run-test primary --trials 1000
 
 # Run with custom parameters
+
 python -m apgi_framework.cli run-test primary --trials 2000 --seed 42
-```
+```python
 
 ### Run Batch Tests
 
 ```bash
+
 # Run all tests
+
 python -m apgi_framework.cli run-batch --all-tests
 
 # Run specific tests
+
 python -m apgi_framework.cli run-batch --tests primary soma-bias
-```
+```python
 
 ### Generate Configuration
+
 ```bash
+
 # Generate default configuration
+
 python -m apgi_framework.cli generate-config --output config.json
 
 # Generate minimal configuration
+
 python -m apgi_framework.cli generate-config --template minimal --output minimal_config.json
-```
+```python
 
 ### System Validation
+
 ```bash
+
 # Run system validation
+
 python -m apgi_framework.cli validate-system
 
 # Detailed validation
+
 python -m apgi_framework.cli validate-system --detailed
-```
+```python
 
 ## Requirements
 
@@ -235,7 +259,7 @@ All examples require the APGI Framework to be properly installed with all depend
 
 ```bash
 pip install -r requirements.txt
-```
+```bash
 
 ## Additional Resources
 
@@ -254,21 +278,22 @@ pip install -r requirements.txt
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
-```
+```python
 
 **No Results Found**: Run some experiments first before trying analysis examples:
 ```bash
 python examples/01_run_primary_falsification_test.py
-```
+```python
 
 **System Validation Fails**: Check that all components are properly initialized:
 ```bash
 python -m apgi_framework.cli validate-system --detailed
-```
+```python
 
 ## Contributing
 
 To add new examples:
+
 1. Follow the existing naming convention (`##_descriptive_name.py`)
 2. Include comprehensive docstrings
 3. Add logging for progress tracking

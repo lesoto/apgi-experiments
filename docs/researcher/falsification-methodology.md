@@ -29,11 +29,11 @@ The framework is falsified if the following occurs in multiple independent labs 
 | Absence | Verification Method |
 | --- | --- |
 | Conscious reportability | • Subjective report ("Did you see/hear X?")—consistently negative |
-|  | • Objective forced-choice (above-chance performance)—at chance level |
-|  | • Post-perceptual measures (confidence ratings, wagering)—no evidence of access |
+| | • Objective forced-choice (above-chance performance)—at chance level |
+| | • Post-perceptual measures (confidence ratings, wagering)—no evidence of access |
 | AI/ACC engagement | • No significant BOLD response in anterior insula/ACC (same threshold as above) |
-|  | • Gamma-band coherence between AI/ACC and frontoparietal cortex: PLV ≤ 0.25 |
-|  | • No effective connectivity (DCM/Granger causality) showing AI/ACC drives frontoparietal activity (0–500 ms) |
+| | • Gamma-band coherence between AI/ACC and frontoparietal cortex: PLV ≤ 0.25 |
+| | • No effective connectivity (DCM/Granger causality) showing AI/ACC drives frontoparietal activity (0–500 ms) |
 
 #### Control Requirements
 
@@ -63,9 +63,9 @@ Operationalization:
 | --- | --- |
 | Conscious report | Verified via forced-choice, confidence ratings, or wagering |
 | Absence of signatures | • P3b < 2 μV |
-|  | • Gamma PLV < 0.15 |
-|  | • PCI < 0.3 |
-|  | • No frontoparietal BOLD elevation |
+| | • Gamma PLV < 0.15 |
+| | • PCI < 0.3 |
+| | • No frontoparietal BOLD elevation |
 | Occurrence | >20% of trials across multiple participants |
 
 Possible Interpretations:

@@ -3,8 +3,13 @@
 import customtkinter as ctk
 import tkinter as tk
 from pathlib import Path
-from typing import Optional, Callable, Any
+from typing import Optional, Callable, Any, Dict
 import json
+import os
+import threading
+import time
+from datetime import datetime
+import logging
 
 
 class Sidebar(ctk.CTkFrame):
@@ -19,10 +24,21 @@ class Sidebar(ctk.CTkFrame):
         """
         super().__init__(parent)
         self.app = app
+        self.logger = logging.getLogger(__name__)
+        
+        # File monitoring
+        self.file_monitor_active = False
+        self.file_monitor_thread = None
+        self.file_timestamps: Dict[str, float] = {}
+        self.monitor_interval = 2.0  # Check every 2 seconds
+        
         self.setup_ui()
+        self.start_file_monitoring()
     
     def setup_ui(self):
         """Set up the sidebar UI components."""
+        self.logger.debug("Setting up sidebar UI")
+        
         # Configure frame
         self.grid_columnconfigure(0, weight=1)
         
@@ -121,16 +137,13 @@ class Sidebar(ctk.CTkFrame):
         )
         recent_label.grid(row=0, column=0, padx=10, pady=(10, 5))
         
-        # Recent files listbox with scrollbar
-        self.recent_listbox = tk.Listbox(recent_frame, height=8)
-        self.recent_listbox.grid(row=1, column=0, padx=10, pady=5, sticky="nsew")
-        self.recent_listbox.bind('<<ListboxSelect>>', self.on_recent_select)
+        # CustomTkinter scrollable frame for recent files
+        self.recent_scrollable = ctk.CTkScrollableFrame(recent_frame, height=200)
+        self.recent_scrollable.grid(row=1, column=0, padx=10, pady=5, sticky="nsew")
+        self.recent_scrollable.grid_columnconfigure(0, weight=1)
         
-        # Configure scrollbar
-        scrollbar = tk.Scrollbar(recent_frame, orient="vertical")
-        scrollbar.grid(row=1, column=1, sticky="ns")
-        self.recent_listbox.config(yscrollcommand=scrollbar.set)
-        scrollbar.config(command=self.recent_listbox.yview)
+        # Recent files buttons (replacing tkinter Listbox)
+        self.recent_file_buttons = []
         
         # Help Section
         help_frame = ctk.CTkFrame(self)
@@ -150,27 +163,188 @@ class Sidebar(ctk.CTkFrame):
         
         # Load recent files
         self.update_recent_files()
+        
+        self.logger.debug("Sidebar UI setup completed")
     
     def update_recent_files(self):
         """Update the recent files list."""
-        self.recent_listbox.delete(0, tk.END)
+        self.logger.debug("Updating recent files list")
         
-        for file_path in self.app.recent_files:
-            self.recent_listbox.insert(tk.END, file_path.name)
+        # Clear existing buttons
+        for button in self.recent_file_buttons:
+            button.destroy()
+        self.recent_file_buttons.clear()
+        
+        # Update file timestamps for monitoring
+        self.file_timestamps.clear()
+        
+        # Create buttons for each recent file
+        for i, file_path in enumerate(self.app.recent_files):
+            # Store timestamp for monitoring
+            try:
+                if file_path.exists():
+                    self.file_timestamps[str(file_path)] = file_path.stat().st_mtime
+            except (OSError, PermissionError):
+                self.logger.warning(f"Cannot access file: {file_path}")
+                continue
+            
+            # Create button for the file
+            display_name = file_path.name
+            if len(display_name) > 30:
+                # Truncate long filenames
+                display_name = display_name[:27] + "..."
+            
+            file_button = ctk.CTkButton(
+                self.recent_scrollable,
+                text=display_name,
+                command=lambda fp=file_path: self._open_recent_file(fp),
+                height=30
+            )
+            file_button.grid(row=i, column=0, padx=5, pady=2, sticky="ew")
+            self.recent_file_buttons.append(file_button)
+            
+            # Add tooltip with full path
+            self._create_tooltip(file_button, str(file_path))
+        
+        self.logger.debug(f"Updated {len(self.recent_file_buttons)} recent files")
     
-    def on_recent_select(self, event):
-        """Handle recent file selection.
+    def _create_tooltip(self, widget, text):
+        """Create a simple tooltip for a widget.
         
         Args:
-            event: Listbox selection event
+            widget: Widget to attach tooltip to
+            text: Tooltip text
         """
-        selection = self.recent_listbox.curselection()
-        if selection:
-            index = selection[0]
-            if index < len(self.app.recent_files):
-                file_path = self.app.recent_files[index]
-                self.app.open_file(file_path)
+        def on_enter(event):
+            # Update status bar with full path
+            self.app.update_status(f"File: {text}")
+        
+        def on_leave(event):
+            # Clear status
+            self.app.update_status("Ready")
+        
+        widget.bind("<Enter>", on_enter)
+        widget.bind("<Leave>", on_leave)
+    
+    def _open_recent_file(self, file_path):
+        """Open a recent file.
+        
+        Args:
+            file_path: Path to the file to open
+        """
+        self.logger.info(f"Opening recent file: {file_path}")
+        self.app.open_file(file_path)
+    
+    def start_file_monitoring(self):
+        """Start monitoring recent files for external changes."""
+        if not self.file_monitor_active:
+            self.file_monitor_active = True
+            self.file_monitor_thread = threading.Thread(
+                target=self._monitor_files,
+                daemon=True
+            )
+            self.file_monitor_thread.start()
+    
+    def stop_file_monitoring(self):
+        """Stop file monitoring."""
+        self.file_monitor_active = False
+        if self.file_monitor_thread:
+            self.file_monitor_thread.join(timeout=1.0)
+    
+    def _monitor_files(self):
+        """Monitor files for external changes in a separate thread."""
+        while self.file_monitor_active:
+            try:
+                self._check_file_changes()
+                time.sleep(self.monitor_interval)
+            except Exception as e:
+                # Log error but continue monitoring
+                print(f"File monitoring error: {e}")
+                time.sleep(self.monitor_interval)
+    
+    def _check_file_changes(self):
+        """Check for file changes and update UI if needed."""
+        changes_detected = False
+        
+        for file_path_str, old_timestamp in self.file_timestamps.items():
+            file_path = Path(file_path_str)
+            
+            try:
+                if file_path.exists():
+                    new_timestamp = file_path.stat().st_mtime
+                    if new_timestamp > old_timestamp:
+                        # File has been modified externally
+                        changes_detected = True
+                        self.file_timestamps[file_path_str] = new_timestamp
+                        
+                        # Update UI in main thread
+                        self.after(0, lambda: self._handle_file_change(file_path))
+                else:
+                    # File was deleted
+                    changes_detected = True
+                    self.after(0, lambda: self._handle_file_deleted(file_path))
+                    
+            except (OSError, PermissionError):
+                # File might be inaccessible
+                continue
+        
+        return changes_detected
+    
+    def _handle_file_change(self, file_path: Path):
+        """Handle external file change.
+        
+        Args:
+            file_path: Path to the changed file
+        """
+        # Check if this is the currently open file
+        if hasattr(self.app, 'current_file') and self.app.current_file == file_path:
+            # Show notification to user
+            self.app.update_status(
+                f"File '{file_path.name}' was modified externally",
+                color="warning"
+            )
+            
+            # Update file timestamp
+            try:
+                self.file_timestamps[str(file_path)] = file_path.stat().st_mtime
+            except (OSError, PermissionError):
+                pass
+    
+    def _handle_file_deleted(self, file_path: Path):
+        """Handle external file deletion.
+        
+        Args:
+            file_path: Path to the deleted file
+        """
+        # Remove from timestamps
+        self.file_timestamps.pop(str(file_path), None)
+        
+        # Remove from recent files if it was deleted
+        if file_path in self.app.recent_files:
+            self.app.recent_files.remove(file_path)
+            self.app.config.save()
+            self.update_recent_files()
+            
+            # Update status
+            self.app.update_status(
+                f"File '{file_path.name}' was deleted",
+                color="warning"
+            )
+    
+    def on_recent_select(self, event):
+        """Handle recent file selection (legacy method for compatibility).
+        
+        Args:
+            event: Listbox selection event (no longer used)
+        """
+        # This method is kept for compatibility but no longer used
+        # since we replaced the Listbox with CustomTkinter buttons
+        pass
     
     def refresh(self):
         """Refresh the sidebar content."""
         self.update_recent_files()
+    
+    def __del__(self):
+        """Cleanup when sidebar is destroyed."""
+        self.stop_file_monitoring()
