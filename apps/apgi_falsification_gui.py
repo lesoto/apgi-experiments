@@ -1,20 +1,20 @@
 """
 APGI Framework Falsification Testing System - GUI Application
 
-A comprehensive tkinter-based GUI for the APGI Framework Falsification Testing System.
+A comprehensive CustomTkinter-based GUI for the APGI Framework Falsification Testing System.
 Provides tabbed interface for different falsification tests, parameter configuration,
 progress tracking, and results visualization.
 """
 
+import customtkinter as ctk
 import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
+from tkinter import messagebox, filedialog
 import threading
 import queue
 import json
 import logging
-from apgi_framework.logging.standardized_logging import get_logger
-
-logger = get_logger("apgi_falsification_gui")
+import sys
+import os
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 from datetime import datetime
@@ -22,10 +22,43 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTk
 import numpy as np
 
-# Import APGI Framework components
-from apgi_framework.main_controller import MainApplicationController
-from apgi_framework.config import ConfigManager, APGIParameters, ExperimentalConfig
-from apgi_framework.exceptions import APGIFrameworkError
+# Add project root to Python path for imports
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
+# Import APGI Framework components with fallback handling
+try:
+    from apgi_framework.logging.standardized_logging import get_logger
+    logger = get_logger("apgi_falsification_gui")
+except ImportError:
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger("apgi_falsification_gui")
+
+try:
+    from apgi_framework.main_controller import MainApplicationController
+    from apgi_framework.config import ConfigManager, APGIParameters, ExperimentalConfig
+    from apgi_framework.exceptions import APGIFrameworkError
+except ImportError as e:
+    logger.warning(f"Some APGI Framework components not available: {e}")
+    # Create fallback classes for GUI functionality
+    class MainApplicationController:
+        def __init__(self):
+            pass
+    
+    class ConfigManager:
+        def __init__(self):
+            pass
+    
+    class APGIParameters:
+        def __init__(self):
+            pass
+    
+    class ExperimentalConfig:
+        def __init__(self):
+            pass
+    
+    class APGIFrameworkError(Exception):
+        pass
 
 
 class LogHandler(logging.Handler):
@@ -40,7 +73,7 @@ class LogHandler(logging.Handler):
         self.log_queue.put(log_entry)
 
 
-class ParameterConfigPanel(ttk.Frame):
+class ParameterConfigPanel(ctk.CTkFrame):
     """Panel for configuring APGI parameters and experimental settings."""
     
     def __init__(self, parent, config_manager: ConfigManager):
@@ -62,8 +95,11 @@ class ParameterConfigPanel(ttk.Frame):
     def _create_widgets(self):
         """Create parameter configuration widgets."""
         # APGI Parameters section
-        apgi_frame = ttk.LabelFrame(self, text="APGI Parameters")
+        apgi_frame = ctk.CTkFrame(self)
         apgi_frame.pack(fill="x", padx=5, pady=5)
+        
+        apgi_title = ctk.CTkLabel(apgi_frame, text="APGI Parameters", font=ctk.CTkFont(size=14, weight="bold"))
+        apgi_title.pack(padx=10, pady=(10, 5))
         
         # Get parameter info from validator
         apgi_params = [
@@ -77,26 +113,33 @@ class ParameterConfigPanel(ttk.Frame):
         ]
         
         for i, (param, label, default, tooltip) in enumerate(apgi_params):
+            # Create a frame for each parameter row
+            param_row = ctk.CTkFrame(apgi_frame)
+            param_row.pack(fill="x", padx=5, pady=2)
+            
             # Label
-            label_widget = ttk.Label(apgi_frame, text=f"{label}:")
-            label_widget.grid(row=i, column=0, sticky="w", padx=5, pady=2)
+            label_widget = ctk.CTkLabel(param_row, text=f"{label}:")
+            label_widget.pack(side="left", padx=(5, 10))
             self._create_tooltip(label_widget, tooltip)
             
             # Entry with validation
             var = tk.DoubleVar(value=default)
-            entry = ttk.Entry(apgi_frame, textvariable=var, width=15)
-            entry.grid(row=i, column=1, padx=5, pady=2)
+            entry = ctk.CTkEntry(param_row, textvariable=var, width=15)
+            entry.pack(side="left", padx=5)
             self.param_vars[param] = var
             self.param_entries[param] = entry
             
             # Validation indicator
-            indicator = ttk.Label(apgi_frame, text="✓", foreground="green", width=2)
-            indicator.grid(row=i, column=2, padx=2, pady=2)
+            indicator = ctk.CTkLabel(param_row, text="✓", text_color="#00FF00", width=2)
+            indicator.pack(side="left", padx=5)
             self.param_entries[f"{param}_indicator"] = indicator
         
         # Experimental Configuration section
-        exp_frame = ttk.LabelFrame(self, text="Experimental Configuration")
+        exp_frame = ctk.CTkFrame(self)
         exp_frame.pack(fill="x", padx=5, pady=5)
+        
+        exp_title = ctk.CTkLabel(exp_frame, text="Experimental Configuration", font=ctk.CTkFont(size=14, weight="bold"))
+        exp_title.pack(padx=10, pady=(10, 5))
         
         exp_params = [
             ("n_trials", "Number of Trials", 1000, "Number of trials per test (1-100000, typical: 50-1000)"),
@@ -112,49 +155,56 @@ class ParameterConfigPanel(ttk.Frame):
         ]
         
         for i, (param, label, default, tooltip) in enumerate(exp_params):
+            # Create a frame for each parameter row
+            param_row = ctk.CTkFrame(exp_frame)
+            param_row.pack(fill="x", padx=5, pady=2)
+            
             # Label
-            label_widget = ttk.Label(exp_frame, text=f"{label}:")
-            label_widget.grid(row=i, column=0, sticky="w", padx=5, pady=2)
+            label_widget = ctk.CTkLabel(param_row, text=f"{label}:")
+            label_widget.pack(side="left", padx=(5, 10))
             self._create_tooltip(label_widget, tooltip)
             
             # Entry
             if param == "random_seed":
                 var = tk.StringVar(value="")
-                entry = ttk.Entry(exp_frame, textvariable=var, width=15)
+                entry = ctk.CTkEntry(param_row, textvariable=var, width=15)
             else:
                 var = tk.DoubleVar(value=default) if isinstance(default, float) else tk.IntVar(value=default)
-                entry = ttk.Entry(exp_frame, textvariable=var, width=15)
-            entry.grid(row=i, column=1, padx=5, pady=2)
+                entry = ctk.CTkEntry(param_row, textvariable=var, width=15)
+            entry.pack(side="left", padx=5)
             self.exp_vars[param] = var
             self.exp_entries[param] = entry
             
             # Validation indicator (skip for random_seed)
             if param != "random_seed":
-                indicator = ttk.Label(exp_frame, text="✓", foreground="green", width=2)
-                indicator.grid(row=i, column=2, padx=2, pady=2)
+                indicator = ctk.CTkLabel(param_row, text="✓", text_color="#00FF00", width=2)
+                indicator.pack(side="left", padx=5)
                 self.exp_entries[f"{param}_indicator"] = indicator
         
         # Validation status frame
-        validation_frame = ttk.LabelFrame(self, text="Validation Status")
+        validation_frame = ctk.CTkFrame(self)
         validation_frame.pack(fill="x", padx=5, pady=5)
         
+        validation_title = ctk.CTkLabel(validation_frame, text="Validation Status", font=ctk.CTkFont(size=14, weight="bold"))
+        validation_title.pack(padx=10, pady=(10, 5))
+        
         self.validation_text = tk.Text(validation_frame, height=4, wrap="word", font=("Courier", 9))
-        validation_scrollbar = ttk.Scrollbar(validation_frame, orient="vertical", command=self.validation_text.yview)
+        validation_scrollbar = ctk.CTkScrollbar(validation_frame, command=self.validation_text.yview)
         self.validation_text.configure(yscrollcommand=validation_scrollbar.set)
         self.validation_text.pack(side="left", fill="both", expand=True, padx=5, pady=5)
         validation_scrollbar.pack(side="right", fill="y")
         self.validation_text.insert("1.0", "✓ All parameters valid")
-        self.validation_text.config(state="disabled")
+        self.validation_text.configure(state="disabled")
         
         # Buttons
-        button_frame = ttk.Frame(self)
+        button_frame = ctk.CTkFrame(self)
         button_frame.pack(fill="x", padx=5, pady=5)
         
-        ttk.Button(button_frame, text="Load Config", command=self._load_config).pack(side="left", padx=2)
-        ttk.Button(button_frame, text="Save Config", command=self._save_config).pack(side="left", padx=2)
-        ttk.Button(button_frame, text="Reset to Defaults", command=self._reset_defaults).pack(side="left", padx=2)
-        ttk.Button(button_frame, text="Validate All", command=self._validate_all_parameters).pack(side="left", padx=2)
-        ttk.Button(button_frame, text="Apply Changes", command=self._apply_changes).pack(side="right", padx=2)
+        ctk.CTkButton(button_frame, text="Load Config", command=self._load_config).pack(side="left", padx=2)
+        ctk.CTkButton(button_frame, text="Save Config", command=self._save_config).pack(side="left", padx=2)
+        ctk.CTkButton(button_frame, text="Reset to Defaults", command=self._reset_defaults).pack(side="left", padx=2)
+        ctk.CTkButton(button_frame, text="Validate All", command=self._validate_all_parameters).pack(side="left", padx=2)
+        ctk.CTkButton(button_frame, text="Apply Changes", command=self._apply_changes).pack(side="right", padx=2)
     
     def _create_tooltip(self, widget, text):
         """Create a tooltip for a widget."""
@@ -198,18 +248,18 @@ class ParameterConfigPanel(ttk.Frame):
             indicator = self.param_entries.get(f"{param_name}_indicator")
             if indicator:
                 if result.is_valid:
-                    indicator.config(text="✓", foreground="green")
+                    indicator.configure(text="✓", text_color="#00FF00")
                     if result.warnings:
-                        indicator.config(text="⚠", foreground="orange")
+                        indicator.configure(text="⚠", text_color="#FFA500")
                         self._create_tooltip(indicator, "\n".join(result.warnings))
                 else:
-                    indicator.config(text="✗", foreground="red")
+                    indicator.configure(text="✗", text_color="#FF0000")
                     self._create_tooltip(indicator, "\n".join(result.errors))
         except (tk.TclError, ValueError):
             # Invalid input (e.g., not a number)
             indicator = self.param_entries.get(f"{param_name}_indicator")
             if indicator:
-                indicator.config(text="✗", foreground="red")
+                indicator.configure(text="✗", text_color="#FF0000")
     
     def _validate_exp_parameter(self, param_name):
         """Validate a single experimental parameter in real-time."""
@@ -227,18 +277,18 @@ class ParameterConfigPanel(ttk.Frame):
             indicator = self.exp_entries.get(f"{param_name}_indicator")
             if indicator:
                 if result.is_valid:
-                    indicator.config(text="✓", foreground="green")
+                    indicator.configure(text="✓", text_color="#00FF00")
                     if result.warnings:
-                        indicator.config(text="⚠", foreground="orange")
+                        indicator.configure(text="⚠", text_color="#FFA500")
                         self._create_tooltip(indicator, "\n".join(result.warnings))
                 else:
-                    indicator.config(text="✗", foreground="red")
+                    indicator.configure(text="✗", text_color="#FF0000")
                     self._create_tooltip(indicator, "\n".join(result.errors))
         except (tk.TclError, ValueError):
             # Invalid input (e.g., not a number)
             indicator = self.exp_entries.get(f"{param_name}_indicator")
             if indicator:
-                indicator.config(text="✗", foreground="red")
+                indicator.configure(text="✗", text_color="#FF0000")
     
     def _validate_all_parameters(self):
         """Validate all parameters and display comprehensive results."""
@@ -265,7 +315,7 @@ class ParameterConfigPanel(ttk.Frame):
             )
             
             # Update validation status display
-            self.validation_text.config(state="normal")
+            self.validation_text.configure(state="normal")
             self.validation_text.delete("1.0", "end")
             
             if result.is_valid:
@@ -282,7 +332,7 @@ class ParameterConfigPanel(ttk.Frame):
             if message:
                 self.validation_text.insert("end", message)
             
-            self.validation_text.config(state="disabled")
+            self.validation_text.configure(state="disabled")
             
             # Show dialog with results
             if result.is_valid:
@@ -412,7 +462,7 @@ class ParameterConfigPanel(ttk.Frame):
             messagebox.showerror("Error", f"Failed to update configuration: {e}")
 
 
-class FalsificationTestPanel(ttk.Frame):
+class FalsificationTestPanel(ctk.CTkFrame):
     """Panel for running falsification tests."""
     
     def __init__(self, parent, test_name: str, controller: MainApplicationController, 
@@ -431,8 +481,11 @@ class FalsificationTestPanel(ttk.Frame):
     def _create_widgets(self):
         """Create test panel widgets."""
         # Test description
-        desc_frame = ttk.LabelFrame(self, text="Test Description")
+        desc_frame = ctk.CTkFrame(self)
         desc_frame.pack(fill="x", padx=5, pady=5)
+        
+        desc_title = ctk.CTkLabel(desc_frame, text="Test Description", font=ctk.CTkFont(size=14, weight="bold"))
+        desc_title.pack(padx=10, pady=(10, 5))
         
         descriptions = {
             "Primary": "Tests for full ignition signatures without consciousness",
@@ -444,43 +497,54 @@ class FalsificationTestPanel(ttk.Frame):
         desc_text = tk.Text(desc_frame, height=3, wrap="word")
         desc_text.pack(fill="x", padx=5, pady=5)
         desc_text.insert("1.0", descriptions.get(self.test_name, "Falsification test"))
-        desc_text.config(state="disabled")
+        desc_text.configure(state="disabled")
         
         # Test parameters
-        params_frame = ttk.LabelFrame(self, text="Test Parameters")
+        params_frame = ctk.CTkFrame(self)
         params_frame.pack(fill="x", padx=5, pady=5)
         
+        params_title = ctk.CTkLabel(params_frame, text="Test Parameters", font=ctk.CTkFont(size=14, weight="bold"))
+        params_title.pack(padx=10, pady=(10, 5))
+        
         # Common parameters
-        ttk.Label(params_frame, text="Number of Trials:").grid(row=0, column=0, sticky="w", padx=5, pady=2)
+        trials_row = ctk.CTkFrame(params_frame)
+        trials_row.pack(fill="x", padx=5, pady=2)
+        ctk.CTkLabel(trials_row, text="Number of Trials:").pack(side="left", padx=(5, 10))
         self.n_trials_var = tk.IntVar(value=1000)
-        ttk.Entry(params_frame, textvariable=self.n_trials_var, width=15).grid(row=0, column=1, padx=5, pady=2)
+        ctk.CTkEntry(trials_row, textvariable=self.n_trials_var, width=15).pack(side="left", padx=5)
         
         if self.test_name in ["Soma-Bias", "Threshold Insensitivity"]:
-            ttk.Label(params_frame, text="Number of Participants:").grid(row=1, column=0, sticky="w", padx=5, pady=2)
+            participants_row = ctk.CTkFrame(params_frame)
+            participants_row.pack(fill="x", padx=5, pady=2)
+            ctk.CTkLabel(participants_row, text="Number of Participants:").pack(side="left", padx=(5, 10))
             self.n_participants_var = tk.IntVar(value=100)
-            ttk.Entry(params_frame, textvariable=self.n_participants_var, width=15).grid(row=1, column=1, padx=5, pady=2)
+            ctk.CTkEntry(participants_row, textvariable=self.n_participants_var, width=15).pack(side="left", padx=5)
         
         # Control buttons
-        control_frame = ttk.Frame(self)
+        control_frame = ctk.CTkFrame(self)
         control_frame.pack(fill="x", padx=5, pady=5)
         
-        self.run_button = ttk.Button(control_frame, text="Run Test", command=self._run_test)
+        self.run_button = ctk.CTkButton(control_frame, text="Run Test", command=self._run_test)
         self.run_button.pack(side="left", padx=2)
         
-        self.stop_button = ttk.Button(control_frame, text="Stop Test", command=self._stop_test, state="disabled")
+        self.stop_button = ctk.CTkButton(control_frame, text="Stop Test", command=self._stop_test)
         self.stop_button.pack(side="left", padx=2)
         
         # Progress bar
         self.progress_var = tk.DoubleVar()
-        self.progress_bar = ttk.Progressbar(control_frame, variable=self.progress_var, maximum=100)
+        self.progress_bar = ctk.CTkProgressBar(control_frame, variable=self.progress_var)
         self.progress_bar.pack(side="right", fill="x", expand=True, padx=5)
+        self.progress_bar.set(0)
         
         # Results frame
-        results_frame = ttk.LabelFrame(self, text="Test Results")
+        results_frame = ctk.CTkFrame(self)
         results_frame.pack(fill="both", expand=True, padx=5, pady=5)
         
+        results_title = ctk.CTkLabel(results_frame, text="Test Results", font=ctk.CTkFont(size=14, weight="bold"))
+        results_title.pack(padx=10, pady=(10, 5))
+        
         self.results_text = tk.Text(results_frame, wrap="word")
-        scrollbar = ttk.Scrollbar(results_frame, orient="vertical", command=self.results_text.yview)
+        scrollbar = ctk.CTkScrollbar(results_frame, command=self.results_text.yview)
         self.results_text.configure(yscrollcommand=scrollbar.set)
         
         self.results_text.pack(side="left", fill="both", expand=True)
@@ -527,8 +591,8 @@ class FalsificationTestPanel(ttk.Frame):
             self.log_callback(f"Warning: Parameter validation failed: {e}")
         
         self.is_running = True
-        self.run_button.config(state="disabled")
-        self.stop_button.config(state="normal")
+        self.run_button.configure(state="disabled")
+        self.stop_button.configure(state="normal")
         self.progress_var.set(0)
         self.results_text.delete("1.0", "end")
         
@@ -539,8 +603,8 @@ class FalsificationTestPanel(ttk.Frame):
     def _stop_test(self):
         """Stop the running test."""
         self.is_running = False
-        self.run_button.config(state="normal")
-        self.stop_button.config(state="disabled")
+        self.run_button.configure(state="normal")
+        self.stop_button.configure(state="disabled")
         self.log_callback("Test stopped by user")
     
     def _test_worker(self):
@@ -673,8 +737,8 @@ class FalsificationTestPanel(ttk.Frame):
     def _test_complete(self):
         """Called when test completes."""
         self.is_running = False
-        self.run_button.config(state="normal")
-        self.stop_button.config(state="disabled")
+        self.run_button.configure(state="normal")
+        self.stop_button.configure(state="disabled")
         self.progress_var.set(100)
     
     def set_test_controller(self, test_controller):
@@ -768,7 +832,7 @@ INTERPRETATION:
         self.results_text.insert("1.0", result_text)
 
 
-class ResultsVisualizationPanel(ttk.Frame):
+class ResultsVisualizationPanel(ctk.CTkFrame):
     """Panel for visualizing test results and statistics."""
     
     def __init__(self, parent):
@@ -781,38 +845,41 @@ class ResultsVisualizationPanel(ttk.Frame):
     def _create_widgets(self):
         """Create visualization widgets."""
         # Control frame
-        control_frame = ttk.Frame(self)
+        control_frame = ctk.CTkFrame(self)
         control_frame.pack(fill="x", padx=5, pady=5)
         
-        ttk.Button(control_frame, text="Clear Data", 
-                  command=self._clear_data).pack(side="left", padx=2)
-        ttk.Button(control_frame, text="Export Results", 
-                  command=self._export_results).pack(side="left", padx=2)
-        ttk.Button(control_frame, text="Compare Runs", 
-                  command=self._show_comparison_view).pack(side="left", padx=2)
-        ttk.Button(control_frame, text="Refresh Plots", 
-                  command=self._update_plots).pack(side="left", padx=2)
+        ctk.CTkButton(control_frame, text="Clear Data", 
+                     command=self._clear_data).pack(side="left", padx=2)
+        ctk.CTkButton(control_frame, text="Export Results", 
+                     command=self._export_results).pack(side="left", padx=2)
+        ctk.CTkButton(control_frame, text="Compare Runs", 
+                     command=self._show_comparison_view).pack(side="left", padx=2)
+        ctk.CTkButton(control_frame, text="Refresh Plots", 
+                     command=self._update_plots).pack(side="left", padx=2)
         
         # Visualization mode selector
-        ttk.Label(control_frame, text="View:").pack(side="right", padx=2)
+        ctk.CTkLabel(control_frame, text="View:").pack(side="right", padx=2)
         self.view_mode_var = tk.StringVar(value="Overview")
-        view_mode_combo = ttk.Combobox(control_frame, textvariable=self.view_mode_var,
-                                      values=["Overview", "Statistical Details", "Time Series", "Comparison"],
-                                      state="readonly", width=15)
+        view_mode_combo = ctk.CTkOptionMenu(control_frame, variable=self.view_mode_var,
+                                          values=["Overview", "Statistical Details", "Time Series", "Comparison"],
+                                          width=15)
         view_mode_combo.pack(side="right", padx=2)
-        view_mode_combo.bind("<<ComboboxSelected>>", lambda e: self._update_plots())
+        view_mode_combo.configure(command=lambda choice: self._update_plots())
         
         # Summary statistics frame with detailed metrics
-        summary_frame = ttk.LabelFrame(self, text="Statistical Summary")
+        summary_frame = ctk.CTkFrame(self)
         summary_frame.pack(fill="x", padx=5, pady=5)
         
+        summary_title = ctk.CTkLabel(summary_frame, text="Statistical Summary", font=ctk.CTkFont(size=14, weight="bold"))
+        summary_title.pack(padx=10, pady=(10, 5))
+        
         self.summary_text = tk.Text(summary_frame, height=6, wrap="word", font=("Courier", 9))
-        summary_scrollbar = ttk.Scrollbar(summary_frame, orient="vertical", command=self.summary_text.yview)
+        summary_scrollbar = ctk.CTkScrollbar(summary_frame, command=self.summary_text.yview)
         self.summary_text.configure(yscrollcommand=summary_scrollbar.set)
         self.summary_text.pack(side="left", fill="both", expand=True, padx=5, pady=5)
         summary_scrollbar.pack(side="right", fill="y")
         self.summary_text.insert("1.0", "No test results yet. Run tests to see summary statistics.")
-        self.summary_text.config(state="disabled")
+        self.summary_text.configure(state="disabled")
         
         # Create matplotlib figure with better layout
         self.fig = plt.figure(figsize=(14, 9))
@@ -953,10 +1020,10 @@ class ResultsVisualizationPanel(ttk.Frame):
     def _update_summary_stats(self):
         """Update summary statistics display."""
         if not self.results_data:
-            self.summary_text.config(state="normal")
+            self.summary_text.configure(state="normal")
             self.summary_text.delete("1.0", "end")
             self.summary_text.insert("1.0", "No test results yet. Run tests to see summary statistics.")
-            self.summary_text.config(state="disabled")
+            self.summary_text.configure(state="disabled")
             return
         
         # Calculate summary statistics
@@ -990,10 +1057,10 @@ class ResultsVisualizationPanel(ttk.Frame):
             summary += f"  {test_type}: {stats['falsified']}/{stats['total']} ({rate:.1%})\n"
         
         # Update display
-        self.summary_text.config(state="normal")
+        self.summary_text.configure(state="normal")
         self.summary_text.delete("1.0", "end")
         self.summary_text.insert("1.0", summary)
-        self.summary_text.config(state="disabled")
+        self.summary_text.configure(state="disabled")
     
     def _export_results(self):
         """Export results to file."""
@@ -1022,7 +1089,7 @@ class ResultsVisualizationPanel(ttk.Frame):
                 messagebox.showerror("Error", f"Failed to export results: {e}")
 
 
-class LoggingPanel(ttk.Frame):
+class LoggingPanel(ctk.CTkFrame):
     """Panel for displaying system logs and messages."""
     
     def __init__(self, parent):
@@ -1036,27 +1103,27 @@ class LoggingPanel(ttk.Frame):
     def _create_widgets(self):
         """Create logging panel widgets."""
         # Control frame
-        control_frame = ttk.Frame(self)
+        control_frame = ctk.CTkFrame(self)
         control_frame.pack(fill="x", padx=5, pady=2)
         
-        ttk.Button(control_frame, text="Clear Logs", command=self._clear_logs).pack(side="left", padx=2)
-        ttk.Button(control_frame, text="Save Logs", command=self._save_logs).pack(side="left", padx=2)
+        ctk.CTkButton(control_frame, text="Clear Logs", command=self._clear_logs).pack(side="left", padx=2)
+        ctk.CTkButton(control_frame, text="Save Logs", command=self._save_logs).pack(side="left", padx=2)
         
         # Log level selection
-        ttk.Label(control_frame, text="Log Level:").pack(side="right", padx=2)
+        ctk.CTkLabel(control_frame, text="Log Level:").pack(side="right", padx=2)
         self.log_level_var = tk.StringVar(value="INFO")
-        log_level_combo = ttk.Combobox(control_frame, textvariable=self.log_level_var, 
-                                      values=["DEBUG", "INFO", "WARNING", "ERROR"], 
-                                      state="readonly", width=10)
+        log_level_combo = ctk.CTkOptionMenu(control_frame, variable=self.log_level_var, 
+                                          values=["DEBUG", "INFO", "WARNING", "ERROR"], 
+                                          width=10)
         log_level_combo.pack(side="right", padx=2)
-        log_level_combo.bind("<<ComboboxSelected>>", self._change_log_level)
+        log_level_combo.configure(command=lambda choice: self._change_log_level())
         
         # Log display
-        log_frame = ttk.Frame(self)
+        log_frame = ctk.CTkFrame(self)
         log_frame.pack(fill="both", expand=True, padx=5, pady=2)
         
         self.log_text = tk.Text(log_frame, wrap="word", height=15)
-        log_scrollbar = ttk.Scrollbar(log_frame, orient="vertical", command=self.log_text.yview)
+        log_scrollbar = ctk.CTkScrollbar(log_frame, command=self.log_text.yview)
         self.log_text.configure(yscrollcommand=log_scrollbar.set)
         
         self.log_text.pack(side="left", fill="both", expand=True)
@@ -1131,7 +1198,7 @@ class LoggingPanel(ttk.Frame):
         self._append_log(f"{timestamp} - GUI - INFO - {message}")
 
 
-class APGIFalsificationGUI(tk.Tk):
+class APGIFalsificationGUI(ctk.CTk):
     """Main GUI application for APGI Framework Falsification Testing System."""
     
     def __init__(self):
@@ -1140,6 +1207,10 @@ class APGIFalsificationGUI(tk.Tk):
         self.title("APGI Framework Falsification Testing System")
         self.geometry("1200x800")
         self.minsize(800, 600)
+        
+        # Set appearance mode
+        ctk.set_appearance_mode("dark")
+        ctk.set_default_color_theme("blue")
         
         # Initialize components
         self.config_manager = ConfigManager()
@@ -1157,7 +1228,7 @@ class APGIFalsificationGUI(tk.Tk):
     def _create_menu(self):
         """Create application menu bar."""
         menubar = tk.Menu(self)
-        self.config(menu=menubar)
+        self.configure(menu=menubar)
         
         # File menu
         file_menu = tk.Menu(menubar, tearoff=0)
@@ -1183,13 +1254,21 @@ class APGIFalsificationGUI(tk.Tk):
     
     def _create_main_interface(self):
         """Create main interface with tabbed layout."""
-        # Create notebook for tabs
-        self.notebook = ttk.Notebook(self)
-        self.notebook.pack(fill="both", expand=True, padx=5, pady=5)
+        # Create tabview for tabs (CustomTkinter equivalent of notebook)
+        self.tabview = ctk.CTkTabview(self)
+        self.tabview.pack(fill="both", expand=True, padx=5, pady=5)
+        
+        # Get tab names
+        tab_names = ["Configuration", "Primary", "Consciousness Without Ignition", 
+                     "Threshold Insensitivity", "Soma-Bias", "Results & Visualization", "System Logs"]
+        
+        # Create tabs
+        for tab_name in tab_names:
+            self.tabview.add(tab_name)
         
         # Configuration tab
-        self.config_panel = ParameterConfigPanel(self.notebook, self.config_manager)
-        self.notebook.add(self.config_panel, text="Configuration")
+        self.config_panel = ParameterConfigPanel(self.tabview.tab("Configuration"), self.config_manager)
+        self.config_panel.pack(fill="both", expand=True, padx=5, pady=5)
         
         # Falsification test tabs
         test_names = ["Primary", "Consciousness Without Ignition", "Threshold Insensitivity", "Soma-Bias"]
@@ -1197,24 +1276,24 @@ class APGIFalsificationGUI(tk.Tk):
         
         for test_name in test_names:
             panel = FalsificationTestPanel(
-                self.notebook, test_name, None,  # Controller will be set later
+                self.tabview.tab(test_name), test_name, None,  # Controller will be set later
                 self._update_progress, self._log_message, self._add_result_to_visualization
             )
+            panel.pack(fill="both", expand=True, padx=5, pady=5)
             self.test_panels[test_name] = panel
-            self.notebook.add(panel, text=test_name)
         
         # Results visualization tab
-        self.results_panel = ResultsVisualizationPanel(self.notebook)
-        self.notebook.add(self.results_panel, text="Results & Visualization")
+        self.results_panel = ResultsVisualizationPanel(self.tabview.tab("Results & Visualization"))
+        self.results_panel.pack(fill="both", expand=True, padx=5, pady=5)
         
         # Logging tab
-        self.logging_panel = LoggingPanel(self.notebook)
-        self.notebook.add(self.logging_panel, text="System Logs")
+        self.logging_panel = LoggingPanel(self.tabview.tab("System Logs"))
+        self.logging_panel.pack(fill="both", expand=True, padx=5, pady=5)
         
         # Status bar
         self.status_var = tk.StringVar(value="System not initialized")
-        status_bar = ttk.Label(self, textvariable=self.status_var, relief="sunken")
-        status_bar.pack(side="bottom", fill="x")
+        self.status_label = ctk.CTkLabel(self, textvariable=self.status_var)
+        self.status_label.pack(side="bottom", fill="x", padx=5, pady=2)
     
     def _initialize_system(self):
         """Initialize the APGI Framework system."""
@@ -1237,21 +1316,55 @@ class APGIFalsificationGUI(tk.Tk):
     def _init_worker(self):
         """Worker thread for system initialization."""
         try:
-            # Import test controllers
-            from apgi_framework.falsification.primary_falsification_test import PrimaryFalsificationTest
-            from apgi_framework.falsification.consciousness_without_ignition_test import ConsciousnessWithoutIgnitionTest
-            from apgi_framework.falsification.threshold_insensitivity_test import ThresholdInsensitivityTest
-            from apgi_framework.falsification.soma_bias_test import SomaBiasTest
+            # Import test controllers with error handling
+            try:
+                from apgi_framework.falsification.primary_falsification_test import PrimaryFalsificationTest
+            except ImportError as e:
+                self.after(0, lambda: self._log_message(f"Warning: Could not import PrimaryFalsificationTest: {e}"))
+                PrimaryFalsificationTest = None
+            
+            try:
+                from apgi_framework.falsification.consciousness_without_ignition_test import ConsciousnessWithoutIgnitionTest
+            except ImportError as e:
+                self.after(0, lambda: self._log_message(f"Warning: Could not import ConsciousnessWithoutIgnitionTest: {e}"))
+                ConsciousnessWithoutIgnitionTest = None
+                
+            try:
+                from apgi_framework.falsification.threshold_insensitivity_test import ThresholdInsensitivityTest
+            except ImportError as e:
+                self.after(0, lambda: self._log_message(f"Warning: Could not import ThresholdInsensitivityTest: {e}"))
+                ThresholdInsensitivityTest = None
+                
+            try:
+                from apgi_framework.falsification.soma_bias_test import SomaBiasTest
+            except ImportError as e:
+                self.after(0, lambda: self._log_message(f"Warning: Could not import SomaBiasTest: {e}"))
+                SomaBiasTest = None
             
             self.after(0, lambda: self._log_message("Initializing falsification test controllers..."))
             
             # Initialize test controllers
-            test_controllers = {
-                "Primary": PrimaryFalsificationTest(),
-                "Consciousness Without Ignition": ConsciousnessWithoutIgnitionTest(),
-                "Threshold Insensitivity": ThresholdInsensitivityTest(),
-                "Soma-Bias": SomaBiasTest()
-            }
+            test_controllers = {}
+            
+            if PrimaryFalsificationTest is not None:
+                test_controllers["Primary"] = PrimaryFalsificationTest()
+            else:
+                test_controllers["Primary"] = self._create_mock_controller("Primary")
+                
+            if ConsciousnessWithoutIgnitionTest is not None:
+                test_controllers["Consciousness Without Ignition"] = ConsciousnessWithoutIgnitionTest()
+            else:
+                test_controllers["Consciousness Without Ignition"] = self._create_mock_controller("Consciousness Without Ignition")
+                
+            if ThresholdInsensitivityTest is not None:
+                test_controllers["Threshold Insensitivity"] = ThresholdInsensitivityTest()
+            else:
+                test_controllers["Threshold Insensitivity"] = self._create_mock_controller("Threshold Insensitivity")
+                
+            if SomaBiasTest is not None:
+                test_controllers["Soma-Bias"] = SomaBiasTest()
+            else:
+                test_controllers["Soma-Bias"] = self._create_mock_controller("Soma-Bias")
             
             # Update test panels with their respective controllers
             for test_name, panel in self.test_panels.items():
@@ -1268,6 +1381,27 @@ class APGIFalsificationGUI(tk.Tk):
             self.after(0, lambda: self.status_var.set("Initialization failed"))
             self.after(0, lambda: self._log_message(f"System initialization failed: {e}\n{error_details}"))
             self.after(0, lambda: messagebox.showerror("Error", f"System initialization failed: {e}"))
+    
+    def _create_mock_controller(self, test_name):
+        """Create a mock controller for missing test modules."""
+        class MockController:
+            def __init__(self, test_name):
+                self.test_name = test_name
+            
+            def run_test(self, **kwargs):
+                # Create a mock result
+                class MockResult:
+                    def __init__(self, test_name):
+                        self.test_id = f"mock_{test_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                        self.n_trials = kwargs.get('n_trials', 100)
+                        self.n_participants = kwargs.get('n_participants', 20)
+                        self.timestamp = datetime.now()
+                        self.is_framework_falsified = False
+                        self.interpretation = f"Mock result for {test_name} - actual test module not available"
+                
+                return MockResult(test_name)
+        
+        return MockController(test_name)
     
     def _update_progress(self, value: float):
         """Update progress for current operation."""

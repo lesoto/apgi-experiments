@@ -7,9 +7,9 @@
 3. [GUI User Guide](#gui-user-guide)
 4. [CLI User Guide](#cli-user-guide)
 5. [Understanding Results](#understanding-results)
-6. [Common Workflows](#common-workflows)
-7. [Troubleshooting](#troubleshooting)
-8. [Best Practices](#best-practices)
+6. [Data Management](#data-management)
+7. [Reporting Results](#reporting-results)
+8. [Additional Resources](#additional-resources)
 
 ## Introduction
 
@@ -402,17 +402,17 @@ results/
     └── ...
 ```
 
-2. **Use Descriptive Filenames**
+1. **Use Descriptive Filenames**
    - Include date, test type, and key parameters
    - Example: `primary_test_threshold3.5_20250107.json`
 
-3. **Backup Important Results**
+2. **Backup Important Results**
 
    - Regularly backup results directory
    - Use version control for configurations
    - Archive completed experiments
 
-4. **Document Experiments**
+3. **Document Experiments**
    - Keep lab notebook or README
    - Document rationale for parameter choices
    - Note any anomalies or issues

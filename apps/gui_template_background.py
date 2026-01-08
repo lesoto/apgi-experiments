@@ -23,23 +23,41 @@ from enum import Enum
 
 # APGI Framework imports
 try:
-    # Core modules
-    from apgi_framework.main_controller import MainApplicationController
-    from apgi_framework.core.equation import APGIEquation
-    from apgi_framework.core.precision import PrecisionCalculator
-    from apgi_framework.core.prediction_error import PredictionErrorProcessor
-    from apgi_framework.core.somatic_marker import SomaticMarkerEngine
-    from apgi_framework.core.threshold import ThresholdManager
+    # Add project root to Python path
+    project_root = Path(__file__).parent.parent
+    sys.path.insert(0, str(project_root))
+    
+    # Core modules - use correct import paths
+    from apgi_framework.core import APGIEquation, PrecisionCalculator, PredictionErrorProcessor
+    from apgi_framework.core import SomaticMarkerEngine, ThresholdManager
+    from apgi_framework.core.data_models import APGIParameters, NeuralSignatures, ConsciousnessAssessment, FalsificationResult
     
     # Configuration and CLI
-    from apgi_framework.config import ConfigManager, APGIParameters, ExperimentalConfig
+    from apgi_framework.config import APGIParameters as ConfigParameters
     from apgi_framework.cli import APGIFrameworkCLI
     
-    # Data models and management
-    from apgi_framework.core.data_models import FalsificationResult, NeuralSignatures, ConsciousnessAssessment
-    from apgi_framework.data.data_manager import IntegratedDataManager
-    from apgi_framework.data.report_generator import ReportGenerator
-    from apgi_framework.data.visualizer import APGIVisualizer
+    # Main controller
+    from apgi_framework.main_controller import MainApplicationController
+    
+    # Set up available components
+    ConfigManager = ConfigParameters  # Alias for compatibility
+    ExperimentalConfig = APGIParameters  # Alias for compatibility
+    
+    # Data management - check what's available
+    try:
+        from apgi_framework.data.data_manager import IntegratedDataManager
+    except ImportError:
+        IntegratedDataManager = None
+        
+    try:
+        from apgi_framework.data.report_generator import ReportGenerator
+    except ImportError:
+        ReportGenerator = None
+        
+    try:
+        from apgi_framework.data.visualizer import APGIVisualizer
+    except ImportError:
+        APGIVisualizer = None
     
     # Falsification tests - use available classes
     try:
@@ -91,10 +109,25 @@ try:
         ClinicalParameterExtractor = None
     
     # Neural simulators
-    from apgi_framework.simulators.p3b_simulator import P3bSimulator
-    from apgi_framework.simulators.gamma_simulator import GammaSimulator
-    from apgi_framework.simulators.bold_simulator import BOLDSimulator
-    from apgi_framework.simulators.pci_calculator import PCICalculator
+    try:
+        from apgi_framework.simulators.p3b_simulator import P3bSimulator
+    except ImportError:
+        P3bSimulator = None
+        
+    try:
+        from apgi_framework.simulators.gamma_simulator import GammaSimulator
+    except ImportError:
+        GammaSimulator = None
+        
+    try:
+        from apgi_framework.simulators.bold_simulator import BOLDSimulator
+    except ImportError:
+        BOLDSimulator = None
+        
+    try:
+        from apgi_framework.simulators.pci_calculator import PCICalculator
+    except ImportError:
+        PCICalculator = None
     
     # Adaptive procedures - use available classes
     try:
@@ -111,14 +144,19 @@ except ImportError as e:
     print(f"Warning: Some APGI Framework modules not available: {e}")
     # Fallback imports for basic functionality
     try:
-        from apgi_framework import APGIEquation, PrecisionCalculator, PredictionErrorProcessor
-        from apgi_framework.config import ConfigManager, APGIParameters, ExperimentalConfig
-        from apgi_framework.cli import APGIFrameworkCLI
-        from apgi_framework.core.data_models import FalsificationResult, NeuralSignatures
-        from apgi_framework.data.data_manager import IntegratedDataManager
-        from apgi_framework.analysis.bayesian_models import BayesianParameterEstimator
-        from apgi_framework.clinical.disorder_classification import DisorderClassifier
-        from apgi_framework.adaptive.quest_plus_staircase import QuestPlusStaircase
+        # Add project root to Python path
+        project_root = Path(__file__).parent.parent
+        sys.path.insert(0, str(project_root))
+        
+        from apgi_framework.core import APGIEquation, PrecisionCalculator, PredictionErrorProcessor
+        from apgi_framework.core.data_models import APGIParameters, NeuralSignatures
+        ConfigManager = APGIParameters  # Alias for compatibility
+        APGIFrameworkCLI = None
+        IntegratedDataManager = None
+        BayesianParameterEstimator = None
+        DisorderClassifier = None
+        QuestPlusStaircase = None
+        MainApplicationController = None
     except ImportError as e2:
         print(f"Error: Even basic APGI Framework imports failed: {e2}")
         # Set all components to None for graceful degradation
@@ -131,6 +169,7 @@ except ImportError as e:
         BayesianParameterEstimator = None
         DisorderClassifier = None
         QuestPlusStaircase = None
+        MainApplicationController = None
 
 
 class ErrorSeverity(Enum):

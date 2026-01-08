@@ -7,19 +7,23 @@ This script demonstrates the APGI model through several experiments that explore
 import ast
 import matplotlib.pyplot as plt
 import numpy as np
-from models.apgi_model import APGIModel, APGIParams, plot_simulation
 from typing import List, Dict, Any, Tuple
 import argparse
 import importlib
 import sys
 from pathlib import Path
 import seaborn as sns
+
+# Add project root to Python path first
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
+# Now import modules
+from models.apgi_model import APGIModel, APGIParams, plot_simulation
 from apgi_framework.logging.standardized_logging import get_logger
 
 plt.style.use('ggplot')
 plt.rcParams['figure.facecolor'] = 'white'
- 
-sys.path.append(str(Path(__file__).parent.parent))
 
 # Initialize logger
 logger = get_logger("run_experiments")

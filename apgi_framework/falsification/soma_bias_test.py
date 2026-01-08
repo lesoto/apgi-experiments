@@ -670,3 +670,65 @@ class SomaBiasTest:
             }
         
         return participants
+    
+    def run_test(self, parameters: Optional[Dict] = None) -> SomaBiasTestResult:
+        """
+        Execute the soma-bias test with given parameters.
+        
+        Args:
+            parameters: Optional dictionary of test parameters
+                - n_trials: Number of trials to run (default: 200)
+                - n_participants: Number of participants (default: 30)
+                - confidence_threshold: Threshold for falsification confidence (default: 0.8)
+                - precision_matching_tolerance: Tolerance for precision matching (default: 0.1)
+        
+        Returns:
+            SomaBiasTestResult: Complete test results with analysis
+        """
+        if parameters is None:
+            parameters = {}
+        
+        # Extract parameters with defaults
+        n_trials = parameters.get('n_trials', 200)
+        n_participants = parameters.get('n_participants', 30)
+        confidence_threshold = parameters.get('confidence_threshold', 0.8)
+        precision_tolerance = parameters.get('precision_matching_tolerance', 0.1)
+        
+        logger.info(f"Starting Soma-Bias Test: {n_trials} trials, {n_participants} participants")
+        
+        # Generate test ID
+        test_id = f"soma_bias_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        
+        # Generate participant profiles
+        participants = self._generate_participant_profiles(n_participants)
+        
+        # Run trials
+        trial_results = []
+        for trial_idx in range(n_trials):
+            participant_id = f"participant_{(trial_idx % n_participants) + 1:02d}"
+            participant_profile = participants[participant_id]
+            
+            try:
+                trial_result = self._run_single_trial(
+                    trial_id=f"{test_id}_trial_{trial_idx:03d}",
+                    participant_id=participant_id,
+                    participant_profile=participant_profile,
+                    precision_tolerance=precision_tolerance,
+                    confidence_threshold=confidence_threshold
+                )
+                trial_results.append(trial_result)
+                
+                if trial_idx % 20 == 0:
+                    logger.info(f"Completed {trial_idx}/{n_trials} trials")
+                    
+            except Exception as e:
+                logger.error(f"Trial {trial_idx} failed: {e}")
+                # Continue with other trials
+        
+        # Analyze results
+        result = self._analyze_results(test_id, trial_results, n_trials, n_participants)
+        
+        logger.info(f"Test completed: mean β = {result.mean_beta:.3f}, "
+                   f"falsified = {result.is_framework_falsified}")
+        
+        return result

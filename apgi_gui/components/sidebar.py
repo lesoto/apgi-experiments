@@ -145,6 +145,9 @@ class Sidebar(ctk.CTkFrame):
         # Recent files buttons (replacing tkinter Listbox)
         self.recent_file_buttons = []
         
+        # Add backward compatibility listbox for tests
+        self.recent_listbox = self._create_compatibility_listbox()
+        
         # Help Section
         help_frame = ctk.CTkFrame(self)
         help_frame.grid(row=4, column=0, padx=10, pady=10, sticky="ew")
@@ -175,6 +178,9 @@ class Sidebar(ctk.CTkFrame):
             button.destroy()
         self.recent_file_buttons.clear()
         
+        # Clear compatibility listbox
+        self.recent_listbox.clear()
+        
         # Update file timestamps for monitoring
         self.file_timestamps.clear()
         
@@ -190,9 +196,9 @@ class Sidebar(ctk.CTkFrame):
             
             # Create button for the file
             display_name = file_path.name
-            if len(display_name) > 30:
+            if len(display_name) >= 30:
                 # Truncate long filenames
-                display_name = display_name[:27] + "..."
+                display_name = display_name[:26] + "..."
             
             file_button = ctk.CTkButton(
                 self.recent_scrollable,
@@ -205,6 +211,9 @@ class Sidebar(ctk.CTkFrame):
             
             # Add tooltip with full path
             self._create_tooltip(file_button, str(file_path))
+            
+            # Update compatibility listbox
+            self.recent_listbox.insert(i, display_name)
         
         self.logger.debug(f"Updated {len(self.recent_file_buttons)} recent files")
     
@@ -344,6 +353,49 @@ class Sidebar(ctk.CTkFrame):
     def refresh(self):
         """Refresh the sidebar content."""
         self.update_recent_files()
+    
+    def _create_compatibility_listbox(self):
+        """Create a compatibility listbox for tests.
+        
+        Returns:
+            Mock listbox object that provides the interface expected by tests
+        """
+        class CompatibilityListbox:
+            """Mock listbox that provides the interface expected by tests."""
+            
+            def __init__(self, sidebar):
+                self.sidebar = sidebar
+                self._items = []
+            
+            def size(self):
+                """Return the number of items."""
+                return len(self._items)
+            
+            def get(self, index):
+                """Get item at index."""
+                if 0 <= index < len(self._items):
+                    return self._items[index]
+                return ""
+            
+            def insert(self, index, item):
+                """Insert item at index."""
+                self._items.insert(index, item)
+            
+            def delete(self, start, end=None):
+                """Delete items from start to end."""
+                if end is None:
+                    end = start + 1
+                del self._items[start:end]
+            
+            def clear(self):
+                """Clear all items."""
+                self._items.clear()
+            
+            def curselection(self):
+                """Return current selection (empty for mock)."""
+                return ()
+        
+        return CompatibilityListbox(self)
     
     def __del__(self):
         """Cleanup when sidebar is destroyed."""

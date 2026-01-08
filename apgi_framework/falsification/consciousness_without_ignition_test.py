@@ -10,6 +10,7 @@ from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass
 import numpy as np
 from datetime import datetime
+import logging
 
 from ..core.equation import APGIEquation
 from ..simulators.signature_validator import SignatureValidator
@@ -545,3 +546,57 @@ class ConsciousnessWithoutIgnitionTest:
             return (f"NO FALSIFICATION: Only {total_falsifying} trials ({falsification_rate:.1%}) "
                    f"showed consciousness without ignition signatures. Results support "
                    f"the APGI Framework's prediction that consciousness requires ignition.")
+    
+    def run_test(self, parameters: Optional[Dict] = None) -> ConsciousnessWithoutIgnitionTestResult:
+        """
+        Execute the consciousness without ignition test with given parameters.
+        
+        Args:
+            parameters: Optional dictionary of test parameters
+                - n_trials: Number of trials to run (default: 100)
+                - n_participants: Number of participants (default: 25)
+                - confidence_threshold: Threshold for falsification confidence (default: 0.8)
+        
+        Returns:
+            ConsciousnessWithoutIgnitionTestResult: Complete test results with analysis
+        """
+        if parameters is None:
+            parameters = {}
+        
+        # Extract parameters with defaults
+        n_trials = parameters.get('n_trials', 100)
+        n_participants = parameters.get('n_participants', 25)
+        confidence_threshold = parameters.get('confidence_threshold', 0.8)
+        
+        logger.info(f"Starting Consciousness Without Ignition Test: {n_trials} trials, {n_participants} participants")
+        
+        # Generate test ID
+        test_id = f"consciousness_without_ignition_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        
+        # Run trials
+        trial_results = []
+        for trial_idx in range(n_trials):
+            participant_id = f"participant_{(trial_idx % n_participants) + 1:02d}"
+            
+            try:
+                trial_result = self._run_single_trial(
+                    trial_id=f"{test_id}_trial_{trial_idx:03d}",
+                    participant_id=participant_id,
+                    confidence_threshold=confidence_threshold
+                )
+                trial_results.append(trial_result)
+                
+                if trial_idx % 10 == 0:
+                    logger.info(f"Completed {trial_idx}/{n_trials} trials")
+                    
+            except Exception as e:
+                logger.error(f"Trial {trial_idx} failed: {e}")
+                # Continue with other trials
+        
+        # Analyze results
+        result = self._analyze_results(test_id, trial_results, n_trials, n_participants)
+        
+        logger.info(f"Test completed: {result.total_falsifying_trials} falsifying trials "
+                   f"({result.falsification_rate:.1%} rate), falsified = {result.is_framework_falsified}")
+        
+        return result

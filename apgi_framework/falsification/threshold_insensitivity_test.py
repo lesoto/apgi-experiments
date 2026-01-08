@@ -617,3 +617,65 @@ class ThresholdInsensitivityTest:
                    f"({insensitivity_rate:.1%}) showed insensitivity to neuromodulatory "
                    f"challenges. Results support the APGI Framework's prediction that "
                    f"ignition threshold is modulated by neuromodulatory systems.")
+    
+    def run_test(self, parameters: Optional[Dict] = None) -> ThresholdInsensitivityTestResult:
+        """
+        Execute the threshold insensitivity test with given parameters.
+        
+        Args:
+            parameters: Optional dictionary of test parameters
+                - n_trials: Number of trials to run (default: 150)
+                - n_participants: Number of participants (default: 25)
+                - confidence_threshold: Threshold for falsification confidence (default: 0.75)
+                - drug_conditions: List of drug types to test (default: all available)
+        
+        Returns:
+            ThresholdInsensitivityTestResult: Complete test results with analysis
+        """
+        if parameters is None:
+            parameters = {}
+        
+        # Extract parameters with defaults
+        n_trials = parameters.get('n_trials', 150)
+        n_participants = parameters.get('n_participants', 25)
+        confidence_threshold = parameters.get('confidence_threshold', 0.75)
+        drug_conditions = parameters.get('drug_conditions', [
+            DrugType.PLACEBO, DrugType.PROPRANOLOL, DrugType.L_DOPA, 
+            DrugType.SSRI, DrugType.PHYSOSTIGMINE
+        ])
+        
+        logger.info(f"Starting Threshold Insensitivity Test: {n_trials} trials, "
+                   f"{n_participants} participants, {len(drug_conditions)} drug conditions")
+        
+        # Generate test ID
+        test_id = f"threshold_insensitivity_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        
+        # Run trials
+        trial_results = []
+        for trial_idx in range(n_trials):
+            participant_id = f"participant_{(trial_idx % n_participants) + 1:02d}"
+            drug_condition = drug_conditions[trial_idx % len(drug_conditions)]
+            
+            try:
+                trial_result = self._run_single_trial(
+                    trial_id=f"{test_id}_trial_{trial_idx:03d}",
+                    participant_id=participant_id,
+                    drug_condition=drug_condition,
+                    confidence_threshold=confidence_threshold
+                )
+                trial_results.append(trial_result)
+                
+                if trial_idx % 15 == 0:
+                    logger.info(f"Completed {trial_idx}/{n_trials} trials")
+                    
+            except Exception as e:
+                logger.error(f"Trial {trial_idx} failed: {e}")
+                # Continue with other trials
+        
+        # Analyze results
+        result = self._analyze_results(test_id, trial_results, n_trials, n_participants, drug_conditions)
+        
+        logger.info(f"Test completed: {result.total_insensitive_trials} insensitive trials "
+                   f"({result.insensitivity_rate:.1%} rate), falsified = {result.is_framework_falsified}")
+        
+        return result

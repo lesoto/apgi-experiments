@@ -57,19 +57,16 @@ ERROR: Could not find a version that satisfies the requirement...
    ```
 
 4. **Use virtual environment**:
-
    ```bash
-
    python -m venv venv
    # On Windows:
    .\venv\Scripts\activate
    # On Unix/macOS:
    # source venv/bin/activate
    pip install -r requirements.txt
-
    ```
-```python
 
+```bash
 python --version
 ```
 
@@ -77,7 +74,7 @@ python --version
 
 **Symptoms**:
 
-```
+```text
 ModuleNotFoundError: No module named 'apgi_framework'
 ```
 
@@ -92,38 +89,31 @@ ModuleNotFoundError: No module named 'apgi_framework'
 1. **Add to Python path**:
 
 ```python
-
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
-
 ```
 
 2. **Check Python interpreter**:
 
 ```bash
-
 which python  # On Windows: where python
 python -c "import sys; print(sys.executable)"
-
 ```
 
 3. **Reinstall in correct environment**:
 
 ```python
-
 pip uninstall apgi-framework
 pip install -e .  # Install in development mode
-
 ```
 
 ### Problem: Missing system dependencies
 
 **Symptoms**:
-```python
 
+```text
 ImportError: libGL.so.1: cannot open shared object file
-
 ```
 
 **Causes**:
@@ -133,18 +123,16 @@ ImportError: libGL.so.1: cannot open shared object file
 **Solutions**:
 
 **Ubuntu/Debian**:
-```bash
 
+```bash
 sudo apt-get update
 sudo apt-get install python3-pyqt5 libgl1-mesa-glx
-
 ```
 
 **macOS**:
+
 ```bash
-
 brew install python-tk
-
 ```
 
 **Windows**:

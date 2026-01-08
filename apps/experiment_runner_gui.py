@@ -9,9 +9,14 @@ import importlib
 import sys
 import queue
 from typing import Any, Dict
+from pathlib import Path
 
 import matplotlib
 matplotlib.use("Agg")
+
+# Add tools directory to Python path
+tools_dir = Path(__file__).parent.parent / "tools"
+sys.path.insert(0, str(tools_dir))
 
 from run_experiments import get_available_experiments, run_experiment
 

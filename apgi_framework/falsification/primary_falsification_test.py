@@ -506,3 +506,57 @@ class PrimaryFalsificationTest:
         else:
             return ("NO FALSIFICATION: No trials showed full ignition signatures without "
                    "consciousness. Results support the APGI Framework's predictions.")
+    
+    def run_test(self, parameters: Optional[Dict] = None) -> FalsificationTestResult:
+        """
+        Execute the primary falsification test with given parameters.
+        
+        Args:
+            parameters: Optional dictionary of test parameters
+                - n_trials: Number of trials to run (default: 100)
+                - n_participants: Number of participants (default: 20)
+                - confidence_threshold: Threshold for falsification confidence (default: 0.7)
+        
+        Returns:
+            FalsificationTestResult: Complete test results with analysis
+        """
+        if parameters is None:
+            parameters = {}
+        
+        # Extract parameters with defaults
+        n_trials = parameters.get('n_trials', 100)
+        n_participants = parameters.get('n_participants', 20)
+        confidence_threshold = parameters.get('confidence_threshold', 0.7)
+        
+        logger.info(f"Starting Primary Falsification Test: {n_trials} trials, {n_participants} participants")
+        
+        # Generate test ID
+        test_id = f"primary_falsification_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        
+        # Run trials
+        trial_results = []
+        for trial_idx in range(n_trials):
+            participant_id = f"participant_{(trial_idx % n_participants) + 1:02d}"
+            
+            try:
+                trial_result = self._run_single_trial(
+                    trial_id=f"{test_id}_trial_{trial_idx:03d}",
+                    participant_id=participant_id,
+                    confidence_threshold=confidence_threshold
+                )
+                trial_results.append(trial_result)
+                
+                if trial_idx % 10 == 0:
+                    logger.info(f"Completed {trial_idx}/{n_trials} trials")
+                    
+            except Exception as e:
+                logger.error(f"Trial {trial_idx} failed: {e}")
+                # Continue with other trials
+        
+        # Analyze results
+        result = self._analyze_results(test_id, trial_results, n_trials, n_participants)
+        
+        logger.info(f"Test completed: {result.total_falsifying_trials} falsifying trials "
+                   f"({result.falsification_rate:.1%} rate)")
+        
+        return result

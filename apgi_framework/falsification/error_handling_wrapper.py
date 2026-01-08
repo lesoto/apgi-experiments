@@ -643,57 +643,48 @@ def get_error_handling_status() -> Dict[str, Any]:
     }
 
 
-def log_test_execution(test_name: str, 
-                      start_time: datetime,
-                      end_time: datetime,
-                      success: bool,
-                      error: Optional[Exception] = None,
-                      additional_info: Optional[Dict[str, Any]] = None):
+def log_test_execution(func: Callable) -> Callable:
     """
-    Log comprehensive test execution details.
+    Decorator that logs comprehensive test execution details.
     
     Args:
-        test_name: Name of the test
-        start_time: Test start time
-        end_time: Test end time
-        success: Whether test succeeded
-        error: Exception if test failed
-        additional_info: Additional information to log
+        func: Function to decorate
+        
+    Returns:
+        Decorated function with execution logging
     """
-    duration = (end_time - start_time).total_seconds()
-    
-    # Create execution log entry
-    log_entry = {
-        'test_name': test_name,
-        'start_time': start_time,
-        'end_time': end_time,
-        'duration_seconds': duration,
-        'success': success
-    }
-    
-    if additional_info:
-        log_entry.update(additional_info)
-    
-    if success:
-        logger.info(f"✓ Test '{test_name}' completed successfully in {duration:.2f}s")
-        logger.debug(f"Execution details: {log_entry}")
-    else:
-        logger.error(f"✗ Test '{test_name}' failed after {duration:.2f}s")
-        if error:
+    @wraps(func)
+    def wrapper(*args, **kwargs) -> Any:
+        start_time = datetime.now()
+        test_name = func.__name__
+        
+        try:
+            result = func(*args, **kwargs)
+            end_time = datetime.now()
+            success = True
+            error = None
+            
+            # Log successful execution
+            duration = (end_time - start_time).total_seconds()
+            logger.info(f"✓ Test '{test_name}' completed successfully in {duration:.2f}s")
+            
+            return result
+            
+        except Exception as e:
+            end_time = datetime.now()
+            success = False
+            error = e
+            
+            # Log failed execution
+            duration = (end_time - start_time).total_seconds()
+            logger.error(f"✗ Test '{test_name}' failed after {duration:.2f}s")
             logger.error(f"Error type: {type(error).__name__}")
             logger.error(f"Error message: {str(error)}")
             logger.debug(f"Full traceback:\n{traceback.format_exc()}")
             
-            # Add error details to log entry
-            log_entry['error_type'] = type(error).__name__
-            log_entry['error_message'] = str(error)
-            log_entry['traceback'] = traceback.format_exc()
-        
-        logger.debug(f"Execution details: {log_entry}")
-        
-        # Log to recovery manager
-        recovery_manager = get_recovery_manager()
-        recovery_manager.log_error(error if error else Exception("Test failed"), log_entry)
+            raise
+    
+    return wrapper
 
 
 def create_error_report(test_name: str, 
