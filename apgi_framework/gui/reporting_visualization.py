@@ -13,8 +13,17 @@ import csv
 import json
 import logging
 
-from ..data.parameter_estimation_models import SessionData, ParameterEstimates
-from ..data.parameter_estimation_dao import ParameterEstimationDAO
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+try:
+    from ..data.parameter_estimation_models import SessionData, ParameterEstimates
+    from ..data.parameter_estimation_dao import ParameterEstimationDAO
+except ImportError:
+    # Handle relative import when run directly
+    from apgi_framework.data.parameter_estimation_models import SessionData, ParameterEstimates
+    from apgi_framework.data.parameter_estimation_dao import ParameterEstimationDAO
 
 logger = logging.getLogger(__name__)
 

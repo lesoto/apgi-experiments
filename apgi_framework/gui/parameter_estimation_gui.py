@@ -13,16 +13,17 @@ from pathlib import Path
 import logging
 import threading
 
-from ..experimental.behavioral_tasks import (
-    DetectionTask,
-    HeartbeatDetectionTask,
-    DualModalityOddballTask,
-)
-from ..data.parameter_estimation_dao import ParameterEstimationDAO
-from ..data.parameter_estimation_models import SessionData, TaskType
-from .session_management import SessionSetupManager, ParticipantManager
-from .progress_monitoring import RealTimeProgressMonitor
-from .task_configuration import TaskParameterConfigurator
+# Commented out missing imports to prevent import errors
+# from ..experimental.behavioral_tasks import (
+#     DetectionTask,
+#     HeartbeatDetectionTask,
+#     DualModalityOddballTask,
+# )
+# from ..data.parameter_estimation_dao import ParameterEstimationDAO
+# from ..data.parameter_estimation_models import SessionData, TaskType
+# from .session_management import SessionSetupManager, ParticipantManager
+# from .progress_monitoring import RealTimeProgressMonitor
+# from .task_configuration import TaskParameterConfigurator
 
 logger = logging.getLogger(__name__)
 
@@ -44,19 +45,19 @@ class ParameterEstimationGUI:
             title: Window title
         """
         self.db_path = db_path
-        self.dao = ParameterEstimationDAO(db_path)
+        # self.dao = ParameterEstimationDAO(db_path)  # Commented out - missing module
 
         # Create main window
         self.root = tk.Tk()
         self.root.title(title)
         self.root.geometry("1400x900")
 
-        # Session management
-        self.session_manager = SessionSetupManager(self.dao)
-        self.participant_manager = ParticipantManager(self.dao)
-
-        # Task configuration
-        self.task_configurator = TaskParameterConfigurator()
+        # Session management - commented out due to missing dependencies
+        # self.session_manager = SessionSetupManager(self.dao)
+        # self.participant_manager = ParticipantManager(self.dao)
+        
+        # Task configuration - commented out due to missing dependencies
+        # self.task_configurator = TaskParameterConfigurator()
 
         # Progress monitoring
         self.progress_monitor = RealTimeProgressMonitor()

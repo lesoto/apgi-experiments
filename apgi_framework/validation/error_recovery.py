@@ -7,12 +7,12 @@ Provides automatic error recovery mechanisms and retry logic for transient failu
 from typing import Callable, Any, Optional, List, Type
 from functools import wraps
 import time
-import logging
 from datetime import datetime
 
 from ..exceptions import APGIFrameworkError, SimulationError, DataError
+from ..logging.standardized_logging import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class RetryConfig:

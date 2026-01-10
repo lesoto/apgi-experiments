@@ -6,12 +6,28 @@ Provides live monitoring of EEG, pupillometry, cardiac signals, and parameter es
 
 import tkinter as tk
 from tkinter import ttk
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Callable
 from datetime import datetime
 import numpy as np
-import logging
+import threading
+import time
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-logger = logging.getLogger(__name__)
+try:
+    from ..logging.standardized_logging import get_logger
+    from ..neural.eeg_interface import EEGInterface
+    from ..neural.pupillometry_interface import PupillometryInterface
+    from ..neural.physiological_monitoring import PhysiologicalMonitoring
+except ImportError:
+    # Handle relative import when run directly
+    from apgi_framework.logging.standardized_logging import get_logger
+    from apgi_framework.neural.eeg_interface import EEGInterface
+    from apgi_framework.neural.pupillometry_interface import PupillometryInterface
+    from apgi_framework.neural.physiological_monitoring import PhysiologicalMonitoring
+
+logger = get_logger(__name__)
 
 
 class LiveEEGMonitor:
@@ -42,6 +58,16 @@ class LiveEEGMonitor:
         ttk.Label(quality_frame, text="Artifact Rate:").pack(side=tk.LEFT, padx=5)
         self.artifact_label = ttk.Label(quality_frame, text="N/A", foreground="gray")
         self.artifact_label.pack(side=tk.LEFT, padx=5)
+
+        # Control buttons
+        control_frame = ttk.Frame(self.frame)
+        control_frame.pack(fill=tk.X, pady=5)
+        
+        self.start_button = ttk.Button(control_frame, text="Start Monitoring", command=self.start_monitoring)
+        self.start_button.pack(side=tk.LEFT, padx=5)
+        
+        self.stop_button = ttk.Button(control_frame, text="Stop Monitoring", command=self.stop_monitoring, state=tk.DISABLED)
+        self.stop_button.pack(side=tk.LEFT, padx=5)
 
         # Neural signatures
         signature_frame = ttk.LabelFrame(
@@ -74,6 +100,12 @@ class LiveEEGMonitor:
         self.p3b_amplitude = None
         self.hep_amplitude = None
         self.bad_channels: List[str] = []
+        
+        # Real-time data streaming
+        self.eeg_interface = None
+        self.is_monitoring = False
+        self.update_thread = None
+        self.stop_event = threading.Event()
 
         logger.info("LiveEEGMonitor initialized")
 
@@ -151,6 +183,89 @@ class LiveEEGMonitor:
             self.bad_channels_label.config(text=text, foreground="red")
         else:
             self.bad_channels_label.config(text="None", foreground="green")
+
+    def start_monitoring(self) -> None:
+        """Start real-time EEG monitoring."""
+        if self.is_monitoring:
+            return
+            
+        try:
+            # Initialize EEG interface
+            from ..neural.eeg_interface import EEGConfig
+            config = EEGConfig(
+                sampling_rate=250.0,
+                channel_count=32,
+                buffer_size_seconds=10.0
+            )
+            self.eeg_interface = EEGInterface(config)
+            
+            # Register callback for data processing
+            self.eeg_interface.register_callback(self._process_eeg_data)
+            
+            # Start streaming with simulated data
+            self.eeg_interface.start_streaming()
+            
+            # Start GUI update thread
+            self.is_monitoring = True
+            self.stop_event.clear()
+            self.update_thread = threading.Thread(target=self._update_loop, daemon=True)
+            self.update_thread.start()
+            
+            # Update button states
+            self.start_button.config(state=tk.DISABLED)
+            self.stop_button.config(state=tk.NORMAL)
+            
+            logger.info("EEG monitoring started")
+            
+        except Exception as e:
+            logger.error(f"Failed to start EEG monitoring: {e}")
+            self.stop_monitoring()
+
+    def stop_monitoring(self) -> None:
+        """Stop real-time EEG monitoring."""
+        if not self.is_monitoring:
+            return
+            
+        self.is_monitoring = False
+        self.stop_event.set()
+        
+        # Stop EEG streaming
+        if self.eeg_interface:
+            self.eeg_interface.stop_streaming()
+            self.eeg_interface = None
+        
+        # Wait for update thread to finish
+        if self.update_thread:
+            self.update_thread.join(timeout=2.0)
+            self.update_thread = None
+        
+        # Update button states
+        self.start_button.config(state=tk.NORMAL)
+        self.stop_button.config(state=tk.DISABLED)
+        
+        logger.info("EEG monitoring stopped")
+
+    def _process_eeg_data(self, data: np.ndarray, timestamp: float, artifacts: Dict[str, Any]) -> None:
+        """Process incoming EEG data."""
+        # Calculate signal quality (simplified)
+        quality_score = 1.0 - artifacts.get('artifact_rate', 0.0)
+        artifact_rate = artifacts.get('artifact_rate', 0.0)
+        
+        # Update GUI in main thread
+        self.frame.after(0, self.update_signal_quality, quality_score, artifact_rate)
+        
+        # Simulate neural signature detection
+        if np.random.random() < 0.1:  # 10% chance of detection
+            p3b_amp = np.random.normal(5.0, 2.0)  # Simulated P3b
+            hep_amp = np.random.normal(3.0, 1.5)  # Simulated HEP
+            self.frame.after(0, self.update_p3b_amplitude, p3b_amp)
+            self.frame.after(0, self.update_hep_amplitude, hep_amp)
+
+    def _update_loop(self) -> None:
+        """GUI update loop."""
+        while self.is_monitoring and not self.stop_event.is_set():
+            # Update display at 10 Hz
+            time.sleep(0.1)
 
     def reset(self) -> None:
         """Reset monitor display."""

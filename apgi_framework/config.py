@@ -59,6 +59,78 @@ class APGIParameters:
 
 
 @dataclass
+class RetryConfig:
+    """Configuration for retry behavior."""
+    
+    max_attempts: int = 3
+    initial_delay: float = 1.0
+    backoff_factor: float = 2.0
+    max_delay: float = 30.0
+
+
+@dataclass
+class PerformanceThresholds:
+    """Performance thresholds for validation."""
+    
+    # Response time thresholds
+    min_rt: float = 0.1  # seconds
+    max_rt: float = 10.0  # seconds
+    outlier_iqr_multiplier: float = 3.0
+    
+    # Accuracy thresholds
+    min_accuracy: float = 0.5
+    target_accuracy: float = 0.8
+    
+    # Consistency thresholds
+    min_consistency: float = 0.7
+    stability_threshold: float = 0.8
+    
+    # Training criteria
+    min_learning_curve_slope: float = 0.1
+    min_performance_stability: float = 0.7
+    
+    # Metacognitive thresholds
+    max_confidence_variance: float = 0.25
+    min_meta_d_prime: float = 0.0
+    
+    # Statistical thresholds
+    confidence_level: float = 0.95  # for CI calculations
+    min_reliability_insufficient: float = 0.3
+    min_reliability_moderate: float = 0.5
+    
+    # Fatigue and learning modifiers
+    fatigue_impact_factor: float = 0.2
+    learning_improvement_factor: float = 0.1
+    difficulty_impact_factor: float = 0.3
+    impulsivity_impact_factor: float = 0.1
+    motivation_impact_factor: float = 0.1
+
+
+@dataclass
+class StimulusParameters:
+    """Parameters for stimulus generation."""
+    
+    # QUEST+ parameters
+    stimulus_min: float = 0.01
+    stimulus_max: float = 1.0
+    stimulus_steps: int = 50
+    threshold_min: float = 0.01
+    threshold_max: float = 1.0
+    threshold_steps: int = 40
+    slope_min: float = 1.0
+    slope_max: float = 10.0
+    slope_steps: int = 20
+    lapse_rate: float = 0.02
+    guess_rate: float = 0.5
+    
+    # Convergence criteria
+    min_trials: int = 20
+    max_trials: int = 200
+    convergence_criterion: float = 0.05
+    min_reversals: int = 4
+
+
+@dataclass
 class ExperimentalConfig:
     """Configuration for experimental parameters and settings."""
 
@@ -120,6 +192,9 @@ class ConfigManager:
         self.config_path = config_path
         self.apgi_params = APGIParameters()
         self.experimental_config = ExperimentalConfig()
+        self.retry_config = RetryConfig()
+        self.performance_thresholds = PerformanceThresholds()
+        self.stimulus_params = StimulusParameters()
 
         if config_path and os.path.exists(config_path):
             self.load_config(config_path)
@@ -147,6 +222,21 @@ class ConfigManager:
                 exp_data = config_data["experimental_config"]
                 self.experimental_config = ExperimentalConfig(**exp_data)
 
+            # Load retry configuration
+            if "retry_config" in config_data:
+                retry_data = config_data["retry_config"]
+                self.retry_config = RetryConfig(**retry_data)
+
+            # Load performance thresholds
+            if "performance_thresholds" in config_data:
+                perf_data = config_data["performance_thresholds"]
+                self.performance_thresholds = PerformanceThresholds(**perf_data)
+
+            # Load stimulus parameters
+            if "stimulus_parameters" in config_data:
+                stim_data = config_data["stimulus_parameters"]
+                self.stimulus_params = StimulusParameters(**stim_data)
+
         except (json.JSONDecodeError, TypeError, ValueError) as e:
             raise ConfigurationError(f"Invalid configuration file: {e}")
         except FileNotFoundError:
@@ -161,6 +251,9 @@ class ConfigManager:
         config_data = {
             "apgi_parameters": self.apgi_params.__dict__,
             "experimental_config": self.experimental_config.__dict__,
+            "retry_config": self.retry_config.__dict__,
+            "performance_thresholds": self.performance_thresholds.__dict__,
+            "stimulus_parameters": self.stimulus_params.__dict__,
         }
 
         # Create directory if it doesn't exist
@@ -176,6 +269,18 @@ class ConfigManager:
     def get_experimental_config(self) -> ExperimentalConfig:
         """Get current experimental configuration."""
         return self.experimental_config
+
+    def get_retry_config(self) -> RetryConfig:
+        """Get current retry configuration."""
+        return self.retry_config
+
+    def get_performance_thresholds(self) -> PerformanceThresholds:
+        """Get current performance thresholds."""
+        return self.performance_thresholds
+
+    def get_stimulus_parameters(self) -> StimulusParameters:
+        """Get current stimulus parameters."""
+        return self.stimulus_params
 
     def update_apgi_parameters(self, **kwargs) -> None:
         """Update APGI parameters.

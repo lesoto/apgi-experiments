@@ -11,9 +11,9 @@ from typing import Dict, List, Optional, Tuple, Any
 from enum import Enum
 import numpy as np
 from datetime import datetime
-import logging
+from ..logging.standardized_logging import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class ResponseSystemType(Enum):

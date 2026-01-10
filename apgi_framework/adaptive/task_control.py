@@ -12,12 +12,12 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple, Any, Callable, Union
 from enum import Enum
 from abc import ABC, abstractmethod
-import logging
 import queue
 import json
 from pathlib import Path
+from ..logging.standardized_logging import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class TaskState(Enum):

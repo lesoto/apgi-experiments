@@ -27,7 +27,7 @@ logger = get_logger(__name__)
 
 
 @dataclass
-class TestCoverageGap:
+class CoverageGap:
     """Represents a gap in test coverage."""
 
     module_name: str
@@ -39,7 +39,7 @@ class TestCoverageGap:
 
 
 @dataclass
-class TestSuiteMetrics:
+class SuiteMetrics:
     """Metrics for test suite quality assessment."""
 
     total_modules: int
@@ -360,7 +360,7 @@ class Test{class_name}:
 
     def _identify_coverage_gaps(
         self, module_analysis: Dict[str, Any]
-    ) -> List[TestCoverageGap]:
+    ) -> List[CoverageGap]:
         """Identify test coverage gaps in a module."""
         gaps = []
 
@@ -374,7 +374,7 @@ class Test{class_name}:
                 priority = self._calculate_test_priority(func)
                 suggested_cases = self._suggest_test_cases(func)
 
-                gap = TestCoverageGap(
+                gap = CoverageGap(
                     module_name=module_analysis["module_name"],
                     function_name=func["name"],
                     function_type=func["type"],
@@ -391,7 +391,7 @@ class Test{class_name}:
                 priority = self._calculate_test_priority(cls)
                 suggested_cases = self._suggest_class_test_cases(cls)
 
-                gap = TestCoverageGap(
+                gap = CoverageGap(
                     module_name=module_analysis["module_name"],
                     function_name=cls["name"],
                     function_type=cls["type"],
@@ -407,7 +407,7 @@ class Test{class_name}:
                         priority = self._calculate_test_priority(method)
                         suggested_cases = self._suggest_test_cases(method)
 
-                        gap = TestCoverageGap(
+                        gap = CoverageGap(
                             module_name=module_analysis["module_name"],
                             function_name=f"{cls['name']}.{method['name']}",
                             function_type=method["type"],
@@ -549,7 +549,7 @@ class Test{class_name}:
 
     def _calculate_suite_metrics(
         self, codebase_analysis: Dict[str, Any]
-    ) -> TestSuiteMetrics:
+    ) -> SuiteMetrics:
         """Calculate overall test suite metrics."""
         total_modules = len(codebase_analysis["modules"])
         tested_modules = sum(
@@ -608,7 +608,7 @@ class Test{class_name}:
             0, 100 - (total_complexity / max(1, total_functions) * 10)
         )
 
-        return TestSuiteMetrics(
+        return SuiteMetrics(
             total_modules=total_modules,
             tested_modules=tested_modules,
             total_functions=total_functions,
@@ -649,7 +649,7 @@ class Test{class_name}:
 
         return generated_files
 
-    def _generate_test_file(self, module_name: str, gaps: List[TestCoverageGap]) -> str:
+    def _generate_test_file(self, module_name: str, gaps: List[CoverageGap]) -> str:
         """Generate a test file for a specific module."""
         content = f'''"""
 Auto-generated tests for {module_name}
@@ -699,7 +699,7 @@ except ImportError as e:
 
         return content
 
-    def _generate_function_test(self, gap: TestCoverageGap) -> str:
+    def _generate_function_test(self, gap: CoverageGap) -> str:
         """Generate test for a function."""
         return f'''def test_{gap.function_name}():
     """Test function {gap.function_name}.
@@ -724,7 +724,7 @@ except ImportError as e:
     # TODO: Verify expected behavior
     assert True  # Placeholder assertion'''
 
-    def _generate_class_test(self, gap: TestCoverageGap) -> str:
+    def _generate_class_test(self, gap: CoverageGap) -> str:
         """Generate test for a class."""
         return f'''class Test{gap.function_name}:
     """Test class for {gap.function_name}.
@@ -753,7 +753,7 @@ except ImportError as e:
         # TODO: Test with valid and invalid parameters
         assert True  # Placeholder assertion'''
 
-    def _generate_method_test(self, gap: TestCoverageGap) -> str:
+    def _generate_method_test(self, gap: CoverageGap) -> str:
         """Generate test for a method."""
         class_name, method_name = gap.function_name.split(".", 1)
 

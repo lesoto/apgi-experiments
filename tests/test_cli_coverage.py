@@ -86,26 +86,24 @@ class TestCLIExecution:
         cli = APGIFrameworkCLI()
         cli.setup_logging()
 
-        # Mock config generation and controller initialization
+        # Mock config generation - note that generate-config does NOT initialize controller
         with patch.object(cli, "generate_configuration") as mock_config:
-            with patch.object(cli, "initialize_controller") as mock_init:
-                mock_config.return_value = "/path/to/config.json"
-                mock_init.return_value = None
+            mock_config.return_value = "/path/to/config.json"
 
-                # Mock argument parsing
-                with patch.object(cli, "create_parser") as mock_parser:
-                    args = MagicMock()
-                    args.command = "generate-config"
-                    args.output = "test_config.json"
-                    args.template = "default"
-                    args.log_level = "INFO"  # Fix the mock
-                    args.config = None  # Add config mock
-                    mock_parser.return_value.parse_args.return_value = args
+            # Mock argument parsing
+            with patch.object(cli, "create_parser") as mock_parser:
+                args = MagicMock()
+                args.command = "generate-config"
+                args.output = "test_config.json"
+                args.template = "default"
+                args.log_level = "INFO"  # Fix the mock
+                args.config = None  # Add config mock
+                mock_parser.return_value.parse_args.return_value = args
 
-                    result = cli.run()
-                    assert result is None  # CLI run() doesn't return values
-                    mock_config.assert_called_once()
-                    mock_init.assert_called_once()
+                result = cli.run()
+                assert result is None  # CLI run() doesn't return values
+                mock_config.assert_called_once()
+                # Note: initialize_controller is NOT called for generate-config command
 
     def test_cli_validate_system_command(self):
         """Test CLI validate-system command."""
@@ -189,21 +187,19 @@ class TestCLIExecution:
         cli = APGIFrameworkCLI()
         cli.setup_logging()
 
-        # Mock argument parsing for unknown command and controller initialization
-        with patch.object(cli, "initialize_controller") as mock_init:
-            mock_init.return_value = None
+        # Mock argument parsing for unknown command
+        with patch.object(cli, "create_parser") as mock_parser:
+            args = MagicMock()
+            args.command = "unknown-command"
+            args.log_level = "INFO"  # Fix the mock
+            args.config = None  # Add config mock
+            mock_parser.return_value.parse_args.return_value = args
 
-            with patch.object(cli, "create_parser") as mock_parser:
-                args = MagicMock()
-                args.command = "unknown-command"
-                args.log_level = "INFO"  # Fix the mock
-                args.config = None  # Add config mock
-                mock_parser.return_value.parse_args.return_value = args
-
-                with patch("builtins.print") as mock_print:
+            with patch.object(cli.logger, "error") as mock_error:
+                with pytest.raises(SystemExit) as exc_info:
                     result = cli.run()
-                    assert result is None
-                    mock_print.assert_called()
+                assert exc_info.value.code == 1
+                mock_error.assert_called_with("Unknown command: unknown-command")
 
     def test_cli_error_handling(self):
         """Test CLI error handling."""
@@ -228,10 +224,11 @@ class TestCLIExecution:
                     args.config = None  # Add config mock
                     mock_parser.return_value.parse_args.return_value = args
 
-                    with patch("builtins.print") as mock_print:
-                        result = cli.run()
-                        assert result is None
-                        mock_print.assert_called()
+                    with patch.object(cli.logger, "error") as mock_error:
+                        with pytest.raises(SystemExit) as exc_info:
+                            result = cli.run()
+                        assert exc_info.value.code == 1
+                        mock_error.assert_called_with("Unexpected error: Test error")
 
 
 if __name__ == "__main__":

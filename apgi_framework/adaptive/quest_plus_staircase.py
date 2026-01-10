@@ -9,12 +9,12 @@ import numpy as np
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple, Any, Callable
 from datetime import datetime
-import logging
+from ..logging.standardized_logging import get_logger
 from scipy.stats import norm
 from scipy.optimize import minimize_scalar
 import json
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass

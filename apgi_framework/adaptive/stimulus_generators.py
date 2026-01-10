@@ -10,12 +10,12 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple, Any, Callable
 from datetime import datetime, timedelta
 from abc import ABC, abstractmethod
-import logging
 import time
 import threading
 from enum import Enum
+from ..logging.standardized_logging import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class StimulusType(Enum):
