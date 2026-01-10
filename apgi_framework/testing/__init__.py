@@ -16,7 +16,7 @@ from .batch_runner import (
     run_unit_tests,
     run_integration_tests,
     run_research_tests,
-    run_failed_tests
+    run_failed_tests,
 )
 from .persistence import (
     TestResultPersistence,
@@ -24,22 +24,22 @@ from .persistence import (
     BatchExecutionRecord,
     get_persistence_manager,
     store_test_results,
-    get_test_performance_report
+    get_test_performance_report,
 )
 
 __all__ = [
-    'BatchTestRunner',
-    'TestResult', 
-    'BatchExecutionSummary',
-    'run_all_tests',
-    'run_unit_tests',
-    'run_integration_tests',
-    'run_research_tests',
-    'run_failed_tests',
-    'TestResultPersistence',
-    'TestExecutionRecord',
-    'BatchExecutionRecord',
-    'get_persistence_manager',
-    'store_test_results',
-    'get_test_performance_report'
+    "BatchTestRunner",
+    "TestResult",
+    "BatchExecutionSummary",
+    "run_all_tests",
+    "run_unit_tests",
+    "run_integration_tests",
+    "run_research_tests",
+    "run_failed_tests",
+    "TestResultPersistence",
+    "TestExecutionRecord",
+    "BatchExecutionRecord",
+    "get_persistence_manager",
+    "store_test_results",
+    "get_test_performance_report",
 ]

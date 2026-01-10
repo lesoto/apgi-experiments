@@ -17,6 +17,7 @@ import warnings
 
 class EffectSizeType(Enum):
     """Types of effect sizes supported."""
+
     COHENS_D = "cohens_d"
     HEDGES_G = "hedges_g"
     GLASS_DELTA = "glass_delta"
@@ -31,6 +32,7 @@ class EffectSizeType(Enum):
 
 class ConfidenceIntervalMethod(Enum):
     """Methods for calculating confidence intervals."""
+
     PARAMETRIC = "parametric"
     BOOTSTRAP = "bootstrap"
     BIAS_CORRECTED_BOOTSTRAP = "bc_bootstrap"
@@ -40,6 +42,7 @@ class ConfidenceIntervalMethod(Enum):
 @dataclass
 class EffectSizeResult:
     """Container for effect size calculation results."""
+
     effect_size_type: str
     value: float
     confidence_interval: Tuple[float, float]
@@ -53,6 +56,7 @@ class EffectSizeResult:
 @dataclass
 class BootstrapResult:
     """Container for bootstrap confidence interval results."""
+
     original_statistic: float
     bootstrap_distribution: np.ndarray
     confidence_interval: Tuple[float, float]
@@ -64,36 +68,38 @@ class BootstrapResult:
 class EffectSizeCalculator:
     """
     Comprehensive effect size and confidence interval calculator.
-    
+
     Provides various effect size measures and bootstrap confidence
     interval estimation for statistical analysis in APGI framework testing.
     """
-    
+
     def __init__(self, random_state: Optional[int] = None):
         """
         Initialize the effect size calculator.
-        
+
         Args:
             random_state: Random seed for reproducible bootstrap results
         """
         self.random_state = random_state
         if random_state is not None:
             np.random.seed(random_state)
-    
-    def cohens_d(self, 
-                group1: np.ndarray, 
-                group2: np.ndarray,
-                confidence_level: float = 0.95,
-                method: ConfidenceIntervalMethod = ConfidenceIntervalMethod.BOOTSTRAP) -> EffectSizeResult:
+
+    def cohens_d(
+        self,
+        group1: np.ndarray,
+        group2: np.ndarray,
+        confidence_level: float = 0.95,
+        method: ConfidenceIntervalMethod = ConfidenceIntervalMethod.BOOTSTRAP,
+    ) -> EffectSizeResult:
         """
         Calculate Cohen's d effect size with confidence intervals.
-        
+
         Args:
             group1: First group data
             group2: Second group data
             confidence_level: Confidence level for intervals (default 0.95)
             method: Method for calculating confidence intervals
-            
+
         Returns:
             EffectSizeResult with Cohen's d and confidence intervals
         """
@@ -101,22 +107,22 @@ class EffectSizeCalculator:
         n1, n2 = len(group1), len(group2)
         m1, m2 = np.mean(group1), np.mean(group2)
         s1, s2 = np.std(group1, ddof=1), np.std(group2, ddof=1)
-        
+
         # Pooled standard deviation
         pooled_std = np.sqrt(((n1 - 1) * s1**2 + (n2 - 1) * s2**2) / (n1 + n2 - 2))
-        
+
         # Cohen's d
         d = (m1 - m2) / pooled_std
-        
+
         # Calculate confidence interval
         if method == ConfidenceIntervalMethod.PARAMETRIC:
             ci = self._cohens_d_parametric_ci(d, n1, n2, confidence_level)
         else:
             ci = self._bootstrap_cohens_d_ci(group1, group2, confidence_level, method)
-        
+
         # Interpretation
         interpretation = self._interpret_cohens_d(d)
-        
+
         return EffectSizeResult(
             effect_size_type=EffectSizeType.COHENS_D.value,
             value=d,
@@ -124,45 +130,47 @@ class EffectSizeCalculator:
             confidence_level=confidence_level,
             interpretation=interpretation,
             sample_sizes={"group1": n1, "group2": n2},
-            method=method.value
+            method=method.value,
         )
-    
-    def hedges_g(self, 
-                group1: np.ndarray, 
-                group2: np.ndarray,
-                confidence_level: float = 0.95,
-                method: ConfidenceIntervalMethod = ConfidenceIntervalMethod.BOOTSTRAP) -> EffectSizeResult:
+
+    def hedges_g(
+        self,
+        group1: np.ndarray,
+        group2: np.ndarray,
+        confidence_level: float = 0.95,
+        method: ConfidenceIntervalMethod = ConfidenceIntervalMethod.BOOTSTRAP,
+    ) -> EffectSizeResult:
         """
         Calculate Hedges' g effect size (bias-corrected Cohen's d).
-        
+
         Args:
             group1: First group data
             group2: Second group data
             confidence_level: Confidence level for intervals
             method: Method for calculating confidence intervals
-            
+
         Returns:
             EffectSizeResult with Hedges' g and confidence intervals
         """
         # First calculate Cohen's d
         cohens_d_result = self.cohens_d(group1, group2, confidence_level, method)
         d = cohens_d_result.value
-        
+
         # Bias correction factor
         n1, n2 = len(group1), len(group2)
         df = n1 + n2 - 2
         correction_factor = 1 - (3 / (4 * df - 1))
-        
+
         # Hedges' g
         g = d * correction_factor
-        
+
         # Adjust confidence interval
         ci_lower, ci_upper = cohens_d_result.confidence_interval
         ci = (ci_lower * correction_factor, ci_upper * correction_factor)
-        
+
         # Interpretation (same as Cohen's d)
         interpretation = self._interpret_cohens_d(g)
-        
+
         return EffectSizeResult(
             effect_size_type=EffectSizeType.HEDGES_G.value,
             value=g,
@@ -170,21 +178,23 @@ class EffectSizeCalculator:
             confidence_level=confidence_level,
             interpretation=interpretation,
             sample_sizes={"group1": n1, "group2": n2},
-            method=method.value
+            method=method.value,
         )
-    
-    def eta_squared(self, 
-                   groups: Tuple[np.ndarray, ...],
-                   f_statistic: float,
-                   confidence_level: float = 0.95) -> EffectSizeResult:
+
+    def eta_squared(
+        self,
+        groups: Tuple[np.ndarray, ...],
+        f_statistic: float,
+        confidence_level: float = 0.95,
+    ) -> EffectSizeResult:
         """
         Calculate eta-squared effect size for ANOVA.
-        
+
         Args:
             groups: Tuple of group arrays
             f_statistic: F-statistic from ANOVA
             confidence_level: Confidence level for intervals
-            
+
         Returns:
             EffectSizeResult with eta-squared and confidence intervals
         """
@@ -193,23 +203,25 @@ class EffectSizeCalculator:
         n = sum(len(group) for group in groups)  # total sample size
         df_between = k - 1
         df_within = n - k
-        
+
         # Calculate sum of squares
         grand_mean = np.mean(np.concatenate(groups))
-        ss_between = sum(len(group) * (np.mean(group) - grand_mean)**2 for group in groups)
-        ss_within = sum(np.sum((group - np.mean(group))**2) for group in groups)
+        ss_between = sum(
+            len(group) * (np.mean(group) - grand_mean) ** 2 for group in groups
+        )
+        ss_within = sum(np.sum((group - np.mean(group)) ** 2) for group in groups)
         ss_total = ss_between + ss_within
-        
+
         eta_squared = ss_between / ss_total
-        
+
         # Confidence interval using non-central F distribution
         ci = self._eta_squared_ci(f_statistic, df_between, df_within, confidence_level)
-        
+
         # Interpretation
         interpretation = self._interpret_eta_squared(eta_squared)
-        
+
         sample_sizes = {f"group_{i+1}": len(group) for i, group in enumerate(groups)}
-        
+
         return EffectSizeResult(
             effect_size_type=EffectSizeType.ETA_SQUARED.value,
             value=eta_squared,
@@ -217,21 +229,23 @@ class EffectSizeCalculator:
             confidence_level=confidence_level,
             interpretation=interpretation,
             sample_sizes=sample_sizes,
-            method="parametric"
+            method="parametric",
         )
-    
-    def omega_squared(self, 
-                     groups: Tuple[np.ndarray, ...],
-                     f_statistic: float,
-                     confidence_level: float = 0.95) -> EffectSizeResult:
+
+    def omega_squared(
+        self,
+        groups: Tuple[np.ndarray, ...],
+        f_statistic: float,
+        confidence_level: float = 0.95,
+    ) -> EffectSizeResult:
         """
         Calculate omega-squared effect size (less biased than eta-squared).
-        
+
         Args:
             groups: Tuple of group arrays
             f_statistic: F-statistic from ANOVA
             confidence_level: Confidence level for intervals
-            
+
         Returns:
             EffectSizeResult with omega-squared and confidence intervals
         """
@@ -239,24 +253,28 @@ class EffectSizeCalculator:
         n = sum(len(group) for group in groups)  # total sample size
         df_between = k - 1
         df_within = n - k
-        
+
         # Calculate mean squares
         ms_between = f_statistic * (df_within / df_between)  # Approximation
         ms_within = 1.0  # Normalized
-        
+
         # Omega-squared
-        omega_squared = (df_between * (f_statistic - 1)) / (df_between * (f_statistic - 1) + n)
+        omega_squared = (df_between * (f_statistic - 1)) / (
+            df_between * (f_statistic - 1) + n
+        )
         omega_squared = max(0, omega_squared)  # Ensure non-negative
-        
+
         # Confidence interval (approximation using eta-squared CI)
         eta_sq_result = self.eta_squared(groups, f_statistic, confidence_level)
         ci = eta_sq_result.confidence_interval
-        
+
         # Interpretation
-        interpretation = self._interpret_eta_squared(omega_squared)  # Same scale as eta-squared
-        
+        interpretation = self._interpret_eta_squared(
+            omega_squared
+        )  # Same scale as eta-squared
+
         sample_sizes = {f"group_{i+1}": len(group) for i, group in enumerate(groups)}
-        
+
         return EffectSizeResult(
             effect_size_type=EffectSizeType.OMEGA_SQUARED.value,
             value=omega_squared,
@@ -264,49 +282,48 @@ class EffectSizeCalculator:
             confidence_level=confidence_level,
             interpretation=interpretation,
             sample_sizes=sample_sizes,
-            method="parametric"
+            method="parametric",
         )
-    
-    def pearson_r(self, 
-                 x: np.ndarray, 
-                 y: np.ndarray,
-                 confidence_level: float = 0.95) -> EffectSizeResult:
+
+    def pearson_r(
+        self, x: np.ndarray, y: np.ndarray, confidence_level: float = 0.95
+    ) -> EffectSizeResult:
         """
         Calculate Pearson correlation coefficient with confidence intervals.
-        
+
         Args:
             x: First variable
             y: Second variable
             confidence_level: Confidence level for intervals
-            
+
         Returns:
             EffectSizeResult with Pearson r and confidence intervals
         """
         if len(x) != len(y):
             raise ValueError("Variables must have equal length")
-        
+
         # Calculate Pearson correlation
         r, _ = stats.pearsonr(x, y)
         n = len(x)
-        
+
         # Fisher's z-transformation for confidence interval
         z_r = np.arctanh(r)
         se_z = 1 / np.sqrt(n - 3)
-        
+
         # Critical value
         alpha = 1 - confidence_level
-        z_crit = stats.norm.ppf(1 - alpha/2)
-        
+        z_crit = stats.norm.ppf(1 - alpha / 2)
+
         # Confidence interval in z-space
         z_lower = z_r - z_crit * se_z
         z_upper = z_r + z_crit * se_z
-        
+
         # Transform back to r-space
         ci = (np.tanh(z_lower), np.tanh(z_upper))
-        
+
         # Interpretation
         interpretation = self._interpret_correlation(r)
-        
+
         return EffectSizeResult(
             effect_size_type=EffectSizeType.PEARSON_R.value,
             value=r,
@@ -314,34 +331,36 @@ class EffectSizeCalculator:
             confidence_level=confidence_level,
             interpretation=interpretation,
             sample_sizes={"n": n},
-            method="fisher_z_transform"
+            method="fisher_z_transform",
         )
-    
-    def bootstrap_confidence_interval(self, 
-                                    data: Union[np.ndarray, Tuple[np.ndarray, ...]],
-                                    statistic_func: callable,
-                                    confidence_level: float = 0.95,
-                                    n_bootstrap: int = 10000,
-                                    method: ConfidenceIntervalMethod = ConfidenceIntervalMethod.BIAS_CORRECTED_BOOTSTRAP) -> BootstrapResult:
+
+    def bootstrap_confidence_interval(
+        self,
+        data: Union[np.ndarray, Tuple[np.ndarray, ...]],
+        statistic_func: callable,
+        confidence_level: float = 0.95,
+        n_bootstrap: int = 10000,
+        method: ConfidenceIntervalMethod = ConfidenceIntervalMethod.BIAS_CORRECTED_BOOTSTRAP,
+    ) -> BootstrapResult:
         """
         Calculate bootstrap confidence intervals for any statistic.
-        
+
         Args:
             data: Data array or tuple of arrays
             statistic_func: Function to calculate statistic
             confidence_level: Confidence level for intervals
             n_bootstrap: Number of bootstrap samples
             method: Bootstrap method to use
-            
+
         Returns:
             BootstrapResult with confidence intervals
         """
         # Calculate original statistic
         original_stat = statistic_func(data)
-        
+
         # Generate bootstrap samples
         bootstrap_stats = []
-        
+
         if isinstance(data, tuple):
             # Multiple arrays
             n = len(data[0])  # Assume all arrays have same length
@@ -359,51 +378,61 @@ class EffectSizeCalculator:
                 bootstrap_data = data[indices]
                 bootstrap_stat = statistic_func(bootstrap_data)
                 bootstrap_stats.append(bootstrap_stat)
-        
+
         bootstrap_stats = np.array(bootstrap_stats)
-        
+
         # Calculate confidence interval based on method
         alpha = 1 - confidence_level
-        
+
         if method == ConfidenceIntervalMethod.PERCENTILE_BOOTSTRAP:
             ci = self._percentile_ci(bootstrap_stats, alpha)
             bias_correction = None
         elif method == ConfidenceIntervalMethod.BIAS_CORRECTED_BOOTSTRAP:
-            ci, bias_correction = self._bias_corrected_ci(bootstrap_stats, original_stat, alpha)
+            ci, bias_correction = self._bias_corrected_ci(
+                bootstrap_stats, original_stat, alpha
+            )
         else:  # Default to percentile
             ci = self._percentile_ci(bootstrap_stats, alpha)
             bias_correction = None
-        
+
         return BootstrapResult(
             original_statistic=original_stat,
             bootstrap_distribution=bootstrap_stats,
             confidence_interval=ci,
             confidence_level=confidence_level,
             n_bootstrap=n_bootstrap,
-            bias_correction=bias_correction
+            bias_correction=bias_correction,
         )
-    
-    def _cohens_d_parametric_ci(self, d: float, n1: int, n2: int, confidence_level: float) -> Tuple[float, float]:
+
+    def _cohens_d_parametric_ci(
+        self, d: float, n1: int, n2: int, confidence_level: float
+    ) -> Tuple[float, float]:
         """Calculate parametric confidence interval for Cohen's d."""
         # Approximate standard error
         se_d = np.sqrt((n1 + n2) / (n1 * n2) + d**2 / (2 * (n1 + n2)))
-        
+
         # Degrees of freedom
         df = n1 + n2 - 2
-        
+
         # Critical value
         alpha = 1 - confidence_level
-        t_crit = t.ppf(1 - alpha/2, df)
-        
+        t_crit = t.ppf(1 - alpha / 2, df)
+
         # Confidence interval
         ci_lower = d - t_crit * se_d
         ci_upper = d + t_crit * se_d
-        
+
         return (ci_lower, ci_upper)
-    
-    def _bootstrap_cohens_d_ci(self, group1: np.ndarray, group2: np.ndarray, 
-                              confidence_level: float, method: ConfidenceIntervalMethod) -> Tuple[float, float]:
+
+    def _bootstrap_cohens_d_ci(
+        self,
+        group1: np.ndarray,
+        group2: np.ndarray,
+        confidence_level: float,
+        method: ConfidenceIntervalMethod,
+    ) -> Tuple[float, float]:
         """Calculate bootstrap confidence interval for Cohen's d."""
+
         def cohens_d_func(data):
             g1, g2 = data
             n1, n2 = len(g1), len(g2)
@@ -411,64 +440,70 @@ class EffectSizeCalculator:
             s1, s2 = np.std(g1, ddof=1), np.std(g2, ddof=1)
             pooled_std = np.sqrt(((n1 - 1) * s1**2 + (n2 - 1) * s2**2) / (n1 + n2 - 2))
             return (m1 - m2) / pooled_std
-        
+
         bootstrap_result = self.bootstrap_confidence_interval(
             (group1, group2), cohens_d_func, confidence_level, method=method
         )
-        
+
         return bootstrap_result.confidence_interval
-    
-    def _eta_squared_ci(self, f_stat: float, df_between: int, df_within: int, 
-                       confidence_level: float) -> Tuple[float, float]:
+
+    def _eta_squared_ci(
+        self, f_stat: float, df_between: int, df_within: int, confidence_level: float
+    ) -> Tuple[float, float]:
         """Calculate confidence interval for eta-squared using non-central F distribution."""
         alpha = 1 - confidence_level
-        
+
         # Convert F to eta-squared bounds
         # This is an approximation - exact calculation is complex
-        f_lower = f.ppf(alpha/2, df_between, df_within)
-        f_upper = f.ppf(1 - alpha/2, df_between, df_within)
-        
+        f_lower = f.ppf(alpha / 2, df_between, df_within)
+        f_upper = f.ppf(1 - alpha / 2, df_between, df_within)
+
         # Convert to eta-squared (approximation)
-        eta_lower = max(0, (f_lower * df_between - df_between) / 
-                       (f_lower * df_between + df_within))
-        eta_upper = min(1, (f_upper * df_between - df_between) / 
-                       (f_upper * df_between + df_within))
-        
+        eta_lower = max(
+            0, (f_lower * df_between - df_between) / (f_lower * df_between + df_within)
+        )
+        eta_upper = min(
+            1, (f_upper * df_between - df_between) / (f_upper * df_between + df_within)
+        )
+
         return (eta_lower, eta_upper)
-    
-    def _percentile_ci(self, bootstrap_stats: np.ndarray, alpha: float) -> Tuple[float, float]:
+
+    def _percentile_ci(
+        self, bootstrap_stats: np.ndarray, alpha: float
+    ) -> Tuple[float, float]:
         """Calculate percentile confidence interval."""
         lower_percentile = 100 * (alpha / 2)
         upper_percentile = 100 * (1 - alpha / 2)
-        
+
         ci_lower = np.percentile(bootstrap_stats, lower_percentile)
         ci_upper = np.percentile(bootstrap_stats, upper_percentile)
-        
+
         return (ci_lower, ci_upper)
-    
-    def _bias_corrected_ci(self, bootstrap_stats: np.ndarray, original_stat: float, 
-                          alpha: float) -> Tuple[Tuple[float, float], float]:
+
+    def _bias_corrected_ci(
+        self, bootstrap_stats: np.ndarray, original_stat: float, alpha: float
+    ) -> Tuple[Tuple[float, float], float]:
         """Calculate bias-corrected confidence interval."""
         # Bias correction
         n_below = np.sum(bootstrap_stats < original_stat)
         bias_correction = stats.norm.ppf(n_below / len(bootstrap_stats))
-        
+
         # Adjusted percentiles
         z_alpha_2 = stats.norm.ppf(alpha / 2)
         z_1_alpha_2 = stats.norm.ppf(1 - alpha / 2)
-        
+
         lower_percentile = stats.norm.cdf(2 * bias_correction + z_alpha_2) * 100
         upper_percentile = stats.norm.cdf(2 * bias_correction + z_1_alpha_2) * 100
-        
+
         # Ensure percentiles are within valid range
         lower_percentile = max(0, min(100, lower_percentile))
         upper_percentile = max(0, min(100, upper_percentile))
-        
+
         ci_lower = np.percentile(bootstrap_stats, lower_percentile)
         ci_upper = np.percentile(bootstrap_stats, upper_percentile)
-        
+
         return (ci_lower, ci_upper), bias_correction
-    
+
     def _interpret_cohens_d(self, d: float) -> str:
         """Interpret Cohen's d effect size."""
         abs_d = abs(d)
@@ -480,10 +515,10 @@ class EffectSizeCalculator:
             magnitude = "medium"
         else:
             magnitude = "large"
-        
+
         direction = "positive" if d > 0 else "negative" if d < 0 else "zero"
         return f"{magnitude} {direction} effect (|d| = {abs_d:.3f})"
-    
+
     def _interpret_eta_squared(self, eta_sq: float) -> str:
         """Interpret eta-squared effect size."""
         if eta_sq < 0.01:
@@ -494,9 +529,9 @@ class EffectSizeCalculator:
             magnitude = "medium"
         else:
             magnitude = "large"
-        
+
         return f"{magnitude} effect (η² = {eta_sq:.3f})"
-    
+
     def _interpret_correlation(self, r: float) -> str:
         """Interpret correlation coefficient."""
         abs_r = abs(r)
@@ -508,7 +543,7 @@ class EffectSizeCalculator:
             magnitude = "medium"
         else:
             magnitude = "large"
-        
+
         direction = "positive" if r > 0 else "negative" if r < 0 else "zero"
         return f"{magnitude} {direction} correlation (|r| = {abs_r:.3f})"
 
@@ -516,7 +551,7 @@ class EffectSizeCalculator:
 def get_effect_size_guidelines() -> Dict[str, Dict[str, str]]:
     """
     Get interpretation guidelines for different effect sizes.
-    
+
     Returns:
         Dictionary with effect size guidelines
     """
@@ -525,18 +560,18 @@ def get_effect_size_guidelines() -> Dict[str, Dict[str, str]]:
             "negligible": "< 0.2",
             "small": "0.2 - 0.5",
             "medium": "0.5 - 0.8",
-            "large": "> 0.8"
+            "large": "> 0.8",
         },
         "eta_squared": {
             "negligible": "< 0.01",
             "small": "0.01 - 0.06",
             "medium": "0.06 - 0.14",
-            "large": "> 0.14"
+            "large": "> 0.14",
         },
         "correlation": {
             "negligible": "< 0.1",
             "small": "0.1 - 0.3",
             "medium": "0.3 - 0.5",
-            "large": "> 0.5"
-        }
+            "large": "> 0.5",
+        },
     }

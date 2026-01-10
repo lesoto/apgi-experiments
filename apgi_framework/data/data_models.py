@@ -15,6 +15,7 @@ import uuid
 @dataclass
 class DataVersion:
     """Represents a version of experimental data."""
+
     version_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     version_number: str = "1.0.0"
     created_at: datetime = field(default_factory=datetime.now)
@@ -28,6 +29,7 @@ class DataVersion:
 @dataclass
 class ExperimentMetadata:
     """Metadata for experimental datasets."""
+
     experiment_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     experiment_name: str = ""
     description: str = ""
@@ -35,26 +37,26 @@ class ExperimentMetadata:
     updated_at: datetime = field(default_factory=datetime.now)
     researcher: str = ""
     institution: str = ""
-    
+
     # Experimental parameters
     n_participants: int = 0
     n_trials: int = 0
     conditions: List[str] = field(default_factory=list)
     parameters: Dict[str, Any] = field(default_factory=dict)
-    
+
     # Data characteristics
     data_format: str = "hdf5"  # hdf5, sqlite, csv
     file_paths: List[str] = field(default_factory=list)
     total_size_mb: float = 0.0
-    
+
     # Version information
     current_version: str = "1.0.0"
     version_history: List[DataVersion] = field(default_factory=list)
-    
+
     # Tags and categories
     tags: List[str] = field(default_factory=list)
     category: str = "falsification_test"
-    
+
     # Quality metrics
     data_quality_score: float = 1.0
     completeness_percentage: float = 100.0
@@ -64,6 +66,7 @@ class ExperimentMetadata:
 @dataclass
 class BackupInfo:
     """Information about data backups."""
+
     backup_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     backup_path: str = ""
     created_at: datetime = field(default_factory=datetime.now)
@@ -78,35 +81,37 @@ class BackupInfo:
 @dataclass
 class ExperimentalDataset:
     """Complete experimental dataset with data and metadata."""
+
     metadata: ExperimentMetadata
     data: Dict[str, Any] = field(default_factory=dict)
     raw_data: Optional[Dict[str, Any]] = None
     processed_data: Optional[Dict[str, Any]] = None
     analysis_results: Optional[Dict[str, Any]] = None
-    
+
     # File system information
     storage_path: Optional[Path] = None
     backup_info: List[BackupInfo] = field(default_factory=list)
-    
+
     # Access control
     access_permissions: Dict[str, List[str]] = field(default_factory=dict)
     is_locked: bool = False
     lock_reason: str = ""
-    
+
     def __post_init__(self):
         """Initialize dataset after creation."""
         if not self.metadata.experiment_id:
             self.metadata.experiment_id = str(uuid.uuid4())
-        
+
         if not self.metadata.created_at:
             self.metadata.created_at = datetime.now()
-            
+
         self.metadata.updated_at = datetime.now()
 
 
 @dataclass
 class QueryFilter:
     """Filter criteria for querying experimental datasets."""
+
     experiment_ids: Optional[List[str]] = None
     researcher: Optional[str] = None
     institution: Optional[str] = None
@@ -123,6 +128,7 @@ class QueryFilter:
 @dataclass
 class StorageStats:
     """Statistics about data storage usage."""
+
     total_datasets: int = 0
     total_size_mb: float = 0.0
     total_backups: int = 0
@@ -131,11 +137,11 @@ class StorageStats:
     newest_dataset: Optional[datetime] = None
     average_dataset_size_mb: float = 0.0
     storage_efficiency: float = 1.0  # compression ratio
-    
+
     # By category
     datasets_by_category: Dict[str, int] = field(default_factory=dict)
     size_by_category: Dict[str, float] = field(default_factory=dict)
-    
+
     # Health metrics
     corrupted_datasets: int = 0
     missing_backups: int = 0

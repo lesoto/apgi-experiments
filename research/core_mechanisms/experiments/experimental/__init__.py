@@ -10,7 +10,7 @@ from .multi_modal_task_manager import (
     TrialConfiguration,
     TrialResult,
     ModalityType,
-    TaskParadigm
+    TaskParadigm,
 )
 
 from .adaptive_staircase import (
@@ -22,7 +22,7 @@ from .adaptive_staircase import (
     StaircaseType,
     ThresholdEstimate,
     CrossModalThresholdNormalizer,
-    create_staircase
+    create_staircase,
 )
 
 from .precision_timing import (
@@ -34,19 +34,19 @@ from .precision_timing import (
     SyncMarkerType,
     SyncMarker,
     TrialTiming,
-    TimingEvent
+    TimingEvent,
 )
 
 from .neuromodulatory_blockade import (
     NeuromodulatoryBlockadeSimulator,
     NeuromodulatorEffect,
-    BlockadeSimulationResult
+    BlockadeSimulationResult,
 )
 
 from .surprise_accumulation_dynamics import (
     SurpriseAccumulationAnalyzer,
     TrialSurpriseEstimate,
-    SurpriseAccumulationResult
+    SurpriseAccumulationResult,
 )
 
 from .behavioral_tasks import (
@@ -61,49 +61,49 @@ from .behavioral_tasks import (
     StimulusCalibrator,
     InteroceptiveDeviantGenerator,
     ExteroceptiveDeviantGenerator,
-    P3bRatioCalculator
+    P3bRatioCalculator,
 )
 
 __all__ = [
-    'MultiModalTaskManager',
-    'TrialConfiguration',
-    'TrialResult',
-    'ModalityType',
-    'TaskParadigm',
-    'AdaptiveStaircase',
-    'SimpleStaircase',
-    'PESTStaircase',
-    'QUESTStaircase',
-    'StaircaseParameters',
-    'StaircaseType',
-    'ThresholdEstimate',
-    'CrossModalThresholdNormalizer',
-    'create_staircase',
-    'PrecisionTimer',
-    'TrialSequencer',
-    'SynchronizationManager',
-    'TimingController',
-    'TimingMode',
-    'SyncMarkerType',
-    'SyncMarker',
-    'TrialTiming',
-    'TimingEvent',
-    'NeuromodulatoryBlockadeSimulator',
-    'NeuromodulatorEffect',
-    'BlockadeSimulationResult',
-    'SurpriseAccumulationAnalyzer',
-    'TrialSurpriseEstimate',
-    'SurpriseAccumulationResult',
-    'DetectionTask',
-    'HeartbeatDetectionTask',
-    'DualModalityOddballTask',
-    'BehavioralThresholdCalculator',
-    'P3bCorrelationValidator',
-    'DPrimeCalculator',
-    'ConfidenceAnalyzer',
-    'AdaptiveAsynchronyAdjuster',
-    'StimulusCalibrator',
-    'InteroceptiveDeviantGenerator',
-    'ExteroceptiveDeviantGenerator',
-    'P3bRatioCalculator'
+    "MultiModalTaskManager",
+    "TrialConfiguration",
+    "TrialResult",
+    "ModalityType",
+    "TaskParadigm",
+    "AdaptiveStaircase",
+    "SimpleStaircase",
+    "PESTStaircase",
+    "QUESTStaircase",
+    "StaircaseParameters",
+    "StaircaseType",
+    "ThresholdEstimate",
+    "CrossModalThresholdNormalizer",
+    "create_staircase",
+    "PrecisionTimer",
+    "TrialSequencer",
+    "SynchronizationManager",
+    "TimingController",
+    "TimingMode",
+    "SyncMarkerType",
+    "SyncMarker",
+    "TrialTiming",
+    "TimingEvent",
+    "NeuromodulatoryBlockadeSimulator",
+    "NeuromodulatorEffect",
+    "BlockadeSimulationResult",
+    "SurpriseAccumulationAnalyzer",
+    "TrialSurpriseEstimate",
+    "SurpriseAccumulationResult",
+    "DetectionTask",
+    "HeartbeatDetectionTask",
+    "DualModalityOddballTask",
+    "BehavioralThresholdCalculator",
+    "P3bCorrelationValidator",
+    "DPrimeCalculator",
+    "ConfidenceAnalyzer",
+    "AdaptiveAsynchronyAdjuster",
+    "StimulusCalibrator",
+    "InteroceptiveDeviantGenerator",
+    "ExteroceptiveDeviantGenerator",
+    "P3bRatioCalculator",
 ]

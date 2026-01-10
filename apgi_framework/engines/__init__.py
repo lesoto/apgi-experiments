@@ -8,7 +8,4 @@ and threshold management.
 from ..core.somatic_marker import SomaticMarkerEngine
 from ..core.threshold import ThresholdManager
 
-__all__ = [
-    "SomaticMarkerEngine",
-    "ThresholdManager"
-]
+__all__ = ["SomaticMarkerEngine", "ThresholdManager"]

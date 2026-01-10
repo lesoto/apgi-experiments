@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 # Use non-interactive backend for testing
-matplotlib.use('Agg')
+matplotlib.use("Agg")
 
 # Add project root to Python path
 sys.path.append(str(Path(__file__).parent.parent))
@@ -13,8 +13,9 @@ sys.path.append(str(Path(__file__).parent.parent))
 # Import the APGI Agent
 from core.models.apgi_agent import (
     APGIAgent,  # This will be our refactored class
-    expit  # For testing the sigmoid function
+    expit,  # For testing the sigmoid function
 )
+
 
 # Test configuration
 class TestConfig:
@@ -42,7 +43,7 @@ class TestAPGIAgent:
             Pi_e=TestConfig.PI_E,
             Pi_i_base=TestConfig.PI_I_BASE,
             M=TestConfig.M,
-            body_noise_sd=TestConfig.BODY_NOISE_SD
+            body_noise_sd=TestConfig.BODY_NOISE_SD,
         )
 
     def test_initialization(self, agent):
@@ -60,7 +61,7 @@ class TestAPGIAgent:
     def test_reset(self, agent):
         """Test that reset() properly initializes all state variables."""
         agent.reset()
-        
+
         # Check array shapes
         assert agent.body_state.shape == (TestConfig.T,)
         assert agent.pred_body.shape == (TestConfig.T,)
@@ -70,7 +71,7 @@ class TestAPGIAgent:
         assert agent.S.shape == (TestConfig.T,)
         assert agent.ignition.shape == (TestConfig.T,)
         assert agent.conscious.shape == (TestConfig.T,)
-        
+
         # Check initial values
         assert np.all(agent.Pi_i == TestConfig.PI_I_BASE)
         assert np.all(agent.conscious == False)
@@ -78,12 +79,12 @@ class TestAPGIAgent:
     def test_context_modulation(self, agent):
         """Test that context properly modulates interoceptive precision."""
         agent.reset()
-        
+
         # Before context onset
         agent.context_onset = 50
         agent._update_context(25)  # Before onset
         assert agent.Pi_i[25] == TestConfig.PI_I_BASE  # No modulation
-        
+
         # After context onset
         agent._update_context(75)  # After onset
         assert agent.Pi_i[75] == TestConfig.PI_I_BASE * TestConfig.M  # Modulated by M
@@ -91,21 +92,21 @@ class TestAPGIAgent:
     def test_surprise_calculation(self, agent):
         """Test the calculation of total surprise."""
         agent.reset()
-        
+
         # Set up test values
         t = 10
         eps_e = 1.5
         eps_i = 0.8
         Pi_i = 1.2
-        
+
         # Manually set values
         agent.eps_e[t] = eps_e
         agent.eps_i[t] = eps_i
         agent.Pi_i[t] = Pi_i
-        
+
         # Calculate surprise
         agent._calculate_surprise(t)
-        
+
         # Expected surprise
         expected_S = TestConfig.PI_E * abs(eps_e) + Pi_i * abs(eps_i)
         assert np.isclose(agent.S[t], expected_S)
@@ -113,16 +114,16 @@ class TestAPGIAgent:
     def test_ignition_probability(self, agent):
         """Test the calculation of ignition probability."""
         agent.reset()
-        
+
         # Set up test values
         t = 10
         S = 2.5
         theta_t = TestConfig.THETA_BASE - TestConfig.THETA_MOD  # With context
-        
+
         # Set surprise and threshold
         agent.S[t] = S
         agent._calculate_ignition_probability(t, theta_t)
-        
+
         # Expected ignition probability
         expected_ignition = expit(TestConfig.ALPHA * (S - theta_t))
         assert np.isclose(agent.ignition[t], expected_ignition)
@@ -130,14 +131,14 @@ class TestAPGIAgent:
     def test_conscious_access(self, agent):
         """Test the determination of conscious access."""
         agent.reset()
-        
+
         # Test case where surprise is above threshold
         t = 10
         agent.S[t] = TestConfig.THETA_BASE + 1.0  # Above threshold
         agent._calculate_ignition_probability(t, TestConfig.THETA_BASE)
         # With high surprise, ignition probability should be > 0.5
         assert agent.ignition[t] > 0.5
-        
+
         # Test case where surprise is below threshold
         agent.S[t] = TestConfig.THETA_BASE - 1.0  # Below threshold
         agent._calculate_ignition_probability(t, TestConfig.THETA_BASE)
@@ -147,42 +148,45 @@ class TestAPGIAgent:
     def test_full_simulation(self, agent):
         """Test a complete simulation run."""
         agent.reset()
-        
+
         # Add a test stimulus
         agent.ext_stim[20:30] = 2.0
         agent.context_onset = 40
-        
+
         # Run the simulation
         agent.run()
-        
+
         # Check that the simulation produced valid results
         assert np.any(agent.conscious)  # At least some conscious moments
         assert np.all(agent.ignition >= 0.0) and np.all(agent.ignition <= 1.0)
-        
+
         # Check that context modulation was applied
-        assert np.all(agent.Pi_i[:agent.context_onset] == TestConfig.PI_I_BASE)
-        assert np.all(agent.Pi_i[agent.context_onset:] == TestConfig.PI_I_BASE * TestConfig.M)
+        assert np.all(agent.Pi_i[: agent.context_onset] == TestConfig.PI_I_BASE)
+        assert np.all(
+            agent.Pi_i[agent.context_onset :] == TestConfig.PI_I_BASE * TestConfig.M
+        )
 
     def test_visualization(self, agent):
         """Test that visualization functions run without errors."""
         agent.reset()
         agent.run()
-        
+
         # Test plotting functions
         fig = agent.plot_signals()
         assert fig is not None
-        
+
         # Clean up
         import matplotlib.pyplot as plt
+
         plt.close(fig)
 
     def test_parameter_validation(self):
         """Test that invalid parameters raise appropriate errors."""
         with pytest.raises(ValueError):
             APGIAgent(T=0)  # Invalid duration
-            
+
         with pytest.raises(ValueError):
             APGIAgent(dt=0)  # Invalid time step
-            
+
         with pytest.raises(ValueError):
             APGIAgent(Pi_e=-1)  # Negative precision

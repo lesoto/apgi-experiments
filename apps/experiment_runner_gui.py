@@ -1,4 +1,5 @@
 import os
+
 os.environ.setdefault("MPLBACKEND", "Agg")
 
 import tkinter as tk
@@ -12,6 +13,7 @@ from typing import Any, Dict
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 
 # Add tools directory to Python path
@@ -19,6 +21,7 @@ tools_dir = Path(__file__).parent.parent / "tools"
 sys.path.insert(0, str(tools_dir))
 
 from run_experiments import get_available_experiments, run_experiment
+
 
 class StreamRedirector:
     def __init__(self, stream, q: queue.Queue):
@@ -32,6 +35,7 @@ class StreamRedirector:
 
     def flush(self):
         return self._stream.flush()
+
 
 class ExperimentGUI(tk.Tk):
     def __init__(self):
@@ -87,7 +91,9 @@ class ExperimentGUI(tk.Tk):
 
     def _rebuild_params(self):
         self._clear_params()
-        name = self.exp_var.get() or (self.exp_combo["values"][0] if self.exp_combo["values"] else "")
+        name = self.exp_var.get() or (
+            self.exp_combo["values"][0] if self.exp_combo["values"] else ""
+        )
         if not name:
             return
         try:
@@ -104,9 +110,14 @@ class ExperimentGUI(tk.Tk):
 
         row = 0
         for pname, param in sig.parameters.items():
-            if param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
+            if param.kind in (
+                inspect.Parameter.VAR_POSITIONAL,
+                inspect.Parameter.VAR_KEYWORD,
+            ):
                 continue
-            ttk.Label(self.params_frame, text=pname).grid(row=row, column=0, sticky=tk.W, padx=6, pady=4)
+            ttk.Label(self.params_frame, text=pname).grid(
+                row=row, column=0, sticky=tk.W, padx=6, pady=4
+            )
             default = None if param.default is inspect._empty else param.default
             widget: Any
             if isinstance(default, bool):
@@ -161,7 +172,9 @@ class ExperimentGUI(tk.Tk):
         self.status_var.set("Running...")
         self.run_btn.config(state=tk.DISABLED)
         self._append_log(f"\n=== Running {name} with {kwargs} ===\n")
-        self._worker = threading.Thread(target=self._run_worker, args=(name, kwargs), daemon=True)
+        self._worker = threading.Thread(
+            target=self._run_worker, args=(name, kwargs), daemon=True
+        )
         self._worker.start()
 
     def _run_worker(self, name: str, kwargs: Dict[str, Any]):
@@ -194,6 +207,7 @@ class ExperimentGUI(tk.Tk):
         sys.stdout = self._orig_stdout
         sys.stderr = self._orig_stderr
         super().destroy()
+
 
 if __name__ == "__main__":
     app = ExperimentGUI()

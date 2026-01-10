@@ -8,25 +8,25 @@ stimulus control systems for the three core parameter estimation tasks.
 from .quest_plus_staircase import QuestPlusStaircase
 from .stimulus_generators import (
     GaborPatchGenerator,
-    ToneGenerator, 
+    ToneGenerator,
     CO2PuffController,
-    HeartbeatSynchronizer
+    HeartbeatSynchronizer,
 )
 from .task_control import (
     PrecisionTimer,
     TaskStateMachine,
     ResponseCollector,
-    SessionManager
+    SessionManager,
 )
 
 __all__ = [
-    'QuestPlusStaircase',
-    'GaborPatchGenerator',
-    'ToneGenerator',
-    'CO2PuffController', 
-    'HeartbeatSynchronizer',
-    'PrecisionTimer',
-    'TaskStateMachine',
-    'ResponseCollector',
-    'SessionManager'
+    "QuestPlusStaircase",
+    "GaborPatchGenerator",
+    "ToneGenerator",
+    "CO2PuffController",
+    "HeartbeatSynchronizer",
+    "PrecisionTimer",
+    "TaskStateMachine",
+    "ResponseCollector",
+    "SessionManager",
 ]

@@ -16,31 +16,32 @@ from .parameter_estimation_schema import ParameterEstimationSchema
 
 class MigrationError(APGIFrameworkError):
     """Errors in database migration operations."""
+
     pass
 
 
 class MigrationManager:
     """
     Manages database schema migrations for the APGI Framework.
-    
+
     Coordinates migrations between core framework tables and
     parameter estimation extensions.
     """
-    
+
     def __init__(self, db_path: Path):
         """
         Initialize migration manager.
-        
+
         Args:
             db_path: Path to SQLite database file
         """
         self.db_path = Path(db_path)
         self.parameter_estimation_schema = ParameterEstimationSchema(db_path)
-    
+
     def get_migration_status(self) -> Dict[str, Optional[str]]:
         """
         Get current migration status for all components.
-        
+
         Returns:
             Dict[str, Optional[str]]: Component -> version mapping
         """
@@ -51,34 +52,34 @@ class MigrationManager:
                     SELECT name FROM sqlite_master 
                     WHERE type='table' AND name='schema_versions'
                 """)
-                
+
                 if not cursor.fetchone():
-                    return {'core': None, 'parameter_estimation': None}
-                
+                    return {"core": None, "parameter_estimation": None}
+
                 # Get versions for all components
                 cursor = conn.execute("SELECT component, version FROM schema_versions")
                 versions = dict(cursor.fetchall())
-                
+
                 return {
-                    'core': versions.get('core'),
-                    'parameter_estimation': versions.get('parameter_estimation')
+                    "core": versions.get("core"),
+                    "parameter_estimation": versions.get("parameter_estimation"),
                 }
-                
+
         except Exception as e:
             raise MigrationError(f"Failed to get migration status: {str(e)}")
-    
+
     def migrate_all(self) -> None:
         """Migrate all components to latest versions."""
         try:
             # Ensure core tables exist (from existing persistence layer)
             self._ensure_core_tables()
-            
+
             # Migrate parameter estimation schema
             self.parameter_estimation_schema.migrate_schema()
-            
+
         except Exception as e:
             raise MigrationError(f"Failed to migrate all components: {str(e)}")
-    
+
     def _ensure_core_tables(self) -> None:
         """Ensure core framework tables exist."""
         try:
@@ -88,14 +89,14 @@ class MigrationManager:
                     SELECT name FROM sqlite_master 
                     WHERE type='table' AND name='experiments'
                 """)
-                
+
                 if cursor.fetchone():
                     # Core tables already exist, record version if not already recorded
                     cursor = conn.execute("""
                         SELECT version FROM schema_versions 
                         WHERE component = 'core'
                     """)
-                    
+
                     if not cursor.fetchone():
                         # Create schema_versions table if it doesn't exist
                         conn.execute("""
@@ -106,27 +107,26 @@ class MigrationManager:
                                 description TEXT
                             )
                         """)
-                        
+
                         # Record core version
-                        conn.execute("""
+                        conn.execute(
+                            """
                             INSERT OR REPLACE INTO schema_versions 
                             (component, version, description) 
                             VALUES (?, ?, ?)
-                        """, (
-                            'core',
-                            '1.0.0',
-                            'Core APGI Framework tables'
-                        ))
-                        
+                        """,
+                            ("core", "1.0.0", "Core APGI Framework tables"),
+                        )
+
                         conn.commit()
-                
+
         except Exception as e:
             raise MigrationError(f"Failed to ensure core tables: {str(e)}")
-    
+
     def validate_all_schemas(self) -> bool:
         """
         Validate that all schemas are properly installed.
-        
+
         Returns:
             bool: True if all schemas are valid
         """
@@ -134,38 +134,40 @@ class MigrationManager:
             # Validate parameter estimation schema
             if not self.parameter_estimation_schema.validate_schema():
                 return False
-            
+
             # Check core tables exist
             with sqlite3.connect(self.db_path) as conn:
-                required_core_tables = ['experiments', 'versions', 'backups']
+                required_core_tables = ["experiments", "versions", "backups"]
                 cursor = conn.execute("""
                     SELECT name FROM sqlite_master 
                     WHERE type='table' AND name NOT LIKE 'sqlite_%'
                 """)
                 existing_tables = {row[0] for row in cursor.fetchall()}
-                
+
                 missing_core = set(required_core_tables) - existing_tables
                 if missing_core:
                     return False
-            
+
             return True
-            
+
         except Exception as e:
             raise MigrationError(f"Failed to validate schemas: {str(e)}")
-    
+
     def reset_parameter_estimation_schema(self) -> None:
         """Reset parameter estimation schema (for testing/development)."""
         try:
             self.parameter_estimation_schema.drop_parameter_estimation_tables()
             self.parameter_estimation_schema.migrate_schema()
-            
+
         except Exception as e:
-            raise MigrationError(f"Failed to reset parameter estimation schema: {str(e)}")
-    
+            raise MigrationError(
+                f"Failed to reset parameter estimation schema: {str(e)}"
+            )
+
     def get_table_info(self) -> Dict[str, List[str]]:
         """
         Get information about all tables in the database.
-        
+
         Returns:
             Dict[str, List[str]]: Table name -> column names mapping
         """
@@ -176,15 +178,17 @@ class MigrationManager:
                     WHERE type='table' AND name NOT LIKE 'sqlite_%'
                     ORDER BY name
                 """)
-                
+
                 table_info = {}
                 for (table_name,) in cursor.fetchall():
                     cursor = conn.execute(f"PRAGMA table_info({table_name})")
-                    columns = [row[1] for row in cursor.fetchall()]  # row[1] is column name
+                    columns = [
+                        row[1] for row in cursor.fetchall()
+                    ]  # row[1] is column name
                     table_info[table_name] = columns
-                
+
                 return table_info
-                
+
         except Exception as e:
             raise MigrationError(f"Failed to get table info: {str(e)}")
 
@@ -192,10 +196,10 @@ class MigrationManager:
 def create_migration_manager(db_path: Path) -> MigrationManager:
     """
     Factory function to create migration manager.
-    
+
     Args:
         db_path: Path to SQLite database file
-        
+
     Returns:
         MigrationManager: Initialized migration manager
     """

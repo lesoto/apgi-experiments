@@ -16,35 +16,36 @@ from ..exceptions import APGIFrameworkError
 
 class SchemaError(APGIFrameworkError):
     """Errors in database schema operations."""
+
     pass
 
 
 class ParameterEstimationSchema:
     """
     Database schema manager for parameter estimation functionality.
-    
+
     Handles creation, migration, and management of parameter estimation
     specific database tables and indices.
     """
-    
+
     SCHEMA_VERSION = "1.0.0"
-    
+
     def __init__(self, db_path: Path):
         """
         Initialize schema manager.
-        
+
         Args:
             db_path: Path to SQLite database file
         """
         self.db_path = Path(db_path)
-        
+
     def create_parameter_estimation_tables(self) -> None:
         """Create all parameter estimation specific tables."""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 # Enable foreign key constraints
                 conn.execute("PRAGMA foreign_keys = ON")
-                
+
                 # Create sessions table
                 conn.execute("""
                     CREATE TABLE IF NOT EXISTS parameter_estimation_sessions (
@@ -64,7 +65,7 @@ class ParameterEstimationSchema:
                         CHECK (session_quality_score >= 0.0 AND session_quality_score <= 1.0)
                     )
                 """)
-                
+
                 # Create trials table
                 conn.execute("""
                     CREATE TABLE IF NOT EXISTS parameter_estimation_trials (
@@ -106,7 +107,7 @@ class ParameterEstimationSchema:
                         CHECK (overall_quality_score >= 0.0 AND overall_quality_score <= 1.0)
                     )
                 """)
-                
+
                 # Create detection trials specific table
                 conn.execute("""
                     CREATE TABLE IF NOT EXISTS detection_trials (
@@ -123,7 +124,7 @@ class ParameterEstimationSchema:
                         CHECK (contrast_level >= 0.0 AND contrast_level <= 1.0)
                     )
                 """)
-                
+
                 # Create heartbeat trials specific table
                 conn.execute("""
                     CREATE TABLE IF NOT EXISTS heartbeat_trials (
@@ -143,7 +144,7 @@ class ParameterEstimationSchema:
                         CHECK (heart_rate >= 0.0 AND heart_rate <= 200.0)
                     )
                 """)
-                
+
                 # Create oddball trials specific table
                 conn.execute("""
                     CREATE TABLE IF NOT EXISTS oddball_trials (
@@ -165,7 +166,7 @@ class ParameterEstimationSchema:
                         CHECK (deviant_type IS NULL OR deviant_type IN ('interoceptive', 'exteroceptive'))
                     )
                 """)
-                
+
                 # Create parameter estimates table
                 conn.execute("""
                     CREATE TABLE IF NOT EXISTS parameter_estimates (
@@ -242,7 +243,7 @@ class ParameterEstimationSchema:
                         CHECK (detection_accuracy IS NULL OR (detection_accuracy >= 0.0 AND detection_accuracy <= 1.0))
                     )
                 """)
-                
+
                 # Create quality metrics table for detailed tracking
                 conn.execute("""
                     CREATE TABLE IF NOT EXISTS trial_quality_metrics (
@@ -261,10 +262,10 @@ class ParameterEstimationSchema:
                         CHECK (heart_rate_variability >= 0.0)
                     )
                 """)
-                
+
                 # Create indices for performance
                 self._create_indices(conn)
-                
+
                 # Create schema version tracking
                 conn.execute("""
                     CREATE TABLE IF NOT EXISTS schema_versions (
@@ -274,23 +275,26 @@ class ParameterEstimationSchema:
                         description TEXT
                     )
                 """)
-                
+
                 # Record schema version
-                conn.execute("""
+                conn.execute(
+                    """
                     INSERT OR REPLACE INTO schema_versions 
                     (component, version, description) 
                     VALUES (?, ?, ?)
-                """, (
-                    'parameter_estimation',
-                    self.SCHEMA_VERSION,
-                    'Parameter estimation tables and indices'
-                ))
-                
+                """,
+                    (
+                        "parameter_estimation",
+                        self.SCHEMA_VERSION,
+                        "Parameter estimation tables and indices",
+                    ),
+                )
+
                 conn.commit()
-                
+
         except Exception as e:
             raise SchemaError(f"Failed to create parameter estimation tables: {str(e)}")
-    
+
     def _create_indices(self, conn: sqlite3.Connection) -> None:
         """Create database indices for performance optimization."""
         indices = [
@@ -298,43 +302,40 @@ class ParameterEstimationSchema:
             "CREATE INDEX IF NOT EXISTS idx_sessions_participant ON parameter_estimation_sessions(participant_id)",
             "CREATE INDEX IF NOT EXISTS idx_sessions_date ON parameter_estimation_sessions(session_date)",
             "CREATE INDEX IF NOT EXISTS idx_sessions_status ON parameter_estimation_sessions(completion_status)",
-            
             # Trial indices
             "CREATE INDEX IF NOT EXISTS idx_trials_session ON parameter_estimation_trials(session_id)",
             "CREATE INDEX IF NOT EXISTS idx_trials_participant ON parameter_estimation_trials(participant_id)",
             "CREATE INDEX IF NOT EXISTS idx_trials_task_type ON parameter_estimation_trials(task_type)",
             "CREATE INDEX IF NOT EXISTS idx_trials_timestamp ON parameter_estimation_trials(timestamp)",
             "CREATE INDEX IF NOT EXISTS idx_trials_quality ON parameter_estimation_trials(overall_quality_score)",
-            
             # Parameter estimate indices
             "CREATE INDEX IF NOT EXISTS idx_estimates_session ON parameter_estimates(session_id)",
             "CREATE INDEX IF NOT EXISTS idx_estimates_participant ON parameter_estimates(participant_id)",
             "CREATE INDEX IF NOT EXISTS idx_estimates_timestamp ON parameter_estimates(estimation_timestamp)",
-            
             # Composite indices for common queries
             "CREATE INDEX IF NOT EXISTS idx_trials_session_task ON parameter_estimation_trials(session_id, task_type)",
             "CREATE INDEX IF NOT EXISTS idx_trials_participant_task ON parameter_estimation_trials(participant_id, task_type)",
         ]
-        
+
         for index_sql in indices:
             conn.execute(index_sql)
-    
+
     def migrate_schema(self, target_version: Optional[str] = None) -> None:
         """
         Migrate database schema to target version.
-        
+
         Args:
             target_version: Target schema version (latest if None)
         """
         if target_version is None:
             target_version = self.SCHEMA_VERSION
-        
+
         try:
             current_version = self.get_schema_version()
-            
+
             if current_version == target_version:
                 return  # Already at target version
-            
+
             # For now, we only support creating the initial schema
             # Future versions would implement incremental migrations
             if current_version is None:
@@ -342,10 +343,12 @@ class ParameterEstimationSchema:
             else:
                 # Implement version-specific migrations here
                 pass
-                
+
         except Exception as e:
-            raise SchemaError(f"Failed to migrate schema to version {target_version}: {str(e)}")
-    
+            raise SchemaError(
+                f"Failed to migrate schema to version {target_version}: {str(e)}"
+            )
+
     def get_schema_version(self) -> Optional[str]:
         """Get current schema version for parameter estimation component."""
         try:
@@ -356,26 +359,26 @@ class ParameterEstimationSchema:
                 """)
                 result = cursor.fetchone()
                 return result[0] if result else None
-                
+
         except sqlite3.OperationalError:
             # Table doesn't exist yet
             return None
         except Exception as e:
             raise SchemaError(f"Failed to get schema version: {str(e)}")
-    
+
     def validate_schema(self) -> bool:
         """Validate that all required tables and indices exist."""
         required_tables = [
-            'parameter_estimation_sessions',
-            'parameter_estimation_trials',
-            'detection_trials',
-            'heartbeat_trials',
-            'oddball_trials',
-            'parameter_estimates',
-            'trial_quality_metrics',
-            'schema_versions'
+            "parameter_estimation_sessions",
+            "parameter_estimation_trials",
+            "detection_trials",
+            "heartbeat_trials",
+            "oddball_trials",
+            "parameter_estimates",
+            "trial_quality_metrics",
+            "schema_versions",
         ]
-        
+
         try:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.execute("""
@@ -383,46 +386,46 @@ class ParameterEstimationSchema:
                     WHERE type='table' AND name NOT LIKE 'sqlite_%'
                 """)
                 existing_tables = {row[0] for row in cursor.fetchall()}
-                
+
                 missing_tables = set(required_tables) - existing_tables
                 if missing_tables:
                     return False
-                
+
                 # Validate schema version
                 version = self.get_schema_version()
                 return version == self.SCHEMA_VERSION
-                
+
         except Exception as e:
             raise SchemaError(f"Failed to validate schema: {str(e)}")
-    
+
     def drop_parameter_estimation_tables(self) -> None:
         """Drop all parameter estimation tables (for testing/cleanup)."""
         tables_to_drop = [
-            'trial_quality_metrics',
-            'parameter_estimates',
-            'oddball_trials',
-            'heartbeat_trials',
-            'detection_trials',
-            'parameter_estimation_trials',
-            'parameter_estimation_sessions'
+            "trial_quality_metrics",
+            "parameter_estimates",
+            "oddball_trials",
+            "heartbeat_trials",
+            "detection_trials",
+            "parameter_estimation_trials",
+            "parameter_estimation_sessions",
         ]
-        
+
         try:
             with sqlite3.connect(self.db_path) as conn:
                 conn.execute("PRAGMA foreign_keys = OFF")
-                
+
                 for table in tables_to_drop:
                     conn.execute(f"DROP TABLE IF EXISTS {table}")
-                
+
                 # Remove schema version record
                 conn.execute("""
                     DELETE FROM schema_versions 
                     WHERE component = 'parameter_estimation'
                 """)
-                
+
                 conn.execute("PRAGMA foreign_keys = ON")
                 conn.commit()
-                
+
         except Exception as e:
             raise SchemaError(f"Failed to drop parameter estimation tables: {str(e)}")
 
@@ -430,10 +433,10 @@ class ParameterEstimationSchema:
 def create_parameter_estimation_schema(db_path: Path) -> ParameterEstimationSchema:
     """
     Factory function to create and initialize parameter estimation schema.
-    
+
     Args:
         db_path: Path to SQLite database file
-        
+
     Returns:
         ParameterEstimationSchema: Initialized schema manager
     """

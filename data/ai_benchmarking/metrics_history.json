@@ -5,75 +5,51 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          16,
-          21,
-          18
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          30,
-          500,
-          21
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          28,
-          36,
-          8
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          25,
-          12,
-          8
+          12
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:33.367849",
-    "end_time": "2025-12-15T19:35:33.584058"
+    "start_time": "2026-01-10T10:40:40.821446",
+    "end_time": "2026-01-10T10:40:41.340631"
   },
   {
     "episode": 1,
@@ -81,75 +57,51 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          8,
-          11,
-          23
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          500,
-          46,
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          500,
-          18,
-          500
+          107
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          500,
-          3,
-          60
+          142
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:33.597337",
-    "end_time": "2025-12-15T19:35:34.414166"
+    "start_time": "2026-01-10T10:40:41.351525",
+    "end_time": "2026-01-10T10:40:41.725657"
   },
   {
     "episode": 2,
@@ -157,75 +109,51 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          59,
-          500,
-          4
+          12
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          39,
-          22,
-          46
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          96,
-          216,
-          10
+          11
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          63,
-          8,
-          25
+          27
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:34.426801",
-    "end_time": "2025-12-15T19:35:34.772563"
+    "start_time": "2026-01-10T10:40:41.736605",
+    "end_time": "2026-01-10T10:40:41.951035"
   },
   {
     "episode": 3,
@@ -233,151 +161,103 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          25,
-          36,
-          13
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          500,
-          40,
-          240
+          12
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          67,
-          42,
-          19
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          6,
-          11,
-          30
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:34.785641",
-    "end_time": "2025-12-15T19:35:35.161702"
+    "start_time": "2026-01-10T10:40:41.961976",
+    "end_time": "2026-01-10T10:40:42.469432"
   },
   {
     "episode": 4,
-    "steps": 284,
+    "steps": 501,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          13,
-          139,
-          283
+          243
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          36,
-          137,
-          112
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          50,
-          40,
-          44
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          150,
-          58,
-          89
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:35.174227",
-    "end_time": "2025-12-15T19:35:35.497965"
+    "start_time": "2026-01-10T10:40:42.480245",
+    "end_time": "2026-01-10T10:40:43.045983"
   },
   {
     "episode": 5,
@@ -385,151 +265,103 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          55,
-          8,
-          23
+          9
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          7,
-          31,
-          17
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          21,
-          2,
-          37
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          500,
-          28,
-          23
+          12
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:35.511851",
-    "end_time": "2025-12-15T19:35:35.813579"
+    "start_time": "2026-01-10T10:40:43.056978",
+    "end_time": "2026-01-10T10:40:43.358054"
   },
   {
     "episode": 6,
-    "steps": 361,
+    "steps": 28,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          6,
-          9,
-          93
+          27
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          69,
-          28,
-          64
+          8
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          39,
-          15,
-          360
+          14
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          26,
-          78,
-          22
+          11
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:35.826828",
-    "end_time": "2025-12-15T19:35:36.090894"
+    "start_time": "2026-01-10T10:40:43.369049",
+    "end_time": "2026-01-10T10:40:43.387844"
   },
   {
     "episode": 7,
@@ -537,531 +369,363 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          45,
-          35,
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          30,
-          20,
-          40
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "dqn": {
-        "survival_times": [
-          30,
-          43,
-          14
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "ipi": {
-        "survival_times": [
-          500,
-          21,
-          15
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      }
-    },
-    "start_time": "2025-12-15T19:35:36.103693",
-    "end_time": "2025-12-15T19:35:36.519927"
-  },
-  {
-    "episode": 8,
-    "steps": 501,
-    "agent_metrics": {
-      "random": {
-        "survival_times": [
-          22,
-          363,
-          372
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "reactive": {
-        "survival_times": [
-          13,
-          48,
-          19
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "dqn": {
-        "survival_times": [
-          5,
-          266,
-          500
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "ipi": {
-        "survival_times": [
-          377,
-          277,
-          14
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      }
-    },
-    "start_time": "2025-12-15T19:35:36.532710",
-    "end_time": "2025-12-15T19:35:37.161747"
-  },
-  {
-    "episode": 9,
-    "steps": 501,
-    "agent_metrics": {
-      "random": {
-        "survival_times": [
-          25,
-          500,
-          18
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "reactive": {
-        "survival_times": [
-          17,
-          358,
-          500
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "dqn": {
-        "survival_times": [
-          39,
-          500,
-          500
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "ipi": {
-        "survival_times": [
-          8,
-          35,
-          52
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      }
-    },
-    "start_time": "2025-12-15T19:35:37.174637",
-    "end_time": "2025-12-15T19:35:37.980125"
-  },
-  {
-    "episode": 10,
-    "steps": 76,
-    "agent_metrics": {
-      "random": {
-        "survival_times": [
-          13,
-          8,
-          75
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "reactive": {
-        "survival_times": [
-          30,
-          55,
           29
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          35,
-          14,
           9
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          39,
-          49,
-          47
+          21
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:37.994260",
-    "end_time": "2025-12-15T19:35:38.119503"
+    "start_time": "2026-01-10T10:40:43.398769",
+    "end_time": "2026-01-10T10:40:43.595232"
   },
   {
-    "episode": 11,
-    "steps": 501,
+    "episode": 8,
+    "steps": 305,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          500,
-          500,
-          12
+          16
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          16,
-          20,
-          500
+          32
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          22,
-          63,
-          6
+          13
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          500,
-          23,
-          40
+          304
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:38.132656",
-    "end_time": "2025-12-15T19:35:38.801518"
+    "start_time": "2026-01-10T10:40:43.605726",
+    "end_time": "2026-01-10T10:40:43.715173"
   },
   {
-    "episode": 12,
-    "steps": 88,
+    "episode": 9,
+    "steps": 334,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          3,
-          81,
-          26
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "reactive": {
-        "survival_times": [
-          38,
-          34,
-          50
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "dqn": {
-        "survival_times": [
-          66,
-          9,
-          87
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "ipi": {
-        "survival_times": [
-          17,
-          72,
           10
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
-          0
-        ]
-      }
-    },
-    "start_time": "2025-12-15T19:35:38.814190",
-    "end_time": "2025-12-15T19:35:38.952199"
-  },
-  {
-    "episode": 13,
-    "steps": 501,
-    "agent_metrics": {
-      "random": {
-        "survival_times": [
-          243,
-          156,
-          19
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          108,
-          368,
-          89
+          333
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          353,
-          6,
-          81
+          11
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          500,
-          348,
-          121
+          16
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:38.964639",
-    "end_time": "2025-12-15T19:35:39.682428"
+    "start_time": "2026-01-10T10:40:43.726085",
+    "end_time": "2026-01-10T10:40:43.849276"
+  },
+  {
+    "episode": 10,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          500
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          500
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          73
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          500
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      }
+    },
+    "start_time": "2026-01-10T10:40:43.861968",
+    "end_time": "2026-01-10T10:40:44.311729"
+  },
+  {
+    "episode": 11,
+    "steps": 179,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          156
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          146
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          14
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          178
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      }
+    },
+    "start_time": "2026-01-10T10:40:44.322478",
+    "end_time": "2026-01-10T10:40:44.469736"
+  },
+  {
+    "episode": 12,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          500
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          29
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          135
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          5
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      }
+    },
+    "start_time": "2026-01-10T10:40:44.480340",
+    "end_time": "2026-01-10T10:40:44.709475"
+  },
+  {
+    "episode": 13,
+    "steps": 460,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          41
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          459
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          23
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          19
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      }
+    },
+    "start_time": "2026-01-10T10:40:44.720211",
+    "end_time": "2026-01-10T10:40:44.913715"
   },
   {
     "episode": 14,
@@ -1069,151 +733,103 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          500,
-          27,
-          500
+          14
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          500,
-          500,
-          500
+          5
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          500,
-          22,
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          14,
-          14,
-          500
+          263
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:39.695189",
-    "end_time": "2025-12-15T19:35:41.039838"
+    "start_time": "2026-01-10T10:40:44.924601",
+    "end_time": "2026-01-10T10:40:45.193340"
   },
   {
     "episode": 15,
-    "steps": 447,
+    "steps": 291,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          446,
-          12,
-          52
+          13
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          32,
-          16,
-          173
+          22
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          27,
-          28,
-          186
+          290
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          42,
-          53,
-          67
+          76
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:41.052831",
-    "end_time": "2025-12-15T19:35:41.397900"
+    "start_time": "2026-01-10T10:40:45.204184",
+    "end_time": "2026-01-10T10:40:45.318853"
   },
   {
     "episode": 16,
@@ -1221,75 +837,51 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          500,
-          9,
-          10
+          46
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          43,
-          29,
-          23
+          26
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          24,
-          20,
-          32
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          18,
-          70,
-          59
+          41
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:41.410714",
-    "end_time": "2025-12-15T19:35:41.688051"
+    "start_time": "2026-01-10T10:40:45.329984",
+    "end_time": "2026-01-10T10:40:45.533414"
   },
   {
     "episode": 17,
@@ -1297,151 +889,103 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          500,
-          5,
+          364
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          20
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "reactive": {
-        "survival_times": [
-          500,
-          35,
-          274
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "dqn": {
-        "survival_times": [
-          500,
-          500,
-          11
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          500,
-          500,
-          21
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      }
-    },
-    "start_time": "2025-12-15T19:35:41.700686",
-    "end_time": "2025-12-15T19:35:42.867526"
-  },
-  {
-    "episode": 18,
-    "steps": 113,
-    "agent_metrics": {
-      "random": {
-        "survival_times": [
-          39,
-          25,
           5
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2026-01-10T10:40:45.544115",
+    "end_time": "2026-01-10T10:40:45.863195"
+  },
+  {
+    "episode": 18,
+    "steps": 280,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          15
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          112,
-          23,
-          18
+          274
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          87,
-          23,
-          102
+          20
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          19,
-          38,
-          7
+          279
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:42.880218",
-    "end_time": "2025-12-15T19:35:43.016735"
+    "start_time": "2026-01-10T10:40:45.873875",
+    "end_time": "2026-01-10T10:40:46.056379"
   },
   {
     "episode": 19,
@@ -1449,151 +993,103 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          70,
-          37,
-          52
+          358
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          500,
-          29,
-          35
+          8
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          13,
-          11,
-          500
+          3
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          26,
-          61,
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:43.029472",
-    "end_time": "2025-12-15T19:35:43.619157"
+    "start_time": "2026-01-10T10:40:46.067095",
+    "end_time": "2026-01-10T10:40:46.336131"
   },
   {
     "episode": 20,
-    "steps": 501,
+    "steps": 54,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          9,
-          500,
-          48
+          11
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          95,
-          12,
-          73
+          17
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          197,
-          31,
-          38
+          12
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          22,
-          85,
-          27
+          53
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:43.633899",
-    "end_time": "2025-12-15T19:35:44.030795"
+    "start_time": "2026-01-10T10:40:46.349661",
+    "end_time": "2026-01-10T10:40:46.375310"
   },
   {
     "episode": 21,
@@ -1601,531 +1097,363 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          142,
-          31,
-          49
+          22
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          113,
-          500,
-          76
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          38,
-          24,
-          97
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          18,
-          30,
-          17
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      }
-    },
-    "start_time": "2025-12-15T19:35:44.043622",
-    "end_time": "2025-12-15T19:35:44.385012"
-  },
-  {
-    "episode": 22,
-    "steps": 501,
-    "agent_metrics": {
-      "random": {
-        "survival_times": [
-          500,
-          4,
-          35
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "reactive": {
-        "survival_times": [
-          485,
-          500,
-          74
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "dqn": {
-        "survival_times": [
-          18,
-          46,
           8
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
+          0
+        ]
+      }
+    },
+    "start_time": "2026-01-10T10:40:46.386060",
+    "end_time": "2026-01-10T10:40:46.668038"
+  },
+  {
+    "episode": 22,
+    "steps": 79,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          72
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          78
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          38
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          16,
-          458,
-          16
+          54
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:44.398947",
-    "end_time": "2025-12-15T19:35:45.082515"
+    "start_time": "2026-01-10T10:40:46.678970",
+    "end_time": "2026-01-10T10:40:46.748874"
   },
   {
     "episode": 23,
-    "steps": 501,
+    "steps": 443,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          500,
-          500,
-          5
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "reactive": {
-        "survival_times": [
-          28,
-          33,
-          13
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "dqn": {
-        "survival_times": [
-          7,
-          500,
-          46
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "ipi": {
-        "survival_times": [
-          14,
-          19,
-          500
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      }
-    },
-    "start_time": "2025-12-15T19:35:45.095358",
-    "end_time": "2025-12-15T19:35:45.789018"
-  },
-  {
-    "episode": 24,
-    "steps": 501,
-    "agent_metrics": {
-      "random": {
-        "survival_times": [
-          6,
-          53,
-          14
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "reactive": {
-        "survival_times": [
-          80,
-          19,
-          500
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "dqn": {
-        "survival_times": [
-          3,
-          13,
-          500
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "ipi": {
-        "survival_times": [
-          11,
-          37,
-          10
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      }
-    },
-    "start_time": "2025-12-15T19:35:45.801760",
-    "end_time": "2025-12-15T19:35:46.278623"
-  },
-  {
-    "episode": 25,
-    "steps": 501,
-    "agent_metrics": {
-      "random": {
-        "survival_times": [
-          500,
-          121,
-          153
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "reactive": {
-        "survival_times": [
-          500,
-          9,
-          188
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "dqn": {
-        "survival_times": [
-          156,
-          500,
-          178
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "ipi": {
-        "survival_times": [
-          166,
-          10,
-          138
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      }
-    },
-    "start_time": "2025-12-15T19:35:46.291504",
-    "end_time": "2025-12-15T19:35:47.160452"
-  },
-  {
-    "episode": 26,
-    "steps": 207,
-    "agent_metrics": {
-      "random": {
-        "survival_times": [
-          189,
-          32,
-          18
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "reactive": {
-        "survival_times": [
-          30,
-          199,
           15
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "dqn": {
-        "survival_times": [
-          9,
-          103,
-          25
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "ipi": {
-        "survival_times": [
-          6,
-          206,
-          41
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      }
-    },
-    "start_time": "2025-12-15T19:35:47.173311",
-    "end_time": "2025-12-15T19:35:47.424002"
-  },
-  {
-    "episode": 27,
-    "steps": 501,
-    "agent_metrics": {
-      "random": {
-        "survival_times": [
-          490,
-          126,
-          166
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          11,
-          500,
-          24
+          32
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          139,
-          103,
-          19
+          23
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          9,
-          97,
-          119
+          442
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:47.436746",
-    "end_time": "2025-12-15T19:35:47.924159"
+    "start_time": "2026-01-10T10:40:46.759929",
+    "end_time": "2026-01-10T10:40:46.932605"
+  },
+  {
+    "episode": 24,
+    "steps": 153,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          8
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          18
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          152
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          28
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      }
+    },
+    "start_time": "2026-01-10T10:40:46.943015",
+    "end_time": "2026-01-10T10:40:46.998162"
+  },
+  {
+    "episode": 25,
+    "steps": 463,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          205
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          17
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          9
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          462
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      }
+    },
+    "start_time": "2026-01-10T10:40:47.009111",
+    "end_time": "2026-01-10T10:40:47.256701"
+  },
+  {
+    "episode": 26,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          500
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          271
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          26
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          260
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      }
+    },
+    "start_time": "2026-01-10T10:40:47.267663",
+    "end_time": "2026-01-10T10:40:47.592584"
+  },
+  {
+    "episode": 27,
+    "steps": 188,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          187
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          42
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          29
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          14
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      }
+    },
+    "start_time": "2026-01-10T10:40:47.603588",
+    "end_time": "2026-01-10T10:40:47.694562"
   },
   {
     "episode": 28,
@@ -2133,151 +1461,103 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          500,
-          334,
-          120
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          110,
-          500,
-          23
+          17
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          102,
-          9,
-          98
+          9
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          27,
-          146,
-          14
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:47.936754",
-    "end_time": "2025-12-15T19:35:48.492137"
+    "start_time": "2026-01-10T10:40:47.705344",
+    "end_time": "2026-01-10T10:40:48.106194"
   },
   {
     "episode": 29,
-    "steps": 138,
+    "steps": 501,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          60,
-          27,
-          34
+          12
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          23,
-          65,
-          20
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          19,
-          31,
-          44
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          137,
-          39,
-          7
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:48.504922",
-    "end_time": "2025-12-15T19:35:48.666702"
+    "start_time": "2026-01-10T10:40:48.117204",
+    "end_time": "2026-01-10T10:40:48.532185"
   },
   {
     "episode": 30,
@@ -2285,75 +1565,51 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          44,
-          51,
-          40
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          18,
-          55,
-          500
+          10
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          35,
-          374,
-          47
+          9
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          8,
-          28,
-          500
+          378
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:48.681851",
-    "end_time": "2025-12-15T19:35:49.269249"
+    "start_time": "2026-01-10T10:40:48.545544",
+    "end_time": "2026-01-10T10:40:48.817709"
   },
   {
     "episode": 31,
@@ -2361,75 +1617,51 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          182,
-          58,
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          32,
-          204,
-          77
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          500,
-          51,
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          42,
-          7,
-          321
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:49.282259",
-    "end_time": "2025-12-15T19:35:49.993046"
+    "start_time": "2026-01-10T10:40:48.828394",
+    "end_time": "2026-01-10T10:40:49.487625"
   },
   {
     "episode": 32,
@@ -2437,75 +1669,51 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          8,
-          31,
-          9
+          11
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          17,
-          500,
-          47
+          34
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          18,
-          32,
-          225
+          7
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          54,
-          500,
-          21
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:50.006459",
-    "end_time": "2025-12-15T19:35:50.461219"
+    "start_time": "2026-01-10T10:40:49.498812",
+    "end_time": "2026-01-10T10:40:49.736320"
   },
   {
     "episode": 33,
@@ -2513,75 +1721,51 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          21,
-          184,
-          57
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          13,
-          9,
-          174
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          89,
-          27,
-          500
+          9
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          44,
-          159,
-          37
+          16
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:50.473637",
-    "end_time": "2025-12-15T19:35:50.878485"
+    "start_time": "2026-01-10T10:40:49.758217",
+    "end_time": "2026-01-10T10:40:50.093992"
   },
   {
     "episode": 34,
@@ -2589,75 +1773,51 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          35,
-          500,
-          269
+          24
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          15,
-          17,
-          81
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          32,
-          5,
-          41
+          15
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          500,
-          264,
-          28
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:50.891269",
-    "end_time": "2025-12-15T19:35:51.493580"
+    "start_time": "2026-01-10T10:40:50.104896",
+    "end_time": "2026-01-10T10:40:50.452256"
   },
   {
     "episode": 35,
@@ -2665,75 +1825,51 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          500,
-          6,
-          30
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          14,
-          56,
-          37
+          17
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          64,
-          6,
-          38
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          500,
-          76,
-          26
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:51.506378",
-    "end_time": "2025-12-15T19:35:51.943131"
+    "start_time": "2026-01-10T10:40:50.463386",
+    "end_time": "2026-01-10T10:40:50.932566"
   },
   {
     "episode": 36,
@@ -2741,75 +1877,51 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          43,
-          28,
-          500
+          19
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          500,
-          17,
-          14
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          290,
-          500,
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          500,
-          500,
-          6
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:51.955823",
-    "end_time": "2025-12-15T19:35:53.027366"
+    "start_time": "2026-01-10T10:40:50.943299",
+    "end_time": "2026-01-10T10:40:51.408917"
   },
   {
     "episode": 37,
@@ -2817,151 +1929,103 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          15,
-          500,
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          7,
-          35,
-          123
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          4,
-          500,
-          5
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          28,
-          16,
-          110
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:53.039956",
-    "end_time": "2025-12-15T19:35:53.638567"
+    "start_time": "2026-01-10T10:40:51.419675",
+    "end_time": "2026-01-10T10:40:52.013126"
   },
   {
     "episode": 38,
-    "steps": 501,
+    "steps": 127,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          32,
-          199,
-          500
+          106
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          500,
-          48,
-          24
+          126
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          500,
-          500,
-          19
+          114
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          500,
-          500,
-          500
+          12
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:53.651006",
-    "end_time": "2025-12-15T19:35:54.818809"
+    "start_time": "2026-01-10T10:40:52.024233",
+    "end_time": "2026-01-10T10:40:52.113472"
   },
   {
     "episode": 39,
@@ -2969,75 +2033,51 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          40,
-          15,
-          5
+          10
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          500,
-          17,
-          54
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          376,
-          38,
-          31
+          115
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          27,
-          62,
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:54.831974",
-    "end_time": "2025-12-15T19:35:55.334136"
+    "start_time": "2026-01-10T10:40:52.124355",
+    "end_time": "2026-01-10T10:40:52.466713"
   },
   {
     "episode": 40,
@@ -3045,75 +2085,51 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          6,
-          364,
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          43,
-          8,
-          500
+          20
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          17,
-          18,
-          49
+          3
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          44,
-          29,
-          8
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:55.350716",
-    "end_time": "2025-12-15T19:35:55.835931"
+    "start_time": "2026-01-10T10:40:52.480309",
+    "end_time": "2026-01-10T10:40:52.784485"
   },
   {
     "episode": 41,
@@ -3121,227 +2137,155 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          500,
-          13,
-          67
+          110
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          41,
-          202,
-          435
+          123
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          2,
-          187,
-          55
+          13
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          448,
-          44,
-          22
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:55.848492",
-    "end_time": "2025-12-15T19:35:56.418479"
+    "start_time": "2026-01-10T10:40:52.795412",
+    "end_time": "2026-01-10T10:40:53.019560"
   },
   {
     "episode": 42,
-    "steps": 501,
+    "steps": 350,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          31,
-          14,
-          41
+          340
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          18,
-          7,
-          70
+          18
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          500,
-          33,
-          46
+          26
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          18,
-          39,
-          57
+          349
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:56.431011",
-    "end_time": "2025-12-15T19:35:56.726090"
+    "start_time": "2026-01-10T10:40:53.030438",
+    "end_time": "2026-01-10T10:40:53.236934"
   },
   {
     "episode": 43,
-    "steps": 501,
+    "steps": 46,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          25,
-          43,
-          500
+          24
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          66,
-          18,
-          41
+          45
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          6,
-          48,
-          32
+          13
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          24,
-          12,
-          500
+          37
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:56.738779",
-    "end_time": "2025-12-15T19:35:57.129268"
+    "start_time": "2026-01-10T10:40:53.248030",
+    "end_time": "2026-01-10T10:40:53.280998"
   },
   {
     "episode": 44,
@@ -3349,151 +2293,103 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          500,
-          17,
-          500
+          172
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          19,
-          45,
           7
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          500,
-          12,
           10
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          12,
-          35,
-          29
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:57.142029",
-    "end_time": "2025-12-15T19:35:57.706413"
+    "start_time": "2026-01-10T10:40:53.291710",
+    "end_time": "2026-01-10T10:40:53.539164"
   },
   {
     "episode": 45,
-    "steps": 501,
+    "steps": 437,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          281,
-          9,
-          259
+          66
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          500,
-          24,
-          500
+          436
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          269,
-          6,
-          294
+          411
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          35,
-          500,
-          16
+          84
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:57.719529",
-    "end_time": "2025-12-15T19:35:58.556076"
+    "start_time": "2026-01-10T10:40:53.549890",
+    "end_time": "2026-01-10T10:40:53.861173"
   },
   {
     "episode": 46,
@@ -3501,75 +2397,51 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          500,
-          500,
-          13
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          26,
-          75,
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          4,
-          500,
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          16,
-          19,
-          500
+          441
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:58.568702",
-    "end_time": "2025-12-15T19:35:59.506606"
+    "start_time": "2026-01-10T10:40:53.871870",
+    "end_time": "2026-01-10T10:40:54.507261"
   },
   {
     "episode": 47,
@@ -3577,75 +2449,51 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          199,
-          176,
-          500
+          13
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          186,
-          17,
-          43
+          3
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          11,
-          500,
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          45,
-          500,
-          31
+          241
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:35:59.519234",
-    "end_time": "2025-12-15T19:36:00.336675"
+    "start_time": "2026-01-10T10:40:54.518023",
+    "end_time": "2026-01-10T10:40:54.768087"
   },
   {
     "episode": 48,
@@ -3653,227 +2501,155 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          500,
-          45,
-          74
+          6
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          18,
-          130,
-          8
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          132,
-          99,
-          10
+          246
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          42,
-          23,
-          59
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:00.349489",
-    "end_time": "2025-12-15T19:36:00.684205"
+    "start_time": "2026-01-10T10:40:54.779026",
+    "end_time": "2026-01-10T10:40:55.190787"
   },
   {
     "episode": 49,
-    "steps": 337,
-    "agent_metrics": {
-      "random": {
-        "survival_times": [
-          60,
-          314,
-          40
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "reactive": {
-        "survival_times": [
-          9,
-          32,
-          336
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "dqn": {
-        "survival_times": [
-          50,
-          17,
-          1
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "ipi": {
-        "survival_times": [
-          31,
-          18,
-          24
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      }
-    },
-    "start_time": "2025-12-15T19:36:00.696822",
-    "end_time": "2025-12-15T19:36:00.987617"
-  },
-  {
-    "episode": 50,
     "steps": 501,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          500,
-          500,
-          4
+          12
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          18,
-          100,
-          36
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          81,
-          500,
-          55
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          136,
-          47,
-          44
+          23
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:01.004247",
-    "end_time": "2025-12-15T19:36:01.665646"
+    "start_time": "2026-01-10T10:40:55.201986",
+    "end_time": "2026-01-10T10:40:55.513219"
+  },
+  {
+    "episode": 50,
+    "steps": 374,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          10
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          354
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          24
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          373
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      }
+    },
+    "start_time": "2026-01-10T10:40:55.529256",
+    "end_time": "2026-01-10T10:40:55.768471"
   },
   {
     "episode": 51,
@@ -3881,75 +2657,51 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          500,
-          13,
-          484
+          50
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          469,
-          15,
-          28
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          25,
-          27,
-          36
+          189
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          500,
-          14,
-          17
+          36
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:01.678588",
-    "end_time": "2025-12-15T19:36:02.325723"
+    "start_time": "2026-01-10T10:40:55.779244",
+    "end_time": "2026-01-10T10:40:56.021429"
   },
   {
     "episode": 52,
@@ -3957,227 +2709,155 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          361,
-          135,
-          4
+          33
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          157,
-          184,
-          16
+          18
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          390,
-          141,
-          371
+          42
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          500,
-          15,
-          167
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:02.338385",
-    "end_time": "2025-12-15T19:36:03.081176"
+    "start_time": "2026-01-10T10:40:56.032398",
+    "end_time": "2026-01-10T10:40:56.255631"
   },
   {
     "episode": 53,
-    "steps": 65,
-    "agent_metrics": {
-      "random": {
-        "survival_times": [
-          3,
-          15,
-          13
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "reactive": {
-        "survival_times": [
-          38,
-          40,
-          64
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "dqn": {
-        "survival_times": [
-          15,
-          52,
-          13
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "ipi": {
-        "survival_times": [
-          10,
-          48,
-          31
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      }
-    },
-    "start_time": "2025-12-15T19:36:03.094307",
-    "end_time": "2025-12-15T19:36:03.210307"
-  },
-  {
-    "episode": 54,
     "steps": 501,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          500,
-          20,
-          108
+          164
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          10,
-          500,
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          500,
-          8,
-          500
+          18
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          26,
-          114,
-          500
+          170
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:03.222791",
-    "end_time": "2025-12-15T19:36:04.205777"
+    "start_time": "2026-01-10T10:40:56.266346",
+    "end_time": "2026-01-10T10:40:56.518053"
+  },
+  {
+    "episode": 54,
+    "steps": 108,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          3
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          22
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          107
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          36
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      }
+    },
+    "start_time": "2026-01-10T10:40:56.528588",
+    "end_time": "2026-01-10T10:40:56.579342"
   },
   {
     "episode": 55,
@@ -4185,75 +2865,51 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          500,
-          500,
-          500
+          24
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          18,
-          40,
-          20
+          103
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          500,
-          500,
-          500
+          241
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          500,
-          35,
-          31
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:04.219149",
-    "end_time": "2025-12-15T19:36:05.340355"
+    "start_time": "2026-01-10T10:40:56.590103",
+    "end_time": "2026-01-10T10:40:56.887971"
   },
   {
     "episode": 56,
@@ -4261,75 +2917,51 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          500,
-          86,
-          77
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          21,
-          17,
-          29
+          54
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          16,
-          65,
-          46
+          418
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          18,
-          71,
           7
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:05.353771",
-    "end_time": "2025-12-15T19:36:05.650276"
+    "start_time": "2026-01-10T10:40:56.899017",
+    "end_time": "2026-01-10T10:40:57.195190"
   },
   {
     "episode": 57,
@@ -4337,379 +2969,259 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          500,
-          9,
-          6
+          11
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          500,
-          11,
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          170,
-          500,
-          190
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          500,
-          181,
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:05.663454",
-    "end_time": "2025-12-15T19:36:06.680484"
+    "start_time": "2026-01-10T10:40:57.206273",
+    "end_time": "2026-01-10T10:40:57.678456"
   },
   {
     "episode": 58,
-    "steps": 501,
+    "steps": 34,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          500,
-          500,
-          2
+          33
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          500,
-          500,
-          500
+          21
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          500,
-          500,
-          500
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "ipi": {
-        "survival_times": [
-          8,
-          500,
-          5
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      }
-    },
-    "start_time": "2025-12-15T19:36:06.694181",
-    "end_time": "2025-12-15T19:36:08.149284"
-  },
-  {
-    "episode": 59,
-    "steps": 386,
-    "agent_metrics": {
-      "random": {
-        "survival_times": [
-          47,
-          71,
-          385
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "reactive": {
-        "survival_times": [
-          90,
-          19,
-          42
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "dqn": {
-        "survival_times": [
-          373,
-          10,
-          36
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "ipi": {
-        "survival_times": [
-          67,
-          22,
-          318
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      }
-    },
-    "start_time": "2025-12-15T19:36:08.162281",
-    "end_time": "2025-12-15T19:36:08.593272"
-  },
-  {
-    "episode": 60,
-    "steps": 501,
-    "agent_metrics": {
-      "random": {
-        "survival_times": [
-          500,
-          24,
           12
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "reactive": {
-        "survival_times": [
-          55,
-          50,
-          23
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "dqn": {
-        "survival_times": [
-          34,
-          13,
-          500
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          7,
-          37,
-          5
+          8
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:08.610792",
-    "end_time": "2025-12-15T19:36:08.984330"
+    "start_time": "2026-01-10T10:40:57.689182",
+    "end_time": "2026-01-10T10:40:57.709504"
   },
   {
-    "episode": 61,
+    "episode": 59,
     "steps": 501,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          22,
-          500,
-          292
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          300,
-          19,
-          29
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          10,
-          38,
-          35
+          4
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          6,
-          11,
-          54
+          3
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:08.996952",
-    "end_time": "2025-12-15T19:36:09.387246"
+    "start_time": "2026-01-10T10:40:57.720059",
+    "end_time": "2026-01-10T10:40:58.095135"
+  },
+  {
+    "episode": 60,
+    "steps": 49,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          13
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          14
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          36
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          48
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      }
+    },
+    "start_time": "2026-01-10T10:40:58.110124",
+    "end_time": "2026-01-10T10:40:58.142013"
+  },
+  {
+    "episode": 61,
+    "steps": 45,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          27
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          17
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          44
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          13
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      }
+    },
+    "start_time": "2026-01-10T10:40:58.152985",
+    "end_time": "2026-01-10T10:40:58.186548"
   },
   {
     "episode": 62,
@@ -4717,75 +3229,51 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          28,
-          323,
-          309
+          52
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          27,
-          10,
-          333
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          317,
-          4,
-          12
+          9
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          299,
-          500,
-          41
+          14
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:09.400144",
-    "end_time": "2025-12-15T19:36:10.019537"
+    "start_time": "2026-01-10T10:40:58.197668",
+    "end_time": "2026-01-10T10:40:58.436165"
   },
   {
     "episode": 63,
@@ -4793,75 +3281,51 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          50,
-          54,
-          5
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          16,
-          500,
-          37
+          21
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          500,
-          42,
-          15
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          26,
-          15,
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:10.032295",
-    "end_time": "2025-12-15T19:36:10.576064"
+    "start_time": "2026-01-10T10:40:58.447050",
+    "end_time": "2026-01-10T10:40:58.884283"
   },
   {
     "episode": 64,
@@ -4869,531 +3333,363 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          74,
-          12,
-          33
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "reactive": {
-        "survival_times": [
-          500,
-          37,
-          500
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "dqn": {
-        "survival_times": [
-          14,
-          66,
-          10
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "ipi": {
-        "survival_times": [
-          3,
-          500,
-          500
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      }
-    },
-    "start_time": "2025-12-15T19:36:10.588816",
-    "end_time": "2025-12-15T19:36:11.293527"
-  },
-  {
-    "episode": 65,
-    "steps": 104,
-    "agent_metrics": {
-      "random": {
-        "survival_times": [
-          39,
-          26,
-          57
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "reactive": {
-        "survival_times": [
-          94,
-          36,
-          22
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "dqn": {
-        "survival_times": [
-          31,
-          10,
-          53
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "ipi": {
-        "survival_times": [
-          9,
-          13,
-          103
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      }
-    },
-    "start_time": "2025-12-15T19:36:11.305921",
-    "end_time": "2025-12-15T19:36:11.438739"
-  },
-  {
-    "episode": 66,
-    "steps": 501,
-    "agent_metrics": {
-      "random": {
-        "survival_times": [
-          500,
-          14,
-          47
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "reactive": {
-        "survival_times": [
-          36,
-          79,
           30
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          79
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          42,
-          57,
-          438
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          430,
-          6,
           17
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:11.451263",
-    "end_time": "2025-12-15T19:36:11.968225"
+    "start_time": "2026-01-10T10:40:58.894969",
+    "end_time": "2026-01-10T10:40:59.096691"
   },
   {
-    "episode": 67,
+    "episode": 65,
     "steps": 501,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          13,
-          40,
-          8
+          267
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          500,
-          20,
-          8
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          61,
-          49,
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          25,
-          25,
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:11.981108",
-    "end_time": "2025-12-15T19:36:12.516664"
+    "start_time": "2026-01-10T10:40:59.107194",
+    "end_time": "2026-01-10T10:40:59.665749"
   },
   {
-    "episode": 68,
-    "steps": 107,
+    "episode": 66,
+    "steps": 28,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          59,
-          36,
-          28
+          17
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          28,
-          25,
-          22
+          18
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          7,
-          106,
-          6
+          27
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          101,
-          83,
-          48
+          11
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:12.529309",
-    "end_time": "2025-12-15T19:36:12.674833"
+    "start_time": "2026-01-10T10:40:59.676495",
+    "end_time": "2026-01-10T10:40:59.699100"
   },
   {
-    "episode": 69,
-    "steps": 391,
+    "episode": 67,
+    "steps": 325,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          19,
-          390,
-          58
+          11
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          29,
-          88,
-          48
+          32
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          76,
-          4,
           45
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          13,
-          65,
-          50
+          324
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:12.687822",
-    "end_time": "2025-12-15T19:36:12.956383"
+    "start_time": "2026-01-10T10:40:59.709622",
+    "end_time": "2026-01-10T10:40:59.852507"
   },
   {
-    "episode": 70,
-    "steps": 365,
+    "episode": 68,
+    "steps": 501,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          75,
-          66,
-          5
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          12,
-          12,
-          63
+          4
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          311,
-          197,
-          47
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          364,
-          38,
-          22
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:12.973995",
-    "end_time": "2025-12-15T19:36:13.327658"
+    "start_time": "2026-01-10T10:40:59.863126",
+    "end_time": "2026-01-10T10:41:00.338561"
+  },
+  {
+    "episode": 69,
+    "steps": 36,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          9
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          17
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          35
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          24
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      }
+    },
+    "start_time": "2026-01-10T10:41:00.349394",
+    "end_time": "2026-01-10T10:41:00.373911"
+  },
+  {
+    "episode": 70,
+    "steps": 38,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          16
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          37
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          9
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          23
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      }
+    },
+    "start_time": "2026-01-10T10:41:00.388964",
+    "end_time": "2026-01-10T10:41:00.414722"
   },
   {
     "episode": 71,
@@ -5401,75 +3697,51 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          29,
-          500,
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          15,
-          55,
-          43
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          500,
-          17,
-          40
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          500,
-          6,
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:13.340205",
-    "end_time": "2025-12-15T19:36:14.161444"
+    "start_time": "2026-01-10T10:41:00.425553",
+    "end_time": "2026-01-10T10:41:01.019649"
   },
   {
     "episode": 72,
@@ -5477,75 +3749,51 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          20,
-          32,
-          10
+          6
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          205,
-          49,
-          26
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          10,
-          19,
-          500
+          96
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          28,
-          13,
-          24
+          95
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:14.174605",
-    "end_time": "2025-12-15T19:36:14.458694"
+    "start_time": "2026-01-10T10:41:01.030671",
+    "end_time": "2026-01-10T10:41:01.290182"
   },
   {
     "episode": 73,
@@ -5553,75 +3801,51 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          57,
-          338,
-          54
+          6
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          76,
-          9,
-          42
+          15
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          43,
-          500,
-          48
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          500,
-          500,
-          22
+          212
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:14.474672",
-    "end_time": "2025-12-15T19:36:15.113829"
+    "start_time": "2026-01-10T10:41:01.301018",
+    "end_time": "2026-01-10T10:41:01.566340"
   },
   {
     "episode": 74,
@@ -5629,151 +3853,103 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          280,
-          88,
-          500
+          13
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          61,
-          39,
-          26
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          230,
-          11,
-          14
+          10
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          14,
-          78,
-          500
+          3
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:15.126423",
-    "end_time": "2025-12-15T19:36:15.701289"
+    "start_time": "2026-01-10T10:41:01.577198",
+    "end_time": "2026-01-10T10:41:01.791294"
   },
   {
     "episode": 75,
-    "steps": 501,
+    "steps": 40,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          8,
-          500,
-          500
+          39
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          63,
-          500,
-          16
+          17
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          19,
-          500,
-          16
+          37
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          15,
-          500,
-          44
+          30
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:15.714132",
-    "end_time": "2025-12-15T19:36:16.495992"
+    "start_time": "2026-01-10T10:41:01.802448",
+    "end_time": "2026-01-10T10:41:01.837105"
   },
   {
     "episode": 76,
@@ -5781,151 +3957,103 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          500,
-          12,
-          39
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "reactive": {
-        "survival_times": [
-          219,
-          500,
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "dqn": {
-        "survival_times": [
-          23,
-          229,
-          12
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "ipi": {
-        "survival_times": [
-          500,
-          16,
-          18
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      }
-    },
-    "start_time": "2025-12-15T19:36:16.508915",
-    "end_time": "2025-12-15T19:36:17.247688"
-  },
-  {
-    "episode": 77,
-    "steps": 378,
-    "agent_metrics": {
-      "random": {
-        "survival_times": [
-          26,
-          45,
-          7
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          17,
-          28,
-          60
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          5,
-          362,
-          70
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          23,
-          377,
-          39
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:17.260646",
-    "end_time": "2025-12-15T19:36:17.581085"
+    "start_time": "2026-01-10T10:41:01.848030",
+    "end_time": "2026-01-10T10:41:02.389882"
+  },
+  {
+    "episode": 77,
+    "steps": 501,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          500
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          32
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          9
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          23
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      }
+    },
+    "start_time": "2026-01-10T10:41:02.401210",
+    "end_time": "2026-01-10T10:41:02.594641"
   },
   {
     "episode": 78,
@@ -5933,379 +4061,259 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          9,
-          8,
-          500
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "reactive": {
-        "survival_times": [
-          10,
-          32,
-          69
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "dqn": {
-        "survival_times": [
-          19,
-          2,
-          81
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "ipi": {
-        "survival_times": [
-          44,
-          500,
-          15
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      }
-    },
-    "start_time": "2025-12-15T19:36:17.593762",
-    "end_time": "2025-12-15T19:36:17.999456"
-  },
-  {
-    "episode": 79,
-    "steps": 501,
-    "agent_metrics": {
-      "random": {
-        "survival_times": [
-          23,
-          55,
-          500
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "reactive": {
-        "survival_times": [
-          65,
-          37,
-          500
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "dqn": {
-        "survival_times": [
-          38,
-          500,
-          275
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "ipi": {
-        "survival_times": [
-          12,
-          6,
           10
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          18
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          14
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          500
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:18.012697",
-    "end_time": "2025-12-15T19:36:18.642578"
+    "start_time": "2026-01-10T10:41:02.605478",
+    "end_time": "2026-01-10T10:41:02.817670"
+  },
+  {
+    "episode": 79,
+    "steps": 38,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          9
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          37
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          3
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          22
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      }
+    },
+    "start_time": "2026-01-10T10:41:02.828542",
+    "end_time": "2026-01-10T10:41:02.851776"
   },
   {
     "episode": 80,
+    "steps": 211,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          13
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          198
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          210
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          185
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      }
+    },
+    "start_time": "2026-01-10T10:41:02.867262",
+    "end_time": "2026-01-10T10:41:03.036780"
+  },
+  {
+    "episode": 81,
     "steps": 501,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          500,
-          17,
-          294
+          9
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          42,
-          18,
-          29
+          19
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          252,
-          500,
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          4,
-          260,
-          15
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:18.662126",
-    "end_time": "2025-12-15T19:36:19.453122"
-  },
-  {
-    "episode": 81,
-    "steps": 466,
-    "agent_metrics": {
-      "random": {
-        "survival_times": [
-          4,
-          25,
-          17
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "reactive": {
-        "survival_times": [
-          29,
-          28,
-          283
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "dqn": {
-        "survival_times": [
-          290,
-          465,
-          6
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "ipi": {
-        "survival_times": [
-          268,
-          18,
-          23
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      }
-    },
-    "start_time": "2025-12-15T19:36:19.466040",
-    "end_time": "2025-12-15T19:36:19.925315"
+    "start_time": "2026-01-10T10:41:03.047524",
+    "end_time": "2026-01-10T10:41:03.400418"
   },
   {
     "episode": 82,
-    "steps": 339,
+    "steps": 58,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          338,
-          12,
-          43
+          1
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          309,
-          29,
-          49
+          57
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          25,
-          35,
-          318
+          19
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          6,
-          17,
-          13
+          14
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:19.938229",
-    "end_time": "2025-12-15T19:36:20.332241"
+    "start_time": "2026-01-10T10:41:03.411190",
+    "end_time": "2026-01-10T10:41:03.433210"
   },
   {
     "episode": 83,
@@ -6313,227 +4321,155 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          23,
-          56,
-          60
+          227
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          32,
-          44,
+          213
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          326
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "dqn": {
-        "survival_times": [
-          54,
-          39,
-          17
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "ipi": {
-        "survival_times": [
-          14,
-          5,
-          55
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:20.345052",
-    "end_time": "2025-12-15T19:36:20.633919"
+    "start_time": "2026-01-10T10:41:03.444005",
+    "end_time": "2026-01-10T10:41:03.846260"
   },
   {
     "episode": 84,
-    "steps": 152,
+    "steps": 213,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          42,
-          31,
-          139
+          7
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          51,
-          60,
-          27
+          14
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          14,
-          147,
-          9
+          212
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          151,
-          37,
-          48
+          19
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:20.647202",
-    "end_time": "2025-12-15T19:36:20.868764"
+    "start_time": "2026-01-10T10:41:03.856992",
+    "end_time": "2026-01-10T10:41:03.940334"
   },
   {
     "episode": 85,
-    "steps": 501,
+    "steps": 29,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          9,
-          500,
-          6
+          7
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          54,
-          34,
-          20
+          14
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          500,
-          22,
-          38
+          28
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          103,
-          40,
-          53
+          27
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:20.881757",
-    "end_time": "2025-12-15T19:36:21.322563"
+    "start_time": "2026-01-10T10:41:03.950976",
+    "end_time": "2026-01-10T10:41:03.975175"
   },
   {
     "episode": 86,
@@ -6541,75 +4477,51 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          31,
-          175,
-          166
+          218
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          5,
-          164,
-          23
+          7
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          150,
-          500,
-          7
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          500,
-          155,
-          139
+          209
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:21.335475",
-    "end_time": "2025-12-15T19:36:21.904687"
+    "start_time": "2026-01-10T10:41:03.985822",
+    "end_time": "2026-01-10T10:41:04.278302"
   },
   {
     "episode": 87,
@@ -6617,227 +4529,155 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          500,
-          500,
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          72,
-          9,
-          91
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          500,
-          500,
-          11
+          57
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          11,
-          12,
-          500
+          15
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:21.917407",
-    "end_time": "2025-12-15T19:36:22.938011"
+    "start_time": "2026-01-10T10:41:04.288985",
+    "end_time": "2026-01-10T10:41:04.622882"
   },
   {
     "episode": 88,
-    "steps": 501,
+    "steps": 316,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          34,
-          195,
-          36
+          315
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          210,
-          53,
-          21
+          15
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          212,
-          500,
-          64
+          28
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          500,
-          500,
-          500
+          16
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:22.950664",
-    "end_time": "2025-12-15T19:36:23.723140"
+    "start_time": "2026-01-10T10:41:04.633706",
+    "end_time": "2026-01-10T10:41:04.742048"
   },
   {
     "episode": 89,
-    "steps": 116,
+    "steps": 240,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          37,
-          46,
-          9
+          37
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          78,
-          18,
-          115
+          239
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          57,
-          6,
-          33
+          22
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          57,
-          43,
-          90
+          218
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:23.736322",
-    "end_time": "2025-12-15T19:36:23.911858"
+    "start_time": "2026-01-10T10:41:04.752647",
+    "end_time": "2026-01-10T10:41:04.886053"
   },
   {
     "episode": 90,
@@ -6845,151 +4685,103 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          44,
-          20,
+          320
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          27
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          4
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "reactive": {
-        "survival_times": [
-          500,
-          37,
-          243
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "dqn": {
-        "survival_times": [
-          11,
-          8,
-          22
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "ipi": {
-        "survival_times": [
-          171,
-          24,
-          18
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:23.930262",
-    "end_time": "2025-12-15T19:36:24.415889"
+    "start_time": "2026-01-10T10:41:04.901997",
+    "end_time": "2026-01-10T10:41:05.156347"
   },
   {
     "episode": 91,
-    "steps": 501,
+    "steps": 360,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          165,
-          72,
-          249
+          21
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          81,
-          500,
-          9
+          359
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          3,
-          95,
-          54
+          12
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          263,
-          251,
-          19
+          7
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:24.428565",
-    "end_time": "2025-12-15T19:36:24.972549"
+    "start_time": "2026-01-10T10:41:05.167012",
+    "end_time": "2026-01-10T10:41:05.316433"
   },
   {
     "episode": 92,
@@ -6997,75 +4789,51 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          10,
-          500,
-          500
+          13
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          500,
-          21,
           500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          500,
-          34,
-          104
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          16,
-          24,
-          20
+          3
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:24.985303",
-    "end_time": "2025-12-15T19:36:25.797692"
+    "start_time": "2026-01-10T10:41:05.327026",
+    "end_time": "2026-01-10T10:41:05.681481"
   },
   {
     "episode": 93,
@@ -7073,227 +4841,155 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          391,
-          500,
-          3
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          361,
-          372,
-          23
+          16
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          8,
-          500,
-          500
+          31
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          35,
-          366,
-          15
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:25.810714",
-    "end_time": "2025-12-15T19:36:26.744135"
+    "start_time": "2026-01-10T10:41:05.692055",
+    "end_time": "2026-01-10T10:41:06.003152"
   },
   {
     "episode": 94,
-    "steps": 501,
+    "steps": 127,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          463,
-          500,
-          18
+          15
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          106,
-          36,
-          30
+          113
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          8,
-          6,
-          41
+          116
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          36,
-          500,
-          14
+          126
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:26.756808",
-    "end_time": "2025-12-15T19:36:27.320600"
+    "start_time": "2026-01-10T10:41:06.014131",
+    "end_time": "2026-01-10T10:41:06.121911"
   },
   {
     "episode": 95,
-    "steps": 501,
+    "steps": 150,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          3,
-          14,
-          500
+          149
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          500,
-          33,
-          7
+          8
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          500,
-          23,
-          9
+          136
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          24,
-          500,
-          12
+          129
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:27.333536",
-    "end_time": "2025-12-15T19:36:27.952520"
+    "start_time": "2026-01-10T10:41:06.132746",
+    "end_time": "2026-01-10T10:41:06.250621"
   },
   {
     "episode": 96,
@@ -7301,302 +4997,206 @@
     "agent_metrics": {
       "random": {
         "survival_times": [
-          500,
-          500,
-          24
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          67,
-          19,
-          36
+          28
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          9,
-          50,
-          500
+          13
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          56,
-          12,
-          70
+          45
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:27.965242",
-    "end_time": "2025-12-15T19:36:28.586267"
+    "start_time": "2026-01-10T10:41:06.261796",
+    "end_time": "2026-01-10T10:41:06.445706"
   },
   {
     "episode": 97,
-    "steps": 80,
-    "agent_metrics": {
-      "random": {
-        "survival_times": [
-          27,
-          47,
-          64
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "reactive": {
-        "survival_times": [
-          13,
-          45,
-          26
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "dqn": {
-        "survival_times": [
-          40,
-          18,
-          79
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "ipi": {
-        "survival_times": [
-          26,
-          2,
-          18
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      }
-    },
-    "start_time": "2025-12-15T19:36:28.599499",
-    "end_time": "2025-12-15T19:36:28.714286"
-  },
-  {
-    "episode": 98,
-    "steps": 502,
-    "agent_metrics": {
-      "random": {
-        "survival_times": [
-          100,
-          55,
-          500
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "reactive": {
-        "survival_times": [
-          500,
-          17,
-          122
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "dqn": {
-        "survival_times": [
-          500,
-          25,
-          42
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      },
-      "ipi": {
-        "survival_times": [
-          15,
-          138,
-          501
-        ],
-        "food_consumed": [
-          0,
-          0,
-          0
-        ],
-        "final_energy": [
-          0,
-          0,
-          0
-        ]
-      }
-    },
-    "start_time": "2025-12-15T19:36:28.726797",
-    "end_time": "2025-12-15T19:36:29.493756"
-  },
-  {
-    "episode": 99,
     "steps": 501,
     "agent_metrics": {
       "random": {
         "survival_times": [
-          23,
-          8,
-          5
+          7
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "reactive": {
         "survival_times": [
-          500,
-          18,
-          41
+          500
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "dqn": {
         "survival_times": [
-          311,
-          281,
-          51
+          20
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       },
       "ipi": {
         "survival_times": [
-          53,
-          297,
-          314
+          6
         ],
         "food_consumed": [
-          0,
-          0,
           0
         ],
         "final_energy": [
-          0,
-          0,
           0
         ]
       }
     },
-    "start_time": "2025-12-15T19:36:29.506708",
-    "end_time": "2025-12-15T19:36:30.064850"
+    "start_time": "2026-01-10T10:41:06.456303",
+    "end_time": "2026-01-10T10:41:06.662624"
+  },
+  {
+    "episode": 98,
+    "steps": 51,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          50
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          23
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          36
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          10
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      }
+    },
+    "start_time": "2026-01-10T10:41:06.673454",
+    "end_time": "2026-01-10T10:41:06.709063"
+  },
+  {
+    "episode": 99,
+    "steps": 182,
+    "agent_metrics": {
+      "random": {
+        "survival_times": [
+          30
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "reactive": {
+        "survival_times": [
+          13
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "dqn": {
+        "survival_times": [
+          40
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      },
+      "ipi": {
+        "survival_times": [
+          181
+        ],
+        "food_consumed": [
+          0
+        ],
+        "final_energy": [
+          0
+        ]
+      }
+    },
+    "start_time": "2026-01-10T10:41:06.719472",
+    "end_time": "2026-01-10T10:41:06.791536"
   }
 ]

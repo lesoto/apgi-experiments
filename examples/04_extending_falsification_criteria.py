@@ -23,22 +23,18 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from apgi_framework.core import (
     APGIEquation,
     FalsificationResult,
-    ConsciousnessAssessment
+    ConsciousnessAssessment,
 )
 from apgi_framework.simulators import (
     NeuralSignatureSimulator,
-    PhysiologicalResponseSimulator
+    PhysiologicalResponseSimulator,
 )
-from apgi_framework.falsification import (
-    BaseFalsificationTest,
-    FalsificationCriteria
-)
+from apgi_framework.falsification import BaseFalsificationTest, FalsificationCriteria
 import logging
 
 # Setup logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -46,6 +42,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class CustomFalsificationResult:
     """Custom result structure for extended falsification tests."""
+
     test_name: str
     is_falsified: bool
     confidence_level: float
@@ -59,74 +56,80 @@ class CustomFalsificationResult:
 class TemporalDynamicsFalsificationTest:
     """
     Example 4A: Custom test for temporal dynamics of ignition.
-    
+
     This test examines whether ignition can occur with incorrect temporal
     dynamics (e.g., P3b before stimulus, gamma synchrony too brief).
     """
-    
+
     def __init__(self):
         """Initialize the temporal dynamics test."""
         self.logger = logging.getLogger(self.__class__.__name__)
         self.p3b_simulator = P3bSimulator()
         self.gamma_simulator = GammaSimulator()
-        
+
     def run_test(self, n_trials: int = 1000) -> CustomFalsificationResult:
         """
         Run temporal dynamics falsification test.
-        
+
         Args:
             n_trials: Number of trials to simulate
-            
+
         Returns:
             CustomFalsificationResult with test outcomes
         """
         self.logger.info(f"Running temporal dynamics test with {n_trials} trials")
-        
+
         # Track violations
         temporal_violations = 0
         p3b_timing_violations = []
         gamma_duration_violations = []
-        
+
         for trial in range(n_trials):
             # Generate neural signatures
             p3b_sig = self.p3b_simulator.generate_conscious_signature()
             gamma_sig = self.gamma_simulator.generate_conscious_signature()
-            
+
             # Check temporal constraints
             # P3b should occur 250-500ms post-stimulus
             if p3b_sig.latency < 250 or p3b_sig.latency > 500:
                 p3b_timing_violations.append(p3b_sig.latency)
-            
+
             # Gamma synchrony should be sustained >200ms
             if gamma_sig.duration < 200:
                 gamma_duration_violations.append(gamma_sig.duration)
-            
+
             # Count as violation if either constraint is violated
-            if (p3b_sig.latency < 250 or p3b_sig.latency > 500 or 
-                gamma_sig.duration < 200):
+            if (
+                p3b_sig.latency < 250
+                or p3b_sig.latency > 500
+                or gamma_sig.duration < 200
+            ):
                 temporal_violations += 1
-        
+
         # Calculate statistics
         violation_rate = temporal_violations / n_trials
-        
+
         # Test is falsified if >5% of trials show temporal violations
         # with full ignition signatures
         is_falsified = violation_rate > 0.05
         confidence = violation_rate if is_falsified else (1 - violation_rate)
-        
+
         # Calculate effect size (Cohen's h for proportions)
         expected_rate = 0.05
-        effect_size = 2 * (np.arcsin(np.sqrt(violation_rate)) - 
-                          np.arcsin(np.sqrt(expected_rate)))
-        
+        effect_size = 2 * (
+            np.arcsin(np.sqrt(violation_rate)) - np.arcsin(np.sqrt(expected_rate))
+        )
+
         # Simple binomial test p-value
         from scipy import stats
-        p_value = stats.binomtest(temporal_violations, n_trials, expected_rate, 
-                                   alternative='greater').pvalue
-        
+
+        p_value = stats.binomtest(
+            temporal_violations, n_trials, expected_rate, alternative="greater"
+        ).pvalue
+
         # Statistical power (simplified)
         statistical_power = 0.8 if n_trials >= 1000 else 0.6
-        
+
         # Interpretation
         if is_falsified:
             interpretation = (
@@ -140,7 +143,7 @@ class TemporalDynamicsFalsificationTest:
                 f"violations, within expected range. Temporal dynamics are consistent "
                 f"with framework predictions."
             )
-        
+
         result = CustomFalsificationResult(
             test_name="Temporal Dynamics Falsification Test",
             is_falsified=is_falsified,
@@ -149,17 +152,23 @@ class TemporalDynamicsFalsificationTest:
             p_value=p_value,
             statistical_power=statistical_power,
             detailed_metrics={
-                'total_trials': n_trials,
-                'temporal_violations': temporal_violations,
-                'violation_rate': violation_rate,
-                'p3b_timing_violations': len(p3b_timing_violations),
-                'gamma_duration_violations': len(gamma_duration_violations),
-                'mean_p3b_latency': np.mean(p3b_timing_violations) if p3b_timing_violations else None,
-                'mean_gamma_duration': np.mean(gamma_duration_violations) if gamma_duration_violations else None
+                "total_trials": n_trials,
+                "temporal_violations": temporal_violations,
+                "violation_rate": violation_rate,
+                "p3b_timing_violations": len(p3b_timing_violations),
+                "gamma_duration_violations": len(gamma_duration_violations),
+                "mean_p3b_latency": (
+                    np.mean(p3b_timing_violations) if p3b_timing_violations else None
+                ),
+                "mean_gamma_duration": (
+                    np.mean(gamma_duration_violations)
+                    if gamma_duration_violations
+                    else None
+                ),
             },
-            interpretation=interpretation
+            interpretation=interpretation,
         )
-        
+
         self.logger.info(f"Test completed: {interpretation}")
         return result
 
@@ -167,68 +176,75 @@ class TemporalDynamicsFalsificationTest:
 class CrossModalIntegrationTest:
     """
     Example 4B: Custom test for cross-modal integration requirements.
-    
+
     This test examines whether ignition requires integration across
     sensory modalities or can occur with isolated modality processing.
     """
-    
+
     def __init__(self):
         """Initialize the cross-modal integration test."""
         self.logger = logging.getLogger(self.__class__.__name__)
         self.bold_simulator = BOLDSimulator()
-        
+
     def run_test(self, n_trials: int = 1000) -> CustomFalsificationResult:
         """
         Run cross-modal integration falsification test.
-        
+
         Args:
             n_trials: Number of trials to simulate
-            
+
         Returns:
             CustomFalsificationResult with test outcomes
         """
         self.logger.info(f"Running cross-modal integration test with {n_trials} trials")
-        
+
         # Track isolated modality activations
         isolated_activations = 0
         modality_patterns = []
-        
+
         for trial in range(n_trials):
             # Generate BOLD signatures
             bold_sig = self.bold_simulator.generate_conscious_signature()
-            
+
             # Check for cross-modal integration
             # Framework predicts activation across multiple sensory regions
-            visual_active = bold_sig.activations.get('visual_cortex', 0) > 3.1
-            auditory_active = bold_sig.activations.get('auditory_cortex', 0) > 3.1
-            somatosensory_active = bold_sig.activations.get('somatosensory_cortex', 0) > 3.1
-            
-            active_modalities = sum([visual_active, auditory_active, somatosensory_active])
+            visual_active = bold_sig.activations.get("visual_cortex", 0) > 3.1
+            auditory_active = bold_sig.activations.get("auditory_cortex", 0) > 3.1
+            somatosensory_active = (
+                bold_sig.activations.get("somatosensory_cortex", 0) > 3.1
+            )
+
+            active_modalities = sum(
+                [visual_active, auditory_active, somatosensory_active]
+            )
             modality_patterns.append(active_modalities)
-            
+
             # Count as isolated if only one modality is active
             if active_modalities == 1:
                 isolated_activations += 1
-        
+
         # Calculate statistics
         isolation_rate = isolated_activations / n_trials
-        
+
         # Test is falsified if >10% show isolated modality activation
         is_falsified = isolation_rate > 0.10
         confidence = isolation_rate if is_falsified else (1 - isolation_rate)
-        
+
         # Effect size
         expected_rate = 0.10
-        effect_size = 2 * (np.arcsin(np.sqrt(isolation_rate)) - 
-                          np.arcsin(np.sqrt(expected_rate)))
-        
+        effect_size = 2 * (
+            np.arcsin(np.sqrt(isolation_rate)) - np.arcsin(np.sqrt(expected_rate))
+        )
+
         # P-value
         from scipy import stats
-        p_value = stats.binomtest(isolated_activations, n_trials, expected_rate,
-                                   alternative='greater').pvalue
-        
+
+        p_value = stats.binomtest(
+            isolated_activations, n_trials, expected_rate, alternative="greater"
+        ).pvalue
+
         statistical_power = 0.8 if n_trials >= 1000 else 0.6
-        
+
         # Interpretation
         if is_falsified:
             interpretation = (
@@ -241,7 +257,7 @@ class CrossModalIntegrationTest:
                 f"NOT FALSIFIED: Only {isolation_rate:.1%} of trials showed isolated "
                 f"activation. Cross-modal integration requirement is supported."
             )
-        
+
         result = CustomFalsificationResult(
             test_name="Cross-Modal Integration Test",
             is_falsified=is_falsified,
@@ -250,20 +266,20 @@ class CrossModalIntegrationTest:
             p_value=p_value,
             statistical_power=statistical_power,
             detailed_metrics={
-                'total_trials': n_trials,
-                'isolated_activations': isolated_activations,
-                'isolation_rate': isolation_rate,
-                'mean_active_modalities': np.mean(modality_patterns),
-                'modality_distribution': {
-                    '0_modalities': modality_patterns.count(0),
-                    '1_modality': modality_patterns.count(1),
-                    '2_modalities': modality_patterns.count(2),
-                    '3_modalities': modality_patterns.count(3)
-                }
+                "total_trials": n_trials,
+                "isolated_activations": isolated_activations,
+                "isolation_rate": isolation_rate,
+                "mean_active_modalities": np.mean(modality_patterns),
+                "modality_distribution": {
+                    "0_modalities": modality_patterns.count(0),
+                    "1_modality": modality_patterns.count(1),
+                    "2_modalities": modality_patterns.count(2),
+                    "3_modalities": modality_patterns.count(3),
+                },
             },
-            interpretation=interpretation
+            interpretation=interpretation,
         )
-        
+
         self.logger.info(f"Test completed: {interpretation}")
         return result
 
@@ -271,69 +287,74 @@ class CrossModalIntegrationTest:
 class MetacognitiveCalibrationTest:
     """
     Example 4C: Custom test for metacognitive calibration requirements.
-    
+
     This test examines whether consciousness requires calibrated metacognition
     or can occur with severely miscalibrated confidence judgments.
     """
-    
+
     def __init__(self):
         """Initialize the metacognitive calibration test."""
         self.logger = logging.getLogger(self.__class__.__name__)
         self.consciousness_simulator = ConsciousnessAssessmentSimulator()
-        
+
     def run_test(self, n_trials: int = 1000) -> CustomFalsificationResult:
         """
         Run metacognitive calibration falsification test.
-        
+
         Args:
             n_trials: Number of trials to simulate
-            
+
         Returns:
             CustomFalsificationResult with test outcomes
         """
-        self.logger.info(f"Running metacognitive calibration test with {n_trials} trials")
-        
+        self.logger.info(
+            f"Running metacognitive calibration test with {n_trials} trials"
+        )
+
         # Track calibration violations
         miscalibration_count = 0
         calibration_errors = []
-        
+
         for trial in range(n_trials):
             # Simulate consciousness assessment
             assessment = self.consciousness_simulator.simulate_conscious_trial()
-            
+
             # Calculate calibration: correlation between confidence and accuracy
             # For simplicity, use confidence rating vs forced choice accuracy
             confidence = assessment.confidence_rating
             accuracy = assessment.forced_choice_accuracy
-            
+
             # Calibration error: absolute difference
             calibration_error = abs(confidence - accuracy)
             calibration_errors.append(calibration_error)
-            
+
             # Count as miscalibrated if error > 0.3
             if calibration_error > 0.3:
                 miscalibration_count += 1
-        
+
         # Calculate statistics
         miscalibration_rate = miscalibration_count / n_trials
         mean_calibration_error = np.mean(calibration_errors)
-        
+
         # Test is falsified if >20% show severe miscalibration
         is_falsified = miscalibration_rate > 0.20
         confidence = miscalibration_rate if is_falsified else (1 - miscalibration_rate)
-        
+
         # Effect size
         expected_rate = 0.20
-        effect_size = 2 * (np.arcsin(np.sqrt(miscalibration_rate)) - 
-                          np.arcsin(np.sqrt(expected_rate)))
-        
+        effect_size = 2 * (
+            np.arcsin(np.sqrt(miscalibration_rate)) - np.arcsin(np.sqrt(expected_rate))
+        )
+
         # P-value
         from scipy import stats
-        p_value = stats.binomtest(miscalibration_count, n_trials, expected_rate,
-                                   alternative='greater').pvalue
-        
+
+        p_value = stats.binomtest(
+            miscalibration_count, n_trials, expected_rate, alternative="greater"
+        ).pvalue
+
         statistical_power = 0.8 if n_trials >= 1000 else 0.6
-        
+
         # Interpretation
         if is_falsified:
             interpretation = (
@@ -346,7 +367,7 @@ class MetacognitiveCalibrationTest:
                 f"NOT FALSIFIED: Only {miscalibration_rate:.1%} of trials showed "
                 f"severe miscalibration. Metacognitive calibration requirement is supported."
             )
-        
+
         result = CustomFalsificationResult(
             test_name="Metacognitive Calibration Test",
             is_falsified=is_falsified,
@@ -355,26 +376,28 @@ class MetacognitiveCalibrationTest:
             p_value=p_value,
             statistical_power=statistical_power,
             detailed_metrics={
-                'total_trials': n_trials,
-                'miscalibration_count': miscalibration_count,
-                'miscalibration_rate': miscalibration_rate,
-                'mean_calibration_error': mean_calibration_error,
-                'std_calibration_error': np.std(calibration_errors),
-                'max_calibration_error': np.max(calibration_errors)
+                "total_trials": n_trials,
+                "miscalibration_count": miscalibration_count,
+                "miscalibration_rate": miscalibration_rate,
+                "mean_calibration_error": mean_calibration_error,
+                "std_calibration_error": np.std(calibration_errors),
+                "max_calibration_error": np.max(calibration_errors),
             },
-            interpretation=interpretation
+            interpretation=interpretation,
         )
-        
+
         self.logger.info(f"Test completed: {interpretation}")
         return result
 
 
 def display_custom_test_result(result: CustomFalsificationResult):
     """Display custom test result in formatted output."""
-    logger.info("\n" + "="*60)
+    logger.info("\n" + "=" * 60)
     logger.info(f"TEST: {result.test_name}")
-    logger.info("="*60)
-    logger.info(f"Falsification Status: {'FALSIFIED' if result.is_falsified else 'NOT FALSIFIED'}")
+    logger.info("=" * 60)
+    logger.info(
+        f"Falsification Status: {'FALSIFIED' if result.is_falsified else 'NOT FALSIFIED'}"
+    )
     logger.info(f"Confidence Level: {result.confidence_level:.3f}")
     logger.info(f"Effect Size: {result.effect_size:.3f}")
     logger.info(f"P-value: {result.p_value:.6f}")
@@ -389,39 +412,39 @@ def display_custom_test_result(result: CustomFalsificationResult):
             logger.info(f"  {key}: {value}")
     logger.info(f"\nInterpretation:")
     logger.info(f"  {result.interpretation}")
-    logger.info("="*60 + "\n")
+    logger.info("=" * 60 + "\n")
 
 
-if __name__ == '__main__':
-    print("\n" + "="*70)
+if __name__ == "__main__":
+    print("\n" + "=" * 70)
     print("APGI Framework - Extended Falsification Criteria Examples")
-    print("="*70 + "\n")
-    
+    print("=" * 70 + "\n")
+
     # Example 4A: Temporal Dynamics Test
     print("Running Example 4A: Temporal Dynamics Test...")
     temporal_test = TemporalDynamicsFalsificationTest()
     temporal_result = temporal_test.run_test(n_trials=1000)
     display_custom_test_result(temporal_result)
-    
-    print("-"*70 + "\n")
-    
+
+    print("-" * 70 + "\n")
+
     # Example 4B: Cross-Modal Integration Test
     print("Running Example 4B: Cross-Modal Integration Test...")
     crossmodal_test = CrossModalIntegrationTest()
     crossmodal_result = crossmodal_test.run_test(n_trials=1000)
     display_custom_test_result(crossmodal_result)
-    
-    print("-"*70 + "\n")
-    
+
+    print("-" * 70 + "\n")
+
     # Example 4C: Metacognitive Calibration Test
     print("Running Example 4C: Metacognitive Calibration Test...")
     metacog_test = MetacognitiveCalibrationTest()
     metacog_result = metacog_test.run_test(n_trials=1000)
     display_custom_test_result(metacog_result)
-    
-    print("="*70)
+
+    print("=" * 70)
     print("All extended falsification tests completed!")
     print("\nNote: These are example custom tests demonstrating how to extend")
     print("the framework with new falsification criteria. Actual implementation")
     print("would require domain expertise and empirical validation.")
-    print("="*70 + "\n")
+    print("=" * 70 + "\n")

@@ -12,22 +12,23 @@ from datetime import datetime
 
 from ..exceptions import APGIFrameworkError, SimulationError, DataError
 
-
 logger = logging.getLogger(__name__)
 
 
 class RetryConfig:
     """Configuration for retry behavior"""
-    
-    def __init__(self, 
-                 max_attempts: int = 3,
-                 initial_delay: float = 1.0,
-                 backoff_factor: float = 2.0,
-                 max_delay: float = 30.0,
-                 retriable_exceptions: Optional[List[Type[Exception]]] = None):
+
+    def __init__(
+        self,
+        max_attempts: int = 3,
+        initial_delay: float = 1.0,
+        backoff_factor: float = 2.0,
+        max_delay: float = 30.0,
+        retriable_exceptions: Optional[List[Type[Exception]]] = None,
+    ):
         """
         Initialize retry configuration.
-        
+
         Args:
             max_attempts: Maximum number of retry attempts
             initial_delay: Initial delay between retries (seconds)
@@ -50,29 +51,29 @@ class RetryConfig:
 def with_retry(config: Optional[RetryConfig] = None):
     """
     Decorator for automatic retry on transient failures.
-    
+
     Args:
         config: RetryConfig instance (uses defaults if None)
-        
+
     Returns:
         Decorated function with retry logic
     """
     if config is None:
         config = RetryConfig()
-    
+
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def wrapper(*args, **kwargs) -> Any:
             last_exception = None
             delay = config.initial_delay
-            
+
             for attempt in range(config.max_attempts):
                 try:
                     return func(*args, **kwargs)
-                
+
                 except tuple(config.retriable_exceptions) as e:
                     last_exception = e
-                    
+
                     if attempt < config.max_attempts - 1:
                         logger.warning(
                             f"Attempt {attempt + 1}/{config.max_attempts} failed for {func.__name__}: {str(e)}. "
@@ -84,16 +85,19 @@ def with_retry(config: Optional[RetryConfig] = None):
                         logger.error(
                             f"All {config.max_attempts} attempts failed for {func.__name__}: {str(e)}"
                         )
-                
+
                 except Exception as e:
                     # Non-retriable exception - fail immediately
-                    logger.error(f"Non-retriable exception in {func.__name__}: {str(e)}")
+                    logger.error(
+                        f"Non-retriable exception in {func.__name__}: {str(e)}"
+                    )
                     raise
-            
+
             # All retries exhausted
             raise last_exception
-        
+
         return wrapper
+
     return decorator
 
 
@@ -101,53 +105,54 @@ class ErrorRecoveryManager:
     """
     Manages error recovery strategies and fallback mechanisms.
     """
-    
+
     def __init__(self):
         self.error_log: List[dict] = []
         self.recovery_strategies: dict = {}
-    
+
     def log_error(self, error: Exception, context: dict):
         """
         Log error with context information.
-        
+
         Args:
             error: Exception that occurred
             context: Dictionary with context information
         """
         error_entry = {
-            'timestamp': datetime.now(),
-            'error_type': type(error).__name__,
-            'error_message': str(error),
-            'context': context
+            "timestamp": datetime.now(),
+            "error_type": type(error).__name__,
+            "error_message": str(error),
+            "context": context,
         }
         self.error_log.append(error_entry)
         logger.error(f"Error logged: {error_entry}")
-    
-    def register_recovery_strategy(self, error_type: Type[Exception], 
-                                  strategy: Callable):
+
+    def register_recovery_strategy(
+        self, error_type: Type[Exception], strategy: Callable
+    ):
         """
         Register a recovery strategy for a specific error type.
-        
+
         Args:
             error_type: Type of exception to handle
             strategy: Callable that implements recovery logic
         """
         self.recovery_strategies[error_type] = strategy
         logger.info(f"Registered recovery strategy for {error_type.__name__}")
-    
+
     def attempt_recovery(self, error: Exception, context: dict) -> Optional[Any]:
         """
         Attempt to recover from an error using registered strategies.
-        
+
         Args:
             error: Exception to recover from
             context: Context information
-            
+
         Returns:
             Recovery result if successful, None otherwise
         """
         error_type = type(error)
-        
+
         # Try exact match first
         if error_type in self.recovery_strategies:
             strategy = self.recovery_strategies[error_type]
@@ -159,58 +164,64 @@ class ErrorRecoveryManager:
             except Exception as recovery_error:
                 logger.error(f"Recovery failed: {str(recovery_error)}")
                 return None
-        
+
         # Try parent classes
         for registered_type, strategy in self.recovery_strategies.items():
             if isinstance(error, registered_type):
                 try:
-                    logger.info(f"Attempting recovery using {registered_type.__name__} strategy")
+                    logger.info(
+                        f"Attempting recovery using {registered_type.__name__} strategy"
+                    )
                     result = strategy(error, context)
-                    logger.info(f"Recovery successful using {registered_type.__name__} strategy")
+                    logger.info(
+                        f"Recovery successful using {registered_type.__name__} strategy"
+                    )
                     return result
                 except Exception as recovery_error:
                     logger.error(f"Recovery failed: {str(recovery_error)}")
                     continue
-        
+
         logger.warning(f"No recovery strategy found for {error_type.__name__}")
         return None
-    
+
     def get_error_statistics(self) -> dict:
         """Get statistics about logged errors"""
         if not self.error_log:
-            return {'total_errors': 0}
-        
+            return {"total_errors": 0}
+
         error_types = {}
         for entry in self.error_log:
-            error_type = entry['error_type']
+            error_type = entry["error_type"]
             error_types[error_type] = error_types.get(error_type, 0) + 1
-        
+
         return {
-            'total_errors': len(self.error_log),
-            'error_types': error_types,
-            'first_error': self.error_log[0]['timestamp'],
-            'last_error': self.error_log[-1]['timestamp']
+            "total_errors": len(self.error_log),
+            "error_types": error_types,
+            "first_error": self.error_log[0]["timestamp"],
+            "last_error": self.error_log[-1]["timestamp"],
         }
-    
+
     def clear_error_log(self):
         """Clear error log"""
         self.error_log.clear()
         logger.info("Error log cleared")
 
 
-def safe_execute(func: Callable, 
-                fallback_value: Any = None,
-                log_errors: bool = True,
-                context: Optional[dict] = None) -> Any:
+def safe_execute(
+    func: Callable,
+    fallback_value: Any = None,
+    log_errors: bool = True,
+    context: Optional[dict] = None,
+) -> Any:
     """
     Safely execute a function with error handling and fallback.
-    
+
     Args:
         func: Function to execute
         fallback_value: Value to return if function fails
         log_errors: Whether to log errors
         context: Context information for error logging
-        
+
     Returns:
         Function result or fallback value
     """
@@ -224,28 +235,30 @@ def safe_execute(func: Callable,
         return fallback_value
 
 
-def validate_and_fix(value: Any, 
-                    validator: Callable[[Any], bool],
-                    fixer: Callable[[Any], Any],
-                    error_message: str = "Validation failed") -> Any:
+def validate_and_fix(
+    value: Any,
+    validator: Callable[[Any], bool],
+    fixer: Callable[[Any], Any],
+    error_message: str = "Validation failed",
+) -> Any:
     """
     Validate a value and attempt to fix it if invalid.
-    
+
     Args:
         value: Value to validate
         validator: Function that returns True if value is valid
         fixer: Function that attempts to fix invalid value
         error_message: Error message if fixing fails
-        
+
     Returns:
         Valid value (original or fixed)
-        
+
     Raises:
         ValueError: If value cannot be fixed
     """
     if validator(value):
         return value
-    
+
     try:
         fixed_value = fixer(value)
         if validator(fixed_value):
@@ -271,22 +284,28 @@ def get_recovery_manager() -> ErrorRecoveryManager:
 
 # Default recovery strategies
 
+
 def recover_from_simulation_error(error: SimulationError, context: dict) -> Any:
     """Default recovery strategy for simulation errors"""
-    logger.info("Attempting to recover from simulation error by regenerating with different seed")
-    
+    logger.info(
+        "Attempting to recover from simulation error by regenerating with different seed"
+    )
+
     # Try with a different random seed
     import numpy as np
+
     new_seed = np.random.randint(0, 1000000)
     np.random.seed(new_seed)
-    
+
     return None  # Signal to retry
 
 
 def recover_from_data_error(error: DataError, context: dict) -> Any:
     """Default recovery strategy for data errors"""
-    logger.info("Attempting to recover from data error by using backup or default values")
-    
+    logger.info(
+        "Attempting to recover from data error by using backup or default values"
+    )
+
     # Return default/empty data structure
     return {}
 
@@ -295,32 +314,33 @@ def recover_from_data_error(error: DataError, context: dict) -> Any:
 def initialize_default_recovery_strategies():
     """
     Initialize default recovery strategies for common error types.
-    
+
     This function registers recovery strategies for:
     - SimulationError: Retry with different random seed
     - DataError: Use backup or default values
     - IOError/OSError: Create missing directories, retry file operations
     """
     manager = get_recovery_manager()
-    
+
     # Register simulation error recovery
     manager.register_recovery_strategy(SimulationError, recover_from_simulation_error)
     logger.info("Registered recovery strategy for SimulationError")
-    
+
     # Register data error recovery
     manager.register_recovery_strategy(DataError, recover_from_data_error)
     logger.info("Registered recovery strategy for DataError")
-    
+
     # Register I/O error recovery
     def recover_from_io_error(error: Exception, context: dict) -> Any:
         """Recovery strategy for I/O errors"""
         logger.info("Attempting to recover from I/O error")
-        
+
         # Try creating missing directories
-        if 'path' in context:
+        if "path" in context:
             try:
                 import os
-                path = context['path']
+
+                path = context["path"]
                 directory = os.path.dirname(path)
                 if directory:
                     os.makedirs(directory, exist_ok=True)
@@ -328,11 +348,11 @@ def initialize_default_recovery_strategies():
                     return None  # Signal to retry
             except Exception as e:
                 logger.error(f"Failed to create directory: {e}")
-        
+
         return None
-    
+
     manager.register_recovery_strategy(IOError, recover_from_io_error)
     manager.register_recovery_strategy(OSError, recover_from_io_error)
     logger.info("Registered recovery strategies for IOError and OSError")
-    
+
     logger.info("Default recovery strategies initialized successfully")

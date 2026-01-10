@@ -1,7 +1,7 @@
 """
 APGI Framework Falsification Testing System
 
-A comprehensive platform for implementing and validating the Interoceptive Predictive 
+A comprehensive platform for implementing and validating the Interoceptive Predictive
 Integration (APGI) Framework through systematic falsification testing.
 """
 
@@ -14,11 +14,11 @@ from .exceptions import APGIFrameworkError, MathematicalError, SimulationError
 
 __all__ = [
     "APGIEquation",
-    "PrecisionCalculator", 
+    "PrecisionCalculator",
     "PredictionErrorProcessor",
     "SomaticMarkerEngine",
     "ThresholdManager",
     "APGIFrameworkError",
     "MathematicalError",
-    "SimulationError"
+    "SimulationError",
 ]

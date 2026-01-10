@@ -14,34 +14,36 @@ from datetime import datetime
 class ParameterEstimationUserManual:
     """
     Generates comprehensive user manual for APGI Framework parameter estimation.
-    
+
     Includes detailed protocols, setup instructions, and best practices
     for all three parameter estimation tasks.
     """
-    
+
     def __init__(self, output_dir: Optional[Path] = None):
         """
         Initialize user manual generator.
-        
+
         Args:
             output_dir: Directory for saving manual files.
         """
         self.logger = logging.getLogger(__name__)
-        self.output_dir = output_dir or Path.home() / '.apgi_framework' / 'documentation'
+        self.output_dir = (
+            output_dir or Path.home() / ".apgi_framework" / "documentation"
+        )
         self.output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     def generate_complete_manual(self) -> Path:
         """
         Generate complete user manual.
-        
+
         Returns:
             Path to generated manual file.
         """
         self.logger.info("Generating complete user manual...")
-        
-        manual_path = self.output_dir / 'APGI_Parameter_Estimation_User_Manual.md'
-        
-        with open(manual_path, 'w', encoding='utf-8') as f:
+
+        manual_path = self.output_dir / "APGI_Parameter_Estimation_User_Manual.md"
+
+        with open(manual_path, "w", encoding="utf-8") as f:
             f.write(self._generate_title_page())
             f.write(self._generate_table_of_contents())
             f.write(self._generate_introduction())
@@ -53,10 +55,10 @@ class ParameterEstimationUserManual:
             f.write(self._generate_parameter_interpretation())
             f.write(self._generate_best_practices())
             f.write(self._generate_appendices())
-        
+
         self.logger.info(f"User manual generated: {manual_path}")
         return manual_path
-    
+
     def _generate_title_page(self) -> str:
         """Generate title page."""
         return f"""# APGI Framework Parameter Estimation System
@@ -69,7 +71,7 @@ class ParameterEstimationUserManual:
 ---
 
 """
-    
+
     def _generate_table_of_contents(self) -> str:
         """Generate table of contents."""
         return """## Table of Contents
@@ -90,7 +92,7 @@ class ParameterEstimationUserManual:
 ---
 
 """
-    
+
     def _generate_introduction(self) -> str:
         """Generate introduction section."""
         return """## 1. Introduction
@@ -124,7 +126,7 @@ This system combines behavioral tasks, high-density EEG analysis, and pupillomet
 ---
 
 """
-    
+
     def _generate_system_overview(self) -> str:
         """Generate system overview section."""
         return """## 2. System Overview
@@ -155,7 +157,7 @@ Real-time Processing → Parameter Estimation → Report Generation
 ---
 
 """
-    
+
     def _generate_hardware_setup(self) -> str:
         """Generate hardware setup section."""
         return """## 3. Hardware Setup
@@ -241,7 +243,7 @@ cardiac_stream = "ECG"
 ---
 
 """
-    
+
     def _generate_software_installation(self) -> str:
         """Generate software installation section."""
         return """## 4. Software Installation
@@ -292,7 +294,7 @@ See [Troubleshooting Guide](#troubleshooting-guide) for common installation issu
 ---
 
 """
-    
+
     def _generate_task_protocols(self) -> str:
         """Generate task protocols section."""
         return """## 5. Task Protocols
@@ -444,7 +446,7 @@ results = task.run()
 ---
 
 """
-    
+
     def _generate_data_quality(self) -> str:
         """Generate data quality monitoring section."""
         return """## 6. Data Quality Monitoring
@@ -502,7 +504,7 @@ The system generates alerts for:
 ---
 
 """
-    
+
     def _generate_parameter_interpretation(self) -> str:
         """Generate parameter interpretation section."""
         return """## 7. Parameter Interpretation
@@ -552,7 +554,7 @@ All parameters include 95% credible intervals:
 ---
 
 """
-    
+
     def _generate_best_practices(self) -> str:
         """Generate best practices section."""
         return """## 8. Best Practices
@@ -620,7 +622,7 @@ All parameters include 95% credible intervals:
 ---
 
 """
-    
+
     def _generate_appendices(self) -> str:
         """Generate appendices section."""
         return """## 9. Appendices
@@ -686,12 +688,12 @@ For technical support, contact: support@apgi-framework.org
 For updates and documentation: https://apgi-framework.org/docs
 
 """
-    
+
     def generate_quick_start_guide(self) -> Path:
         """Generate quick start guide."""
-        guide_path = self.output_dir / 'Quick_Start_Guide.md'
-        
-        with open(guide_path, 'w', encoding='utf-8') as f:
+        guide_path = self.output_dir / "Quick_Start_Guide.md"
+
+        with open(guide_path, "w", encoding="utf-8") as f:
             f.write("""# APGI Framework Quick Start Guide
 
 ## 5-Minute Setup
@@ -741,6 +743,6 @@ Total: ~30 minutes + setup
 - Troubleshooting: `Troubleshooting_Guide.md`
 - Support: support@apgi-framework.org
 """)
-        
+
         self.logger.info(f"Quick start guide generated: {guide_path}")
         return guide_path

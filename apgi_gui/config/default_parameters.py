@@ -7,6 +7,7 @@ from typing import Dict, List, Tuple
 @dataclass
 class ParameterConfig:
     """Configuration for a single parameter."""
+
     label: str
     key: str
     default_value: str
@@ -18,7 +19,7 @@ class ParameterConfig:
 
 class DefaultParameters:
     """Default parameters and settings for the APGI Framework."""
-    
+
     # APGI Model Parameters
     APGI_PARAMETERS: List[ParameterConfig] = [
         ParameterConfig(
@@ -28,7 +29,7 @@ class DefaultParameters:
             description="Controls the rate of learning in the model",
             min_value=0.0001,
             max_value=1.0,
-            parameter_type="float"
+            parameter_type="float",
         ),
         ParameterConfig(
             label="Precision Weight",
@@ -37,7 +38,7 @@ class DefaultParameters:
             description="Weight for precision in belief updating",
             min_value=0.1,
             max_value=10.0,
-            parameter_type="float"
+            parameter_type="float",
         ),
         ParameterConfig(
             label="Prediction Error Threshold",
@@ -46,7 +47,7 @@ class DefaultParameters:
             description="Threshold for prediction error detection",
             min_value=0.01,
             max_value=2.0,
-            parameter_type="float"
+            parameter_type="float",
         ),
         ParameterConfig(
             label="Interoceptive Gain",
@@ -55,7 +56,7 @@ class DefaultParameters:
             description="Gain factor for interoceptive signals",
             min_value=0.1,
             max_value=5.0,
-            parameter_type="float"
+            parameter_type="float",
         ),
         ParameterConfig(
             label="Somatic Bias",
@@ -64,7 +65,7 @@ class DefaultParameters:
             description="Baseline bias for somatic signals",
             min_value=-2.0,
             max_value=2.0,
-            parameter_type="float"
+            parameter_type="float",
         ),
         ParameterConfig(
             label="Ignition Threshold",
@@ -73,10 +74,10 @@ class DefaultParameters:
             description="Threshold for neural ignition",
             min_value=0.5,
             max_value=5.0,
-            parameter_type="float"
+            parameter_type="float",
         ),
     ]
-    
+
     # Neural Signature Options
     NEURAL_SIGNATURES: List[Tuple[str, str, str]] = [
         ("P3b Component", "p3b", "P3b ERP component for conscious access"),
@@ -84,7 +85,7 @@ class DefaultParameters:
         ("Microstate Dynamics", "microstate", "Brain microstate transitions"),
         ("Pupillometry", "pupil", "Pupil diameter measurements"),
     ]
-    
+
     # Experimental Settings
     EXPERIMENTAL_SETTINGS: List[ParameterConfig] = [
         ParameterConfig(
@@ -94,7 +95,7 @@ class DefaultParameters:
             description="Sampling rate for data acquisition",
             min_value=125,
             max_value=2000,
-            parameter_type="int"
+            parameter_type="int",
         ),
         ParameterConfig(
             label="Epoch Duration (s)",
@@ -103,7 +104,7 @@ class DefaultParameters:
             description="Duration of analysis epochs",
             min_value=0.1,
             max_value=10.0,
-            parameter_type="float"
+            parameter_type="float",
         ),
         ParameterConfig(
             label="Number of Trials",
@@ -112,7 +113,7 @@ class DefaultParameters:
             description="Number of experimental trials",
             min_value=10,
             max_value=1000,
-            parameter_type="int"
+            parameter_type="int",
         ),
         ParameterConfig(
             label="Baseline Duration (s)",
@@ -121,28 +122,23 @@ class DefaultParameters:
             description="Duration of baseline period",
             min_value=0.1,
             max_value=2.0,
-            parameter_type="float"
+            parameter_type="float",
         ),
     ]
-    
+
     # UI Configuration
     UI_CONFIG = {
-        "font_sizes": {
-            "title": 18,
-            "header": 16,
-            "label": 12,
-            "button": 12
-        },
+        "font_sizes": {"title": 18, "header": 16, "label": 12, "button": 12},
         "spacing": {
             "padding_x": 10,
             "padding_y": 5,
             "padding_large_y": 10,
-            "padding_section_y": 20
+            "padding_section_y": 20,
         },
         "button_height": 40,
-        "frame_corner_radius": 8
+        "frame_corner_radius": 8,
     }
-    
+
     # Validation Rules
     VALIDATION_RULES = {
         "learning_rate": {"min": 0.0001, "max": 1.0, "type": "float"},
@@ -156,74 +152,74 @@ class DefaultParameters:
         "num_trials": {"min": 10, "max": 1000, "type": "int"},
         "baseline_duration": {"min": 0.1, "max": 2.0, "type": "float"},
     }
-    
+
     @classmethod
     def get_parameter_defaults(cls) -> Dict[str, str]:
         """Get all parameter defaults as a dictionary."""
         defaults = {}
-        
+
         for param in cls.APGI_PARAMETERS:
             defaults[param.key] = param.default_value
-        
+
         for setting in cls.EXPERIMENTAL_SETTINGS:
             defaults[setting.key] = setting.default_value
-        
+
         return defaults
-    
+
     @classmethod
     def validate_parameter(cls, key: str, value: str) -> Tuple[bool, str]:
         """Validate a parameter value.
-        
+
         Args:
             key: Parameter key
             value: Parameter value as string
-            
+
         Returns:
             Tuple of (is_valid, error_message)
         """
         if key not in cls.VALIDATION_RULES:
             return True, ""
-        
+
         rules = cls.VALIDATION_RULES[key]
-        
+
         try:
             if rules["type"] == "float":
                 float_value = float(value)
                 min_val = rules["min"]
                 max_val = rules["max"]
-                
+
                 if float_value < min_val or float_value > max_val:
                     return False, f"Value must be between {min_val} and {max_val}"
-                    
+
             elif rules["type"] == "int":
                 int_value = int(value)
                 min_val = rules["min"]
                 max_val = rules["max"]
-                
+
                 if int_value < min_val or int_value > max_val:
                     return False, f"Value must be between {min_val} and {max_val}"
-        
+
         except ValueError:
             return False, f"Invalid {rules['type']} value"
-        
+
         return True, ""
-    
+
     @classmethod
     def get_parameter_info(cls, key: str) -> Optional[ParameterConfig]:
         """Get parameter configuration by key.
-        
+
         Args:
             key: Parameter key
-            
+
         Returns:
             ParameterConfig or None if not found
         """
         for param in cls.APGI_PARAMETERS:
             if param.key == key:
                 return param
-        
+
         for setting in cls.EXPERIMENTAL_SETTINGS:
             if setting.key == key:
                 return setting
-        
+
         return None

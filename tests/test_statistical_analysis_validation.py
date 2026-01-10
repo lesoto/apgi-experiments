@@ -29,7 +29,11 @@ class TestEffectSizeCalculatorValidation:
         )
 
         assert np.isclose(result.value, 0.0)
-        assert result.confidence_interval[0] <= result.value <= result.confidence_interval[1]
+        assert (
+            result.confidence_interval[0]
+            <= result.value
+            <= result.confidence_interval[1]
+        )
 
     def test_pearson_r_perfect_correlation(self):
         calc = EffectSizeCalculator(random_state=0)
@@ -40,7 +44,11 @@ class TestEffectSizeCalculatorValidation:
 
         result = calc.pearson_r(x, y, confidence_level=0.95)
         assert result.value > 0.999
-        assert result.confidence_interval[0] <= result.value <= result.confidence_interval[1]
+        assert (
+            result.confidence_interval[0]
+            <= result.value
+            <= result.confidence_interval[1]
+        )
 
     def test_pearson_r_length_mismatch_raises(self):
         calc = EffectSizeCalculator(random_state=0)
@@ -62,7 +70,9 @@ class TestSurpriseAccumulatorValidation:
         epsilon_i = 5.0
         beta = 0.5
 
-        weighted = acc.compute_weighted_prediction_error(pi_e, epsilon_e, pi_i, epsilon_i, beta)
+        weighted = acc.compute_weighted_prediction_error(
+            pi_e, epsilon_e, pi_i, epsilon_i, beta
+        )
         expected = pi_e * abs(epsilon_e) + beta * pi_i * abs(epsilon_i)
         assert np.isclose(weighted, expected)
 
@@ -75,7 +85,9 @@ class TestSurpriseAccumulatorValidation:
         pi_i = np.ones(5)
         epsilon_i = np.zeros(5)
 
-        trace = acc.integrate(pi_e, epsilon_e, pi_i, epsilon_i, beta=1.0, duration=duration)
+        trace = acc.integrate(
+            pi_e, epsilon_e, pi_i, epsilon_i, beta=1.0, duration=duration
+        )
 
         assert len(trace) == int(duration / acc.dt)
         assert np.all(np.isfinite(trace))
@@ -90,5 +102,7 @@ class TestSurpriseAccumulatorValidation:
         pi_i = np.ones(5)
         epsilon_i = np.zeros(5)
 
-        trace = acc.integrate(pi_e, epsilon_e, pi_i, epsilon_i, beta=0.0, duration=duration)
+        trace = acc.integrate(
+            pi_e, epsilon_e, pi_i, epsilon_i, beta=0.0, duration=duration
+        )
         assert np.allclose(trace, 0.0)

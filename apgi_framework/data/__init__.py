@@ -11,7 +11,7 @@ from .data_models import (
     ExperimentalDataset,
     ExperimentMetadata,
     DataVersion,
-    BackupInfo
+    BackupInfo,
 )
 from .parameter_estimation_models import (
     TaskType,
@@ -26,20 +26,17 @@ from .parameter_estimation_models import (
     ModelFitMetrics,
     ReliabilityMetrics,
     ParameterEstimates,
-    SessionData
+    SessionData,
 )
 from .parameter_estimation_schema import (
     ParameterEstimationSchema,
-    create_parameter_estimation_schema
+    create_parameter_estimation_schema,
 )
 from .parameter_estimation_dao import (
     ParameterEstimationDAO,
-    create_parameter_estimation_dao
+    create_parameter_estimation_dao,
 )
-from .migration_manager import (
-    MigrationManager,
-    create_migration_manager
-)
+from .migration_manager import MigrationManager, create_migration_manager
 from .persistence_layer import PersistenceLayer
 from .data_validator import DataValidator
 from .experiment_tracker import ExperimentTracker
@@ -48,58 +45,58 @@ from .experiment_tracker import ExperimentTracker
 from .report_generator import ReportGenerator, FalsificationReport, ReportSection
 from .data_exporter import DataExporter
 from .visualizer import APGIVisualizer, InteractiveVisualizer
-from .dashboard import DashboardServer, ExperimentMonitor, ExperimentComparator, create_dashboard
+from .dashboard import (
+    DashboardServer,
+    ExperimentMonitor,
+    ExperimentComparator,
+    create_dashboard,
+)
 from .data_manager import IntegratedDataManager, create_data_manager
 
 __all__ = [
     # Core data management
-    'StorageManager',
-    'ExperimentalDataset',
-    'ExperimentMetadata', 
-    'DataVersion',
-    'BackupInfo',
-    'PersistenceLayer',
-    'DataValidator',
-    'ExperimentTracker',
-    
+    "StorageManager",
+    "ExperimentalDataset",
+    "ExperimentMetadata",
+    "DataVersion",
+    "BackupInfo",
+    "PersistenceLayer",
+    "DataValidator",
+    "ExperimentTracker",
     # Parameter estimation models
-    'TaskType',
-    'StimulusModality',
-    'BehavioralResponse',
-    'QualityMetrics',
-    'TrialData',
-    'DetectionTrialResult',
-    'HeartbeatTrialResult',
-    'OddballTrialResult',
-    'ParameterDistribution',
-    'ModelFitMetrics',
-    'ReliabilityMetrics',
-    'ParameterEstimates',
-    'SessionData',
-    
+    "TaskType",
+    "StimulusModality",
+    "BehavioralResponse",
+    "QualityMetrics",
+    "TrialData",
+    "DetectionTrialResult",
+    "HeartbeatTrialResult",
+    "OddballTrialResult",
+    "ParameterDistribution",
+    "ModelFitMetrics",
+    "ReliabilityMetrics",
+    "ParameterEstimates",
+    "SessionData",
     # Parameter estimation database
-    'ParameterEstimationSchema',
-    'create_parameter_estimation_schema',
-    'ParameterEstimationDAO',
-    'create_parameter_estimation_dao',
-    'MigrationManager',
-    'create_migration_manager',
-    
+    "ParameterEstimationSchema",
+    "create_parameter_estimation_schema",
+    "ParameterEstimationDAO",
+    "create_parameter_estimation_dao",
+    "MigrationManager",
+    "create_migration_manager",
     # Reporting and visualization
-    'ReportGenerator',
-    'FalsificationReport',
-    'ReportSection',
-    'DataExporter',
-    'APGIVisualizer',
-    'InteractiveVisualizer',
-    
+    "ReportGenerator",
+    "FalsificationReport",
+    "ReportSection",
+    "DataExporter",
+    "APGIVisualizer",
+    "InteractiveVisualizer",
     # Dashboard and monitoring
-    'DashboardServer',
-    'ExperimentMonitor',
-    'ExperimentComparator',
-    'create_dashboard',
-    
+    "DashboardServer",
+    "ExperimentMonitor",
+    "ExperimentComparator",
+    "create_dashboard",
     # Integrated management
-    'IntegratedDataManager',
-    'create_data_manager'
+    "IntegratedDataManager",
+    "create_data_manager",
 ]

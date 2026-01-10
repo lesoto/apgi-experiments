@@ -10,7 +10,7 @@ from .statistical_tester import (
     StatisticalResult,
     TestType,
     CorrectionMethod,
-    ClusterCorrectionResult
+    ClusterCorrectionResult,
 )
 
 from .effect_size_calculator import (
@@ -19,7 +19,7 @@ from .effect_size_calculator import (
     BootstrapResult,
     EffectSizeType,
     ConfidenceIntervalMethod,
-    get_effect_size_guidelines
+    get_effect_size_guidelines,
 )
 
 from .replication_tracker import (
@@ -29,7 +29,7 @@ from .replication_tracker import (
     ReplicationSummary,
     PowerAnalysisResult,
     ReplicationStatus,
-    PowerAnalysisMethod
+    PowerAnalysisMethod,
 )
 
 from .sample_size_validator import (
@@ -38,7 +38,7 @@ from .sample_size_validator import (
     PowerReport,
     ValidationStatus,
     TestRequirement,
-    SampleSizeRequirement
+    SampleSizeRequirement,
 )
 
 from .statistical_report_generator import (
@@ -47,7 +47,7 @@ from .statistical_report_generator import (
     PublicationReport,
     FalsificationAssessment,
     FalsificationConclusion,
-    ReportFormat
+    ReportFormat,
 )
 
 from .bayesian_models import (
@@ -56,7 +56,7 @@ from .bayesian_models import (
     IgnitionProbabilityCalculator,
     StanModelCompiler,
     ParameterDistribution,
-    ParameterEstimates
+    ParameterEstimates,
 )
 
 from .parameter_estimation import (
@@ -65,7 +65,7 @@ from .parameter_estimation import (
     ConvergenceDiagnosticsCalculator,
     IndividualParameterEstimator,
     ConvergenceDiagnostics,
-    FitResults
+    FitResults,
 )
 
 from .parameter_recovery import (
@@ -75,7 +75,7 @@ from .parameter_recovery import (
     ValidationReportGenerator,
     GroundTruthParameters,
     RecoveryMetrics,
-    RecoveryResults
+    RecoveryResults,
 )
 
 from .predictive_validity import (
@@ -86,82 +86,74 @@ from .predictive_validity import (
     PredictiveValidityFramework,
     TaskPerformance,
     ValidityResult,
-    ComparativeValidityResult
+    ComparativeValidityResult,
 )
 
 __all__ = [
     # Statistical Testing
-    'StatisticalTester',
-    'StatisticalResult',
-    'TestType',
-    'CorrectionMethod',
-    'ClusterCorrectionResult',
-    
+    "StatisticalTester",
+    "StatisticalResult",
+    "TestType",
+    "CorrectionMethod",
+    "ClusterCorrectionResult",
     # Effect Size Calculation
-    'EffectSizeCalculator',
-    'EffectSizeResult',
-    'BootstrapResult',
-    'EffectSizeType',
-    'ConfidenceIntervalMethod',
-    'get_effect_size_guidelines',
-    
+    "EffectSizeCalculator",
+    "EffectSizeResult",
+    "BootstrapResult",
+    "EffectSizeType",
+    "ConfidenceIntervalMethod",
+    "get_effect_size_guidelines",
     # Replication and Power Analysis
-    'ReplicationTracker',
-    'PowerAnalyzer',
-    'ExperimentResult',
-    'ReplicationSummary',
-    'PowerAnalysisResult',
-    'ReplicationStatus',
-    'PowerAnalysisMethod',
-    
+    "ReplicationTracker",
+    "PowerAnalyzer",
+    "ExperimentResult",
+    "ReplicationSummary",
+    "PowerAnalysisResult",
+    "ReplicationStatus",
+    "PowerAnalysisMethod",
     # Sample Size Validation
-    'SampleSizeValidator',
-    'ValidationResult',
-    'PowerReport',
-    'ValidationStatus',
-    'TestRequirement',
-    'SampleSizeRequirement',
-    
+    "SampleSizeValidator",
+    "ValidationResult",
+    "PowerReport",
+    "ValidationStatus",
+    "TestRequirement",
+    "SampleSizeRequirement",
     # Report Generation
-    'StatisticalReportGenerator',
-    'StatisticalSummary',
-    'PublicationReport',
-    'FalsificationAssessment',
-    'FalsificationConclusion',
-    'ReportFormat',
-    
+    "StatisticalReportGenerator",
+    "StatisticalSummary",
+    "PublicationReport",
+    "FalsificationAssessment",
+    "FalsificationConclusion",
+    "ReportFormat",
     # Bayesian Modeling
-    'HierarchicalBayesianModel',
-    'SurpriseAccumulator',
-    'IgnitionProbabilityCalculator',
-    'StanModelCompiler',
-    'ParameterDistribution',
-    'ParameterEstimates',
-    
+    "HierarchicalBayesianModel",
+    "SurpriseAccumulator",
+    "IgnitionProbabilityCalculator",
+    "StanModelCompiler",
+    "ParameterDistribution",
+    "ParameterEstimates",
     # Parameter Estimation Pipeline
-    'JointParameterFitter',
-    'ParameterExtractor',
-    'ConvergenceDiagnosticsCalculator',
-    'IndividualParameterEstimator',
-    'ConvergenceDiagnostics',
-    'FitResults',
-    
+    "JointParameterFitter",
+    "ParameterExtractor",
+    "ConvergenceDiagnosticsCalculator",
+    "IndividualParameterEstimator",
+    "ConvergenceDiagnostics",
+    "FitResults",
     # Parameter Recovery Validation
-    'SyntheticDataGenerator',
-    'ParameterRecoveryValidator',
-    'RecoveryAnalyzer',
-    'ValidationReportGenerator',
-    'GroundTruthParameters',
-    'RecoveryMetrics',
-    'RecoveryResults',
-    
+    "SyntheticDataGenerator",
+    "ParameterRecoveryValidator",
+    "RecoveryAnalyzer",
+    "ValidationReportGenerator",
+    "GroundTruthParameters",
+    "RecoveryMetrics",
+    "RecoveryResults",
     # Predictive Validity Testing
-    'EmotionalInterferenceTask',
-    'ContinuousPerformanceTask',
-    'BodyVigilanceScaleAnalyzer',
-    'PredictivePowerComparator',
-    'PredictiveValidityFramework',
-    'TaskPerformance',
-    'ValidityResult',
-    'ComparativeValidityResult'
+    "EmotionalInterferenceTask",
+    "ContinuousPerformanceTask",
+    "BodyVigilanceScaleAnalyzer",
+    "PredictivePowerComparator",
+    "PredictiveValidityFramework",
+    "TaskPerformance",
+    "ValidityResult",
+    "ComparativeValidityResult",
 ]

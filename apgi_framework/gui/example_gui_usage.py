@@ -13,7 +13,7 @@ def main():
     # Set up database path
     db_path = Path("data/parameter_estimation.db")
     db_path.parent.mkdir(parents=True, exist_ok=True)
-    
+
     # Launch GUI
     print("Launching APGI Parameter Estimation GUI...")
     print(f"Database: {db_path}")
@@ -25,7 +25,7 @@ def main():
     print("- Parameter estimation with Bayesian modeling")
     print("- Comprehensive reporting and data export")
     print("\nStarting GUI...")
-    
+
     launch_gui(db_path)
 
 

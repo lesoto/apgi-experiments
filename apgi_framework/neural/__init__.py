@@ -6,16 +6,26 @@ neural signature extraction including ERPs, microstates, and gamma synchrony,
 pupillometry, and multi-modal physiological monitoring.
 """
 
-from .eeg_interface import EEGInterface, EEGConfig, ArtifactDetector, ChannelInfo, ChannelType
+from .eeg_interface import (
+    EEGInterface,
+    EEGConfig,
+    ArtifactDetector,
+    ChannelInfo,
+    ChannelType,
+)
 from .erp_analysis import ERPAnalysis, ERPComponents, P3bMetrics
 from .microstate_analysis import MicrostateAnalysis, MicrostateSequence
-from .gamma_synchrony import GammaSynchronyAnalysis, CoherenceMetrics, NetworkConnectivity
+from .gamma_synchrony import (
+    GammaSynchronyAnalysis,
+    CoherenceMetrics,
+    NetworkConnectivity,
+)
 from .pupillometry_interface import (
-    PupillometryInterface, 
-    PupillometryConfig, 
-    PupilSample, 
+    PupillometryInterface,
+    PupillometryConfig,
+    PupilSample,
     EyeType,
-    BlinkDetectionMethod
+    BlinkDetectionMethod,
 )
 from .physiological_monitoring import (
     PhysiologicalMonitoring,
@@ -25,7 +35,7 @@ from .physiological_monitoring import (
     RespirationPhase,
     HeartRateMonitor,
     SkinConductanceMonitor,
-    RespirationMonitor
+    RespirationMonitor,
 )
 
 # Signal processing components
@@ -37,7 +47,7 @@ from .eeg_processor import (
     ERPExtractor,
     ProcessedEEG,
     ERPFeatures,
-    FilterType
+    FilterType,
 )
 from .pupillometry_processor import (
     PupillometryProcessor,
@@ -45,7 +55,7 @@ from .pupillometry_processor import (
     PupilMetricsCalculator,
     PupilQualityScorer,
     PupilFeatures,
-    PupilQualityMetrics
+    PupilQualityMetrics,
 )
 from .cardiac_processor import (
     CardiacProcessor,
@@ -54,7 +64,7 @@ from .cardiac_processor import (
     CardiacQualityAssessor,
     HRVMetrics,
     CardiacQualityMetrics,
-    RPeakAlgorithm
+    RPeakAlgorithm,
 )
 from .quality_control import (
     SignalQualityMonitor,
@@ -64,70 +74,67 @@ from .quality_control import (
     MultiModalQualityMetrics,
     QualityAlert,
     QualityLevel,
-    AlertSeverity
+    AlertSeverity,
 )
 
 __all__ = [
     # Data acquisition interfaces
-    'EEGInterface',
-    'EEGConfig',
-    'ArtifactDetector',
-    'ChannelInfo',
-    'ChannelType',
-    'PupillometryInterface',
-    'PupillometryConfig',
-    'PupilSample',
-    'EyeType',
-    'BlinkDetectionMethod',
-    'PhysiologicalMonitoring',
-    'PhysiologicalConfig',
-    'PhysiologicalSample',
-    'SignalType',
-    'RespirationPhase',
-    'HeartRateMonitor',
-    'SkinConductanceMonitor',
-    'RespirationMonitor',
-    
+    "EEGInterface",
+    "EEGConfig",
+    "ArtifactDetector",
+    "ChannelInfo",
+    "ChannelType",
+    "PupillometryInterface",
+    "PupillometryConfig",
+    "PupilSample",
+    "EyeType",
+    "BlinkDetectionMethod",
+    "PhysiologicalMonitoring",
+    "PhysiologicalConfig",
+    "PhysiologicalSample",
+    "SignalType",
+    "RespirationPhase",
+    "HeartRateMonitor",
+    "SkinConductanceMonitor",
+    "RespirationMonitor",
     # Neural analysis
-    'ERPAnalysis',
-    'ERPComponents',
-    'P3bMetrics',
-    'MicrostateAnalysis',
-    'MicrostateSequence',
-    'GammaSynchronyAnalysis',
-    'CoherenceMetrics',
-    'NetworkConnectivity',
-    
+    "ERPAnalysis",
+    "ERPComponents",
+    "P3bMetrics",
+    "MicrostateAnalysis",
+    "MicrostateSequence",
+    "GammaSynchronyAnalysis",
+    "CoherenceMetrics",
+    "NetworkConnectivity",
     # Signal processing
-    'EEGProcessor',
-    'FASTERArtifactDetector',
-    'EpochExtractor',
-    'BaselineCorrector',
-    'ERPExtractor',
-    'ProcessedEEG',
-    'ERPFeatures',
-    'FilterType',
-    'PupillometryProcessor',
-    'PupilFeatureExtractor',
-    'PupilMetricsCalculator',
-    'PupilQualityScorer',
-    'PupilFeatures',
-    'PupilQualityMetrics',
-    'CardiacProcessor',
-    'HRVAnalyzer',
-    'HEPExtractor',
-    'CardiacQualityAssessor',
-    'HRVMetrics',
-    'CardiacQualityMetrics',
-    'RPeakAlgorithm',
-    
+    "EEGProcessor",
+    "FASTERArtifactDetector",
+    "EpochExtractor",
+    "BaselineCorrector",
+    "ERPExtractor",
+    "ProcessedEEG",
+    "ERPFeatures",
+    "FilterType",
+    "PupillometryProcessor",
+    "PupilFeatureExtractor",
+    "PupilMetricsCalculator",
+    "PupilQualityScorer",
+    "PupilFeatures",
+    "PupilQualityMetrics",
+    "CardiacProcessor",
+    "HRVAnalyzer",
+    "HEPExtractor",
+    "CardiacQualityAssessor",
+    "HRVMetrics",
+    "CardiacQualityMetrics",
+    "RPeakAlgorithm",
     # Quality control
-    'SignalQualityMonitor',
-    'UnifiedArtifactDetector',
-    'AdaptiveProtocolManager',
-    'OperatorNotificationSystem',
-    'MultiModalQualityMetrics',
-    'QualityAlert',
-    'QualityLevel',
-    'AlertSeverity',
+    "SignalQualityMonitor",
+    "UnifiedArtifactDetector",
+    "AdaptiveProtocolManager",
+    "OperatorNotificationSystem",
+    "MultiModalQualityMetrics",
+    "QualityAlert",
+    "QualityLevel",
+    "AlertSeverity",
 ]

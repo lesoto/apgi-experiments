@@ -2,9 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.special import expit
 
+
 def ignition_probability(S_t, theta_t, alpha):
     """Calculate probability of ignition B_t using sigmoid."""
     return expit(alpha * (S_t - theta_t))
+
 
 # Generate data
 S_t_range = np.linspace(0, 10, 100)  # Range of precision-weighted surprise
@@ -17,10 +19,10 @@ plt.figure(figsize=(15, 5))
 plt.subplot(1, 3, 1)
 for theta in theta_values:
     B_t = ignition_probability(S_t_range, theta, alpha=1.0)
-    plt.plot(S_t_range, B_t, label=f'θ_t = {theta}')
-plt.xlabel('Precision-Weighted Surprise (S_t)')
-plt.ylabel('Ignition Probability (B_t)')
-plt.title('Effect of Dynamic Threshold (θ_t)')
+    plt.plot(S_t_range, B_t, label=f"θ_t = {theta}")
+plt.xlabel("Precision-Weighted Surprise (S_t)")
+plt.ylabel("Ignition Probability (B_t)")
+plt.title("Effect of Dynamic Threshold (θ_t)")
 plt.legend()
 plt.grid(True)
 
@@ -28,10 +30,10 @@ plt.grid(True)
 plt.subplot(1, 3, 2)
 for alpha in alpha_values:
     B_t = ignition_probability(S_t_range, theta_t=5, alpha=alpha)
-    plt.plot(S_t_range, B_t, label=f'α = {alpha}')
-plt.xlabel('Precision-Weighted Surprise (S_t)')
-plt.ylabel('Ignition Probability (B_t)')
-plt.title('Effect of Transition Sharpness (α)')
+    plt.plot(S_t_range, B_t, label=f"α = {alpha}")
+plt.xlabel("Precision-Weighted Surprise (S_t)")
+plt.ylabel("Ignition Probability (B_t)")
+plt.title("Effect of Transition Sharpness (α)")
 plt.legend()
 plt.grid(True)
 
@@ -44,9 +46,9 @@ epsilon_i = 3.0  # Interoceptive prediction error
 for M in M_values:
     S_t_total = S_t_extero + M * epsilon_i
     B_t = ignition_probability(S_t_total, theta_t=5, alpha=1.0)
-    plt.bar(f'M={M}', B_t, label=f'S_t={S_t_total:.1f}')
-plt.ylabel('Ignition Probability (B_t)')
-plt.title('Somatic Marker (M) Effect on Ignition')
+    plt.bar(f"M={M}", B_t, label=f"S_t={S_t_total:.1f}")
+plt.ylabel("Ignition Probability (B_t)")
+plt.title("Somatic Marker (M) Effect on Ignition")
 plt.grid(True)
 
 plt.tight_layout()

@@ -10,7 +10,7 @@ from .troubleshooting import TroubleshootingGuide
 from .help_system import InSystemHelpSystem
 
 __all__ = [
-    'ParameterEstimationUserManual',
-    'TroubleshootingGuide',
-    'InSystemHelpSystem'
+    "ParameterEstimationUserManual",
+    "TroubleshootingGuide",
+    "InSystemHelpSystem",
 ]
