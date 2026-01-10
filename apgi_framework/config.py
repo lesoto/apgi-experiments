@@ -136,6 +136,7 @@ class ExperimentalConfig:
 
     n_trials: int = 1000
     n_participants: int = 100
+    session_duration: float = 60.0  # minutes
     random_seed: Optional[int] = None
     output_directory: str = "results"
     log_level: str = "INFO"
@@ -311,6 +312,40 @@ class ConfigManager:
 
         # Re-validate configuration
         self.experimental_config.__post_init__()
+
+    def validate_apgi_parameter(self, param_name: str, value: float) -> bool:
+        """Validate a single APGI parameter.
+
+        Args:
+            param_name: Name of the parameter to validate
+            value: Value to validate
+
+        Returns:
+            True if parameter is valid, False otherwise
+        """
+        try:
+            # Import here to avoid circular dependency
+            from .validation.parameter_validator import get_validator
+            
+            validator = get_validator()
+            
+            # Create a temporary parameters object with the test value
+            temp_params = APGIParameters()
+            setattr(temp_params, param_name, value)
+            
+            # Validate will raise an exception if invalid
+            temp_params.__post_init__()
+            return True
+            
+        except ImportError:
+            # Fallback to basic validation if validator not available
+            if param_name in ["extero_precision", "intero_precision", "somatic_gain", "steepness"]:
+                return value > 0
+            elif param_name == "threshold":
+                return 0 < value <= 10
+            return True
+        except Exception:
+            return False
 
 
 # Global configuration instance

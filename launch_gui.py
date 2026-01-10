@@ -255,6 +255,11 @@ class ComprehensiveGUILauncher:
         # Pack scrollable area
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
+        
+        # Bind mouse wheel for scrolling
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        canvas.bind_all("<MouseWheel>", _on_mousewheel)
 
         # Bottom buttons
         bottom_frame = tk.Frame(main_container, bg="#f0f0f0")
@@ -388,9 +393,19 @@ class ComprehensiveGUILauncher:
             relief=tk.FLAT,
             padx=20,
             pady=8,
-            cursor="hand2"
+            cursor="hand2",
+            activebackground="#2ecc71",
+            activeforeground="white"
         )
         launch_button.pack()
+        
+        # Add hover effects
+        def on_enter(e):
+            launch_button.config(bg="#2ecc71")
+        def on_leave(e):
+            launch_button.config(bg="#27ae60")
+        launch_button.bind("<Enter>", on_enter)
+        launch_button.bind("<Leave>", on_leave)
 
     # Launch methods for each application
     def launch_full_gui(self):
@@ -467,7 +482,9 @@ class ComprehensiveGUILauncher:
             script_full_path = current_dir / script_path
             
             if not script_full_path.exists():
-                messagebox.showerror("Error", f"Script not found: {script_full_path}")
+                messagebox.showwarning("File Not Found", 
+                    f"Script not found:\n{script_full_path}\n\n"
+                    f"This application may not be implemented yet.")
                 return
             
             # Launch in a separate thread to avoid blocking the GUI
@@ -475,44 +492,117 @@ class ComprehensiveGUILauncher:
                 try:
                     subprocess.run([sys.executable, str(script_full_path)], 
                                  cwd=current_dir,
-                                 check=True)
+                                 check=True,
+                                 capture_output=True,
+                                 text=True)
                 except subprocess.CalledProcessError as e:
-                    messagebox.showerror("Error", f"Failed to launch {app_name}: {e}")
+                    # Show error in main thread - capture error message for lambda
+                    error_msg = f"Failed to launch {app_name}:\n{e.stderr or str(e)}"
+                    self.root.after(0, lambda msg=error_msg: messagebox.showerror(
+                        "Launch Error", msg
+                    ))
                 except Exception as e:
-                    messagebox.showerror("Error", f"Unexpected error launching {app_name}: {e}")
+                    # Show error in main thread - capture error message for lambda
+                    error_msg = f"Unexpected error launching {app_name}: {str(e)}"
+                    self.root.after(0, lambda msg=error_msg: messagebox.showerror(
+                        "Unexpected Error", msg
+                    ))
             
             thread = threading.Thread(target=run_script, daemon=True)
             thread.start()
             
-            messagebox.showinfo("Success", f"{app_name} launched successfully!")
+            # Show success message briefly
+            self.root.after(100, lambda: messagebox.showinfo(
+                "Launch Started", 
+                f"{app_name} is starting...\n"
+                f"If the application doesn't appear, check for any error messages."
+            ))
             
         except Exception as e:
             messagebox.showerror("Error", f"Failed to launch {app_name}: {e}")
 
     def show_system_info(self):
         """Show system information dialog."""
+        # Check which applications actually exist
+        existing_apps = 0
+        missing_apps = []
+        
+        for category, apps in self.gui_apps.items():
+            for app in apps:
+                script_path = Path(__file__).parent / app["file"]
+                if script_path.exists():
+                    existing_apps += 1
+                else:
+                    missing_apps.append(f"{app['name']} ({app['file']})")
+        
         info_text = f"""
 APGI Framework System Information
 ================================
 
-Python Version: {sys.version}
+Python Version: {sys.version.split()[0]}
 Platform: {sys.platform}
 Current Directory: {Path.cwd()}
 APGI Root: {Path(__file__).parent}
 
-Available GUI Applications: {sum(len(apps) for apps in self.gui_apps.values())}
+GUI Applications Status:
+• Total Applications: {sum(len(apps) for apps in self.gui_apps.values())}
+• Available: {existing_apps}
+• Missing: {len(missing_apps)}
 
 Categories:
 {chr(10).join(f"• {category}: {len(apps)} apps" for category, apps in self.gui_apps.items())}
 
-Requirements:
-• Python 3.7+
-• tkinter (included with Python)
-• CustomTkinter (for some GUIs)
-• Flask/Flask-SocketIO (for web dashboard)
+System Requirements:
+• Python 3.7+ ✓
+• tkinter (included with Python) ✓
+• CustomTkinter (for some GUIs) - optional
+• Flask/Flask-SocketIO (for web dashboard) - optional
+
+Missing Applications:
+{chr(10).join(f'• {app}' for app in missing_apps) if missing_apps else 'None - All applications available!'}
         """
         
-        messagebox.showinfo("System Information", info_text)
+        # Create a scrollable text widget for better display
+        info_window = tk.Toplevel(self.root)
+        info_window.title("System Information")
+        info_window.geometry("600x500")
+        info_window.resizable(True, True)
+        
+        # Center the info window
+        info_window.update_idletasks()
+        width = info_window.winfo_width()
+        height = info_window.winfo_height()
+        x = (info_window.winfo_screenwidth() // 2) - (width // 2)
+        y = (info_window.winfo_screenheight() // 2) - (height // 2)
+        info_window.geometry(f"{width}x{height}+{x}+{y}")
+        
+        # Create text widget with scrollbar
+        text_frame = tk.Frame(info_window)
+        text_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        text_widget = tk.Text(text_frame, wrap=tk.WORD, font=("Courier", 10))
+        scrollbar_info = ttk.Scrollbar(text_frame, orient="vertical", command=text_widget.yview)
+        text_widget.configure(yscrollcommand=scrollbar_info.set)
+        
+        text_widget.pack(side="left", fill="both", expand=True)
+        scrollbar_info.pack(side="right", fill="y")
+        
+        text_widget.insert("1.0", info_text)
+        text_widget.config(state=tk.DISABLED)
+        
+        # Close button
+        close_button = tk.Button(
+            info_window,
+            text="Close",
+            command=info_window.destroy,
+            font=("Arial", 10),
+            bg="#3498db",
+            fg="white",
+            relief=tk.FLAT,
+            padx=20,
+            pady=8
+        )
+        close_button.pack(pady=10)
 
     def run(self):
         """Run the launcher."""

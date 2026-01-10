@@ -13,6 +13,17 @@ from pathlib import Path
 import logging
 import threading
 
+# Import available modules
+try:
+    from .progress_monitoring import RealTimeProgressMonitor
+except ImportError:
+    # Fallback for direct execution
+    import sys
+    from pathlib import Path
+    project_root = Path(__file__).parent.parent.parent
+    sys.path.insert(0, str(project_root))
+    from apgi_framework.gui.progress_monitoring import RealTimeProgressMonitor
+
 # Commented out missing imports to prevent import errors
 # from ..experimental.behavioral_tasks import (
 #     DetectionTask,
@@ -22,8 +33,28 @@ import threading
 # from ..data.parameter_estimation_dao import ParameterEstimationDAO
 # from ..data.parameter_estimation_models import SessionData, TaskType
 # from .session_management import SessionSetupManager, ParticipantManager
-# from .progress_monitoring import RealTimeProgressMonitor
 # from .task_configuration import TaskParameterConfigurator
+
+# Placeholder classes for missing dependencies
+class DetectionTask:
+    """Placeholder for DetectionTask."""
+    def __init__(self):
+        pass
+
+class HeartbeatDetectionTask:
+    """Placeholder for HeartbeatDetectionTask."""
+    def __init__(self):
+        pass
+
+class DualModalityOddballTask:
+    """Placeholder for DualModalityOddballTask."""
+    def __init__(self):
+        pass
+
+class SessionData:
+    """Placeholder for SessionData."""
+    def __init__(self):
+        pass
 
 logger = logging.getLogger(__name__)
 
@@ -968,3 +999,10 @@ def launch_gui(db_path: Path) -> None:
     """
     gui = ParameterEstimationGUI(db_path)
     gui.run()
+
+
+if __name__ == "__main__":
+    from pathlib import Path
+    db_path = Path("data/parameter_estimation.db")
+    db_path.parent.mkdir(exist_ok=True)
+    launch_gui(db_path)

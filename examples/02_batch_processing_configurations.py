@@ -25,11 +25,16 @@ from apgi_framework.main_controller import MainApplicationController
 from apgi_framework.config import ConfigManager
 import logging
 
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-logger = logging.getLogger(__name__)
+# Setup logging with standardized system
+try:
+    from apgi_framework.logging.standardized_logging import get_logger
+    logger = get_logger("batch_processing_example")
+except ImportError:
+    # Fallback to basic logging
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
+    logger = logging.getLogger(__name__)
 
 
 def batch_process_threshold_variations():

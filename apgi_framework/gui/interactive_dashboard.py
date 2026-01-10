@@ -404,4 +404,4 @@ if __name__ == "__main__":
     dashboard = create_interactive_dashboard()
     if dashboard:
         print(f"Starting interactive dashboard at {dashboard.get_dashboard_url()}")
-        dashboard.start()
+        dashboard.start_dashboard()

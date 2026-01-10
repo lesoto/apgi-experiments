@@ -24,11 +24,16 @@ from apgi_framework.data import StorageManager, DataExporter, APGIVisualizer
 from apgi_framework.core import FalsificationResult
 import logging
 
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-logger = logging.getLogger(__name__)
+# Setup logging with standardized system
+try:
+    from apgi_framework.logging.standardized_logging import get_logger
+    logger = get_logger("custom_analysis_example")
+except ImportError:
+    # Fallback to basic logging
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
+    logger = logging.getLogger(__name__)
 
 
 def load_saved_results(results_directory: str = "results") -> List[Dict[str, Any]]:

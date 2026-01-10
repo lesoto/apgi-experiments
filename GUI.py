@@ -190,26 +190,59 @@ class ConfigurationValidator:
             except Exception as e:
                 print(f"Warning: Could not initialize ConfigManager: {e}")
 
-        # Fallback validation rules
-        self.validation_rules = {
-            "gamma_oscillation_power": {"min": 0.0, "max": 10.0, "type": float},
-            "p3b_amplitude": {"min": 0.0, "max": 50.0, "type": float},
-            "bold_signal_strength": {"min": 0.0, "max": 5.0, "type": float},
-            "pci_value": {"min": 0.0, "max": 1.0, "type": float},
-            "prediction_error_weight": {"min": 0.0, "max": 1.0, "type": float},
-            "threshold_sensitivity": {"min": 0.1, "max": 10.0, "type": float},
-            "somatic_marker_strength": {"min": 0.0, "max": 1.0, "type": float},
-            "precision_weight": {"min": 0.0, "max": 1.0, "type": float},
-            "num_trials": {"min": 1, "max": 10000, "type": int},
-            "sample_rate": {"min": 100, "max": 10000, "type": int},
-            "duration": {"min": 0.1, "max": 3600.0, "type": float},
-            # APGI framework specific parameters
-            "exteroceptive_precision": {"min": 0.1, "max": 10.0, "type": float},
-            "interoceptive_precision": {"min": 0.1, "max": 10.0, "type": float},
-            "somatic_gain": {"min": 0.0, "max": 5.0, "type": float},
-            "threshold": {"min": 0.1, "max": 10.0, "type": float},
-            "steepness": {"min": 0.1, "max": 10.0, "type": float},
-        }
+        # Get default values from ConfigManager if available, otherwise use fallbacks
+        if self.config_manager:
+            apgi_params = self.config_manager.get_apgi_parameters()
+            exp_config = self.config_manager.get_experimental_config()
+            
+            self.validation_rules = {
+                # Neural signature parameters (from simulators)
+                "gamma_oscillation_power": {"min": 0.0, "max": 10.0, "type": float},
+                "p3b_amplitude": {"min": 0.0, "max": 50.0, "type": float},
+                "bold_signal_strength": {"min": 0.0, "max": 5.0, "type": float},
+                "pci_value": {"min": 0.0, "max": 1.0, "type": float},
+                
+                # APGI framework parameters (from actual config)
+                "exteroceptive_precision": {"min": 0.1, "max": 10.0, "type": float, "default": apgi_params.extero_precision},
+                "interoceptive_precision": {"min": 0.1, "max": 10.0, "type": float, "default": apgi_params.intero_precision},
+                "somatic_gain": {"min": 0.0, "max": 5.0, "type": float, "default": apgi_params.somatic_gain},
+                "threshold": {"min": 0.1, "max": 10.0, "type": float, "default": apgi_params.threshold},
+                "steepness": {"min": 0.1, "max": 10.0, "type": float, "default": apgi_params.steepness},
+                
+                # Experimental parameters (from actual config)
+                "num_trials": {"min": 1, "max": 10000, "type": int, "default": exp_config.n_trials},
+                "n_participants": {"min": 1, "max": 1000, "type": int, "default": exp_config.n_participants},
+                "session_duration": {"min": 1, "max": 480, "type": float, "default": exp_config.session_duration},
+                
+                # General experimental parameters
+                "prediction_error_weight": {"min": 0.0, "max": 1.0, "type": float},
+                "threshold_sensitivity": {"min": 0.1, "max": 10.0, "type": float},
+                "somatic_marker_strength": {"min": 0.0, "max": 1.0, "type": float},
+                "precision_weight": {"min": 0.0, "max": 1.0, "type": float},
+                "sample_rate": {"min": 100, "max": 10000, "type": int},
+                "duration": {"min": 0.1, "max": 3600.0, "type": float},
+            }
+        else:
+            # Fallback validation rules when ConfigManager not available
+            self.validation_rules = {
+                "gamma_oscillation_power": {"min": 0.0, "max": 10.0, "type": float},
+                "p3b_amplitude": {"min": 0.0, "max": 50.0, "type": float},
+                "bold_signal_strength": {"min": 0.0, "max": 5.0, "type": float},
+                "pci_value": {"min": 0.0, "max": 1.0, "type": float},
+                "prediction_error_weight": {"min": 0.0, "max": 1.0, "type": float},
+                "threshold_sensitivity": {"min": 0.1, "max": 10.0, "type": float},
+                "somatic_marker_strength": {"min": 0.0, "max": 1.0, "type": float},
+                "precision_weight": {"min": 0.0, "max": 1.0, "type": float},
+                "num_trials": {"min": 1, "max": 10000, "type": int},
+                "sample_rate": {"min": 100, "max": 10000, "type": int},
+                "duration": {"min": 0.1, "max": 3600.0, "type": float},
+                # APGI framework specific parameters
+                "exteroceptive_precision": {"min": 0.1, "max": 10.0, "type": float},
+                "interoceptive_precision": {"min": 0.1, "max": 10.0, "type": float},
+                "somatic_gain": {"min": 0.0, "max": 5.0, "type": float},
+                "threshold": {"min": 0.1, "max": 10.0, "type": float},
+                "steepness": {"min": 0.1, "max": 10.0, "type": float},
+            }
 
     def validate_parameter(
         self, param_name: str, value: str
@@ -714,20 +747,31 @@ class APGIFrameworkGUI(ctk.CTk):
 
     def _setup_logging(self):
         """Setup logging configuration."""
-        logging.basicConfig(
-            level=logging.INFO,
-            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-            handlers=[logging.FileHandler("apgi_gui.log"), logging.StreamHandler()],
-        )
-        self.logger = logging.getLogger(__name__)
+        try:
+            from apgi_framework.logging.standardized_logging import get_logger
+            self.logger = get_logger("apgi_gui", log_file="apgi_gui.log")
+        except ImportError:
+            # Fallback to basic logging
+            logging.basicConfig(
+                level=logging.INFO,
+                format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+                handlers=[logging.FileHandler("apgi_gui.log"), logging.StreamHandler()],
+            )
+            self.logger = logging.getLogger(__name__)
 
     def _update_system_status(self):
         """Update system status information."""
         try:
             if self.cli_handler:
                 # Get system status from CLI
+                # Get version from configuration or use default
+                try:
+                    from apgi_framework import __version__ as framework_version
+                except ImportError:
+                    framework_version = "1.0.0"
+
                 self.system_status = {
-                    "framework_version": "1.0.0",
+                    "framework_version": framework_version,
                     "config_loaded": self.config_manager is not None,
                     "data_manager_ready": self.data_manager is not None,
                     "last_check": datetime.datetime.now().isoformat(),
@@ -867,32 +911,79 @@ class APGIFrameworkGUI(ctk.CTk):
             creator(content_frame)
 
     def create_apgi_parameters_section(self, parent):
-        """Create APGI parameters section."""
+        """Create APGI parameters section with dynamic defaults."""
+        section_frame = ctk.CTkFrame(parent, fg_color="#f0f0f0")
+        section_frame.grid_columnconfigure(0, weight=1)
+
+        # Get defaults from ConfigManager if available
+        if self.config_manager and hasattr(self.config_manager, 'get_apgi_parameters'):
+            apgi_params = self.config_manager.get_apgi_parameters()
+            default_params = [
+                ("Exteroceptive Precision:", "exteroceptive_precision", str(apgi_params.extero_precision)),
+                ("Interoceptive Precision:", "interoceptive_precision", str(apgi_params.intero_precision)),
+                ("Somatic Gain:", "somatic_gain", str(apgi_params.somatic_gain)),
+                ("Threshold:", "threshold", str(apgi_params.threshold)),
+                ("Steepness:", "steepness", str(apgi_params.steepness)),
+            ]
+        else:
+            # Fallback defaults
+            default_params = [
+                ("Exteroceptive Precision:", "exteroceptive_precision", "2.0"),
+                ("Interoceptive Precision:", "interoceptive_precision", "1.5"),
+                ("Somatic Gain:", "somatic_gain", "1.3"),
+                ("Threshold:", "threshold", "3.5"),
+                ("Steepness:", "steepness", "2.0"),
+            ]
+
+        # Title
+        title_label = ctk.CTkLabel(
+            section_frame, text="🧠 APGI Parameters", font=("Arial", 14, "bold")
+        )
+        title_label.grid(row=0, column=0, pady=(10, 5), sticky="w")
+
+        # Parameter entries
         self.apgi_params = {}
-        params = [
-            ("Exteroceptive Precision:", "exteroceptive_precision", "0.5"),
-            ("Interoceptive Precision:", "interoceptive_precision", "0.5"),
-            ("Somatic Gain:", "somatic_gain", "0.5"),
-            ("Threshold:", "threshold", "0.1"),
-            ("Precision Weight:", "precision_weight", "0.3"),
-            ("Prediction Error Weight:", "prediction_error_weight", "0.4"),
-        ]
+        for idx, (label_text, param_name, default_value) in enumerate(default_params):
+            label = ctk.CTkLabel(section_frame, text=label_text)
+            label.grid(row=idx + 1, column=0, sticky="w", padx=10, pady=2)
 
-        for idx, (label_text, param_name, default_value) in enumerate(params):
-            frame = ctk.CTkFrame(parent, fg_color="#f0f0f0")
-            frame.grid(row=idx, column=0, sticky="ew", padx=5, pady=2)
-
-            label = ctk.CTkLabel(frame, text=label_text, width=140)
-            label.pack(side=tk.LEFT, padx=(0, 5))
-
-            entry = ctk.CTkEntry(frame, width=80)
-            entry.pack(side=tk.RIGHT)
+            entry = ctk.CTkEntry(section_frame, width=100)
+            entry.grid(row=idx + 1, column=1, padx=10, pady=2)
             entry.insert(0, default_value)
-
             self.apgi_params[param_name] = entry
 
+        return section_frame
+
     def create_experimental_setup_section(self, parent):
-        """Create experimental setup section."""
+        """Create experimental setup section with dynamic defaults."""
+        section_frame = ctk.CTkFrame(parent, fg_color="#f0f0f0")
+        section_frame.grid_columnconfigure(0, weight=1)
+
+        # Get defaults from ConfigManager if available
+        if self.config_manager and hasattr(self.config_manager, 'get_experimental_config'):
+            exp_config = self.config_manager.get_experimental_config()
+            default_params = [
+                ("Number of Trials:", "n_trials", str(exp_config.n_trials)),
+                ("Number of Participants:", "n_participants", str(exp_config.n_participants)),
+                ("Session Duration (min):", "session_duration", str(exp_config.session_duration)),
+                ("Inter-trial Interval (s):", "iti", "2.0"),  # This might not be in config
+            ]
+        else:
+            # Fallback defaults
+            default_params = [
+                ("Number of Trials:", "n_trials", "1000"),
+                ("Number of Participants:", "n_participants", "20"),
+                ("Session Duration (min):", "session_duration", "60"),
+                ("Inter-trial Interval (s):", "iti", "2.0"),
+            ]
+
+        # Title
+        title_label = ctk.CTkLabel(
+            section_frame, text="⚙️ Experimental Setup", font=("Arial", 14, "bold")
+        )
+        title_label.grid(row=0, column=0, pady=(10, 5), sticky="w")
+
+        # Parameter entries
         self.exp_setup_params = {}
 
         params = [

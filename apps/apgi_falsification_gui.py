@@ -1135,7 +1135,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
         self.summary_text.configure(state="disabled")
 
         # Create matplotlib figure with better layout
-        self.fig = plt.figure(figsize=(14, 9))
+        self.fig = plt.figure(figsize=(14, 9), layout='constrained')
         self.fig.suptitle(
             "APGI Falsification Test Results - Real-Time Analysis",
             fontsize=14,
@@ -1316,8 +1316,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
             cbar = self.fig.colorbar(scatter, ax=self.ax4)
             cbar.set_label("Effect Size", fontsize=8)
 
-        # Adjust layout and refresh
-        self.fig.tight_layout()
+        # Refresh canvas
         self.canvas.draw()
 
     def add_result(self, result: Dict[str, Any]):

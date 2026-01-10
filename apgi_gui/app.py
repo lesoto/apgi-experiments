@@ -9,12 +9,25 @@ from typing import Dict, Any, Optional, List
 import customtkinter as ctk
 from datetime import datetime
 
-# Import custom components
-from .components.sidebar import Sidebar
-from .components.main_area import MainArea
-from .components.status_bar import StatusBar
-from .utils.logger import setup_logging
-from .utils.config import AppConfig
+# Import custom components - handle both relative and absolute imports
+try:
+    from .components.sidebar import Sidebar
+    from .components.main_area import MainArea
+    from .components.status_bar import StatusBar
+    from .utils.logger import setup_logging
+    from .utils.config import AppConfig
+except ImportError:
+    # Fallback to absolute imports when run directly
+    import sys
+    from pathlib import Path
+    project_root = Path(__file__).parent.parent
+    sys.path.insert(0, str(project_root))
+    
+    from apgi_gui.components.sidebar import Sidebar
+    from apgi_gui.components.main_area import MainArea
+    from apgi_gui.components.status_bar import StatusBar
+    from apgi_gui.utils.logger import setup_logging
+    from apgi_gui.utils.config import AppConfig
 
 
 class APGIFrameworkApp(ctk.CTk):
