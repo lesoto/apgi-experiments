@@ -123,7 +123,17 @@ try:
         StimulusGenerator = None
 
 except ImportError as e:
-    print(f"Warning: Some APGI Framework modules not available: {e}")
+    try:
+        from apgi_framework.logging.centralized_logging import get_logger
+
+        logger = get_logger("gui_import")
+        logger.warning(f"Warning: Some APGI Framework modules not available: {e}")
+    except ImportError:
+        # Fallback to basic logging if centralized logging not available
+        import logging
+
+        logger = logging.getLogger("gui_import")
+        logger.warning(f"Warning: Some APGI Framework modules not available: {e}")
     # Fallback imports for basic functionality
     try:
         from apgi_framework import (
@@ -146,7 +156,16 @@ except ImportError as e:
         from apgi_framework.clinical.disorder_classification import DisorderClassifier
         from apgi_framework.adaptive.quest_plus_staircase import QuestPlusStaircase
     except ImportError as e2:
-        print(f"Error: Even basic APGI Framework imports failed: {e2}")
+        try:
+            from apgi_framework.logging.centralized_logging import get_logger
+
+            logger = get_logger("gui_import_error")
+            logger.error(f"Error: Even basic APGI Framework imports failed: {e2}")
+        except ImportError:
+            import logging
+
+            logger = logging.getLogger("gui_import_error")
+            logger.error(f"Error: Even basic APGI Framework imports failed: {e2}")
         # Set all components to None for graceful degradation
         ConfigManager = None
         APGIEquation = None
@@ -188,32 +207,78 @@ class ConfigurationValidator:
             try:
                 self.config_manager = ConfigManager()
             except Exception as e:
-                print(f"Warning: Could not initialize ConfigManager: {e}")
+                try:
+                    from apgi_framework.logging.centralized_logging import get_logger
+
+                    logger = get_logger("config_manager")
+                    logger.warning(f"Warning: Could not initialize ConfigManager: {e}")
+                except ImportError:
+                    import logging
+
+                    logger = logging.getLogger("config_manager")
+                    logger.warning(f"Warning: Could not initialize ConfigManager: {e}")
 
         # Get default values from ConfigManager if available, otherwise use fallbacks
         if self.config_manager:
             apgi_params = self.config_manager.get_apgi_parameters()
             exp_config = self.config_manager.get_experimental_config()
-            
+
             self.validation_rules = {
                 # Neural signature parameters (from simulators)
                 "gamma_oscillation_power": {"min": 0.0, "max": 10.0, "type": float},
                 "p3b_amplitude": {"min": 0.0, "max": 50.0, "type": float},
                 "bold_signal_strength": {"min": 0.0, "max": 5.0, "type": float},
                 "pci_value": {"min": 0.0, "max": 1.0, "type": float},
-                
                 # APGI framework parameters (from actual config)
-                "exteroceptive_precision": {"min": 0.1, "max": 10.0, "type": float, "default": apgi_params.extero_precision},
-                "interoceptive_precision": {"min": 0.1, "max": 10.0, "type": float, "default": apgi_params.intero_precision},
-                "somatic_gain": {"min": 0.0, "max": 5.0, "type": float, "default": apgi_params.somatic_gain},
-                "threshold": {"min": 0.1, "max": 10.0, "type": float, "default": apgi_params.threshold},
-                "steepness": {"min": 0.1, "max": 10.0, "type": float, "default": apgi_params.steepness},
-                
+                "exteroceptive_precision": {
+                    "min": 0.1,
+                    "max": 10.0,
+                    "type": float,
+                    "default": apgi_params.extero_precision,
+                },
+                "interoceptive_precision": {
+                    "min": 0.1,
+                    "max": 10.0,
+                    "type": float,
+                    "default": apgi_params.intero_precision,
+                },
+                "somatic_gain": {
+                    "min": 0.0,
+                    "max": 5.0,
+                    "type": float,
+                    "default": apgi_params.somatic_gain,
+                },
+                "threshold": {
+                    "min": 0.1,
+                    "max": 10.0,
+                    "type": float,
+                    "default": apgi_params.threshold,
+                },
+                "steepness": {
+                    "min": 0.1,
+                    "max": 10.0,
+                    "type": float,
+                    "default": apgi_params.steepness,
+                },
                 # Experimental parameters (from actual config)
-                "num_trials": {"min": 1, "max": 10000, "type": int, "default": exp_config.n_trials},
-                "n_participants": {"min": 1, "max": 1000, "type": int, "default": exp_config.n_participants},
-                "session_duration": {"min": 1, "max": 480, "type": float, "default": exp_config.session_duration},
-                
+                "num_trials": {
+                    "min": 1,
+                    "max": 10000,
+                    "type": int,
+                    "default": exp_config.n_trials,
+                },
+                "n_participants": {
+                    "min": 1,
+                    "max": 1000,
+                    "type": int,
+                    "default": exp_config.n_participants,
+                },
+                "session_duration": {
+                    "min": 1,
+                    "max": 480,
+                    "type": float,
+                    "default": exp_config.session_duration,
+                },
                 # General experimental parameters
                 "prediction_error_weight": {"min": 0.0, "max": 1.0, "type": float},
                 "threshold_sensitivity": {"min": 0.1, "max": 10.0, "type": float},
@@ -288,8 +353,16 @@ class ConfigurationValidator:
                     )
 
             except Exception as e:
-                # Fallback to local validation if framework validation fails
-                print(f"Framework validation failed for {param_name}: {e}")
+                try:
+                    from apgi_framework.logging.centralized_logging import get_logger
+
+                    logger = get_logger("validation")
+                    logger.warning(f"Framework validation failed for {param_name}: {e}")
+                except ImportError:
+                    import logging
+
+                    logger = logging.getLogger("validation")
+                    logger.warning(f"Framework validation failed for {param_name}: {e}")
 
         # Local validation as fallback
         if param_name not in self.validation_rules:
@@ -510,7 +583,16 @@ class APGIFrameworkGUI(ctk.CTk):
                 if not os.path.exists(folder):
                     os.makedirs(folder)
         except Exception as e:
-            print(f"Warning: Could not create data folders: {e}")
+            try:
+                from apgi_framework.logging.centralized_logging import get_logger
+
+                logger = get_logger("folder_creation")
+                logger.warning(f"Warning: Could not create data folders: {e}")
+            except ImportError:
+                import logging
+
+                logger = logging.getLogger("folder_creation")
+                logger.warning(f"Warning: Could not create data folders: {e}")
 
         # Setup logging first
         self._setup_logging()
@@ -544,7 +626,16 @@ class APGIFrameworkGUI(ctk.CTk):
     def _initialize_framework(self):
         """Initialize APGI Framework components with robust error handling."""
         if self.error_handler is None:
-            print("Error: Error handler not initialized")
+            try:
+                from apgi_framework.logging.centralized_logging import get_logger
+
+                logger = get_logger("gui_init")
+                logger.error("Error: Error handler not initialized")
+            except ImportError:
+                import logging
+
+                logger = logging.getLogger("gui_init")
+                logger.error("Error: Error handler not initialized")
             return
 
         self.log_to_console("Starting APGI Framework initialization...")
@@ -749,6 +840,7 @@ class APGIFrameworkGUI(ctk.CTk):
         """Setup logging configuration."""
         try:
             from apgi_framework.logging.standardized_logging import get_logger
+
             self.logger = get_logger("apgi_gui", log_file="apgi_gui.log")
         except ImportError:
             # Fallback to basic logging
@@ -796,7 +888,7 @@ class APGIFrameworkGUI(ctk.CTk):
             fg_color="#e0e0e0",
             text_color="black",
         )
-        self.status_label.pack(side=tk.LEFT, padx=10, pady=5)
+        self.status_label.pack(side="left", padx=10, pady=5)
 
         # System status indicator
         self.system_status_label = ctk.CTkLabel(
@@ -806,7 +898,7 @@ class APGIFrameworkGUI(ctk.CTk):
             fg_color="#e0e0e0",
             text_color="black",
         )
-        self.system_status_label.pack(side=tk.RIGHT, padx=10, pady=5)
+        self.system_status_label.pack(side="right", padx=10, pady=5)
 
     def create_menu_bar(self):
         """Create the menu bar with File menu."""
@@ -916,11 +1008,29 @@ class APGIFrameworkGUI(ctk.CTk):
         section_frame.grid_columnconfigure(0, weight=1)
 
         # Get defaults from ConfigManager if available
-        if self.config_manager and hasattr(self.config_manager, 'get_apgi_parameters'):
+        if self.config_manager and hasattr(self.config_manager, "get_apgi_parameters"):
             apgi_params = self.config_manager.get_apgi_parameters()
             default_params = [
-                ("Exteroceptive Precision:", "exteroceptive_precision", str(apgi_params.extero_precision)),
-                ("Interoceptive Precision:", "interoceptive_precision", str(apgi_params.intero_precision)),
+                (
+                    "Exteroceptive Precision:",
+                    "exteroceptive_precision",
+                    str(apgi_params.extero_precision),
+                ),
+                (
+                    "Interoceptive Precision:",
+                    "interoceptive_precision",
+                    str(apgi_params.intero_precision),
+                ),
+                (
+                    "Exteroceptive Error:",
+                    "exteroceptive_error",
+                    str(apgi_params.extero_error),
+                ),
+                (
+                    "Interoceptive Error:",
+                    "interoceptive_error",
+                    str(apgi_params.intero_error),
+                ),
                 ("Somatic Gain:", "somatic_gain", str(apgi_params.somatic_gain)),
                 ("Threshold:", "threshold", str(apgi_params.threshold)),
                 ("Steepness:", "steepness", str(apgi_params.steepness)),
@@ -930,6 +1040,8 @@ class APGIFrameworkGUI(ctk.CTk):
             default_params = [
                 ("Exteroceptive Precision:", "exteroceptive_precision", "2.0"),
                 ("Interoceptive Precision:", "interoceptive_precision", "1.5"),
+                ("Exteroceptive Error:", "exteroceptive_error", "1.2"),
+                ("Interoceptive Error:", "interoceptive_error", "0.8"),
                 ("Somatic Gain:", "somatic_gain", "1.3"),
                 ("Threshold:", "threshold", "3.5"),
                 ("Steepness:", "steepness", "2.0"),
@@ -944,12 +1056,16 @@ class APGIFrameworkGUI(ctk.CTk):
         # Parameter entries
         self.apgi_params = {}
         for idx, (label_text, param_name, default_value) in enumerate(default_params):
-            label = ctk.CTkLabel(section_frame, text=label_text)
-            label.grid(row=idx + 1, column=0, sticky="w", padx=10, pady=2)
+            frame = ctk.CTkFrame(parent, fg_color="#f0f0f0")
+            frame.grid(row=idx, column=0, sticky="ew", padx=5, pady=2)
 
-            entry = ctk.CTkEntry(section_frame, width=100)
-            entry.grid(row=idx + 1, column=1, padx=10, pady=2)
+            label = ctk.CTkLabel(frame, text=label_text, width=140)
+            label.pack(side="left", padx=(0, 5))
+
+            entry = ctk.CTkEntry(frame, width=80)
+            entry.pack(side="right")
             entry.insert(0, default_value)
+
             self.apgi_params[param_name] = entry
 
         return section_frame
@@ -960,13 +1076,27 @@ class APGIFrameworkGUI(ctk.CTk):
         section_frame.grid_columnconfigure(0, weight=1)
 
         # Get defaults from ConfigManager if available
-        if self.config_manager and hasattr(self.config_manager, 'get_experimental_config'):
+        if self.config_manager and hasattr(
+            self.config_manager, "get_experimental_config"
+        ):
             exp_config = self.config_manager.get_experimental_config()
             default_params = [
                 ("Number of Trials:", "n_trials", str(exp_config.n_trials)),
-                ("Number of Participants:", "n_participants", str(exp_config.n_participants)),
-                ("Session Duration (min):", "session_duration", str(exp_config.session_duration)),
-                ("Inter-trial Interval (s):", "iti", "2.0"),  # This might not be in config
+                (
+                    "Number of Participants:",
+                    "n_participants",
+                    str(exp_config.n_participants),
+                ),
+                (
+                    "Session Duration (min):",
+                    "session_duration",
+                    str(exp_config.session_duration),
+                ),
+                (
+                    "Inter-trial Interval (s):",
+                    "iti",
+                    "2.0",
+                ),  # This might not be in config
             ]
         else:
             # Fallback defaults
@@ -998,13 +1128,15 @@ class APGIFrameworkGUI(ctk.CTk):
             frame.grid(row=idx, column=0, sticky="ew", padx=5, pady=2)
 
             label = ctk.CTkLabel(frame, text=label_text, width=140)
-            label.pack(side=tk.LEFT, padx=(0, 5))
+            label.pack(side="left", padx=(0, 5))
 
             entry = ctk.CTkEntry(frame, width=80)
-            entry.pack(side=tk.RIGHT)
+            entry.pack(side="right")
             entry.insert(0, default_value)
 
             self.exp_setup_params[param_name] = entry
+
+        return section_frame
 
     def create_falsification_tests_section(self, parent):
         """Create falsification tests section."""
@@ -1223,14 +1355,116 @@ class APGIFrameworkGUI(ctk.CTk):
                 text=txt,
                 fg_color="#3a7ebf",
                 hover_color="#1f538d",
+                command=cmd,
+                width=200,
+            )
+            btn.grid(row=idx, column=0, sticky="ew", padx=5, pady=2)
+
+    def create_visualization_section(self, parent):
+        """Create visualization section."""
+        visualizations = [
+            ("Plot Results", self.plot_results),
+            ("Neural Signatures Plot", self.plot_neural_signatures),
+            ("Parameter Space", self.plot_parameter_space),
+            ("Time Series Analysis", self.plot_time_series),
+        ]
+
+        for idx, (text, command) in enumerate(visualizations):
+            btn = ctk.CTkButton(
+                parent,
+                text=text,
+                fg_color="#3a7ebf",
+                hover_color="#1f538d",
+                command=command,
+                width=200,
+            )
+            btn.grid(row=idx, column=0, sticky="ew", padx=5, pady=2)
+
+    def create_export_section(self, parent):
+        exports = [
+            ("Export as PNG", self.export_as_png),
+            ("Export as PDF", self.export_as_pdf),
+            ("Export Data as CSV", self.export_as_csv),
+        ]
+
+        for idx, (text, command) in enumerate(exports):
+            btn = ctk.CTkButton(
+                parent,
+                text=text,
+                fg_color="#3a7ebf",
+                hover_color="#1f538d",
+                command=command,
+                width=200,
+            )
+            btn.grid(row=idx, column=0, sticky="ew", padx=5, pady=2)
+
+    # ------------------------------------------------------------------
+    # MAIN AREA
+    # ------------------------------------------------------------------
+    def create_main_area(self):
+        main = ctk.CTkFrame(self, fg_color="white")
+        main.grid(row=0, column=1, sticky="nsew", padx=0, pady=0)
+        main.grid_rowconfigure(0, weight=1)
+        main.grid_columnconfigure(0, weight=1)
+
+        # Output Display Frame - takes up most of the space
+        output_frame = ctk.CTkFrame(main, fg_color="#2b2b2b")
+        output_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+        output_frame.grid_rowconfigure(1, weight=1)
+        output_frame.grid_columnconfigure(0, weight=1)
+
+        # Output Title
+        output_title = ctk.CTkLabel(
+            output_frame,
+            text="Output Console",
+            font=("Arial", 14, "bold"),
+            text_color="white",
+            fg_color="#2b2b2b",
+        )
+        output_title.grid(row=0, column=0, sticky="nw", padx=10, pady=10)
+
+        # Output Text Area
+        self.console_text = ctk.CTkTextbox(
+            output_frame, fg_color="black", text_color="white", font=("Courier", 10)
+        )
+        self.console_text.grid(row=1, column=0, sticky="nsew", padx=10, pady=(0, 10))
+
+        # Add initial console message
+        self.log_to_console("APGI Framework GUI Initialized")
+        self.log_to_console("Ready to run consciousness evaluation tests")
+        self.log_to_console(
+            "System time: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        )
+
+        # Bottom button bar
+        bar = ctk.CTkFrame(main, fg_color="#e0e0e0", height=50)
+        bar.grid(row=1, column=0, sticky="ew", padx=10, pady=(0, 10))
+        bar.grid_columnconfigure(tuple(range(5)), weight=1)
+
+        btn_info = [
+            ("Load Test Data", self.load_test_data),
+            ("Run Consciousness Evaluation", self.run_primary_falsification_test),
+            ("Interoceptive Gating", self.run_interoceptive_gating_experiment),
+            ("AI Benchmarking", self.run_ai_benchmarking_experiment),
+            ("Help", self.show_help),
+        ]
+
+        for idx, (txt, cmd) in enumerate(btn_info):
+            btn = ctk.CTkButton(
+                bar,
+                text=txt,
+                fg_color="#3a7ebf",
+                hover_color="#1f538d",
                 height=35,
                 command=cmd,
             )
             btn.grid(row=0, column=idx, padx=5, pady=5, sticky="nsew")
 
-    def log_to_console(self, message):
+    def log_to_console(self, message: str) -> None:
         """Add message to console with timestamp"""
-        timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+        from datetime import datetime
+
+        timestamp = datetime.now().strftime("%H:%M:%S")
         formatted_message = f"[{timestamp}] {message}\n"
 
         # Display in GUI console
@@ -1238,8 +1472,14 @@ class APGIFrameworkGUI(ctk.CTk):
             self.console_text.insert("end", formatted_message)
             self.console_text.see("end")
 
-        # Also print to terminal for backup
-        print(formatted_message.rstrip())
+        # Also log to terminal for backup
+        try:
+            from apgi_framework.logging.centralized_logging import get_logger
+
+            logger = get_logger("console_backup")
+            logger.info(formatted_message.rstrip())
+        except ImportError:
+            print(formatted_message.rstrip())
 
     # ------------------------------------------------------------------
     # COMPREHENSIVE TEST METHODS
@@ -1480,11 +1720,7 @@ class APGIFrameworkGUI(ctk.CTk):
                         )
                     else:
                         # Fallback to run_test method
-                        results = self.cwi_test.run_test(
-                            n_trials=n_trials,
-                            n_participants=n_participants,
-                            apgi_parameters=apgi_params,
-                        )
+                        results = self.cwi_test.run_test(n_trials=n_trials)
 
                     self.current_results = {
                         "test": "CWI Test",
@@ -1580,11 +1816,7 @@ class APGIFrameworkGUI(ctk.CTk):
                         )
                     else:
                         # Fallback to run_test method
-                        results = self.threshold_test.run_test(
-                            n_trials=n_trials,
-                            n_participants=n_participants,
-                            apgi_parameters=apgi_params,
-                        )
+                        results = self.threshold_test.run_test(n_trials=n_trials)
 
                     self.current_results = {
                         "test": "Threshold Insensitivity",
@@ -1679,11 +1911,7 @@ class APGIFrameworkGUI(ctk.CTk):
                         )
                     else:
                         # Fallback to run_test method
-                        results = self.soma_bias_test.run_test(
-                            n_trials=n_trials,
-                            n_participants=n_participants,
-                            apgi_parameters=apgi_params,
-                        )
+                        results = self.soma_bias_test.run_test(n_trials=n_trials)
 
                     self.current_results = {
                         "test": "Soma-Bias Test",
@@ -1763,10 +1991,7 @@ class APGIFrameworkGUI(ctk.CTk):
                             continue
 
                         results = test_instance.run_test(
-                            n_trials=n_trials
-                            // len(tests),  # Divide trials among tests
-                            n_participants=n_participants,
-                            apgi_parameters=apgi_params,
+                            parameters={"n_trials": n_trials // len(tests)}
                         )
 
                         batch_results[test_name] = results
@@ -4713,18 +4938,21 @@ class APGIFrameworkGUI(ctk.CTk):
         """Create a new configuration with default values."""
         # Reset APGI parameters to defaults
         defaults = {
-            "exteroceptive_precision": "0.5",
-            "interoceptive_precision": "0.5",
-            "somatic_gain": "0.5",
-            "threshold": "0.1",
-            "precision_weight": "0.3",
-            "prediction_error_weight": "0.4",
+            "exteroceptive_precision": "2.0",
+            "interoceptive_precision": "1.5",
+            "exteroceptive_error": "1.2",
+            "interoceptive_error": "0.8",
+            "somatic_gain": "1.3",
+            "threshold": "3.5",
+            "steepness": "2.0",
         }
 
-        for param_name, default_value in defaults.items():
-            if param_name in self.apgi_params:
-                self.apgi_params[param_name].delete(0, "end")
-                self.apgi_params[param_name].insert(0, default_value)
+        # Check if apgi_params exists (sidebar may not be created yet)
+        if hasattr(self, "apgi_params") and self.apgi_params:
+            for param_name, default_value in defaults.items():
+                if param_name in self.apgi_params:
+                    self.apgi_params[param_name].delete(0, "end")
+                    self.apgi_params[param_name].insert(0, default_value)
 
         # Reset experimental parameters to defaults
         exp_defaults = {
@@ -4734,10 +4962,12 @@ class APGIFrameworkGUI(ctk.CTk):
             "iti": "2.0",
         }
 
-        for param_name, default_value in exp_defaults.items():
-            if param_name in self.exp_setup_params:
-                self.exp_setup_params[param_name].delete(0, "end")
-                self.exp_setup_params[param_name].insert(0, default_value)
+        # Check if exp_setup_params exists (sidebar may not be created yet)
+        if hasattr(self, "exp_setup_params") and self.exp_setup_params:
+            for param_name, default_value in exp_defaults.items():
+                if param_name in self.exp_setup_params:
+                    self.exp_setup_params[param_name].delete(0, "end")
+                    self.exp_setup_params[param_name].insert(0, default_value)
 
         self.log_to_console("Created new configuration with default values")
         messagebox.showinfo(
@@ -4752,6 +4982,13 @@ class APGIFrameworkGUI(ctk.CTk):
             )
 
             if not file_path:
+                return
+
+            # Check if parameters exist before trying to load them
+            if not (hasattr(self, "apgi_params") and hasattr(self, "exp_setup_params")):
+                messagebox.showerror(
+                    "Error", "Configuration parameters not initialized yet."
+                )
                 return
 
             # Load configuration file
@@ -4789,21 +5026,22 @@ class APGIFrameworkGUI(ctk.CTk):
             apgi_params = config.get("apgi_parameters", {})
             validation_errors = []
 
-            for param_name, entry in self.apgi_params.items():
-                if param_name in apgi_params:
-                    value = apgi_params[param_name]
-                    if value is not None:
-                        # Convert to string for validation
-                        str_value = str(value)
-                        is_valid, validation_error = (
-                            self.config_validator.validate_parameter(
-                                param_name, str_value
+            if hasattr(self, "apgi_params") and self.apgi_params:
+                for param_name, entry in self.apgi_params.items():
+                    if param_name in apgi_params:
+                        value = apgi_params[param_name]
+                        if value is not None:
+                            # Convert to string for validation
+                            str_value = str(value)
+                            is_valid, validation_error = (
+                                self.config_validator.validate_parameter(
+                                    param_name, str_value
+                                )
                             )
-                        )
 
-                        if is_valid:
-                            entry.delete(0, tk.END)
-                            entry.insert(0, str_value)
+                            if is_valid:
+                                entry.delete(0, tk.END)
+                                entry.insert(0, str_value)
                         else:
                             validation_errors.append(
                                 f"{param_name}: {validation_error.message}"
@@ -4814,12 +5052,13 @@ class APGIFrameworkGUI(ctk.CTk):
 
             # Load experimental setup parameters
             exp_params = config.get("experimental_setup", {})
-            for param_name, entry in self.exp_setup_params.items():
-                if param_name in exp_params:
-                    value = exp_params[param_name]
-                    if value is not None:
-                        entry.delete(0, tk.END)
-                        entry.insert(0, str(value))
+            if hasattr(self, "exp_setup_params") and self.exp_setup_params:
+                for param_name, entry in self.exp_setup_params.items():
+                    if param_name in exp_params:
+                        value = exp_params[param_name]
+                        if value is not None:
+                            entry.delete(0, tk.END)
+                            entry.insert(0, str(value))
 
             # Handle validation errors
             if validation_errors:
@@ -4849,13 +5088,22 @@ class APGIFrameworkGUI(ctk.CTk):
             if not file_path:
                 return
 
+            # Check if parameters exist before trying to save them
+            if not (hasattr(self, "apgi_params") and hasattr(self, "exp_setup_params")):
+                messagebox.showerror(
+                    "Error", "Configuration parameters not initialized yet."
+                )
+                return
+
             # Validate all parameters before saving
             all_params = {}
-            for param_name, entry in self.apgi_params.items():
-                all_params[param_name] = entry.get()
+            if hasattr(self, "apgi_params") and self.apgi_params:
+                for param_name, entry in self.apgi_params.items():
+                    all_params[param_name] = entry.get()
 
-            for param_name, entry in self.exp_setup_params.items():
-                all_params[param_name] = entry.get()
+            if hasattr(self, "exp_setup_params") and self.exp_setup_params:
+                for param_name, entry in self.exp_setup_params.items():
+                    all_params[param_name] = entry.get()
 
             validation_errors = self.config_validator.validate_all_parameters(
                 all_params
@@ -4881,25 +5129,27 @@ class APGIFrameworkGUI(ctk.CTk):
             }
 
             # Save APGI parameters with error handling
-            for param, entry in self.apgi_params.items():
-                try:
-                    config["apgi_parameters"][param] = float(entry.get())
-                except (ValueError, AttributeError) as e:
-                    config["apgi_parameters"][param] = None
-                    self.logger.warning(f"Could not save parameter {param}: {e}")
+            if hasattr(self, "apgi_params") and self.apgi_params:
+                for param, entry in self.apgi_params.items():
+                    try:
+                        config["apgi_parameters"][param] = float(entry.get())
+                    except (ValueError, AttributeError) as e:
+                        config["apgi_parameters"][param] = None
+                        self.logger.warning(f"Could not save parameter {param}: {e}")
 
             # Save experimental setup parameters
-            for param, entry in self.exp_setup_params.items():
-                try:
-                    value = entry.get()
-                    # Try to convert to float if possible
+            if hasattr(self, "exp_setup_params") and self.exp_setup_params:
+                for param, entry in self.exp_setup_params.items():
                     try:
-                        config["experimental_setup"][param] = float(value)
-                    except ValueError:
-                        config["experimental_setup"][param] = value
-                except AttributeError as e:
-                    config["experimental_setup"][param] = None
-                    self.logger.warning(f"Could not save parameter {param}: {e}")
+                        value = entry.get()
+                        # Try to convert to float if possible
+                        try:
+                            config["experimental_setup"][param] = float(value)
+                        except ValueError:
+                            config["experimental_setup"][param] = value
+                    except AttributeError as e:
+                        config["experimental_setup"][param] = None
+                        self.logger.warning(f"Could not save parameter {param}: {e}")
 
             # Save to file with proper error handling
             try:

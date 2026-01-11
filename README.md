@@ -20,21 +20,75 @@ The APGI Framework provides a comprehensive computational framework for testing 
 ### Prerequisites
 
 - Python 3.8 or higher
-- NumPy, SciPy, Matplotlib
-- Optional: Flask, Plotly (for dashboard)
 
-### Install from Source
+- Git
+
+### Quick Setup (Recommended)
+
+1. **Clone the repository:**
 
 ```bash
 git clone <repository-url>
 cd apgi-experiments
+```
+
+2. **Create and activate virtual environment:**
+
+```bash
+# macOS/Linux
+python3 -m venv venv
+source venv/bin/activate
+
+# Windows
+python -m venv venv
+venv\Scripts\activate
+```
+
+3. **Install dependencies:**
+
+```bash
+pip install -r requirements.txt
+```
+
+4. **Install the framework:**
+
+```bash
 pip install -e .
 ```
 
-### Development Installation
+### Alternative Installation Methods
+
+#### Development Installation
 
 ```bash
-pip install -e .[dev,gui]
+# After setting up virtual environment
+pip install -e .[dev,gui,ml]
+```
+
+#### Direct Installation (Not Recommended)
+
+```bash
+pip install -e .
+```
+
+### Verify Installation
+
+Test that all dependencies are installed:
+
+```bash
+python -c "import numpy, scipy, pandas, matplotlib, torch, customtkinter; print('✓ All core dependencies installed')"
+```
+
+Test the framework:
+
+```bash
+python -c "from apgi_framework.config import ConfigManager; print('✓ APGI Framework installed successfully')"
+```
+
+Run comprehensive dependency check:
+
+```bash
+python check_dependencies.py
 ```
 
 ## Quick Start
@@ -89,32 +143,3 @@ Run the test suite:
 ```bash
 pytest tests/
 ```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Run the test suite
-6. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Citation
-
-If you use this framework in your research, please cite:
-
-```
-APGI Framework for Consciousness Research
-(2026) https://github.com/apgi-research/apgi-framework
-```
-
-## Support
-
-For questions and support:
-- Create an issue on GitHub
-- Check the [documentation](docs/)
-- Review the [examples](examples/)

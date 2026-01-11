@@ -16,6 +16,7 @@ from ..simulators.p3b_simulator import P3bSimulator
 from ..simulators.gamma_simulator import GammaSimulator
 from ..simulators.bold_simulator import BOLDSimulator
 from ..simulators.pci_calculator import PCICalculator
+from ..config import get_config_manager
 from ..exceptions import ValidationError, SimulationError
 from .error_handling_wrapper import with_error_handling, log_test_execution
 import logging
@@ -96,7 +97,13 @@ class PrimaryFalsificationTest:
     (P3b, gamma synchrony, BOLD activation, PCI) can occur without consciousness.
     """
 
-    def __init__(self):
+    def __init__(self, config_manager=None):
+        """Initialize primary falsification test.
+
+        Args:
+            config_manager: Optional ConfigManager instance for accessing thresholds
+        """
+        self.config_manager = config_manager or get_config_manager()
         self.equation = APGIEquation()
         self.signature_validator = SignatureValidator()
         self.p3b_simulator = P3bSimulator()
@@ -104,15 +111,14 @@ class PrimaryFalsificationTest:
         self.bold_simulator = BOLDSimulator()
         self.pci_calculator = PCICalculator()
 
-        # Thresholds for ignition signatures
-        self.p3b_threshold = 5.0  # μV at Pz electrode
-        self.gamma_plv_threshold = 0.3  # Phase-locking value
-        self.gamma_duration_threshold = 200  # ms
-        self.bold_z_threshold = 3.1  # Z-score
-        self.pci_threshold = 0.4  # Perturbational Complexity Index
-
-        # AI/ACC validation thresholds
-        self.ai_acc_gamma_threshold = 0.25  # PLV threshold for AI/ACC
+        # Get thresholds from configuration instead of hardcoding
+        thresholds = self.config_manager.get_falsification_thresholds()
+        self.p3b_threshold = thresholds.p3b_threshold
+        self.gamma_plv_threshold = thresholds.gamma_plv_threshold
+        self.gamma_duration_threshold = thresholds.gamma_duration_threshold
+        self.bold_z_threshold = thresholds.bold_z_threshold
+        self.pci_threshold = thresholds.pci_threshold
+        self.ai_acc_gamma_threshold = thresholds.ai_acc_gamma_threshold
 
     @with_error_handling(validate_params=True, enable_retry=True, log_errors=True)
     def run_falsification_test(

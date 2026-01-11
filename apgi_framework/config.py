@@ -8,10 +8,10 @@ including parameter validation, default values, and experimental settings.
 from dataclasses import dataclass, field
 from typing import Dict, Any, Optional
 import json
-import os
 from pathlib import Path
 
 from .exceptions import ConfigurationError
+from apgi_framework.utils.path_utils import get_path_manager
 
 
 @dataclass
@@ -61,7 +61,7 @@ class APGIParameters:
 @dataclass
 class RetryConfig:
     """Configuration for retry behavior."""
-    
+
     max_attempts: int = 3
     initial_delay: float = 1.0
     backoff_factor: float = 2.0
@@ -71,33 +71,33 @@ class RetryConfig:
 @dataclass
 class PerformanceThresholds:
     """Performance thresholds for validation."""
-    
+
     # Response time thresholds
     min_rt: float = 0.1  # seconds
     max_rt: float = 10.0  # seconds
     outlier_iqr_multiplier: float = 3.0
-    
+
     # Accuracy thresholds
     min_accuracy: float = 0.5
     target_accuracy: float = 0.8
-    
+
     # Consistency thresholds
     min_consistency: float = 0.7
     stability_threshold: float = 0.8
-    
+
     # Training criteria
     min_learning_curve_slope: float = 0.1
     min_performance_stability: float = 0.7
-    
+
     # Metacognitive thresholds
     max_confidence_variance: float = 0.25
     min_meta_d_prime: float = 0.0
-    
+
     # Statistical thresholds
     confidence_level: float = 0.95  # for CI calculations
     min_reliability_insufficient: float = 0.3
     min_reliability_moderate: float = 0.5
-    
+
     # Fatigue and learning modifiers
     fatigue_impact_factor: float = 0.2
     learning_improvement_factor: float = 0.1
@@ -109,7 +109,7 @@ class PerformanceThresholds:
 @dataclass
 class StimulusParameters:
     """Parameters for stimulus generation."""
-    
+
     # QUEST+ parameters
     stimulus_min: float = 0.01
     stimulus_max: float = 1.0
@@ -122,7 +122,7 @@ class StimulusParameters:
     slope_steps: int = 20
     lapse_rate: float = 0.02
     guess_rate: float = 0.5
-    
+
     # Convergence criteria
     min_trials: int = 20
     max_trials: int = 200
@@ -145,8 +145,12 @@ class ExperimentalConfig:
     # Neural signature thresholds
     p3b_threshold: float = 5.0  # μV
     gamma_plv_threshold: float = 0.3
+    gamma_duration_threshold: int = 200  # ms
     bold_z_threshold: float = 3.1
     pci_threshold: float = 0.4
+
+    # AI/ACC validation thresholds
+    ai_acc_gamma_threshold: float = 0.25  # PLV threshold for AI/ACC
 
     # Statistical parameters
     alpha_level: float = 0.05
@@ -190,6 +194,7 @@ class ConfigManager:
         Args:
             config_path: Path to configuration file. If None, uses defaults.
         """
+        self.path_manager = get_path_manager()
         self.config_path = config_path
         self.apgi_params = APGIParameters()
         self.experimental_config = ExperimentalConfig()
@@ -197,8 +202,10 @@ class ConfigManager:
         self.performance_thresholds = PerformanceThresholds()
         self.stimulus_params = StimulusParameters()
 
-        if config_path and os.path.exists(config_path):
-            self.load_config(config_path)
+        if config_path:
+            config_file = self.path_manager.resolve_path(config_path)
+            if config_file.exists():
+                self.load_config(config_path)
 
     def load_config(self, config_path: str) -> None:
         """Load configuration from JSON file.
@@ -210,7 +217,8 @@ class ConfigManager:
             ConfigurationError: If configuration file is invalid.
         """
         try:
-            with open(config_path, "r") as f:
+            config_file = self.path_manager.resolve_path(config_path)
+            with open(config_file, "r") as f:
                 config_data = json.load(f)
 
             # Load APGI parameters
@@ -258,9 +266,10 @@ class ConfigManager:
         }
 
         # Create directory if it doesn't exist
-        Path(config_path).parent.mkdir(parents=True, exist_ok=True)
+        config_file = self.path_manager.resolve_path(config_path)
+        config_file.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(config_path, "w") as f:
+        with open(config_file, "w") as f:
             json.dump(config_data, f, indent=2)
 
     def get_apgi_parameters(self) -> APGIParameters:
@@ -282,6 +291,10 @@ class ConfigManager:
     def get_stimulus_parameters(self) -> StimulusParameters:
         """Get current stimulus parameters."""
         return self.stimulus_params
+
+    def get_falsification_thresholds(self) -> ExperimentalConfig:
+        """Get falsification thresholds from experimental config."""
+        return self.experimental_config
 
     def update_apgi_parameters(self, **kwargs) -> None:
         """Update APGI parameters.
@@ -313,11 +326,64 @@ class ConfigManager:
         # Re-validate configuration
         self.experimental_config.__post_init__()
 
+    def validate(self) -> bool:
+        """Validate all configuration objects.
+
+        Returns:
+            True if all configurations are valid, False otherwise.
+
+        Raises:
+            ConfigurationError: If any configuration is invalid.
+        """
+        try:
+            # Validate APGI parameters
+            self.apgi_params.__post_init__()
+
+            # Validate experimental configuration
+            self.experimental_config.__post_init__()
+
+            # Additional validation could be added here
+
+            return True
+
+        except ConfigurationError as e:
+            raise e
+        except Exception as e:
+            raise ConfigurationError(f"Configuration validation failed: {e}")
+
+    def get_validation_report(self) -> Dict[str, Any]:
+        """Get a detailed validation report.
+
+        Returns:
+            Dictionary containing validation status and details.
+        """
+        report = {"valid": True, "errors": [], "warnings": [], "details": {}}
+
+        try:
+            # Validate APGI parameters
+            self.apgi_params.__post_init__()
+            report["details"]["apgi_parameters"] = "Valid"
+        except ConfigurationError as e:
+            report["valid"] = False
+            report["errors"].append(f"APGI Parameters: {e}")
+            report["details"]["apgi_parameters"] = str(e)
+
+        try:
+            # Validate experimental configuration
+            self.experimental_config.__post_init__()
+            report["details"]["experimental_config"] = "Valid"
+        except ConfigurationError as e:
+            report["valid"] = False
+            report["errors"].append(f"Experimental Config: {e}")
+            report["details"]["experimental_config"] = str(e)
+
+        return report
+
     def validate_apgi_parameter(self, param_name: str, value: float) -> bool:
         """Validate a single APGI parameter.
 
         Args:
-            param_name: Name of the parameter to validate
+            param_name: Name of parameter to validate
             value: Value to validate
 
         Returns:
@@ -326,20 +392,25 @@ class ConfigManager:
         try:
             # Import here to avoid circular dependency
             from .validation.parameter_validator import get_validator
-            
+
             validator = get_validator()
-            
+
             # Create a temporary parameters object with the test value
             temp_params = APGIParameters()
             setattr(temp_params, param_name, value)
-            
+
             # Validate will raise an exception if invalid
             temp_params.__post_init__()
             return True
-            
+
         except ImportError:
             # Fallback to basic validation if validator not available
-            if param_name in ["extero_precision", "intero_precision", "somatic_gain", "steepness"]:
+            if param_name in [
+                "extero_precision",
+                "intero_precision",
+                "somatic_gain",
+                "steepness",
+            ]:
                 return value > 0
             elif param_name == "threshold":
                 return 0 < value <= 10

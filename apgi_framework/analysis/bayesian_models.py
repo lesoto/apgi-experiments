@@ -11,6 +11,7 @@ import pandas as pd
 from scipy import stats
 from scipy.optimize import minimize
 from typing import Dict, List, Tuple, Optional, Any
+import os
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path

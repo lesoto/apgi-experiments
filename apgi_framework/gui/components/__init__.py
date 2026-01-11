@@ -7,24 +7,26 @@ apgi_falsification_gui.py file to improve maintainability and testability.
 
 from .parameter_config_panel import ParameterConfigPanel, create_parameter_config_panel
 from .test_execution_panel import TestExecutionPanel, create_test_execution_panel
-from .results_visualization_panel import ResultsVisualizationPanel, create_results_visualization_panel
+from .results_visualization_panel import (
+    ResultsVisualizationPanel,
+    create_results_visualization_panel,
+)
 from .logging_panel import LoggingPanel, create_logging_panel
 from .main_gui_controller import MainGUIController, create_main_gui_controller
 
 __all__ = [
     # Main components
-    'ParameterConfigPanel',
-    'TestExecutionPanel', 
-    'ResultsVisualizationPanel',
-    'LoggingPanel',
-    'MainGUIController',
-    
+    "ParameterConfigPanel",
+    "TestExecutionPanel",
+    "ResultsVisualizationPanel",
+    "LoggingPanel",
+    "MainGUIController",
     # Factory functions
-    'create_parameter_config_panel',
-    'create_test_execution_panel',
-    'create_results_visualization_panel',
-    'create_logging_panel',
-    'create_main_gui_controller'
+    "create_parameter_config_panel",
+    "create_test_execution_panel",
+    "create_results_visualization_panel",
+    "create_logging_panel",
+    "create_main_gui_controller",
 ]
 
 # Version information

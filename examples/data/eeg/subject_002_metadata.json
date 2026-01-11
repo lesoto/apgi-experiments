@@ -1,0 +1,25 @@
+{
+  "subject_id": "subject_002",
+  "recording_date": "2026-01-11T08:44:17.551722",
+  "sampling_rate": 1000,
+  "duration": 60,
+  "channels": [
+    "Fz",
+    "Cz",
+    "Pz",
+    "Oz",
+    "F3",
+    "F4",
+    "P3",
+    "P4"
+  ],
+  "n_samples": 60000,
+  "data_type": "EEG",
+  "units": "microvolts",
+  "reference": "common_average",
+  "filter_settings": {
+    "highpass": 0.1,
+    "lowpass": 100,
+    "notch": 50
+  }
+}

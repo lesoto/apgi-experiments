@@ -11,9 +11,10 @@ matplotlib.use("Agg")  # Use non-interactive backend for testing
 
 # Import the functions from the core analysis modules
 import sys
-import os
+from pathlib import Path
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "core", "analysis"))
+# Add core models to path
+sys.path.append(str(Path(__file__).parent.parent / "core" / "analysis"))
 
 from surprise_dynamics import *
 from threshold_phenomenon import ignition_probability

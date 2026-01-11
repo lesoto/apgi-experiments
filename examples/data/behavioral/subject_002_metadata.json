@@ -1,0 +1,13 @@
+{
+  "subject_id": "subject_002",
+  "experiment_date": "2026-01-11T08:44:18.258740",
+  "n_trials": 100,
+  "data_type": "Behavioral",
+  "task_type": "reaction_time",
+  "reaction_time_units": "milliseconds",
+  "conditions": [
+    "easy",
+    "medium",
+    "hard"
+  ]
+}

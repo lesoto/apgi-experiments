@@ -15,14 +15,18 @@ import logging
 
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 try:
     from ..data.parameter_estimation_models import SessionData, ParameterEstimates
     from ..data.parameter_estimation_dao import ParameterEstimationDAO
 except ImportError:
     # Handle relative import when run directly
-    from apgi_framework.data.parameter_estimation_models import SessionData, ParameterEstimates
+    from apgi_framework.data.parameter_estimation_models import (
+        SessionData,
+        ParameterEstimates,
+    )
     from apgi_framework.data.parameter_estimation_dao import ParameterEstimationDAO
 
 logger = logging.getLogger(__name__)
@@ -653,98 +657,126 @@ if __name__ == "__main__":
     """Simple GUI for reporting and visualization."""
     import matplotlib.pyplot as plt
     from matplotlib.backends.backend_tkagg import FigureCanvasTk
-    
+
     class ReportingVisualizationGUI:
         def __init__(self):
             self.root = tk.Tk()
             self.root.title("Reporting & Visualization")
             self.root.geometry("1000x700")
-            
+
             # Create main frame
             main_frame = ttk.Frame(self.root)
             main_frame.pack(fill="both", expand=True, padx=10, pady=10)
-            
+
             # Title
-            ttk.Label(main_frame, text="Reporting & Visualization", font=("Arial", 16, "bold")).pack(pady=10)
-            
+            ttk.Label(
+                main_frame, text="Reporting & Visualization", font=("Arial", 16, "bold")
+            ).pack(pady=10)
+
             # Create notebook for tabs
             notebook = ttk.Notebook(main_frame)
             notebook.pack(fill="both", expand=True)
-            
+
             # Reports tab
             reports_frame = ttk.Frame(notebook)
             notebook.add(reports_frame, text="Session Reports")
             self.create_reports_tab(reports_frame)
-            
+
             # Visualizations tab
             viz_frame = ttk.Frame(notebook)
             notebook.add(viz_frame, text="Visualizations")
             self.create_visualization_tab(viz_frame)
-            
+
             # Export tab
             export_frame = ttk.Frame(notebook)
             notebook.add(export_frame, text="Export Data")
             self.create_export_tab(export_frame)
-            
+
         def create_reports_tab(self, parent):
-            ttk.Label(parent, text="Session Reports", font=("Arial", 12, "bold")).pack(pady=10)
-            
+            ttk.Label(parent, text="Session Reports", font=("Arial", 12, "bold")).pack(
+                pady=10
+            )
+
             # Session selection
             session_frame = ttk.Frame(parent)
             session_frame.pack(fill="x", pady=5)
             ttk.Label(session_frame, text="Session ID:").pack(side="left", padx=5)
             self.session_entry = ttk.Entry(session_frame, width=20)
             self.session_entry.pack(side="left", padx=5)
-            ttk.Button(session_frame, text="Load", command=self.load_session).pack(side="left", padx=5)
-            
+            ttk.Button(session_frame, text="Load", command=self.load_session).pack(
+                side="left", padx=5
+            )
+
             # Report display
             self.report_text = tk.Text(parent, height=20, width=80)
             self.report_text.pack(fill="both", expand=True, pady=10)
-            
+
             # Buttons
             button_frame = ttk.Frame(parent)
             button_frame.pack(fill="x")
-            ttk.Button(button_frame, text="Generate Report", command=self.generate_report).pack(side="left", padx=5)
-            ttk.Button(button_frame, text="Clear", command=self.clear_report).pack(side="left", padx=5)
-            
+            ttk.Button(
+                button_frame, text="Generate Report", command=self.generate_report
+            ).pack(side="left", padx=5)
+            ttk.Button(button_frame, text="Clear", command=self.clear_report).pack(
+                side="left", padx=5
+            )
+
         def create_visualization_tab(self, parent):
-            ttk.Label(parent, text="Data Visualizations", font=("Arial", 12, "bold")).pack(pady=10)
-            
+            ttk.Label(
+                parent, text="Data Visualizations", font=("Arial", 12, "bold")
+            ).pack(pady=10)
+
             # Create matplotlib figure
             self.fig, self.ax = plt.subplots(figsize=(10, 6))
             self.canvas = FigureCanvasTk(self.fig, parent)
             self.canvas.get_tk_widget().pack(fill="both", expand=True)
-            
+
             # Sample plot
             self.create_sample_plot()
-            
+
             # Plot controls
             control_frame = ttk.Frame(parent)
             control_frame.pack(fill="x", pady=5)
-            ttk.Button(control_frame, text="Refresh Plot", command=self.create_sample_plot).pack(side="left", padx=5)
-            ttk.Button(control_frame, text="Save Plot", command=self.save_plot).pack(side="left", padx=5)
-            
+            ttk.Button(
+                control_frame, text="Refresh Plot", command=self.create_sample_plot
+            ).pack(side="left", padx=5)
+            ttk.Button(control_frame, text="Save Plot", command=self.save_plot).pack(
+                side="left", padx=5
+            )
+
         def create_export_tab(self, parent):
-            ttk.Label(parent, text="Export Data", font=("Arial", 12, "bold")).pack(pady=10)
-            
+            ttk.Label(parent, text="Export Data", font=("Arial", 12, "bold")).pack(
+                pady=10
+            )
+
             # Export options
             ttk.Label(parent, text="Select export format:").pack(pady=5)
             self.export_format = tk.StringVar(value="CSV")
-            ttk.Radiobutton(parent, text="CSV", variable=self.export_format, value="CSV").pack()
-            ttk.Radiobutton(parent, text="JSON", variable=self.export_format, value="JSON").pack()
-            ttk.Radiobutton(parent, text="PDF Report", variable=self.export_format, value="PDF").pack()
-            
+            ttk.Radiobutton(
+                parent, text="CSV", variable=self.export_format, value="CSV"
+            ).pack()
+            ttk.Radiobutton(
+                parent, text="JSON", variable=self.export_format, value="JSON"
+            ).pack()
+            ttk.Radiobutton(
+                parent, text="PDF Report", variable=self.export_format, value="PDF"
+            ).pack()
+
             # Export button
-            ttk.Button(parent, text="Export Data", command=self.export_data).pack(pady=20)
-            
+            ttk.Button(parent, text="Export Data", command=self.export_data).pack(
+                pady=20
+            )
+
         def load_session(self):
             session_id = self.session_entry.get()
             if session_id:
                 self.report_text.insert(tk.END, f"Loading session {session_id}...\n")
-                messagebox.showinfo("Load", f"Session {session_id} loaded successfully!")
+                messagebox.showinfo(
+                    "Load", f"Session {session_id} loaded successfully!"
+                )
             else:
                 messagebox.showerror("Error", "Please enter a session ID")
-                
+
         def generate_report(self):
             self.report_text.insert(tk.END, "Generating comprehensive report...\n")
             self.report_text.insert(tk.END, "Session Performance Metrics:\n")
@@ -752,44 +784,50 @@ if __name__ == "__main__":
             self.report_text.insert(tk.END, "- Average Response Time: 450ms\n")
             self.report_text.insert(tk.END, "- Parameter Estimates: Converged\n\n")
             self.report_text.insert(tk.END, "Report generated successfully!\n")
-            
+
         def clear_report(self):
             self.report_text.delete("1.0", tk.END)
-            
+
         def create_sample_plot(self):
             self.ax.clear()
             import numpy as np
+
             x = np.linspace(0, 10, 100)
             y = np.sin(x) + np.random.normal(0, 0.1, 100)
-            self.ax.plot(x, y, 'b-', label='Sample Data')
-            self.ax.set_xlabel('Time')
-            self.ax.set_ylabel('Value')
-            self.ax.set_title('Sample Parameter Estimation Data')
+            self.ax.plot(x, y, "b-", label="Sample Data")
+            self.ax.set_xlabel("Time")
+            self.ax.set_ylabel("Value")
+            self.ax.set_title("Sample Parameter Estimation Data")
             self.ax.legend()
             self.ax.grid(True, alpha=0.3)
             self.canvas.draw()
-            
+
         def save_plot(self):
             file_path = filedialog.asksaveasfilename(
                 defaultextension=".png",
-                filetypes=[("PNG files", "*.png"), ("All files", "*.*")]
+                filetypes=[("PNG files", "*.png"), ("All files", "*.*")],
             )
             if file_path:
                 self.fig.savefig(file_path)
                 messagebox.showinfo("Success", f"Plot saved to {file_path}")
-                
+
         def export_data(self):
             format_type = self.export_format.get()
             file_path = filedialog.asksaveasfilename(
                 defaultextension=f".{format_type.lower()}",
-                filetypes=[(f"{format_type} files", f"*.{format_type.lower()}"), ("All files", "*.*")]
+                filetypes=[
+                    (f"{format_type} files", f"*.{format_type.lower()}"),
+                    ("All files", "*.*"),
+                ],
             )
             if file_path:
-                messagebox.showinfo("Success", f"Data exported to {file_path} in {format_type} format")
-            
+                messagebox.showinfo(
+                    "Success", f"Data exported to {file_path} in {format_type} format"
+                )
+
         def run(self):
             self.root.mainloop()
-    
+
     # Launch GUI
     gui = ReportingVisualizationGUI()
     gui.run()

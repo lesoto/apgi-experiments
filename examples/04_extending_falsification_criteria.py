@@ -35,11 +35,13 @@ import logging
 # Setup logging with standardized system
 try:
     from apgi_framework.logging.standardized_logging import get_logger
+
     logger = get_logger("extending_falsification_example")
 except ImportError:
     # Fallback to basic logging
     logging.basicConfig(
-        level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
     logger = logging.getLogger(__name__)
 

@@ -12,10 +12,9 @@ from pathlib import Path
 import tempfile
 import json
 import sys
-import os
 
 # Add the project root to Python path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Import the modules we're testing with error handling
 try:

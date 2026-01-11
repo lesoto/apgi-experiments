@@ -11,8 +11,18 @@ from typing import Dict, List, Optional, Tuple, Any
 import numpy as np
 import pandas as pd
 from dataclasses import dataclass
-from core.experiment import BaseExperiment
-from models.apgi_model import APGIParams, APGIModel
+
+# Import core modules with graceful fallback
+try:
+    from core.experiment import BaseExperiment
+except ImportError:
+    BaseExperiment = None
+
+try:
+    from models.apgi_model import APGIParams, APGIModel
+except ImportError:
+    APGIParams = None
+    APGIModel = None
 
 
 @dataclass
@@ -68,26 +78,30 @@ class AdaptiveTaskConfig(CognitiveTaskConfig):
     max_difficulty: float = 0.9
 
 
-class CognitiveTaskExperiment(BaseExperiment):
+class CognitiveTaskExperiment(BaseExperiment if BaseExperiment is not None else object):
     """Base class for cognitive task experiments with APGI integration."""
 
     def __init__(self, config: Optional[CognitiveTaskConfig] = None):
-        super().__init__(n_participants=config.n_participants if config else 20)
+        if BaseExperiment is not None:
+            super().__init__(n_participants=config.n_participants if config else 20)
         self.config = config or CognitiveTaskConfig()
         self.apgi_model = None
         self.trial_data = []
         self.block_data = []
 
     def setup(self, **kwargs):
-        """Set up the cognitive task experiment."""
-        # Initialize APGI model with parameters from config
-        apgi_params = APGIParams(
-            theta_base=self.config.theta_base,
-            sigma_pe=self.config.sigma_pe,
-            sigma_pi=self.config.sigma_pi,
-            beta=self.config.beta,
-        )
-        self.apgi_model = APGIModel(apgi_params)
+        """Set up cognitive task experiment."""
+        # Initialize APGI model with parameters from config if available
+        if APGIParams is not None and APGIModel is not None:
+            apgi_params = APGIParams(
+                theta_base=self.config.theta_base,
+                sigma_pe=self.config.sigma_pe,
+                sigma_pi=self.config.sigma_pi,
+                beta=self.config.beta,
+            )
+            self.apgi_model = APGIModel(apgi_params)
+        else:
+            print("Warning: APGI model modules not available, using fallback behavior")
 
     @abstractmethod
     def generate_trial_parameters(

@@ -36,4 +36,4 @@ from .parameter_estimation_gui import launch_gui
 #     UserGuidanceSystem,
 # )
 
-__all__ = ['launch_gui']
+__all__ = ["launch_gui"]

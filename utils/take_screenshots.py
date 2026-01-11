@@ -96,7 +96,9 @@ class APGIScreenshotDocumentation:
         print("   1. Make sure APGI GUI application is visible on screen")
         print("   2. Close any other applications that might interfere")
         print("   3. Click on the APGI application window to ensure it's active")
-        print("   4. If automatic detection fails, you'll be prompted to select window manually")
+        print(
+            "   4. If automatic detection fails, you'll be prompted to select window manually"
+        )
         print("   5. Press Enter to continue or Ctrl+C to cancel...")
 
         try:
@@ -157,7 +159,6 @@ class APGIScreenshotDocumentation:
             print(f"❌ Error starting GUI: {e}")
             return False
 
-
     def _use_fallback_discovery(self):
         """Use keyboard shortcuts and estimated positions when window cannot be located."""
         print("  🔄 Using fallback discovery mode...")
@@ -189,7 +190,7 @@ class APGIScreenshotDocumentation:
         # APGI Framework sections (instead of tabs)
         section_names = [
             "APGI Parameters",
-            "Experimental Setup", 
+            "Experimental Setup",
             "Falsification Tests",
             "Research Experiments",
             "Analysis Tools",
@@ -197,7 +198,7 @@ class APGIScreenshotDocumentation:
             "Data Management",
             "System Tools",
             "Visualization",
-            "Export"
+            "Export",
         ]
 
         tab_start_x = 50
@@ -213,13 +214,13 @@ class APGIScreenshotDocumentation:
         # APGI Framework parameter controls (instead of sliders)
         parameter_names = [
             "exteroceptive_precision",
-            "interoceptive_precision", 
+            "interoceptive_precision",
             "somatic_gain",
             "threshold",
             "steepness",
             "gamma_oscillation_power",
             "p3b_amplitude",
-            "bold_signal_strength"
+            "bold_signal_strength",
         ]
 
         slider_start_x = 150
@@ -267,7 +268,11 @@ class APGIScreenshotDocumentation:
             self._use_fallback_discovery()
             return False
 
-        gui_title = str(self.gui_window.title) if hasattr(self.gui_window, 'title') and self.gui_window.title else "Unknown"
+        gui_title = (
+            str(self.gui_window.title)
+            if hasattr(self.gui_window, "title") and self.gui_window.title
+            else "Unknown"
+        )
         print(f"✅ Found GUI window: {gui_title}")
 
         # Manual verification - ask user to confirm if this is the right window
@@ -343,7 +348,9 @@ class APGIScreenshotDocumentation:
         self._discover_menu_items()
 
         total_elements = (
-            len(self.button_locations) + len(self.section_locations) + len(self.parameter_controls)
+            len(self.button_locations)
+            + len(self.section_locations)
+            + len(self.parameter_controls)
         )
         print(
             f"✅ Found {len(self.button_locations)} buttons, {len(self.section_locations)} sections, {len(self.parameter_controls)} parameter controls"
@@ -384,7 +391,9 @@ class APGIScreenshotDocumentation:
                         # Get window bounds
                         bounds = window_info.get("kCGWindowBounds", {})
                         if bounds:
-                            print(f"✅ Found APGI window: '{window_title}' (Owner: {owner_name})")
+                            print(
+                                f"✅ Found APGI window: '{window_title}' (Owner: {owner_name})"
+                            )
                             print(f"   Bounds: {bounds}")
 
                             # Create a simple window object
@@ -395,8 +404,12 @@ class APGIScreenshotDocumentation:
                                     self.top = int(bounds.get("Y", 0))
                                     self.width = int(bounds.get("Width", 0))
                                     self.height = int(bounds.get("Height", 0))
-                                    self.bottom = self.top + self.height  # Add bottom attribute
-                                    self.right = self.left + self.width   # Add right attribute
+                                    self.bottom = (
+                                        self.top + self.height
+                                    )  # Add bottom attribute
+                                    self.right = (
+                                        self.left + self.width
+                                    )  # Add right attribute
 
                                 def activate(self):
                                     try:
@@ -441,7 +454,8 @@ class APGIScreenshotDocumentation:
                                     try:
                                         # Try to click in the estimated area to activate
                                         pyautogui.click(
-                                            self.left + self.width // 2, self.top + self.height // 2
+                                            self.left + self.width // 2,
+                                            self.top + self.height // 2,
                                         )
                                         return True
                                     except:
@@ -476,18 +490,32 @@ class APGIScreenshotDocumentation:
             # Method 1: Color-based detection for common button colors
             color_ranges = [
                 # Green buttons (Start)
-                {"hsv_lower": (40, 50, 50), "hsv_upper": (80, 255, 255), "name": "start"},
+                {
+                    "hsv_lower": (40, 50, 50),
+                    "hsv_upper": (80, 255, 255),
+                    "name": "start",
+                },
                 # Yellow/Orange buttons (Pause)
-                {"hsv_lower": (15, 50, 50), "hsv_upper": (35, 255, 255), "name": "pause"},
+                {
+                    "hsv_lower": (15, 50, 50),
+                    "hsv_upper": (35, 255, 255),
+                    "name": "pause",
+                },
                 # Red buttons (Stop)
                 {"hsv_lower": (0, 50, 50), "hsv_upper": (10, 255, 255), "name": "stop"},
                 # Blue/Gray buttons (Reset)
-                {"hsv_lower": (90, 30, 30), "hsv_upper": (130, 255, 255), "name": "reset"},
+                {
+                    "hsv_lower": (90, 30, 30),
+                    "hsv_upper": (130, 255, 255),
+                    "name": "reset",
+                },
             ]
 
             for color_range in color_ranges:
                 mask = cv2.inRange(
-                    img_hsv, np.array(color_range["hsv_lower"]), np.array(color_range["hsv_upper"])
+                    img_hsv,
+                    np.array(color_range["hsv_lower"]),
+                    np.array(color_range["hsv_upper"]),
                 )
 
                 # Apply morphological operations to clean up
@@ -495,7 +523,9 @@ class APGIScreenshotDocumentation:
                 mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
                 mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
 
-                contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                contours, _ = cv2.findContours(
+                    mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+                )
 
                 for contour in contours:
                     area = cv2.contourArea(contour)
@@ -520,12 +550,16 @@ class APGIScreenshotDocumentation:
             gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
             edges = cv2.Canny(gray, 50, 150)
 
-            contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            contours, _ = cv2.findContours(
+                edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+            )
 
             for contour in contours:
                 area = cv2.contourArea(contour)
                 if 500 < area < 8000:
-                    approx = cv2.approxPolyDP(contour, 0.02 * cv2.arcLength(contour, True), True)
+                    approx = cv2.approxPolyDP(
+                        contour, 0.02 * cv2.arcLength(contour, True), True
+                    )
 
                     # Check if it's roughly rectangular (4-6 corners)
                     if 4 <= len(approx) <= 6:
@@ -537,13 +571,18 @@ class APGIScreenshotDocumentation:
                             is_duplicate = False
                             for existing in button_detections:
                                 ex, ey = existing["x"], existing["y"]
-                                if abs(ex - (x + w // 2)) < 20 and abs(ey - (y + h // 2)) < 20:
+                                if (
+                                    abs(ex - (x + w // 2)) < 20
+                                    and abs(ey - (y + h // 2)) < 20
+                                ):
                                     is_duplicate = True
                                     break
 
                             if not is_duplicate:
                                 # Determine button type based on position
-                                button_name = self._classify_button_by_position(x, y, w, h)
+                                button_name = self._classify_button_by_position(
+                                    x, y, w, h
+                                )
                                 button_detections.append(
                                     {
                                         "name": button_name,
@@ -626,7 +665,7 @@ class APGIScreenshotDocumentation:
             # Expected section names for APGI Framework
             section_names = [
                 "APGI Parameters",
-                "Experimental Setup", 
+                "Experimental Setup",
                 "Falsification Tests",
                 "Research Experiments",
                 "Analysis Tools",
@@ -634,7 +673,7 @@ class APGIScreenshotDocumentation:
                 "Data Management",
                 "System Tools",
                 "Visualization",
-                "Export"
+                "Export",
             ]
 
             # Try to find section-like regions (horizontal bars/sections in sidebar)
@@ -650,20 +689,26 @@ class APGIScreenshotDocumentation:
                 if 20 < h < 50 and 100 < w < 400:  # Typical section header size
                     # Check if it's in the left sidebar area
                     if x < screenshot.width // 3:  # Left third of screen
-                        section_candidates.append({"x": x + w // 2, "y": y + h // 2, "rect": (x, y, w, h)})
+                        section_candidates.append(
+                            {"x": x + w // 2, "y": y + h // 2, "rect": (x, y, w, h)}
+                        )
 
             # Sort by vertical position
             section_candidates.sort(key=lambda c: c["y"])
 
             # Assign section names to discovered positions
-            for i, section_candidate in enumerate(section_candidates[: len(section_names)]):
+            for i, section_candidate in enumerate(
+                section_candidates[: len(section_names)]
+            ):
                 section_name = section_names[i]
                 self.section_locations[section_name] = {
                     "x": section_candidate["x"],
                     "y": section_candidate["y"],
                     "rect": section_candidate["rect"],
                 }
-                print(f"    Found section '{section_name}' at ({section_candidate['x']}, {section_candidate['y']})")
+                print(
+                    f"    Found section '{section_name}' at ({section_candidate['x']}, {section_candidate['y']})"
+                )
 
             # Fallback: if no sections detected, use estimated positions
             if not self.section_locations and self.gui_window:
@@ -678,9 +723,16 @@ class APGIScreenshotDocumentation:
                     self.section_locations[section_name] = {
                         "x": start_x + section_width // 2,
                         "y": start_y + i * section_spacing + section_height // 2,
-                        "rect": (start_x, start_y + i * section_spacing, section_width, section_height),
+                        "rect": (
+                            start_x,
+                            start_y + i * section_spacing,
+                            section_width,
+                            section_height,
+                        ),
                     }
-                    print(f"    Estimated section '{section_name}' at ({start_x + section_width // 2}, {start_y + i * section_spacing + section_height // 2})")
+                    print(
+                        f"    Estimated section '{section_name}' at ({start_x + section_width // 2}, {start_y + i * section_spacing + section_height // 2})"
+                    )
 
         except Exception as e:
             print(f"    ❌ Error in section discovery: {e}")
@@ -697,13 +749,13 @@ class APGIScreenshotDocumentation:
             # Expected parameter names for APGI Framework
             parameter_names = [
                 "exteroceptive_precision",
-                "interoceptive_precision", 
+                "interoceptive_precision",
                 "somatic_gain",
                 "threshold",
                 "steepness",
                 "gamma_oscillation_power",
                 "p3b_amplitude",
-                "bold_signal_strength"
+                "bold_signal_strength",
             ]
 
             # Try to find parameter input-like regions (text fields, sliders, etc.)
@@ -718,20 +770,26 @@ class APGIScreenshotDocumentation:
                 # Filter for parameter control-like dimensions
                 if 15 < h < 40 and 80 < w < 300:  # Typical parameter control size
                     # Check if it's in the main content area (not sidebar)
-                    if screenshot.width // 3 < x < screenshot.width * 2 // 3:  # Middle area
-                        parameter_candidates.append({
-                            "x": x + w // 2, 
-                            "y": y + h // 2, 
-                            "rect": (x, y, w, h),
-                            "min_x": x,
-                            "max_x": x + w
-                        })
+                    if (
+                        screenshot.width // 3 < x < screenshot.width * 2 // 3
+                    ):  # Middle area
+                        parameter_candidates.append(
+                            {
+                                "x": x + w // 2,
+                                "y": y + h // 2,
+                                "rect": (x, y, w, h),
+                                "min_x": x,
+                                "max_x": x + w,
+                            }
+                        )
 
             # Sort by vertical position
             parameter_candidates.sort(key=lambda c: c["y"])
 
             # Assign parameter names to discovered positions
-            for i, param_candidate in enumerate(parameter_candidates[: len(parameter_names)]):
+            for i, param_candidate in enumerate(
+                parameter_candidates[: len(parameter_names)]
+            ):
                 param_name = parameter_names[i]
                 self.parameter_controls[param_name] = {
                     "x": param_candidate["x"],
@@ -740,11 +798,15 @@ class APGIScreenshotDocumentation:
                     "min_x": param_candidate["min_x"],
                     "max_x": param_candidate["max_x"],
                 }
-                print(f"    Found parameter control '{param_name}' at ({param_candidate['x']}, {param_candidate['y']})")
+                print(
+                    f"    Found parameter control '{param_name}' at ({param_candidate['x']}, {param_candidate['y']})"
+                )
 
             # Fallback: if no parameter controls detected, use estimated positions
             if not self.parameter_controls and self.gui_window:
-                print("    ⚠️ No parameter controls detected, using estimated positions")
+                print(
+                    "    ⚠️ No parameter controls detected, using estimated positions"
+                )
                 start_x = 150
                 start_y = 200
                 param_width = 150
@@ -760,7 +822,9 @@ class APGIScreenshotDocumentation:
                         "min_x": start_x,
                         "max_x": start_x + param_width,
                     }
-                    print(f"    Estimated parameter control '{param_name}' at ({start_x + param_width // 2}, {y_pos + param_height // 2})")
+                    print(
+                        f"    Estimated parameter control '{param_name}' at ({start_x + param_width // 2}, {y_pos + param_height // 2})"
+                    )
 
         except Exception as e:
             print(f"    ❌ Error in parameter control discovery: {e}")
@@ -894,7 +958,9 @@ class APGIScreenshotDocumentation:
             },
         }
 
-        total_menu_items = sum(len(menu.get("items", [])) for menu in self.menu_items.values())
+        total_menu_items = sum(
+            len(menu.get("items", [])) for menu in self.menu_items.values()
+        )
         print(
             f"    Found {len(self.menu_items)} menu categories with {total_menu_items} total items"
         )
@@ -932,7 +998,9 @@ class APGIScreenshotDocumentation:
                 self._document_all_parameter_controls()
                 screenshot_count += len(self.parameter_controls)
             else:
-                print("  ⚠️ No parameter controls found, skipping parameter documentation")
+                print(
+                    "  ⚠️ No parameter controls found, skipping parameter documentation"
+                )
 
             # 5. Test all menu items and submenus (with error handling)
             if self.menu_items and screenshot_count < max_screenshots:
@@ -962,9 +1030,13 @@ class APGIScreenshotDocumentation:
 
             # 11. Final state
             if screenshot_count < max_screenshots:
-                self._take_screenshot("18_final_state", "Final GUI state - after all documentation")
+                self._take_screenshot(
+                    "18_final_state", "Final GUI state - after all documentation"
+                )
 
-            print(f"\n✅ Completed {len(self.doc_structure['screenshots'])} screenshots")
+            print(
+                f"\n✅ Completed {len(self.doc_structure['screenshots'])} screenshots"
+            )
 
         except Exception as e:
             print(f"❌ Error during screen documentation: {e}")
@@ -1009,13 +1081,16 @@ class APGIScreenshotDocumentation:
 
                 # Take screenshot of opened menu
                 self._take_screenshot(
-                    f"05_menu_{menu_name}_expanded", f"Menu: {menu_name.title()} - Expanded"
+                    f"05_menu_{menu_name}_expanded",
+                    f"Menu: {menu_name.title()} - Expanded",
                 )
 
                 # Document each submenu item
                 if "items" in menu_info:
                     for i, item in enumerate(menu_info["items"]):
-                        item_name = item["name"].replace(" ", "_").replace("/", "_").lower()
+                        item_name = (
+                            item["name"].replace(" ", "_").replace("/", "_").lower()
+                        )
 
                         # Press down arrow to navigate to item
                         for _ in range(i + 1):
@@ -1049,32 +1124,41 @@ class APGIScreenshotDocumentation:
             # Test new configuration functionality
             if "new_config" in self.button_locations:
                 pyautogui.click(
-                    self.button_locations["new_config"]["x"], self.button_locations["new_config"]["y"]
+                    self.button_locations["new_config"]["x"],
+                    self.button_locations["new_config"]["y"],
                 )
                 time.sleep(2)
 
-                self._take_screenshot("06_new_config_state", "New Configuration - dialog state")
+                self._take_screenshot(
+                    "06_new_config_state", "New Configuration - dialog state"
+                )
 
             # Test load configuration functionality
             if "load_config" in self.button_locations:
                 pyautogui.click(
-                    self.button_locations["load_config"]["x"], self.button_locations["load_config"]["y"]
+                    self.button_locations["load_config"]["x"],
+                    self.button_locations["load_config"]["y"],
                 )
                 time.sleep(2)
 
-                self._take_screenshot("07_load_config_state", "Load Configuration - file dialog state")
+                self._take_screenshot(
+                    "07_load_config_state", "Load Configuration - file dialog state"
+                )
 
             # Test save configuration functionality
             if "save_config" in self.button_locations:
                 pyautogui.click(
-                    self.button_locations["save_config"]["x"], self.button_locations["save_config"]["y"]
+                    self.button_locations["save_config"]["x"],
+                    self.button_locations["save_config"]["y"],
                 )
                 time.sleep(2)
 
-                self._take_screenshot("08_save_config_state", "Save Configuration - file dialog state")
+                self._take_screenshot(
+                    "08_save_config_state", "Save Configuration - file dialog state"
+                )
 
             # Close any open dialogs (ESC key)
-            pyautogui.press('escape')
+            pyautogui.press("escape")
             time.sleep(1)
 
             self._take_screenshot(
@@ -1145,9 +1229,12 @@ class APGIScreenshotDocumentation:
                 time.sleep(1.5)  # Wait for dialog to open
 
                 # Take screenshot of dialog
-                dialog_filename = f"11_dialog_{menu_name}_{dialog_name.replace(' ', '_').lower()}"
+                dialog_filename = (
+                    f"11_dialog_{menu_name}_{dialog_name.replace(' ', '_').lower()}"
+                )
                 self._take_screenshot(
-                    dialog_filename, f"Dialog: {dialog_name} (from {menu_name.title()} menu)"
+                    dialog_filename,
+                    f"Dialog: {dialog_name} (from {menu_name.title()} menu)",
                 )
 
                 # Close dialog (Escape or Enter depending on dialog type)
@@ -1238,7 +1325,9 @@ class APGIScreenshotDocumentation:
                         time.sleep(0.5)
 
                     except Exception as e:
-                        print(f"    ⚠️ Could not document view toggle '{toggle_name}': {e}")
+                        print(
+                            f"    ⚠️ Could not document view toggle '{toggle_name}': {e}"
+                        )
                         pyautogui.press("escape")
                         time.sleep(0.5)
                         continue
@@ -1266,13 +1355,17 @@ class APGIScreenshotDocumentation:
                         pyautogui.drag(speed_x, y, speed_x - 50, y, duration=0.5)
                         time.sleep(0.5)
 
-                        self._take_screenshot("14_speed_minimum", "Speed Control - Minimum (0.1x)")
+                        self._take_screenshot(
+                            "14_speed_minimum", "Speed Control - Minimum (0.1x)"
+                        )
 
                         # Drag to maximum
                         pyautogui.drag(speed_x - 50, y, speed_x + 50, y, duration=0.5)
                         time.sleep(0.5)
 
-                        self._take_screenshot("15_speed_maximum", "Speed Control - Maximum (10.0x)")
+                        self._take_screenshot(
+                            "15_speed_maximum", "Speed Control - Maximum (10.0x)"
+                        )
 
                         # Reset to default
                         pyautogui.click(speed_x, y)
@@ -1373,7 +1466,9 @@ class APGIScreenshotDocumentation:
                 # Try alternative save method
                 try:
                     screenshot.save(screenshot_path, "PNG")
-                    print(f"    ✅ Saved with alternative method: {screenshot_path.name}")
+                    print(
+                        f"    ✅ Saved with alternative method: {screenshot_path.name}"
+                    )
                 except Exception as alt_error:
                     print(f"    ❌ Alternative save also failed: {alt_error}")
                     return None
@@ -1388,10 +1483,16 @@ class APGIScreenshotDocumentation:
                 "type": "desktop_app_screenshot",
                 "window_info": (
                     {
-                        "title": str(self.gui_window.title) if self.gui_window and hasattr(self.gui_window, 'title') else "Unknown",
+                        "title": (
+                            str(self.gui_window.title)
+                            if self.gui_window and hasattr(self.gui_window, "title")
+                            else "Unknown"
+                        ),
                         "geometry": (
                             f"{self.gui_window.width}x{self.gui_window.height}"
-                            if self.gui_window and hasattr(self.gui_window, 'width') and hasattr(self.gui_window, 'height')
+                            if self.gui_window
+                            and hasattr(self.gui_window, "width")
+                            and hasattr(self.gui_window, "height")
                             else "Unknown"
                         ),
                     }
@@ -1425,8 +1526,16 @@ class APGIScreenshotDocumentation:
                     # Verify it's active by checking if it's the foreground window
                     active = gw.getActiveWindow()
                     if active and hasattr(active, "title"):
-                        active_title = str(active.title) if callable(active.title) else str(active.title)
-                        gui_title = str(self.gui_window.title) if callable(self.gui_window.title) else str(self.gui_window.title)
+                        active_title = (
+                            str(active.title)
+                            if callable(active.title)
+                            else str(active.title)
+                        )
+                        gui_title = (
+                            str(self.gui_window.title)
+                            if callable(self.gui_window.title)
+                            else str(self.gui_window.title)
+                        )
                         if active_title == gui_title:
                             print(f"    ✅ Successfully activated: {gui_title}")
                             return True
@@ -1545,7 +1654,11 @@ class APGIScreenshotDocumentation:
                         and hasattr(window, "height")
                     ):
 
-                        title = str(window.title) if hasattr(window, 'title') and window.title else ""
+                        title = (
+                            str(window.title)
+                            if hasattr(window, "title") and window.title
+                            else ""
+                        )
                         title_lower = title.lower()
 
                         # Skip obvious system windows
@@ -1566,7 +1679,9 @@ class APGIScreenshotDocumentation:
                             continue
 
                         candidates.append((i, window))
-                        print(f"  {len(candidates)}. {title} ({window.width}x{window.height})")
+                        print(
+                            f"  {len(candidates)}. {title} ({window.width}x{window.height})"
+                        )
 
                 if not candidates:
                     print("❌ No suitable windows found")
@@ -1574,14 +1689,20 @@ class APGIScreenshotDocumentation:
 
                 print(f"\nSelect the APGI application window (1-{len(candidates)}):")
                 try:
-                    choice = input("Enter window number or press Enter for first: ").strip()
+                    choice = input(
+                        "Enter window number or press Enter for first: "
+                    ).strip()
                     if not choice:
                         choice = "1"
 
                     window_index = int(choice) - 1
                     if 0 <= window_index < len(candidates):
                         selected = candidates[window_index][1]
-                        selected_title = str(selected.title) if hasattr(selected, 'title') and selected.title else "Unknown"
+                        selected_title = (
+                            str(selected.title)
+                            if hasattr(selected, "title") and selected.title
+                            else "Unknown"
+                        )
                         print(f"✅ Selected: {selected_title}")
                         return selected
                     else:
@@ -1627,7 +1748,9 @@ class APGIScreenshotDocumentation:
         screenshots_by_type = {}
         for screenshot in self.doc_structure["screenshots"]:
             screenshot_type = screenshot.get("type", "unknown")
-            screenshots_by_type[screenshot_type] = screenshots_by_type.get(screenshot_type, 0) + 1
+            screenshots_by_type[screenshot_type] = (
+                screenshots_by_type.get(screenshot_type, 0) + 1
+            )
 
         # Element discovery statistics
         element_stats = {
@@ -1635,7 +1758,9 @@ class APGIScreenshotDocumentation:
             "sections": len(self.section_locations),
             "parameter_controls": len(self.parameter_controls),
             "menus": len(self.menu_items),
-            "tabs": len(self.section_locations),  # Use sections as tabs for compatibility
+            "tabs": len(
+                self.section_locations
+            ),  # Use sections as tabs for compatibility
             "dialogs": 24,  # Total dialogs documented
             "view_toggles": 4,  # Control Panel, Neural Activity, Interoception, System Metrics
             "zoom_controls": 3,  # Zoom In, Zoom Out, Fit to Window
@@ -1645,10 +1770,14 @@ class APGIScreenshotDocumentation:
         }
 
         # Calculate total menu items across all menus
-        total_menu_items = sum(len(menu.get("items", [])) for menu in self.menu_items.values())
+        total_menu_items = sum(
+            len(menu.get("items", [])) for menu in self.menu_items.values()
+        )
 
         # Success rate calculations
-        total_expected_elements = 3 + 10 + 8 + 7  # Expected buttons, sections, parameter controls, menu categories
+        total_expected_elements = (
+            3 + 10 + 8 + 7
+        )  # Expected buttons, sections, parameter controls, menu categories
         discovered_elements = (
             element_stats["buttons"]
             + element_stats["sections"]
@@ -1666,9 +1795,17 @@ class APGIScreenshotDocumentation:
         window_geometry = "Unknown"
         if self.gui_window:
             try:
-                window_title = str(self.gui_window.title) if hasattr(self.gui_window, 'title') and self.gui_window.title else "Unknown"
-                if hasattr(self.gui_window, 'width') and hasattr(self.gui_window, 'height'):
-                    window_geometry = f"{self.gui_window.width}x{self.gui_window.height}"
+                window_title = (
+                    str(self.gui_window.title)
+                    if hasattr(self.gui_window, "title") and self.gui_window.title
+                    else "Unknown"
+                )
+                if hasattr(self.gui_window, "width") and hasattr(
+                    self.gui_window, "height"
+                ):
+                    window_geometry = (
+                        f"{self.gui_window.width}x{self.gui_window.height}"
+                    )
             except Exception as e:
                 print(f"⚠️ Error getting window info: {e}")
                 window_title = "Error retrieving title"
@@ -1679,7 +1816,9 @@ class APGIScreenshotDocumentation:
             1  # Initial state
             + element_stats["sections"]  # Each section
             + element_stats["buttons"]  # Each button
-            + (element_stats["parameter_controls"] * 2)  # Each parameter control (min/max)
+            + (
+                element_stats["parameter_controls"] * 2
+            )  # Each parameter control (min/max)
             + len(self.menu_items)
             + total_menu_items  # Menus and submenu items
             + 3  # GUI states (new config, load config, save config)
@@ -1903,8 +2042,12 @@ class APGIScreenshotDocumentation:
         # Add all screenshots with enhanced metadata
         for screenshot in self.doc_structure["screenshots"]:
             window_info = screenshot.get("window_info", {})
-            window_title = window_info.get("title", "Unknown") if window_info else "Unknown"
-            window_geometry = window_info.get("geometry", "Unknown") if window_info else "Unknown"
+            window_title = (
+                window_info.get("title", "Unknown") if window_info else "Unknown"
+            )
+            window_geometry = (
+                window_info.get("geometry", "Unknown") if window_info else "Unknown"
+            )
 
             html += f"""
                     <div class="screenshot">

@@ -6,10 +6,11 @@ import pytest
 import numpy as np
 from unittest.mock import Mock, patch
 import sys
-import os
+import sys
+from pathlib import Path
 
 # Add core models to path
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "core", "models"))
+sys.path.append(str(Path(__file__).parent.parent / "core" / "models"))
 
 from active_inference import SomaticAgent
 from hierarchical_predictive import PredictiveIgnitionNetwork
@@ -400,11 +401,15 @@ class TestModelIntegration:
         # Note: consciousness requires both high surprise AND low uncertainty (std < 0.5)
         # We can't guarantee the std condition, so we check that higher surprise has higher chance of consciousness
         consciousness_values = [decision[1] for decision in decisions]
-        
+
         # At least some of the higher surprise values should lead to consciousness
         # (when uncertainty condition is also met)
-        high_surprise_conscious = any(decisions[i][1] for i in [2, 3])  # indices for 2.5, 3.0
-        assert high_surprise_conscious, "Higher surprise values should sometimes lead to conscious decisions"
+        high_surprise_conscious = any(
+            decisions[i][1] for i in [2, 3]
+        )  # indices for 2.5, 3.0
+        assert (
+            high_surprise_conscious
+        ), "Higher surprise values should sometimes lead to conscious decisions"
 
     def test_network_to_agent_communication(self):
         """Test communication between predictive network and somatic agent."""

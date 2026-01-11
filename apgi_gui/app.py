@@ -20,9 +20,10 @@ except ImportError:
     # Fallback to absolute imports when run directly
     import sys
     from pathlib import Path
+
     project_root = Path(__file__).parent.parent
     sys.path.insert(0, str(project_root))
-    
+
     from apgi_gui.components.sidebar import Sidebar
     from apgi_gui.components.main_area import MainArea
     from apgi_gui.components.status_bar import StatusBar

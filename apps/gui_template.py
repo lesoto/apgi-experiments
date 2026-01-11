@@ -757,6 +757,7 @@ class APGIFrameworkGUI(ctk.CTk):
         """Setup logging configuration."""
         try:
             from apgi_framework.logging.standardized_logging import get_logger
+
             self.logger = get_logger("apgi_gui_template", log_file="apgi_gui.log")
         except ImportError:
             # Fallback to basic logging
@@ -924,12 +925,13 @@ class APGIFrameworkGUI(ctk.CTk):
         """Create APGI parameters section."""
         self.apgi_params = {}
         params = [
-            ("Exteroceptive Precision:", "exteroceptive_precision", "0.5"),
-            ("Interoceptive Precision:", "interoceptive_precision", "0.5"),
-            ("Somatic Gain:", "somatic_gain", "0.5"),
-            ("Threshold:", "threshold", "0.1"),
-            ("Precision Weight:", "precision_weight", "0.3"),
-            ("Prediction Error Weight:", "prediction_error_weight", "0.4"),
+            ("Exteroceptive Precision:", "exteroceptive_precision", "2.0"),
+            ("Interoceptive Precision:", "interoceptive_precision", "1.5"),
+            ("Exteroceptive Error:", "exteroceptive_error", "1.2"),
+            ("Interoceptive Error:", "interoceptive_error", "0.8"),
+            ("Somatic Gain:", "somatic_gain", "1.3"),
+            ("Threshold:", "threshold", "3.5"),
+            ("Steepness:", "steepness", "2.0"),
         ]
 
         for idx, (label_text, param_name, default_value) in enumerate(params):

@@ -26,12 +26,16 @@ except ImportError:
     # Handle relative import when run directly
     SessionData = None
     ParameterEstimationDAO = None
+
     class SecurePickleError(Exception):
         pass
+
     def safe_pickle_load(*args, **kwargs):
         pass
+
     def safe_pickle_dump(*args, **kwargs):
         pass
+
 
 logger = logging.getLogger(__name__)
 
@@ -697,138 +701,183 @@ class UserGuidanceSystem:
 
 if __name__ == "__main__":
     """Error handling demonstration GUI."""
-    
+
     class ErrorHandlingDemoGUI:
         def __init__(self):
             self.root = tk.Tk()
             self.root.title("Error Handling Demo")
             self.root.geometry("800x600")
-            
+
             # Initialize error handling components
             self.hardware_handler = HardwareFailureHandler()
             self.session_manager = SessionStateManager(Path("session_state"))
             # BackupManager not implemented yet - using placeholder
             self.backup_manager = None
-            
+
             # Create main frame
             main_frame = ttk.Frame(self.root)
             main_frame.pack(fill="both", expand=True, padx=10, pady=10)
-            
+
             # Title
-            ttk.Label(main_frame, text="Error Handling Demonstration", font=("Arial", 16, "bold")).pack(pady=10)
-            
+            ttk.Label(
+                main_frame,
+                text="Error Handling Demonstration",
+                font=("Arial", 16, "bold"),
+            ).pack(pady=10)
+
             # Create notebook for tabs
             notebook = ttk.Notebook(main_frame)
             notebook.pack(fill="both", expand=True)
-            
+
             # Hardware failures tab
             hardware_frame = ttk.Frame(notebook)
             notebook.add(hardware_frame, text="Hardware Failures")
             self.create_hardware_tab(hardware_frame)
-            
+
             # Session management tab
             session_frame = ttk.Frame(notebook)
             notebook.add(session_frame, text="Session State")
             self.create_session_tab(session_frame)
-            
+
             # Backup systems tab
             backup_frame = ttk.Frame(notebook)
             notebook.add(backup_frame, text="Backup Systems")
             self.create_backup_tab(backup_frame)
-            
+
             # Error log tab
             log_frame = ttk.Frame(notebook)
             notebook.add(log_frame, text="Error Log")
             self.create_log_tab(log_frame)
-            
+
         def create_hardware_tab(self, parent):
-            ttk.Label(parent, text="Hardware Failure Simulation", font=("Arial", 12, "bold")).pack(pady=10)
-            
+            ttk.Label(
+                parent, text="Hardware Failure Simulation", font=("Arial", 12, "bold")
+            ).pack(pady=10)
+
             # Hardware status display
             self.hardware_status_text = tk.Text(parent, height=10, width=70)
             self.hardware_status_text.pack(pady=10)
-            
+
             # Simulation buttons
             button_frame = ttk.Frame(parent)
             button_frame.pack(pady=10)
-            
-            ttk.Button(button_frame, text="Simulate EEG Failure", 
-                     command=lambda: self.simulate_hardware_failure("eeg")).pack(side="left", padx=5)
-            ttk.Button(button_frame, text="Simulate Eye Tracker Failure", 
-                     command=lambda: self.simulate_hardware_failure("eye_tracker")).pack(side="left", padx=5)
-            ttk.Button(button_frame, text="Simulate Cardiac Failure", 
-                     command=lambda: self.simulate_hardware_failure("cardiac")).pack(side="left", padx=5)
-            
-            ttk.Button(parent, text="Check Hardware Status", command=self.check_hardware_status).pack(pady=10)
-            
+
+            ttk.Button(
+                button_frame,
+                text="Simulate EEG Failure",
+                command=lambda: self.simulate_hardware_failure("eeg"),
+            ).pack(side="left", padx=5)
+            ttk.Button(
+                button_frame,
+                text="Simulate Eye Tracker Failure",
+                command=lambda: self.simulate_hardware_failure("eye_tracker"),
+            ).pack(side="left", padx=5)
+            ttk.Button(
+                button_frame,
+                text="Simulate Cardiac Failure",
+                command=lambda: self.simulate_hardware_failure("cardiac"),
+            ).pack(side="left", padx=5)
+
+            ttk.Button(
+                parent, text="Check Hardware Status", command=self.check_hardware_status
+            ).pack(pady=10)
+
         def create_session_tab(self, parent):
-            ttk.Label(parent, text="Session State Management", font=("Arial", 12, "bold")).pack(pady=10)
-            
+            ttk.Label(
+                parent, text="Session State Management", font=("Arial", 12, "bold")
+            ).pack(pady=10)
+
             # Session status display
             self.session_status_text = tk.Text(parent, height=10, width=70)
             self.session_status_text.pack(pady=10)
-            
+
             # Control buttons
             button_frame = ttk.Frame(parent)
             button_frame.pack(pady=10)
-            
-            ttk.Button(button_frame, text="Create Session", command=self.create_demo_session).pack(side="left", padx=5)
-            ttk.Button(button_frame, text="Simulate Crash", command=self.simulate_session_crash).pack(side="left", padx=5)
-            ttk.Button(button_frame, text="Recover Session", command=self.recover_session).pack(side="left", padx=5)
-            
+
+            ttk.Button(
+                button_frame, text="Create Session", command=self.create_demo_session
+            ).pack(side="left", padx=5)
+            ttk.Button(
+                button_frame, text="Simulate Crash", command=self.simulate_session_crash
+            ).pack(side="left", padx=5)
+            ttk.Button(
+                button_frame, text="Recover Session", command=self.recover_session
+            ).pack(side="left", padx=5)
+
         def create_backup_tab(self, parent):
-            ttk.Label(parent, text="Backup Systems", font=("Arial", 12, "bold")).pack(pady=10)
-            
+            ttk.Label(parent, text="Backup Systems", font=("Arial", 12, "bold")).pack(
+                pady=10
+            )
+
             # Backup status display
             self.backup_status_text = tk.Text(parent, height=10, width=70)
             self.backup_status_text.pack(pady=10)
-            
+
             # Control buttons
             button_frame = ttk.Frame(parent)
             button_frame.pack(pady=10)
-            
-            ttk.Button(button_frame, text="Create Backup", command=self.create_backup).pack(side="left", padx=5)
-            ttk.Button(button_frame, text="Restore Backup", command=self.restore_backup).pack(side="left", padx=5)
-            ttk.Button(button_frame, text="Check Backups", command=self.check_backups).pack(side="left", padx=5)
-            
+
+            ttk.Button(
+                button_frame, text="Create Backup", command=self.create_backup
+            ).pack(side="left", padx=5)
+            ttk.Button(
+                button_frame, text="Restore Backup", command=self.restore_backup
+            ).pack(side="left", padx=5)
+            ttk.Button(
+                button_frame, text="Check Backups", command=self.check_backups
+            ).pack(side="left", padx=5)
+
         def create_log_tab(self, parent):
-            ttk.Label(parent, text="Error Log Viewer", font=("Arial", 12, "bold")).pack(pady=10)
-            
+            ttk.Label(parent, text="Error Log Viewer", font=("Arial", 12, "bold")).pack(
+                pady=10
+            )
+
             # Error log display
             self.error_log_text = tk.Text(parent, height=15, width=70)
             self.error_log_text.pack(pady=10)
-            
+
             # Control buttons
             button_frame = ttk.Frame(parent)
             button_frame.pack(pady=10)
-            
-            ttk.Button(button_frame, text="Refresh Log", command=self.refresh_error_log).pack(side="left", padx=5)
-            ttk.Button(button_frame, text="Clear Log", command=self.clear_error_log).pack(side="left", padx=5)
-            ttk.Button(button_frame, text="Test Error", command=self.test_error_handling).pack(side="left", padx=5)
-            
+
+            ttk.Button(
+                button_frame, text="Refresh Log", command=self.refresh_error_log
+            ).pack(side="left", padx=5)
+            ttk.Button(
+                button_frame, text="Clear Log", command=self.clear_error_log
+            ).pack(side="left", padx=5)
+            ttk.Button(
+                button_frame, text="Test Error", command=self.test_error_handling
+            ).pack(side="left", padx=5)
+
         def simulate_hardware_failure(self, hardware_type):
-            self.hardware_handler.report_hardware_failure(hardware_type, Exception(f"Simulated {hardware_type} failure"))
+            self.hardware_handler.report_hardware_failure(
+                hardware_type, Exception(f"Simulated {hardware_type} failure")
+            )
             self.check_hardware_status()
-            
+
         def check_hardware_status(self):
             # Get status for each hardware type
             status_text = ""
             for hw_type in ["eeg", "eye_tracker", "cardiac"]:
                 is_available = self.hardware_handler.check_hardware_status(hw_type)
                 status_text += f"{hw_type.upper()}: {'✓ Available' if is_available else '✗ Failed'}\n"
-            
+
             self.hardware_status_text.delete("1.0", tk.END)
             self.hardware_status_text.insert(tk.END, status_text)
-                
+
         def create_demo_session(self):
             session_id = f"demo_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             self.session_manager.create_session(session_id)
             self.update_session_status()
-            
+
         def simulate_session_crash(self):
-            self.session_manager.handle_session_crash(Exception("Simulated session crash"))
+            self.session_manager.handle_session_crash(
+                Exception("Simulated session crash")
+            )
             self.update_session_status()
-            
+
         def recover_session(self):
             recovered = self.session_manager.attempt_session_recovery()
             if recovered:
@@ -836,19 +885,19 @@ if __name__ == "__main__":
             else:
                 messagebox.showwarning("Recovery Failed", "Could not recover session")
             self.update_session_status()
-            
+
         def update_session_status(self):
             status = self.session_manager.get_session_status()
             self.session_status_text.delete("1.0", tk.END)
             self.session_status_text.insert(tk.END, f"Session Status: {status}\n")
-            
+
         def create_backup(self):
             if self.backup_manager:
                 self.backup_manager.create_backup()
                 messagebox.showinfo("Success", "Backup created successfully!")
             else:
                 messagebox.showinfo("Info", "Backup manager not implemented yet")
-            
+
         def restore_backup(self):
             if self.backup_manager:
                 restored = self.backup_manager.restore_from_backup()
@@ -858,7 +907,7 @@ if __name__ == "__main__":
                     messagebox.showwarning("Restore Failed", "Could not restore backup")
             else:
                 messagebox.showinfo("Info", "Backup manager not implemented yet")
-                
+
         def check_backups(self):
             if self.backup_manager:
                 backups = self.backup_manager.list_available_backups()
@@ -870,16 +919,18 @@ if __name__ == "__main__":
                     self.backup_status_text.insert(tk.END, "No backups available\n")
             else:
                 self.backup_status_text.delete("1.0", tk.END)
-                self.backup_status_text.insert(tk.END, "Backup manager not implemented yet\n")
-                
+                self.backup_status_text.insert(
+                    tk.END, "Backup manager not implemented yet\n"
+                )
+
         def refresh_error_log(self):
             self.error_log_text.delete("1.0", tk.END)
             self.error_log_text.insert(tk.END, "Error log refreshed...\n")
-            
+
         def clear_error_log(self):
             self.error_log_text.delete("1.0", tk.END)
             self.error_log_text.insert(tk.END, "Error log cleared...\n")
-            
+
         def test_error_handling(self):
             try:
                 raise Exception("This is a test error for demonstration")
@@ -887,13 +938,13 @@ if __name__ == "__main__":
                 logger.error(f"Test error: {e}")
                 self.refresh_error_log()
                 messagebox.showinfo("Test", "Test error logged successfully!")
-            
+
         def run(self):
             self.root.mainloop()
-    
+
     # Import ttk for the demo
     import tkinter.ttk as ttk
-    
+
     # Launch demo GUI
     demo = ErrorHandlingDemoGUI()
     demo.run()

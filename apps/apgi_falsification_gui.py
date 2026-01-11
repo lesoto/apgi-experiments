@@ -1135,7 +1135,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
         self.summary_text.configure(state="disabled")
 
         # Create matplotlib figure with better layout
-        self.fig = plt.figure(figsize=(14, 9), layout='constrained')
+        self.fig = plt.figure(figsize=(14, 9), layout="constrained")
         self.fig.suptitle(
             "APGI Falsification Test Results - Real-Time Analysis",
             fontsize=14,

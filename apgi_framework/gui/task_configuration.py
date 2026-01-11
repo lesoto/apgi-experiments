@@ -15,23 +15,38 @@ import logging
 # Import standardized GUI utilities
 try:
     from ..utils.standard_gui import (
-        StandardWindow, StandardMenuBar, GUIStyleManager, 
-        ErrorHandler, PathManager, create_standard_notebook,
-        create_standard_button_frame, create_standard_button,
-        show_info_dialog, show_warning_dialog, show_error_dialog,
-        ask_yes_no_dialog
+        StandardWindow,
+        StandardMenuBar,
+        GUIStyleManager,
+        ErrorHandler,
+        PathManager,
+        create_standard_notebook,
+        create_standard_button_frame,
+        create_standard_button,
+        show_info_dialog,
+        show_warning_dialog,
+        show_error_dialog,
+        ask_yes_no_dialog,
     )
 except ImportError:
     # Fallback for direct execution
     import sys
     import os
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
     from apgi_framework.gui.utils.standard_gui import (
-        StandardWindow, StandardMenuBar, GUIStyleManager,
-        ErrorHandler, PathManager, create_standard_notebook,
-        create_standard_button_frame, create_standard_button,
-        show_info_dialog, show_warning_dialog, show_error_dialog,
-        ask_yes_no_dialog
+        StandardWindow,
+        StandardMenuBar,
+        GUIStyleManager,
+        ErrorHandler,
+        PathManager,
+        create_standard_notebook,
+        create_standard_button_frame,
+        create_standard_button,
+        show_info_dialog,
+        show_warning_dialog,
+        show_error_dialog,
+        ask_yes_no_dialog,
     )
 
 from dataclasses import dataclass, asdict
@@ -226,60 +241,74 @@ if __name__ == "__main__":
     """Simple GUI for task configuration."""
     import tkinter as tk
     from tkinter import ttk, messagebox
-    
+
     class TaskConfigurationGUI:
         def __init__(self):
             self.root = tk.Tk()
             self.root.title("Task Configuration")
             self.root.geometry("600x400")
-            
+
             # Create notebook for tabs
             notebook = ttk.Notebook(self.root)
             notebook.pack(fill="both", expand=True, padx=10, pady=10)
-            
+
             # Detection task tab
             detection_frame = ttk.Frame(notebook)
             notebook.add(detection_frame, text="Detection Task")
             self.create_detection_tab(detection_frame)
-            
+
             # Heartbeat task tab
             heartbeat_frame = ttk.Frame(notebook)
             notebook.add(heartbeat_frame, text="Heartbeat Task")
             self.create_heartbeat_tab(heartbeat_frame)
-            
+
             # Buttons
             button_frame = ttk.Frame(self.root)
             button_frame.pack(fill="x", padx=10, pady=5)
-            
-            ttk.Button(button_frame, text="Save Config", command=self.save_config).pack(side="left", padx=5)
-            ttk.Button(button_frame, text="Load Config", command=self.load_config).pack(side="left", padx=5)
-            ttk.Button(button_frame, text="Exit", command=self.root.quit).pack(side="right", padx=5)
-            
+
+            ttk.Button(button_frame, text="Save Config", command=self.save_config).pack(
+                side="left", padx=5
+            )
+            ttk.Button(button_frame, text="Load Config", command=self.load_config).pack(
+                side="left", padx=5
+            )
+            ttk.Button(button_frame, text="Exit", command=self.root.quit).pack(
+                side="right", padx=5
+            )
+
         def create_detection_tab(self, parent):
             config = DetectionTaskConfig()
             # Add configuration widgets for detection task
-            ttk.Label(parent, text="Detection Task Configuration", font=("Arial", 12, "bold")).pack(pady=10)
+            ttk.Label(
+                parent, text="Detection Task Configuration", font=("Arial", 12, "bold")
+            ).pack(pady=10)
             ttk.Label(parent, text=f"Default trials: {config.n_trials}").pack()
-            ttk.Label(parent, text=f"Duration: {config.duration_minutes} minutes").pack()
+            ttk.Label(
+                parent, text=f"Duration: {config.duration_minutes} minutes"
+            ).pack()
             ttk.Label(parent, text="Configuration loaded successfully").pack(pady=20)
-            
+
         def create_heartbeat_tab(self, parent):
             config = HeartbeatTaskConfig()
             # Add configuration widgets for heartbeat task
-            ttk.Label(parent, text="Heartbeat Task Configuration", font=("Arial", 12, "bold")).pack(pady=10)
+            ttk.Label(
+                parent, text="Heartbeat Task Configuration", font=("Arial", 12, "bold")
+            ).pack(pady=10)
             ttk.Label(parent, text=f"Default trials: {config.n_trials}").pack()
-            ttk.Label(parent, text=f"Duration: {config.duration_minutes} minutes").pack()
+            ttk.Label(
+                parent, text=f"Duration: {config.duration_minutes} minutes"
+            ).pack()
             ttk.Label(parent, text="Configuration loaded successfully").pack(pady=20)
-            
+
         def save_config(self):
             messagebox.showinfo("Save", "Configuration saved successfully!")
-            
+
         def load_config(self):
             messagebox.showinfo("Load", "Configuration loaded successfully!")
-            
+
         def run(self):
             self.root.mainloop()
-    
+
     # Launch GUI
     gui = TaskConfigurationGUI()
     gui.run()

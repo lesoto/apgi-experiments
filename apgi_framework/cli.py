@@ -36,11 +36,9 @@ class APGIFrameworkCLI:
 
     def setup_logging(self, log_level: str = "INFO") -> None:
         """Setup logging for CLI operations."""
-        logging.basicConfig(
-            level=getattr(logging, log_level.upper()),
-            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-            handlers=[logging.StreamHandler()],
-        )
+        from ..logging.centralized_logging import APGILogManager
+
+        APGILogManager.setup_logging(level=log_level)
         self.logger = logging.getLogger(__name__)
 
     def create_parser(self) -> argparse.ArgumentParser:

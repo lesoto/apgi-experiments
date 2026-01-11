@@ -20,6 +20,7 @@ except ImportError:
     # Fallback for direct execution
     import sys
     from pathlib import Path
+
     project_root = Path(__file__).parent.parent.parent
     sys.path.insert(0, str(project_root))
     from apgi_framework.gui.progress_monitoring import RealTimeProgressMonitor
@@ -35,26 +36,35 @@ except ImportError:
 # from .session_management import SessionSetupManager, ParticipantManager
 # from .task_configuration import TaskParameterConfigurator
 
+
 # Placeholder classes for missing dependencies
 class DetectionTask:
     """Placeholder for DetectionTask."""
+
     def __init__(self):
         pass
+
 
 class HeartbeatDetectionTask:
     """Placeholder for HeartbeatDetectionTask."""
+
     def __init__(self):
         pass
+
 
 class DualModalityOddballTask:
     """Placeholder for DualModalityOddballTask."""
+
     def __init__(self):
         pass
 
+
 class SessionData:
     """Placeholder for SessionData."""
+
     def __init__(self):
         pass
+
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +96,7 @@ class ParameterEstimationGUI:
         # Session management - commented out due to missing dependencies
         # self.session_manager = SessionSetupManager(self.dao)
         # self.participant_manager = ParticipantManager(self.dao)
-        
+
         # Task configuration - commented out due to missing dependencies
         # self.task_configurator = TaskParameterConfigurator()
 
@@ -1003,6 +1013,7 @@ def launch_gui(db_path: Path) -> None:
 
 if __name__ == "__main__":
     from pathlib import Path
+
     db_path = Path("data/parameter_estimation.db")
     db_path.parent.mkdir(exist_ok=True)
     launch_gui(db_path)

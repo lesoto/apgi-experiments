@@ -3,21 +3,24 @@ Setup script for APGI Framework
 """
 
 import os
+from pathlib import Path
 from setuptools import setup, find_packages
 
 # Read README.md if it exists, otherwise use basic description
-readme_path = os.path.join(os.path.dirname(__file__), "README.md")
-if os.path.exists(readme_path):
+readme_path = Path(__file__).parent / "README.md"
+if readme_path.exists():
     with open(readme_path, "r", encoding="utf-8") as fh:
         long_description = fh.read()
 else:
     long_description = "Active Precision Gating and Interoception (APGI) Framework for consciousness research and falsification testing."
 
 # Read requirements.txt if it exists
-requirements_path = os.path.join(os.path.dirname(__file__), "requirements.txt")
-if os.path.exists(requirements_path):
+requirements_path = Path(__file__).parent / "requirements.txt"
+if requirements_path.exists():
     with open(requirements_path, "r", encoding="utf-8") as fh:
-        requirements = [line.strip() for line in fh if line.strip() and not line.startswith("#")]
+        requirements = [
+            line.strip() for line in fh if line.strip() and not line.startswith("#")
+        ]
 else:
     requirements = [
         "numpy>=1.20.0",
