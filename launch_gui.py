@@ -24,7 +24,22 @@ class ComprehensiveGUILauncher:
         """Initialize the comprehensive launcher."""
         self.root = tk.Tk()
         self.root.title("APGI Framework - Comprehensive GUI Launcher")
-        self.root.geometry("1400x900")
+
+        # Adaptive window sizing based on screen resolution
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        window_width = min(
+            int(screen_width * 0.8), 1400
+        )  # Cap at 1400 for large screens
+        window_height = min(
+            int(screen_height * 0.8), 900
+        )  # Cap at 900 for large screens
+
+        # Center window on screen
+        x = (screen_width - window_width) // 2
+        y = (screen_height - window_height) // 2
+
+        self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
         self.root.resizable(True, True)
 
         # Set window icon and styling

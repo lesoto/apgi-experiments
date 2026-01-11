@@ -2,6 +2,9 @@ import os
 import time
 import numpy as np
 import pandas as pd
+import matplotlib
+
+matplotlib.use("Agg")  # Use non-interactive backend to avoid threading issues
 import matplotlib.pyplot as plt
 from typing import Dict, List, Tuple, Optional, Any
 from dataclasses import dataclass, field

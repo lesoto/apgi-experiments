@@ -1,0 +1,52 @@
+{
+  "subject_id": "pathological_002",
+  "modality": "pathological",
+  "duration_seconds": 60,
+  "eeg": {
+    "sampling_rate": 1000,
+    "channels": [
+      "Fz",
+      "Cz",
+      "Pz"
+    ],
+    "abnormalities": [
+      {
+        "time": 15,
+        "type": "spike_and_wave",
+        "duration": 0.3
+      },
+      {
+        "time": 35,
+        "type": "spike_and_wave",
+        "duration": 0.3
+      },
+      {
+        "time": 55,
+        "type": "spike_and_wave",
+        "duration": 0.3
+      }
+    ]
+  },
+  "pupillometry": {
+    "sampling_rate": 250,
+    "abnormalities": [
+      {
+        "time": 25,
+        "type": "abnormal_dilation",
+        "duration": 10.0
+      }
+    ]
+  },
+  "cardiac": {
+    "sampling_rate": 4,
+    "abnormalities": [
+      {
+        "time": 20,
+        "type": "tachycardia",
+        "duration": 10.0
+      }
+    ]
+  },
+  "synthetic": true,
+  "notes": "Simulated pathological patterns for testing detection algorithms"
+}

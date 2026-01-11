@@ -170,7 +170,7 @@ class TestRunHealthCheck:
     @patch("sys.exit")
     def test_run_health_check_critical_status(self, mock_exit, mock_get_health_checker):
         """Test health check with critical status."""
-        mock_health_checker = MockHealthChecker()
+        mock_health_checker = MagicMock()
         mock_health_checker.check_component.return_value = MockHealthResult(
             "critical", "Major issues"
         )

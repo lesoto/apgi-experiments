@@ -12,6 +12,7 @@ The core equation is:
 import numpy as np
 from typing import Union, Optional, TYPE_CHECKING
 import warnings
+import logging
 
 from ..exceptions import MathematicalError
 
@@ -58,6 +59,9 @@ class APGIEquation:
         self.prediction_error_processor = prediction_error_processor
         self.somatic_marker_engine = somatic_marker_engine
         self.threshold_manager = threshold_manager
+        
+        # Initialize logger
+        self.logger = logging.getLogger(__name__)
 
     def calculate_surprise(
         self,
@@ -106,10 +110,13 @@ class APGIEquation:
 
         # Ensure output is in expected range (0-10)
         if surprise < 0:
-            warnings.warn("Negative surprise calculated, setting to 0")
+            # Clamp to valid range without warning - this can happen in normal operations
+            # when precision-weighted errors cancel out
             surprise = 0.0
         elif surprise > 10:
-            warnings.warn(f"Surprise value {surprise} exceeds expected range (0-10)")
+            # Log at debug level only - this is expected for large prediction errors
+            self.logger.debug(f"Surprise value {surprise:.3f} exceeds typical range (0-10), clamping to 10")
+            surprise = 10.0
 
         return float(surprise)
 

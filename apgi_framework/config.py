@@ -221,35 +221,45 @@ class ConfigManager:
             with open(config_file, "r") as f:
                 config_data = json.load(f)
 
-            # Load APGI parameters
+            # Validate configuration structure
+            self._validate_config_structure(config_data)
+
+            # Load APGI parameters with validation
             if "apgi_parameters" in config_data:
                 apgi_data = config_data["apgi_parameters"]
+                self._validate_parameter_section("apgi_parameters", apgi_data)
                 self.apgi_params = APGIParameters(**apgi_data)
 
-            # Load experimental configuration
+            # Load experimental configuration with validation
             if "experimental_config" in config_data:
                 exp_data = config_data["experimental_config"]
+                self._validate_parameter_section("experimental_config", exp_data)
                 self.experimental_config = ExperimentalConfig(**exp_data)
 
-            # Load retry configuration
+            # Load retry configuration with validation
             if "retry_config" in config_data:
                 retry_data = config_data["retry_config"]
+                self._validate_parameter_section("retry_config", retry_data)
                 self.retry_config = RetryConfig(**retry_data)
 
-            # Load performance thresholds
+            # Load performance thresholds with validation
             if "performance_thresholds" in config_data:
                 perf_data = config_data["performance_thresholds"]
+                self._validate_parameter_section("performance_thresholds", perf_data)
                 self.performance_thresholds = PerformanceThresholds(**perf_data)
 
-            # Load stimulus parameters
+            # Load stimulus parameters with validation
             if "stimulus_parameters" in config_data:
                 stim_data = config_data["stimulus_parameters"]
+                self._validate_parameter_section("stimulus_parameters", stim_data)
                 self.stimulus_params = StimulusParameters(**stim_data)
 
         except (json.JSONDecodeError, TypeError, ValueError) as e:
             raise ConfigurationError(f"Invalid configuration file: {e}")
         except FileNotFoundError:
             raise ConfigurationError(f"Configuration file not found: {config_path}")
+        except Exception as e:
+            raise ConfigurationError(f"Failed to load configuration: {e}")
 
     def save_config(self, config_path: str) -> None:
         """Save current configuration to JSON file.
@@ -291,6 +301,174 @@ class ConfigManager:
     def get_stimulus_parameters(self) -> StimulusParameters:
         """Get current stimulus parameters."""
         return self.stimulus_params
+
+    def _validate_config_structure(self, config_data: Dict[str, Any]) -> None:
+        """Validate overall configuration structure."""
+        if not isinstance(config_data, dict):
+            raise ConfigurationError("Configuration must be a JSON object/dictionary")
+        
+        valid_sections = [
+            "apgi_parameters", "experimental_config", "retry_config", 
+            "performance_thresholds", "stimulus_parameters"
+        ]
+        
+        for section in config_data:
+            if section not in valid_sections:
+                raise ConfigurationError(
+                    f"Unknown configuration section: '{section}'. "
+                    f"Valid sections are: {', '.join(valid_sections)}"
+                )
+
+    def _validate_parameter_section(self, section_name: str, section_data: Dict[str, Any]) -> None:
+        """Validate a parameter section with detailed error messages."""
+        if not isinstance(section_data, dict):
+            raise ConfigurationError(
+                f"Section '{section_name}' must be a JSON object/dictionary"
+            )
+        
+        # Import validator for detailed validation
+        try:
+            from .validation.parameter_validator import get_validator
+            validator = get_validator()
+            
+            if section_name == "apgi_parameters":
+                result = validator.validate_apgi_parameters(**section_data)
+            elif section_name == "experimental_config":
+                result = validator.validate_experimental_config(**section_data)
+            elif section_name == "retry_config":
+                result = validator.validate_retry_config(**section_data)
+            elif section_name == "performance_thresholds":
+                result = validator.validate_performance_thresholds(**section_data)
+            elif section_name == "stimulus_parameters":
+                result = validator.validate_stimulus_parameters(**section_data)
+            else:
+                return  # Skip validation for unknown sections
+            
+            if not result.is_valid:
+                raise ConfigurationError(
+                    f"Validation failed for section '{section_name}':\n"
+                    f"{result.get_message()}"
+                )
+                
+        except ImportError:
+            # Fallback to basic validation if validator not available
+            self._basic_parameter_validation(section_name, section_data)
+
+    def _basic_parameter_validation(self, section_name: str, section_data: Dict[str, Any]) -> None:
+        """Basic validation when detailed validator is not available."""
+        for param_name, param_value in section_data.items():
+            # Type validation
+            if not isinstance(param_value, (int, float, str, bool)):
+                raise ConfigurationError(
+                    f"Parameter '{section_name}.{param_name}' must be a number, string, or boolean, "
+                    f"but got {type(param_value).__name__}"
+                )
+            
+            # Range validation for numeric parameters
+            if isinstance(param_value, (int, float)):
+                if param_value < 0 and "precision" in param_name.lower():
+                    raise ConfigurationError(
+                        f"Parameter '{section_name}.{param_name}' must be positive, "
+                        f"but got {param_value}. Precision values represent inverse variance "
+                        f"and cannot be negative."
+                    )
+                if param_value <= 0 and "threshold" in param_name.lower():
+                    raise ConfigurationError(
+                        f"Parameter '{section_name}.{param_name}' must be positive, "
+                        f"but got {param_value}. Threshold values must be greater than zero."
+                    )
+                if param_value <= 0 and "gain" in param_name.lower():
+                    raise ConfigurationError(
+                        f"Parameter '{section_name}.{param_name}' must be positive, "
+                        f"but got {param_value}. Gain values must be greater than zero."
+                    )
+                if "steepness" in param_name.lower() and param_value <= 0:
+                    raise ConfigurationError(
+                        f"Parameter '{section_name}.{param_name}' must be positive, "
+                        f"but got {param_value}. Steepness controls sigmoid slope and must be positive."
+                    )
+                
+                # Specific range validations
+                if section_name == "apgi_parameters":
+                    self._validate_apgi_parameter_range(param_name, param_value)
+                elif section_name == "experimental_config":
+                    self._validate_experimental_parameter_range(param_name, param_value)
+                elif section_name == "performance_thresholds":
+                    self._validate_performance_parameter_range(param_name, param_value)
+                elif section_name == "stimulus_parameters":
+                    self._validate_stimulus_parameter_range(param_name, param_value)
+
+    def _validate_apgi_parameter_range(self, param_name: str, value: float) -> None:
+        """Validate APGI parameter ranges."""
+        if param_name == "extero_precision" and not (0.1 <= value <= 10.0):
+            raise ConfigurationError(
+                f"Exteroceptive precision must be between 0.1 and 10.0, "
+                f"but got {value}. Typical values: 1.0-3.0"
+            )
+        if param_name == "intero_precision" and not (0.1 <= value <= 10.0):
+            raise ConfigurationError(
+                f"Interoceptive precision must be between 0.1 and 10.0, "
+                f"but got {value}. Typical values: 0.5-2.0"
+            )
+        if param_name == "threshold" and not (0.5 <= value <= 10.0):
+            raise ConfigurationError(
+                f"Ignition threshold must be between 0.5 and 10.0, "
+                f"but got {value}. Typical values: 2.0-5.0"
+            )
+        if param_name == "steepness" and not (0.1 <= value <= 10.0):
+            raise ConfigurationError(
+                f"Sigmoid steepness must be between 0.1 and 10.0, "
+                f"but got {value}. Typical values: 1.0-3.0"
+            )
+
+    def _validate_experimental_parameter_range(self, param_name: str, value: float) -> None:
+        """Validate experimental parameter ranges."""
+        if param_name == "n_trials" and not (1 <= value <= 100000):
+            raise ConfigurationError(
+                f"Number of trials must be between 1 and 100,000, "
+                f"but got {value}. Recommended: 100-1000 for most experiments"
+            )
+        if param_name == "n_participants" and not (1 <= value <= 10000):
+            raise ConfigurationError(
+                f"Number of participants must be between 1 and 10,000, "
+                f"but got {value}. Recommended: 10-500 for most studies"
+            )
+        if param_name == "alpha_level" and not (0.001 <= value <= 0.5):
+            raise ConfigurationError(
+                f"Alpha level must be between 0.001 and 0.5, "
+                f"but got {value}. Common values: 0.05, 0.01, 0.001"
+            )
+
+    def _validate_performance_parameter_range(self, param_name: str, value: float) -> None:
+        """Validate performance threshold parameter ranges."""
+        if param_name == "min_rt" and not (0.05 <= value <= 5.0):
+            raise ConfigurationError(
+                f"Minimum response time must be between 0.05 and 5.0 seconds, "
+                f"but got {value}. Typical: 0.1-0.3s"
+            )
+        if param_name == "max_rt" and not (0.5 <= value <= 30.0):
+            raise ConfigurationError(
+                f"Maximum response time must be between 0.5 and 30.0 seconds, "
+                f"but got {value}. Typical: 2.0-10.0s"
+            )
+        if param_name == "min_accuracy" and not (0.0 <= value <= 1.0):
+            raise ConfigurationError(
+                f"Minimum accuracy must be between 0.0 and 1.0, "
+                f"but got {value}. Typical: 0.5-0.8"
+            )
+
+    def _validate_stimulus_parameter_range(self, param_name: str, value: float) -> None:
+        """Validate stimulus parameter ranges."""
+        if param_name == "lapse_rate" and not (0.0 <= value <= 0.5):
+            raise ConfigurationError(
+                f"Lapse rate must be between 0.0 and 0.5, "
+                f"but got {value}. Typical: 0.01-0.05"
+            )
+        if param_name == "guess_rate" and not (0.0 <= value <= 1.0):
+            raise ConfigurationError(
+                f"Guess rate must be between 0.0 and 1.0, "
+                f"but got {value}. Typical: 0.5 for 2AFC"
+            )
 
     def get_falsification_thresholds(self) -> ExperimentalConfig:
         """Get falsification thresholds from experimental config."""

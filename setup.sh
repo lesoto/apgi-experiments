@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # APGI Framework Automated Setup Script
-# This script sets up the APGI Framework for development and production use
+# This script automates installation and setup process for APGI Framework
 
 set -e  # Exit on any error
 
@@ -14,11 +14,7 @@ NC='\033[0m' # No Color
 
 # Function to print colored output
 print_status() {
-    echo -e "${BLUE}[INFO]${NC} $1"
-}
-
-print_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
+    echo -e "${GREEN}[INFO]${NC} $1"
 }
 
 print_warning() {
@@ -29,224 +25,338 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Check if Python is installed
+print_header() {
+    echo -e "${BLUE}========================================${NC}"
+    echo -e "${BLUE}$1${NC}"
+    echo -e "${BLUE}========================================${NC}"
+    echo
+}
+
+# Function to check if command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Function to detect OS
+detect_os() {
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        OS="linux"
+        PYTHON_CMD="python3"
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        OS="macos"
+        PYTHON_CMD="python3"
+    elif [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]]; then
+        OS="windows"
+        PYTHON_CMD="python"
+    else
+        print_error "Unsupported operating system: $OSTYPE"
+        exit 1
+    fi
+    
+    print_status "Detected OS: $OS"
+}
+
+# Function to check Python installation
 check_python() {
-    print_status "Checking Python installation..."
+    print_header "Checking Python Installation"
     
-    if command -v python3 &> /dev/null; then
-        PYTHON_VERSION=$(python3 --version | cut -d' ' -f2)
-        print_success "Python $PYTHON_VERSION found"
-        
-        # Check if version is >= 3.8
-        if python3 -c "import sys; exit(0 if sys.version_info >= (3, 8) else 1)"; then
-            print_success "Python version is compatible (>= 3.8)"
-        else
-            print_error "Python version must be >= 3.8. Current version: $PYTHON_VERSION"
-            exit 1
-        fi
-    else
-        print_error "Python 3 is not installed. Please install Python 3.8 or higher."
+    if ! command_exists $PYTHON_CMD; then
+        print_error "Python is not installed. Please install Python 3.8 or higher."
         exit 1
     fi
-}
-
-# Check if pip is installed
-check_pip() {
-    print_status "Checking pip installation..."
     
-    if command -v pip3 &> /dev/null; then
-        print_success "pip found"
-    else
-        print_error "pip is not installed. Please install pip."
+    PYTHON_VERSION=$($PYTHON_CMD --version 2>&1 | grep -oP '\d+\.\d+')
+    print_status "Found Python version: $PYTHON_VERSION"
+    
+    # Check if Python version is 3.8 or higher
+    if [[ $(echo -e "$PYTHON_VERSION\n3.8" | sort -V | head -n1) != "3.8" ]]; then
+        print_error "Python 3.8 or higher is required. Found version: $PYTHON_VERSION"
         exit 1
     fi
+    
+    print_status "Python version check passed"
 }
 
-# Create virtual environment
+# Function to create virtual environment
 create_venv() {
-    print_status "Creating virtual environment..."
+    print_header "Creating Virtual Environment"
     
-    if [ ! -d "venv" ]; then
-        python3 -m venv venv
-        print_success "Virtual environment created"
-    else
-        print_warning "Virtual environment already exists"
+    VENV_DIR="apgi_venv"
+    
+    if [[ -d "$VENV_DIR" ]]; then
+        print_warning "Virtual environment '$VENV_DIR' already exists"
+        read -p "Do you want to recreate it? (y/N): " -n 1 -r
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            print_status "Using existing virtual environment"
+            return
+        fi
+        rm -rf "$VENV_DIR"
     fi
     
-    # Activate virtual environment
-    source venv/bin/activate
-    print_success "Virtual environment activated"
+    print_status "Creating virtual environment: $VENV_DIR"
+    $PYTHON_CMD -m venv "$VENV_DIR"
+    
+    if [[ ! -d "$VENV_DIR" ]]; then
+        print_error "Failed to create virtual environment"
+        exit 1
+    fi
+    
+    print_status "Virtual environment created successfully"
 }
 
-# Upgrade pip
-upgrade_pip() {
+# Function to activate virtual environment
+activate_venv() {
+    print_header "Activating Virtual Environment"
+    
+    VENV_DIR="apgi_venv"
+    
+    if [[ ! -d "$VENV_DIR" ]]; then
+        print_error "Virtual environment not found. Please run setup again."
+        exit 1
+    fi
+    
+    # Determine activation script based on OS
+    if [[ "$OS" == "windows" ]]; then
+        ACTIVATE_SCRIPT="$VENV_DIR/Scripts/activate"
+    else
+        ACTIVATE_SCRIPT="$VENV_DIR/bin/activate"
+    fi
+    
+    if [[ ! -f "$ACTIVATE_SCRIPT" ]]; then
+        print_error "Virtual environment activation script not found"
+        exit 1
+    fi
+    
+    print_status "Activating virtual environment"
+    source "$ACTIVATE_SCRIPT"
+    
+    # Verify activation
+    if [[ "$VIRTUAL_ENV" != "" ]]; then
+        print_status "Virtual environment activated successfully"
+    else
+        print_error "Failed to activate virtual environment"
+        exit 1
+    fi
+}
+
+# Function to install dependencies
+install_dependencies() {
+    print_header "Installing Dependencies"
+    
+    # Upgrade pip first
     print_status "Upgrading pip..."
     pip install --upgrade pip
-    print_success "pip upgraded"
-}
-
-# Install dependencies
-install_dependencies() {
-    print_status "Installing dependencies..."
     
     # Install requirements
-    if [ -f "requirements.txt" ]; then
+    if [[ -f "requirements.txt" ]]; then
+        print_status "Installing requirements from requirements.txt..."
         pip install -r requirements.txt
-        print_success "Dependencies installed from requirements.txt"
     else
-        print_error "requirements.txt not found"
+        print_warning "requirements.txt not found, installing basic dependencies..."
+        pip install numpy pandas matplotlib seaborn scipy scikit-learn customtkinter
+    fi
+    
+    # Install in development mode
+    print_status "Installing APGI Framework in development mode..."
+    pip install -e .
+    
+    print_status "Dependencies installed successfully"
+}
+
+# Function to verify installation
+verify_installation() {
+    print_header "Verifying Installation"
+    
+    # Test imports
+    print_status "Testing core imports..."
+    $PYTHON_CMD -c "
+import sys
+try:
+    import apgi_framework
+    import apgi_gui
+    print('Core imports successful')
+except ImportError as e:
+    print(f'Import error: {e}')
+    sys.exit(1)
+except Exception as e:
+    print(f'Unexpected error: {e}')
+    sys.exit(1)
+"
+    
+    if [[ $? -eq 0 ]]; then
+        print_status "Import verification passed"
+    else
+        print_error "Import verification failed"
         exit 1
     fi
     
-    # Install package in development mode
-    print_status "Installing APGI Framework in development mode..."
-    pip install -e .
-    print_success "APGI Framework installed"
-}
-
-# Create necessary directories
-create_directories() {
-    print_status "Creating necessary directories..."
+    # Test GUI launch
+    print_status "Testing GUI launch..."
+    $PYTHON_CMD -c "
+import sys
+try:
+    from apgi_gui.app import APGIFrameworkApp
+    print('GUI import successful')
+except ImportError as e:
+    print(f'GUI import error: {e}')
+    sys.exit(1)
+except Exception as e:
+    print(f'Unexpected error: {e}')
+    sys.exit(1)
+"
     
-    directories=(
-        "data"
-        "results" 
-        "logs"
-        "figures"
-        "reports"
-        "session_state"
-        "apgi_outputs/dashboard"
-        "apgi_outputs/exports"
-        "apgi_outputs/figures"
-        "apgi_outputs/reports"
-    )
-    
-    for dir in "${directories[@]}"; do
-        if [ ! -d "$dir" ]; then
-            mkdir -p "$dir"
-            print_success "Created directory: $dir"
-        fi
-    done
-}
-
-# Download example data (placeholder)
-download_example_data() {
-    print_status "Setting up example data..."
-    
-    # Create sample data files
-    mkdir -p examples/data/eeg
-    mkdir -p examples/data/pupillometry
-    mkdir -p examples/data/cardiac
-    
-    # Create placeholder files with proper structure
-    cat > examples/data/eeg/sample_eeg_data.csv << 'EOF'
-timestamp,channel_Fz,channel_Cz,channel_Pz,subject_id
-0.000,0.5,0.3,0.2,subject_001
-0.001,0.6,0.4,0.3,subject_001
-0.002,0.4,0.2,0.1,subject_001
-EOF
-    
-    cat > examples/data/pupillometry/sample_pupil_data.csv << 'EOF'
-timestamp,pupil_diameter_left,pupil_diameter_right,subject_id
-0.000,3.2,3.1,subject_001
-0.001,3.3,3.2,subject_001
-0.002,3.1,3.0,subject_001
-EOF
-    
-    cat > examples/data/cardiac/sample_cardiac_data.csv << 'EOF'
-timestamp,heart_rate,hrv,subject_id
-0.000,72.5,45.2,subject_001
-0.001,73.1,44.8,subject_001
-0.002,72.8,45.5,subject_001
-EOF
-    
-    print_success "Example data created in examples/data/"
-}
-
-# Run tests to verify installation
-run_tests() {
-    print_status "Running tests to verify installation..."
-    
-    if command -v pytest &> /dev/null; then
-        pytest tests/ -v --tb=short
-        if [ $? -eq 0 ]; then
-            print_success "All tests passed!"
-        else
-            print_warning "Some tests failed, but installation may still work"
-        fi
+    if [[ $? -eq 0 ]]; then
+        print_status "GUI verification passed"
     else
-        print_warning "pytest not found, skipping tests"
+        print_error "GUI verification failed"
+        exit 1
     fi
 }
 
-# Setup configuration files
-setup_config() {
-    print_status "Setting up configuration files..."
+# Function to create desktop shortcut
+create_shortcut() {
+    print_header "Creating Desktop Shortcut"
     
-    # Create default config if it doesn't exist
-    if [ ! -f "config.json" ]; then
-        cat > config.json << 'EOF'
-{
-    "data_directory": "./data",
-    "results_directory": "./results",
-    "logs_directory": "./logs",
-    "default_parameters": {
-        "sampling_rate": 1000,
-        "window_size": 1.0,
-        "overlap": 0.5
-    },
-    "gui": {
-        "theme": "dark",
-        "auto_save": true
-    }
-}
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    LAUNCH_SCRIPT="$SCRIPT_DIR/launch_apgi.sh"
+    
+    # Create launch script
+    cat > "$LAUNCH_SCRIPT" << EOF
+#!/bin/bash
+# APGI Framework Launcher
+cd "$SCRIPT_DIR"
+
+# Activate virtual environment
+if [[ -d "apgi_venv" ]]; then
+    if [[ "\$(uname)" == "Darwin" ]]; then
+        source "apgi_venv/bin/activate"
+    elif [[ "\$(uname)" == "Linux" ]]; then
+        source "apgi_venv/bin/activate"
+    else
+        # Windows
+        call "apgi_venv\\Scripts\\activate.bat"
+    fi
+fi
+
+# Launch the GUI
+python -m apgi_gui
 EOF
-        print_success "Default configuration created"
+    
+    chmod +x "$LAUNCH_SCRIPT"
+    
+    # Create desktop shortcut based on OS
+    if [[ "$OS" == "linux" ]]; then
+        DESKTOP_DIR="$HOME/Desktop"
+        SHORTCUT="$DESKTOP_DIR/APGI-Framework.desktop"
+        
+        cat > "$SHORTCUT" << EOF
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=APGI Framework
+Comment=Active Passive Inference Framework
+Exec=bash $LAUNCH_SCRIPT
+Icon=$SCRIPT_DIR/docs/apgi_icon.png
+Terminal=false
+Categories=Science;
+EOF
+        
+        chmod +x "$SHORTCUT"
+        print_status "Created desktop shortcut: $SHORTCUT"
+        
+    elif [[ "$OS" == "macos" ]]; then
+        # macOS doesn't use traditional desktop shortcuts
+        print_status "macOS detected. Use the launch script: $LAUNCH_SCRIPT"
+        
+    elif [[ "$OS" == "windows" ]]; then
+        DESKTOP_DIR="$USERPROFILE/Desktop"
+        SHORTCUT="$DESKTOP_DIR/APGI-Framework.bat"
+        
+        cat > "$SHORTCUT" << EOF
+@echo off
+cd /d "$SCRIPT_DIR"
+call "apgi_venv\\Scripts\\activate.bat"
+python -m apgi_gui
+EOF
+        
+        print_status "Created desktop shortcut: $SHORTCUT"
     fi
 }
 
-# Print completion message
-print_completion() {
-    echo ""
-    echo "=========================================="
-    print_success "APGI Framework setup complete!"
-    echo "=========================================="
-    echo ""
-    echo "Next steps:"
-    echo "1. Activate the virtual environment:"
-    echo "   source venv/bin/activate"
-    echo ""
-    echo "2. Run the GUI:"
-    echo "   python launch_gui.py"
-    echo ""
-    echo "3. Run tests:"
-    echo "   pytest tests/"
-    echo ""
-    echo "4. View documentation:"
-    echo "   cat README.md"
-    echo ""
-    echo "For more information, visit the docs/ directory"
-    echo ""
-}
-
-# Main execution
-main() {
-    echo "=========================================="
-    echo "APGI Framework Automated Setup"
-    echo "=========================================="
-    echo ""
+# Function to show next steps
+show_next_steps() {
+    print_header "Setup Complete!"
     
-    check_python
-    check_pip
-    create_venv
-    upgrade_pip
-    install_dependencies
-    create_directories
-    download_example_data
-    setup_config
-    run_tests
-    print_completion
+    echo -e "${GREEN}APGI Framework has been successfully installed and configured!${NC}"
+    echo
+    echo -e "${BLUE}Next Steps:${NC}"
+    echo "1. Launch the application using one of the following methods:"
+    echo "   - Run: bash launch_apgi.sh"
+    if [[ "$OS" == "linux" ]]; then
+        echo "   - Double-click the APGI-Framework.desktop file on your desktop"
+    elif [[ "$OS" == "macos" ]]; then
+        echo "   - Run: open launch_apgi.sh"
+    elif [[ "$OS" == "windows" ]]; then
+        echo "   - Double-click the APGI-Framework.bat file on your desktop"
+    fi
+    echo
+    echo "2. For development:"
+    echo "   - Activate the environment: source apgi_venv/bin/activate"
+    echo "   - Run tests: python -m pytest tests/"
+    echo "   - View documentation: open docs/README.md"
+    echo
+    echo -e "${YELLOW}Note: The virtual environment must be activated before running the application.${NC}"
 }
 
-# Run main function
+# Main setup function
+main() {
+    print_header "APGI Framework Automated Setup"
+    
+    # Check if we're in the right directory
+    if [[ ! -f "setup.py" ]] && [[ ! -f "requirements.txt" ]]; then
+        print_error "Please run this script from the APGI Framework root directory"
+        print_error "This directory should contain setup.py and requirements.txt files"
+        exit 1
+    fi
+    
+    # Run setup steps
+    detect_os
+    check_python
+    create_venv
+    activate_venv
+    install_dependencies
+    verify_installation
+    create_shortcut
+    show_next_steps
+}
+
+# Handle command line arguments
+case "${1:-}" in
+    "--help"|"-h")
+        echo "APGI Framework Setup Script"
+        echo
+        echo "Usage: $0 [OPTIONS]"
+        echo
+        echo "Options:"
+        echo "  --help, -h     Show this help message"
+        echo "  --clean        Clean up virtual environment before setup"
+        echo "  --dev          Install in development mode (default)"
+        echo "  --no-gui        Skip GUI verification"
+        echo
+        exit 0
+        ;;
+    "--clean")
+        print_header "Cleaning Up"
+        if [[ -d "apgi_venv" ]]; then
+            print_status "Removing existing virtual environment..."
+            rm -rf apgi_venv
+            print_status "Cleanup complete"
+        else
+            print_status "No virtual environment to clean"
+        fi
+        exit 0
+        ;;
+esac
+
+# Run main setup
 main "$@"

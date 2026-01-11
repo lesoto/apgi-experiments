@@ -4,7 +4,7 @@ import json
 import os
 import logging
 from pathlib import Path
-from typing import Dict, Any, Optional, Union
+from typing import Dict, Any, Optional, Union, List, Tuple
 from dataclasses import dataclass, asdict
 
 
@@ -32,7 +32,7 @@ class ConfigValidator:
     @staticmethod
     def validate_window_geometry(
         width: int, height: int, x: int, y: int
-    ) -> list[ValidationError]:
+    ) -> List[ValidationError]:
         """Validate window geometry."""
         errors = []
 
@@ -106,7 +106,7 @@ class AppConfig:
         # Default configuration
         self._default_config = {
             "theme": "system",
-            "recent_files": [],
+            "recent_files": [],  # type: List[str]
             "data_dir": str(Path.home() / "Documents" / "APGI_Data"),
             "log_dir": str(self.app_dir / "logs"),
             "window_width": 1800,
@@ -309,12 +309,12 @@ class AppConfig:
         return self._config["max_recent_files"]
 
     @property
-    def window_size(self) -> tuple[int, int]:
+    def window_size(self) -> Tuple[int, int]:
         """Get the window size as (width, height)."""
         return (self._config["window_width"], self._config["window_height"])
 
     @property
-    def window_position(self) -> tuple[int, int]:
+    def window_position(self) -> Tuple[int, int]:
         """Get the window position as (x, y)."""
         return (self._config["window_x"], self._config["window_y"])
 

@@ -1,0 +1,145 @@
+version: '3.8'
+
+services:
+  # Main APGI Framework application
+  apgi-framework:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: apgi-framework
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount source code for development
+      - .:/app
+      # Mount data directories
+      - ./data:/app/data
+      - ./results:/app/results
+      - ./logs:/app/logs
+      - ./figures:/app/figures
+      - ./reports:/app/reports
+      - ./apgi_outputs:/app/apgi_outputs
+    environment:
+      - PYTHONPATH=/app
+      - APGI_ENV=development
+      - APGI_LOG_LEVEL=DEBUG
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - apgi-network
+    restart: unless-stopped
+
+  # Redis for caching and session management
+  redis:
+    image: redis:7-alpine
+    container_name: apgi-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - apgi-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  # PostgreSQL for data persistence
+  postgres:
+    image: postgres:15-alpine
+    container_name: apgi-postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    environment:
+      - POSTGRES_DB=apgi_framework
+      - POSTGRES_USER=apgi_user
+      - POSTGRES_PASSWORD=apgi_password
+    networks:
+      - apgi-network
+    restart: unless-stopped
+
+  # Jupyter Notebook for development and analysis
+  jupyter:
+    build:
+      context: .
+      dockerfile: Dockerfile.jupyter
+    container_name: apgi-jupyter
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/app
+      - ./notebooks:/app/notebooks
+      - ./data:/app/data
+      - ./results:/app/results
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=apgi-dev-token
+    networks:
+      - apgi-network
+    restart: unless-stopped
+
+  # Nginx reverse proxy (optional)
+  nginx:
+    image: nginx:alpine
+    container_name: apgi-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - apgi-framework
+    networks:
+      - apgi-network
+    restart: unless-stopped
+
+  # Monitoring with Prometheus (optional)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: apgi-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+    networks:
+      - apgi-network
+    restart: unless-stopped
+
+  # Grafana for visualization (optional)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: apgi-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - apgi-network
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+    driver: local
+  postgres_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  apgi-network:
+    driver: bridge

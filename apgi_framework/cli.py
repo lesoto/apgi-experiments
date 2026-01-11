@@ -36,7 +36,13 @@ class APGIFrameworkCLI:
 
     def setup_logging(self, log_level: str = "INFO") -> None:
         """Setup logging for CLI operations."""
-        from ..logging.centralized_logging import APGILogManager
+        try:
+            from .logging.centralized_logging import APGILogManager
+        except ImportError:
+            # Fallback to standardized logging if centralized logging is not available
+            from .logging.standardized_logging import get_logger
+            self.logger = get_logger(__name__)
+            return
 
         APGILogManager.setup_logging(level=log_level)
         self.logger = logging.getLogger(__name__)
@@ -112,6 +118,9 @@ Examples:
         )
         test_parser.add_argument(
             "--seed", type=int, help="Random seed for reproducibility"
+        )
+        test_parser.add_argument(
+            "--config", "-c", type=str, help="Path to configuration file"
         )
 
         # Run batch experiments command
@@ -326,6 +335,11 @@ Examples:
         self.logger.info(f"Running {args.test_type} test with {args.trials} trials")
 
         try:
+            # Initialize controller with config if provided
+            if hasattr(args, 'config') and args.config:
+                self.initialize_controller(args.config)
+            elif not self.controller:
+                self.initialize_controller(None)
             # Update configuration if parameters provided
             if args.trials:
                 self.controller.config_manager.update_experimental_config(
@@ -1146,10 +1160,11 @@ Examples:
         # Initialize controller for commands that need it
         if parsed_args.command not in [
             "generate-config",
-            "batch-test",
+            "batch-test", 
             "test-results",
             "test-analysis",
             "test-coverage",
+            "run-test",  # run-test handles its own controller initialization
         ]:
             self.initialize_controller(parsed_args.config)
 

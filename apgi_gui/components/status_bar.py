@@ -5,13 +5,54 @@ import tkinter as tk
 from datetime import datetime
 from typing import Optional
 import logging
+import platform
+import sys
+import os
+from pathlib import Path
+
+# Import font manager for cross-platform compatibility
+try:
+    from apgi_framework.utils.font_manager import get_ui_font
+except ImportError:
+    # Fallback for direct execution
+    import sys
+    from pathlib import Path
+    project_root = Path(__file__).parent.parent.parent.parent
+    sys.path.insert(0, str(project_root))
+    from apgi_framework.utils.font_manager import get_ui_font
+
+
+def _emoji_supported() -> bool:
+    """Check if emoji are supported on the current platform."""
+    # Windows older than Windows 10 version 1903 has limited emoji support
+    if platform.system() == "Windows":
+        try:
+            # Check Windows version
+            import winver
+
+            return winver.get_winver_from_getversion() >= (10, 0, 18362)
+        except (ImportError, AttributeError):
+            # Fallback: assume limited emoji support on Windows
+            return False
+
+    # macOS and Linux generally have good emoji support
+    return True
+
+
+# Cross-platform status indicators
+STATUS_INDICATORS = {
+    "success": "✅ " if _emoji_supported() else "[OK] ",
+    "warning": "⚠️ " if _emoji_supported() else "[WARN] ",
+    "error": "❌ " if _emoji_supported() else "[ERR] ",
+    "info": "ℹ️ " if _emoji_supported() else "[INFO] ",
+}
 
 
 class StatusBar(ctk.CTkFrame):
     """Status bar component displaying application status and information."""
 
     def __init__(self, parent, app):
-        """Initialize the status bar.
+        """Initialize status bar.
 
         Args:
             parent: Parent widget
@@ -22,19 +63,40 @@ class StatusBar(ctk.CTkFrame):
         self.logger = logging.getLogger(__name__)
         self.setup_ui()
 
+    def destroy(self):
+        """Override destroy to prevent CustomTkinter font AttributeError."""
+        try:
+            super().destroy()
+        except AttributeError as e:
+            if "_font" in str(e):
+                # Ignore CustomTkinter font attribute error
+                pass
+            else:
+                raise e
+
     def setup_ui(self):
         """Set up the status bar UI components."""
         self.logger.debug("Setting up status bar UI")
 
         # Configure frame
         self.configure(height=40)
+        # Configure grid columns for proper layout
         self.grid_columnconfigure(1, weight=1)
         self.grid_propagate(False)
 
         # Status message label
-        self.status_label = ctk.CTkLabel(
-            self, text="Ready", anchor="w", font=ctk.CTkFont(size=12)
-        )
+        try:
+            ui_font = get_ui_font(12)
+            self.status_label = ctk.CTkLabel(
+                self, text="Ready", anchor="w", font=ui_font
+            )
+        except Exception:
+            # Fallback to default font
+            self.status_label = ctk.CTkLabel(
+                self, text="Ready", anchor="w", font=ctk.CTkFont(size=12)
+            )
+        # Store font reference to prevent AttributeError on destroy
+        self.status_label._font = None
         self.status_label.grid(row=0, column=0, padx=10, pady=5, sticky="w")
 
         # Progress bar (hidden by default)
@@ -44,16 +106,49 @@ class StatusBar(ctk.CTkFrame):
         self.progress_bar.grid_remove()  # Hide initially
 
         # Current file label
-        self.file_label = ctk.CTkLabel(
-            self, text="No file loaded", anchor="e", font=ctk.CTkFont(size=12)
-        )
+        try:
+            ui_font = get_ui_font(12)
+            self.file_label = ctk.CTkLabel(
+                self, text="No file loaded", anchor="e", font=ui_font
+            )
+        except Exception:
+            # Fallback to default font
+            self.file_label = ctk.CTkLabel(
+                self, text="No file loaded", anchor="e", font=ctk.CTkFont(size=12)
+            )
+        # Store font reference to prevent AttributeError on destroy
+        self.file_label._font = None
         self.file_label.grid(row=0, column=2, padx=10, pady=5, sticky="e")
 
         # Time label
-        self.time_label = ctk.CTkLabel(
-            self, text="", anchor="e", font=ctk.CTkFont(size=12)
-        )
+        try:
+            ui_font = get_ui_font(12)
+            self.time_label = ctk.CTkLabel(
+                self, text="", anchor="e", font=ui_font
+            )
+        except Exception:
+            # Fallback to default font
+            self.time_label = ctk.CTkLabel(
+                self, text="", anchor="e", font=ctk.CTkFont(size=12)
+            )
+        # Store font reference to prevent AttributeError on destroy
+        self.time_label._font = None
         self.time_label.grid(row=0, column=3, padx=10, pady=5, sticky="e")
+
+        # Zoom level label
+        try:
+            ui_font = get_ui_font(12)
+            self.zoom_label = ctk.CTkLabel(
+                self, text="100%", anchor="e", font=ui_font
+            )
+        except Exception:
+            # Fallback to default font
+            self.zoom_label = ctk.CTkLabel(
+                self, text="100%", anchor="e", font=ctk.CTkFont(size=12)
+            )
+        # Store font reference to prevent AttributeError on destroy
+        self.zoom_label._font = None
+        self.zoom_label.grid(row=0, column=4, padx=10, pady=5, sticky="e")
 
         # Start time updates
         self.update_time()
@@ -74,14 +169,17 @@ class StatusBar(ctk.CTkFrame):
 
         # Add level indicator if specified
         if level == "warning":
-            prefix = "⚠️ "
+            prefix = STATUS_INDICATORS["warning"]
             text_color = color or "#FFA500"  # Orange
         elif level == "error":
-            prefix = "❌ "
+            prefix = STATUS_INDICATORS["error"]
             text_color = color or "#FF4444"  # Red
         elif level == "success":
-            prefix = "✅ "
+            prefix = STATUS_INDICATORS["success"]
             text_color = color or "#44FF44"  # Green
+        elif level == "info":
+            prefix = STATUS_INDICATORS["info"]
+            text_color = color or "#4169E1"  # Blue
         else:
             prefix = ""
             text_color = color or None
@@ -135,9 +233,10 @@ class StatusBar(ctk.CTkFrame):
 
             # Show just the filename if path is long
             if len(file_path) > 50:
-                parts = file_path.split("/")
+                path_obj = Path(file_path)
+                parts = path_obj.parts
                 if len(parts) > 3:
-                    display_name = f".../{parts[-2]}/{parts[-1]}"
+                    display_name = str(Path("...") / parts[-2] / parts[-1])
                 else:
                     display_name = file_path
             else:
@@ -170,6 +269,15 @@ class StatusBar(ctk.CTkFrame):
 
         # Schedule next update
         self.after(1000, self.update_time)
+
+    def set_zoom_level(self, zoom_percent: int) -> None:
+        """Update the zoom level display.
+
+        Args:
+            zoom_percent: Zoom level as percentage (e.g., 100, 150, 200)
+        """
+        self.logger.debug(f"Setting zoom level display: {zoom_percent}%")
+        self.zoom_label.configure(text=f"{zoom_percent}%")
 
     def clear_status(self) -> None:
         """Clear the status message."""

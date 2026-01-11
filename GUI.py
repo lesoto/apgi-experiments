@@ -15,9 +15,12 @@ import sys
 import logging
 from pathlib import Path
 from typing import Dict, Any, Optional, List, Union, Tuple
-import threading
 import time
 import traceback
+
+# Import managed thread pool
+from apgi_framework.utils.thread_manager import run_in_thread
+from apgi_framework.utils.font_utils import get_font
 from dataclasses import dataclass
 from enum import Enum
 
@@ -528,8 +531,23 @@ class APGIFrameworkGUI(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("APGI Framework GUI - Comprehensive Falsification Testing System")
-        self.geometry("2000x1200+50+50")
-        self.minsize(1600, 1000)
+
+        # Adaptive window sizing based on screen resolution
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+        window_width = min(
+            int(screen_width * 0.8), 2000
+        )  # Cap at 2000 for large screens
+        window_height = min(
+            int(screen_height * 0.8), 1200
+        )  # Cap at 1200 for large screens
+
+        # Center window on screen
+        x = (screen_width - window_width) // 2
+        y = (screen_height - window_height) // 2
+
+        self.geometry(f"{window_width}x{window_height}+{x}+{y}")
+        self.minsize(min(window_width, 1600), min(window_height, 1000))
         ctk.set_appearance_mode("light")
         ctk.set_default_color_theme("blue")
 
@@ -884,7 +902,7 @@ class APGIFrameworkGUI(ctk.CTk):
         self.status_label = ctk.CTkLabel(
             status_bar,
             text="Ready",
-            font=("Arial", 10),
+            font=get_font(10),
             fg_color="#e0e0e0",
             text_color="black",
         )
@@ -894,7 +912,7 @@ class APGIFrameworkGUI(ctk.CTk):
         self.system_status_label = ctk.CTkLabel(
             status_bar,
             text="System: Initializing...",
-            font=("Arial", 10),
+            font=get_font(10),
             fg_color="#e0e0e0",
             text_color="black",
         )
@@ -989,7 +1007,7 @@ class APGIFrameworkGUI(ctk.CTk):
             title_label = ctk.CTkLabel(
                 section_frame,
                 text=title,
-                font=("Arial", 12, "bold"),
+                font=get_font(12, "bold"),
                 fg_color="#f0f0f0",
                 text_color="black",
             )
@@ -1049,7 +1067,7 @@ class APGIFrameworkGUI(ctk.CTk):
 
         # Title
         title_label = ctk.CTkLabel(
-            section_frame, text="🧠 APGI Parameters", font=("Arial", 14, "bold")
+            section_frame, text="🧠 APGI Parameters", font=get_font(14, "bold")
         )
         title_label.grid(row=0, column=0, pady=(10, 5), sticky="w")
 
@@ -1109,7 +1127,7 @@ class APGIFrameworkGUI(ctk.CTk):
 
         # Title
         title_label = ctk.CTkLabel(
-            section_frame, text="⚙️ Experimental Setup", font=("Arial", 14, "bold")
+            section_frame, text="⚙️ Experimental Setup", font=get_font(14, "bold")
         )
         title_label.grid(row=0, column=0, pady=(10, 5), sticky="w")
 
@@ -1317,7 +1335,7 @@ class APGIFrameworkGUI(ctk.CTk):
         output_title = ctk.CTkLabel(
             output_frame,
             text="Output Console",
-            font=("Arial", 14, "bold"),
+            font=get_font(14, "bold"),
             text_color="white",
             fg_color="#2b2b2b",
         )
@@ -1325,7 +1343,10 @@ class APGIFrameworkGUI(ctk.CTk):
 
         # Output Text Area
         self.console_text = ctk.CTkTextbox(
-            output_frame, fg_color="black", text_color="white", font=("Courier", 10)
+            output_frame,
+            fg_color="black",
+            text_color="white",
+            font=get_font(10, family="monospace"),
         )
         self.console_text.grid(row=1, column=0, sticky="nsew", padx=10, pady=(0, 10))
 
@@ -1417,7 +1438,7 @@ class APGIFrameworkGUI(ctk.CTk):
         output_title = ctk.CTkLabel(
             output_frame,
             text="Output Console",
-            font=("Arial", 14, "bold"),
+            font=get_font(14, "bold"),
             text_color="white",
             fg_color="#2b2b2b",
         )
@@ -1425,7 +1446,10 @@ class APGIFrameworkGUI(ctk.CTk):
 
         # Output Text Area
         self.console_text = ctk.CTkTextbox(
-            output_frame, fg_color="black", text_color="white", font=("Courier", 10)
+            output_frame,
+            fg_color="black",
+            text_color="white",
+            font=get_font(10, family="monospace"),
         )
         self.console_text.grid(row=1, column=0, sticky="nsew", padx=10, pady=(0, 10))
 
@@ -1634,8 +1658,8 @@ class APGIFrameworkGUI(ctk.CTk):
                         0, self._on_test_error, "Primary Falsification Test", str(e)
                     )
 
-            # Start the test in a background thread
-            threading.Thread(target=run_test, daemon=True).start()
+            # Start the test in a managed thread
+            run_in_thread(run_test)
 
         except Exception as e:
             self.log_to_console(f"Error setting up primary falsification test: {e}")
@@ -1750,7 +1774,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 except Exception as e:
                     self.after(0, self._on_test_error, "CWI Test", str(e))
 
-            threading.Thread(target=run_test, daemon=True).start()
+            run_in_thread(run_test)
 
         except Exception as e:
             self.log_to_console(f"Error setting up CWI test: {e}")
@@ -1848,7 +1872,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 except Exception as e:
                     self.after(0, self._on_test_error, "Threshold Test", str(e))
 
-            threading.Thread(target=run_test, daemon=True).start()
+            run_in_thread(run_test)
 
         except Exception as e:
             self.log_to_console(f"Error setting up threshold test: {e}")
@@ -1939,7 +1963,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 except Exception as e:
                     self.after(0, self._on_test_error, "Soma-Bias Test", str(e))
 
-            threading.Thread(target=run_test, daemon=True).start()
+            run_in_thread(run_test)
 
         except Exception as e:
             self.log_to_console(f"Error setting up soma-bias test: {e}")
@@ -2020,7 +2044,7 @@ class APGIFrameworkGUI(ctk.CTk):
 
                 self.after(0, self._on_test_complete, "Batch Tests", batch_results)
 
-            threading.Thread(target=run_batch, daemon=True).start()
+            run_in_thread(run_batch)
 
         except Exception as e:
             self.log_to_console(f"Error setting up batch tests: {e}")
@@ -2089,7 +2113,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 except Exception as e:
                     self.after(0, self._on_test_error, "AI Benchmarking", str(e))
 
-            threading.Thread(target=run_experiment, daemon=True).start()
+            run_in_thread(run_experiment)
 
         except ImportError as e:
             self.log_to_console(f"AI Benchmarking experiment not available: {e}")
@@ -2156,7 +2180,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 except Exception as e:
                     self.after(0, self._on_test_error, "Interoceptive Gating", str(e))
 
-            threading.Thread(target=run_experiment, daemon=True).start()
+            run_in_thread(run_experiment)
 
         except ImportError as e:
             self.log_to_console(f"Interoceptive Gating experiment not available: {e}")
@@ -2205,7 +2229,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 except Exception as e:
                     self.after(0, self._on_test_error, "Threshold Effects", str(e))
 
-            threading.Thread(target=run_experiment, daemon=True).start()
+            run_in_thread(run_experiment)
 
         except ImportError as e:
             self.log_to_console(f"Threshold effects experiment not available: {e}")
@@ -2254,7 +2278,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 except Exception as e:
                     self.after(0, self._on_test_error, "Somatic Markers", str(e))
 
-            threading.Thread(target=run_experiment, daemon=True).start()
+            run_in_thread(run_experiment)
 
         except ImportError as e:
             self.log_to_console(f"Somatic markers experiment not available: {e}")
@@ -2320,7 +2344,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 except Exception as e:
                     self.after(0, self._on_test_error, "Precision Effects", str(e))
 
-            threading.Thread(target=run_experiment, daemon=True).start()
+            run_in_thread(run_experiment)
 
         except ImportError as e:
             self.log_to_console(f"Precision effects experiment not available: {e}")
@@ -2373,7 +2397,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 except Exception as e:
                     self.after(0, self._on_test_error, "Dynamic Threshold", str(e))
 
-            threading.Thread(target=run_experiment, daemon=True).start()
+            run_in_thread(run_experiment)
 
         except ImportError as e:
             self.log_to_console(f"Dynamic threshold experiment not available: {e}")
@@ -2453,7 +2477,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 except Exception as e:
                     self.after(0, self._on_test_error, "Bayesian Estimation", str(e))
 
-            threading.Thread(target=run_analysis, daemon=True).start()
+            run_in_thread(run_analysis)
 
         except Exception as e:
             self.log_to_console(f"Error setting up Bayesian estimation: {e}")
@@ -2526,7 +2550,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 except Exception as e:
                     self.after(0, self._on_test_error, "Effect Size Analysis", str(e))
 
-            threading.Thread(target=run_analysis, daemon=True).start()
+            run_in_thread(run_analysis)
 
         except Exception as e:
             self.log_to_console(f"Error setting up effect size analysis: {e}")
@@ -2633,7 +2657,7 @@ class APGIFrameworkGUI(ctk.CTk):
                         0, self._on_test_error, "Neural Signature Analysis", str(e)
                     )
 
-            threading.Thread(target=run_analysis, daemon=True).start()
+            run_in_thread(run_analysis)
 
         except Exception as e:
             self.log_to_console(f"Error setting up neural signature analysis: {e}")
@@ -2765,7 +2789,7 @@ class APGIFrameworkGUI(ctk.CTk):
                         0, self._on_test_error, "Surprise Dynamics Analysis", str(e)
                     )
 
-            threading.Thread(target=run_analysis, daemon=True).start()
+            run_in_thread(run_analysis)
 
         except Exception as e:
             self.log_to_console(f"Error setting up surprise dynamics analysis: {e}")
@@ -2892,7 +2916,7 @@ class APGIFrameworkGUI(ctk.CTk):
                         0, self._on_test_error, "Disorder Classification", str(e)
                     )
 
-            threading.Thread(target=run_classification, daemon=True).start()
+            run_in_thread(run_classification)
 
         except Exception as e:
             self.log_to_console(f"Error setting up disorder classification: {e}")
@@ -2995,7 +3019,7 @@ class APGIFrameworkGUI(ctk.CTk):
                         0, self._on_test_error, "Clinical Parameter Extraction", str(e)
                     )
 
-            threading.Thread(target=run_extraction, daemon=True).start()
+            run_in_thread(run_extraction)
 
         except Exception as e:
             self.log_to_console(f"Error setting up clinical parameter extraction: {e}")
@@ -3116,7 +3140,7 @@ class APGIFrameworkGUI(ctk.CTk):
                         0, self._on_test_error, "Patient Profile Analysis", str(e)
                     )
 
-            threading.Thread(target=run_analysis, daemon=True).start()
+            run_in_thread(run_analysis)
 
         except Exception as e:
             self.log_to_console(f"Error setting up patient profile analysis: {e}")
@@ -3210,7 +3234,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 except Exception as e:
                     self.after(0, self._on_import_error, file_path, str(e))
 
-            threading.Thread(target=import_thread, daemon=True).start()
+            run_in_thread(import_thread)
 
         except Exception as e:
             self.log_to_console(f"Error initiating data import: {e}")
@@ -3348,7 +3372,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 except Exception as e:
                     self.after(0, lambda: self._on_export_error(file_path, str(e)))
 
-            threading.Thread(target=export_thread, daemon=True).start()
+            run_in_thread(export_thread)
 
         except Exception as e:
             self.log_to_console(f"Error setting up export: {e}")
@@ -3503,7 +3527,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 except Exception as e:
                     self.after(0, self._on_validation_error, str(e))
 
-            threading.Thread(target=validate_thread, daemon=True).start()
+            run_in_thread(validate_thread)
 
         except Exception as e:
             self.log_to_console(f"Error initiating data validation: {e}")
@@ -3739,7 +3763,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 except Exception as e:
                     self.after(0, self._on_cleaning_error, str(e))
 
-            threading.Thread(target=clean_thread, daemon=True).start()
+            run_in_thread(clean_thread)
 
         except Exception as e:
             self.log_to_console(f"Error initiating data cleaning: {e}")
@@ -3936,9 +3960,19 @@ class APGIFrameworkGUI(ctk.CTk):
             canvas.draw()
             canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
-            # Add close button
+            # Add close button with cleanup
+            def cleanup_and_close():
+                """Clean up matplotlib resources before closing window."""
+                try:
+                    plt.close(fig)  # Close figure to free memory
+                    canvas.get_tk_widget().destroy()  # Destroy canvas widget
+                except Exception as cleanup_error:
+                    self.logger.warning(f"Error during plot cleanup: {cleanup_error}")
+                finally:
+                    plot_window.destroy()
+
             close_btn = ctk.CTkButton(
-                plot_window, text="Close", command=plot_window.destroy
+                plot_window, text="Close", command=cleanup_and_close
             )
             close_btn.pack(pady=10)
 
@@ -4201,12 +4235,15 @@ class APGIFrameworkGUI(ctk.CTk):
                     # Show the plot
                     plt.show()
 
+                    # Close figure to free memory after showing
+                    plt.close(fig)
+
                     self.after(0, self._on_neural_plot_complete)
 
                 except Exception as e:
                     self.after(0, self._on_plot_error, str(e))
 
-            threading.Thread(target=plot_thread, daemon=True).start()
+            run_in_thread(plot_thread)
 
         except Exception as e:
             self.log_to_console(f"Error initiating neural signature plot: {e}")
@@ -4464,7 +4501,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 except Exception as e:
                     self.after(0, self._on_plot_error, str(e))
 
-            threading.Thread(target=plot_thread, daemon=True).start()
+            run_in_thread(plot_thread)
 
         except Exception as e:
             self.log_to_console(f"Error initiating parameter space plot: {e}")
@@ -4710,7 +4747,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 except Exception as e:
                     self.after(0, self._on_plot_error, str(e))
 
-            threading.Thread(target=plot_thread, daemon=True).start()
+            run_in_thread(plot_thread)
 
         except Exception as e:
             self.log_to_console(f"Error initiating time series plot: {e}")
@@ -5274,7 +5311,7 @@ class APGIFrameworkGUI(ctk.CTk):
                         except Exception as e:
                             self.after(0, lambda: self._on_data_error(str(e)))
 
-                    threading.Thread(target=generate_example_data, daemon=True).start()
+                    run_in_thread(generate_example_data)
                     self.log_to_console("Generating example data in background...")
                     return
 
@@ -5392,7 +5429,7 @@ class APGIFrameworkGUI(ctk.CTk):
                         0, self._on_test_error, "Surprise Dynamics Analysis", str(e)
                     )
 
-            threading.Thread(target=run_analysis, daemon=True).start()
+            run_in_thread(run_analysis)
 
         except ImportError as e:
             self.log_to_console(f"Surprise dynamics module not available: {e}")
@@ -5495,7 +5532,7 @@ class APGIFrameworkGUI(ctk.CTk):
                         0, self._on_test_error, "Disorder Classification", str(e)
                     )
 
-            threading.Thread(target=run_classification, daemon=True).start()
+            run_in_thread(run_classification)
 
         except Exception as e:
             self.log_to_console(f"Error setting up disorder classification: {e}")
@@ -5584,7 +5621,7 @@ class APGIFrameworkGUI(ctk.CTk):
                         0, self._on_test_error, "Clinical Parameter Extraction", str(e)
                     )
 
-            threading.Thread(target=run_extraction, daemon=True).start()
+            run_in_thread(run_extraction)
 
         except Exception as e:
             self.log_to_console(f"Error setting up clinical parameter extraction: {e}")
@@ -5775,7 +5812,7 @@ For detailed documentation, please refer to the user manual.
                             ),
                         )
 
-                threading.Thread(target=monitor_process, daemon=True).start()
+                run_in_thread(monitor_process)
                 self.log_to_console(f"Started execution of {script_name}...")
 
             except Exception as e:

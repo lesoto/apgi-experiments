@@ -194,6 +194,14 @@ class ExperimentGUI(tk.Tk):
         self.log_text.insert(tk.END, text)
         self.log_text.see(tk.END)
 
+        # Implement log rotation to prevent memory issues
+        MAX_LOG_LINES = 10000
+        line_count = int(self.log_text.index("end-1c").split(".")[0])
+        if line_count > MAX_LOG_LINES:
+            # Remove oldest lines to maintain limit
+            excess_lines = line_count - MAX_LOG_LINES
+            self.log_text.delete("1.0", f"{excess_lines + 1}.0")
+
     def _poll_log_queue(self):
         try:
             while True:

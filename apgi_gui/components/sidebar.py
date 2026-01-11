@@ -11,6 +11,18 @@ import time
 from datetime import datetime
 import logging
 
+# Import user preferences for persistence
+try:
+    from ..utils.user_preferences import UserPreferences
+except ImportError:
+    # Fallback for direct execution
+    import sys
+    from pathlib import Path
+
+    project_root = Path(__file__).parent.parent.parent
+    sys.path.insert(0, str(project_root))
+    from apgi_gui.utils.user_preferences import UserPreferences
+
 
 class Sidebar(ctk.CTkFrame):
     """Sidebar component containing navigation and tools."""
@@ -26,11 +38,15 @@ class Sidebar(ctk.CTkFrame):
         self.app = app
         self.logger = logging.getLogger(__name__)
 
+        # Initialize user preferences for persistence
+        self.user_prefs = UserPreferences()
+
         # File monitoring
         self.file_monitor_active = False
         self.file_monitor_thread = None
-        self.file_timestamps: Dict[str, float] = {}
         self.monitor_interval = 2.0  # Check every 2 seconds
+        self.file_timestamps = {}  # Store file timestamps for change detection
+        self.file_lock = threading.Lock()  # Thread-safe access to file_timestamps
 
         self.setup_ui()
         self.start_file_monitoring()
@@ -153,14 +169,18 @@ class Sidebar(ctk.CTkFrame):
         self.recent_listbox.clear()
 
         # Update file timestamps for monitoring
-        self.file_timestamps.clear()
+        with self.file_lock:
+            self.file_timestamps.clear()
 
         # Create buttons for each recent file
         for i, file_path in enumerate(self.app.recent_files):
             # Store timestamp for monitoring
             try:
                 if file_path.exists():
-                    self.file_timestamps[str(file_path)] = file_path.stat().st_mtime
+                    timestamp = file_path.stat().st_mtime
+                    # Thread-safe update
+                    with self.file_lock:
+                        self.file_timestamps[str(file_path)] = timestamp
             except (OSError, PermissionError):
                 self.logger.warning(f"Cannot access file: {file_path}")
                 continue
@@ -216,6 +236,28 @@ class Sidebar(ctk.CTkFrame):
         self.logger.info(f"Opening recent file: {file_path}")
         self.app.open_file(file_path)
 
+    def cleanup_on_exit(self):
+        """Clean up resources and save preferences on application exit."""
+        try:
+            # Save recent files to preferences
+            if hasattr(self.app, "recent_files") and self.app.recent_files:
+                recent_files_str = [str(path) for path in self.app.recent_files]
+                self.user_prefs.preferences["recent_files"] = recent_files_str
+                self.user_prefs.save_preferences()
+                self.logger.info(
+                    f"Saved {len(recent_files_str)} recent files to preferences"
+                )
+
+            # Stop file monitoring
+            self.stop_file_monitoring()
+
+            # Clean up file timestamps
+            with self.file_lock:
+                self.file_timestamps.clear()
+
+        except Exception as e:
+            self.logger.error(f"Error during cleanup: {e}")
+
     def start_file_monitoring(self):
         """Start monitoring recent files for external changes."""
         if not self.file_monitor_active:
@@ -237,16 +279,26 @@ class Sidebar(ctk.CTkFrame):
             try:
                 self._check_file_changes()
                 time.sleep(self.monitor_interval)
+            except (OSError, PermissionError, RuntimeError) as e:
+                # Log specific errors but continue monitoring
+                self.logger.error(f"File monitoring error: {e}")
+                time.sleep(self.monitor_interval)
             except Exception as e:
-                # Log error but continue monitoring
-                print(f"File monitoring error: {e}")
+                # Log unexpected errors with full traceback
+                self.logger.error(
+                    f"Unexpected file monitoring error: {e}", exc_info=True
+                )
                 time.sleep(self.monitor_interval)
 
     def _check_file_changes(self):
         """Check for file changes and update UI if needed."""
         changes_detected = False
 
-        for file_path_str, old_timestamp in self.file_timestamps.items():
+        # Thread-safe access to file_timestamps
+        with self.file_lock:
+            timestamps_copy = self.file_timestamps.copy()
+
+        for file_path_str, old_timestamp in timestamps_copy.items():
             file_path = Path(file_path_str)
 
             try:
@@ -255,20 +307,54 @@ class Sidebar(ctk.CTkFrame):
                     if new_timestamp > old_timestamp:
                         # File has been modified externally
                         changes_detected = True
-                        self.file_timestamps[file_path_str] = new_timestamp
+
+                        # Thread-safe update of timestamp
+                        with self.file_lock:
+                            self.file_timestamps[file_path_str] = new_timestamp
 
                         # Update UI in main thread
                         self.after(0, lambda: self._handle_file_change(file_path))
                 else:
-                    # File was deleted
+                    # File was deleted - remove from timestamps
                     changes_detected = True
+                    # Thread-safe removal of deleted file
+                    with self.file_lock:
+                        self.file_timestamps.pop(file_path_str, None)
                     self.after(0, lambda: self._handle_file_deleted(file_path))
 
             except (OSError, PermissionError):
-                # File might be inaccessible
+                # File might be inaccessible - remove from monitoring
+                with self.file_lock:
+                    self.file_timestamps.pop(file_path_str, None)
                 continue
 
+        # Periodic cleanup: remove entries for files that no longer exist
+        if len(self.file_timestamps) > 100:  # Only cleanup if dict is getting large
+            self._cleanup_file_timestamps()
+
         return changes_detected
+
+    def _cleanup_file_timestamps(self):
+        """Clean up file timestamps dict by removing entries for non-existent files."""
+        try:
+            with self.file_lock:
+                # Keep only entries for files that still exist
+                valid_timestamps = {
+                    path: mtime
+                    for path, mtime in self.file_timestamps.items()
+                    if Path(path).exists()
+                }
+
+                removed_count = len(self.file_timestamps) - len(valid_timestamps)
+                self.file_timestamps = valid_timestamps
+
+                if removed_count > 0:
+                    self.logger.debug(
+                        f"Cleaned up {removed_count} stale file timestamp entries"
+                    )
+
+        except Exception as e:
+            self.logger.error(f"Error during file timestamps cleanup: {e}")
 
     def _handle_file_change(self, file_path: Path):
         """Handle external file change.

@@ -494,7 +494,11 @@ class MultisensoryIntegrationTask(TrialBasedTask):
                 )
 
                 if len(intensity) > 1 and len(accuracy) > 1:
-                    correlation = np.corrcoef(intensity, accuracy)[0, 1]
+                    # Handle zero variance cases to avoid runtime warnings
+                    if np.std(intensity) == 0 or np.std(accuracy) == 0:
+                        correlation = 0.0
+                    else:
+                        correlation = np.corrcoef(intensity, accuracy)[0, 1]
                     summary["intensity_effects"][
                         f"{modality}_intensity_correlation"
                     ] = correlation

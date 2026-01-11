@@ -13,6 +13,9 @@ from pathlib import Path
 import logging
 import threading
 
+# Setup logger
+logger = logging.getLogger(__name__)
+
 # Import available modules
 try:
     from .progress_monitoring import RealTimeProgressMonitor
@@ -25,45 +28,75 @@ except ImportError:
     sys.path.insert(0, str(project_root))
     from apgi_framework.gui.progress_monitoring import RealTimeProgressMonitor
 
-# Commented out missing imports to prevent import errors
-# from ..experimental.behavioral_tasks import (
-#     DetectionTask,
-#     HeartbeatDetectionTask,
-#     DualModalityOddballTask,
-# )
-# from ..data.parameter_estimation_dao import ParameterEstimationDAO
-# from ..data.parameter_estimation_models import SessionData, TaskType
-# from .session_management import SessionSetupManager, ParticipantManager
-# from .task_configuration import TaskParameterConfigurator
+# Import core modules with corrected paths
+try:
+    from research.core_mechanisms.experiments.experimental.behavioral_tasks import (
+        DetectionTask,
+        HeartbeatDetectionTask,
+        DualModalityOddballTask,
+    )
+    logger.info("Successfully imported behavioral task classes")
+except ImportError as e:
+    logger.warning(f"Failed to import behavioral tasks: {e}")
+    # Fallback placeholder classes
+    class DetectionTask:
+        def __init__(self, *args, **kwargs):
+            logger.warning("Using placeholder DetectionTask class")
+            pass
+
+    class HeartbeatDetectionTask:
+        def __init__(self, *args, **kwargs):
+            logger.warning("Using placeholder HeartbeatDetectionTask class")
+            pass
+
+    class DualModalityOddballTask:
+        def __init__(self, *args, **kwargs):
+            logger.warning("Using placeholder DualModalityOddballTask class")
+            pass
 
 
-# Placeholder classes for missing dependencies
-class DetectionTask:
-    """Placeholder for DetectionTask."""
+try:
+    from ..data.parameter_estimation_dao import ParameterEstimationDAO
+except ImportError:
 
-    def __init__(self):
-        pass
-
-
-class HeartbeatDetectionTask:
-    """Placeholder for HeartbeatDetectionTask."""
-
-    def __init__(self):
-        pass
+    class ParameterEstimationDAO:
+        def __init__(self):
+            pass
 
 
-class DualModalityOddballTask:
-    """Placeholder for DualModalityOddballTask."""
+try:
+    from ..data.parameter_estimation_models import SessionData, TaskType
+except ImportError:
 
-    def __init__(self):
-        pass
+    class SessionData:
+        def __init__(self):
+            pass
+
+    class TaskType:
+        DETECTION = "detection"
+        HEARTBEAT = "heartbeat"
 
 
-class SessionData:
-    """Placeholder for SessionData."""
+try:
+    from .session_management import SessionSetupManager, ParticipantManager
+except ImportError:
 
-    def __init__(self):
-        pass
+    class SessionSetupManager:
+        def __init__(self):
+            pass
+
+    class ParticipantManager:
+        def __init__(self):
+            pass
+
+
+try:
+    from .task_configuration import TaskParameterConfigurator
+except ImportError:
+
+    class TaskParameterConfigurator:
+        def __init__(self):
+            pass
 
 
 logger = logging.getLogger(__name__)

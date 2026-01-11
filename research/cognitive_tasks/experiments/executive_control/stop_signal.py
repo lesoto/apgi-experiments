@@ -406,17 +406,22 @@ class StopSignalTask(TrialBasedTask):
                 # Alternative method: mean RT method
                 if summary["mean_go_rt"] > 0:
                     # Calculate inhibition function at each SSD
-                    ssd_groups = (
+                    successful_stops_by_ssd = (
                         successful_stops_df.groupby("ssd")
-                        .agg({"n_successful": "size", "n_total": lambda x: len(x)})
-                        .reset_index()
+                        .size()
+                        .reset_index(name="n_successful")
                     )
 
-                    # Merge with total stop trials at each SSD
+                    # Get total stop trials at each SSD
                     total_by_ssd = (
                         ssd_df.groupby("ssd").size().reset_index(name="n_total")
                     )
-                    ssd_groups = ssd_groups.merge(total_by_ssd, on="ssd", how="right")
+
+                    # Merge to get inhibition rates
+                    ssd_groups = successful_stops_by_ssd.merge(
+                        total_by_ssd, on="ssd", how="right"
+                    )
+                    ssd_groups["n_successful"] = ssd_groups["n_successful"].fillna(0)
                     ssd_groups["inhibition_rate"] = (
                         ssd_groups["n_successful"] / ssd_groups["n_total"]
                     )

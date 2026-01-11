@@ -361,6 +361,8 @@ class SternbergTask(TrialBasedTask):
                 "r_squared": (
                     np.corrcoef(set_sizes, mean_rts)[0, 1] ** 2
                     if len(set_sizes) > 1
+                    and np.std(set_sizes) > 0
+                    and np.std(mean_rts) > 0
                     else 0
                 ),
             }

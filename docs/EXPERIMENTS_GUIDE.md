@@ -73,9 +73,14 @@ You can run experiments directly from the command line:
 python tools/run_experiments.py experiment_name
 
 # With parameters
+
+```bash
 python tools/run_experiments.py experiment_name --n_participants 10 --n_trials 50
+```
 
 # With output file
+
+```bash
 python tools/run_experiments.py experiment_name --n_participants 10 --n_trials 50 --output results.csv
 ```
 
@@ -184,38 +189,50 @@ for exp_name, result in results.items():
     if result:
         print(f"\n{exp_name} Summary:")
         print(f"  Participants: {len(result.participant_data)}")
-        # Access specific experiment data...
+        # Access specific experiment data
+        if exp_name == 'iowa_gambling_task':
+            print(f"  Average reward: {result.participant_data[0]['average_reward']}")
+        elif exp_name == 'stroop_effect':
+            print(f"  Average reaction time: {result.participant_data[0]['average_reaction_time']}")
+        elif exp_name == 'dual_n_back':
+            print(f"  Average accuracy: {result.participant_data[0]['average_accuracy']}")
 ```
 
 ## Available Experiments
 
 ### Decision Making (2 experiments)
+
 1. **Iowa Gambling Task** (`iowa_gambling_task`) - Decision making under uncertainty
 2. **Probabilistic Category Learning** (`probabilistic_category_learning`) - Category learning with feedback
 
 ### Attention (4 experiments)
+
 3. **Attentional Blink** (`attentional_blink`) - Temporal attention limitations
 4. **Change Blindness** (`change_blindness`) - Visual change detection
 5. **Visual Search** (`visual_search`) - Feature and conjunction search
 6. **Posner Cueing** (`posner_cueing`) - Spatial attention orienting
 
 ### Conflict Monitoring (3 experiments)
+
 7. **Stroop Effect** (`stroop_effect`) - Interference in word-color processing
 8. **Simon Effect** (`simon_effect`) - Spatial stimulus-response conflict
 9. **Eriksen Flanker** (`eriksen_flanker`) - Response inhibition and conflict
 
 ### Consciousness (3 experiments)
+
 10. **Masking** (`masking`) - Visual masking and consciousness thresholds
 11. **Binocular Rivalry** (`binocular_rivalry`) - Competing visual perceptions
 12. **Inattentional Blindness** (`inattentional_blindness`) - Failure to see unexpected stimuli
 
 ### Memory (4 experiments)
+
 13. **Dual N-Back** (`dual_n_back`) - Working memory updating
 14. **Sternberg Memory** (`sternberg_memory`) - Memory scanning and retrieval
 15. **Working Memory Span** (`working_memory_span`) - Working memory capacity
 16. **DRM False Memory** (`drm_false_memory`) - False memory creation
 
 ### Executive Control (2 experiments)
+
 17. **Go/No-Go** (`go_no_go`) - Response inhibition
 18. **Stop Signal** (`stop_signal`) - Reactive inhibition
 

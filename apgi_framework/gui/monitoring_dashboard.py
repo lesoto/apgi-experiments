@@ -13,6 +13,8 @@ import threading
 import time
 import sys
 import os
+import json
+import queue
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
@@ -21,12 +23,14 @@ try:
     from ..neural.eeg_interface import EEGInterface
     from ..neural.pupillometry_interface import PupillometryInterface
     from ..neural.physiological_monitoring import PhysiologicalMonitoring
+    from .realtime_data_stream import get_streamer, start_realtime_streaming, stop_realtime_streaming
 except ImportError:
     # Handle relative import when run directly
     from apgi_framework.logging.standardized_logging import get_logger
     from apgi_framework.neural.eeg_interface import EEGInterface
     from apgi_framework.neural.pupillometry_interface import PupillometryInterface
     from apgi_framework.neural.physiological_monitoring import PhysiologicalMonitoring
+    from apgi_framework.gui.realtime_data_stream import get_streamer, start_realtime_streaming, stop_realtime_streaming
 
 logger = get_logger(__name__)
 

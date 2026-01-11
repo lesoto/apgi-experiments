@@ -1,0 +1,6 @@
+/opt/homebrew/Cellar/python@3.14/3.14.2/Frameworks/Python.framework/Versions/3.14/lib/python3.14/tracemalloc.py:560: size=328 B (+328 B), count=1 (+1), average=328 B
+/opt/homebrew/Cellar/python@3.14/3.14.2/Frameworks/Python.framework/Versions/3.14/lib/python3.14/tracemalloc.py:423: size=328 B (+328 B), count=1 (+1), average=328 B
+/opt/homebrew/Cellar/python@3.14/3.14.2/Frameworks/Python.framework/Versions/3.14/lib/python3.14/tracemalloc.py:420: size=128 B (+128 B), count=1 (+1), average=128 B
+/opt/homebrew/Cellar/python@3.14/3.14.2/Frameworks/Python.framework/Versions/3.14/lib/python3.14/tracemalloc.py:312: size=128 B (+128 B), count=1 (+1), average=128 B
+/Users/lesoto/Sites/PYTHON/apgi-experiments/benchmarks/test_performance.py:34: size=88 B (+88 B), count=2 (+2), average=44 B
+/opt/homebrew/Cellar/python@3.14/3.14.2/Frameworks/Python.framework/Versions/3.14/lib/python3.14/tracemalloc.py:551: size=128 B (+0 B), count=1 (+0), average=128 B

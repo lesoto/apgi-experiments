@@ -220,9 +220,10 @@ class ExperimentRegistryGUI:
 
         # Try to read the experiment file to get details
         try:
-            # Extract file path from module path
-            file_path = module_path.replace(".", "/") + ".py"
-            full_path = project_root / file_path
+            # Extract file path from module path using cross-platform approach
+            module_parts = module_path.split(".")
+            script_path = Path(*module_parts).with_suffix(".py")
+            full_path = project_root / script_path
 
             if full_path.exists():
                 with open(full_path, "r", encoding="utf-8") as f:

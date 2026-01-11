@@ -105,14 +105,23 @@ class InteractiveWebDashboard:
             """Get all experiments data."""
             try:
                 experiments = self.experiment_monitor.get_all_experiments()
+                
+                # If no experiments, provide sample data for demonstration
+                if not experiments:
+                    self.logger.info("No experiments found, providing sample data")
+                    experiments = self._get_sample_experiments()
+                
                 return jsonify(
                     {
                         "success": True,
                         "data": experiments,
                         "timestamp": datetime.now().isoformat(),
+                        "count": len(experiments),
+                        "message": "Sample data" if not self.experiment_monitor.get_all_experiments() else "Real data"
                     }
                 )
             except Exception as e:
+                self.logger.error(f"Error getting experiments: {e}")
                 return jsonify({"success": False, "error": str(e)}), 500
 
         @self.app.route("/api/experiment/<experiment_id>")
@@ -271,14 +280,24 @@ class InteractiveWebDashboard:
             self.logger.info(f"Client connected: {request.sid}")
 
             # Send initial data
-            emit(
-                "initial_data",
-                {
-                    "experiments": self.experiment_monitor.get_all_experiments(),
-                    "config": self._get_config_summary(),
-                    "timestamp": datetime.now().isoformat(),
-                },
-            )
+            try:
+                experiments = self.experiment_monitor.get_all_experiments()
+                if not experiments:
+                    self.logger.info("No experiments found, providing sample data for WebSocket")
+                    experiments = self._get_sample_experiments()
+                    
+                emit(
+                    "initial_data",
+                    {
+                        "experiments": experiments,
+                        "config": self._get_config_summary(),
+                        "timestamp": datetime.now().isoformat(),
+                        "message": "Sample data" if not self.experiment_monitor.get_all_experiments() else "Real data"
+                    },
+                )
+            except Exception as e:
+                self.logger.error(f"Error sending initial data: {e}")
+                emit("error", {"message": f"Failed to load initial data: {e}"})
 
         @self.socketio.on("disconnect")
         def handle_disconnect():
@@ -290,13 +309,20 @@ class InteractiveWebDashboard:
         def handle_update_request():
             """Handle manual update request."""
             try:
+                experiments = self.experiment_monitor.get_all_experiments()
+                if not experiments:
+                    self.logger.info("No experiments found, providing sample data for update")
+                    experiments = self._get_sample_experiments()
+                    
                 update_data = {
-                    "experiments": self.experiment_monitor.get_all_experiments(),
+                    "experiments": experiments,
                     "timestamp": datetime.now().isoformat(),
+                    "message": "Sample data" if not self.experiment_monitor.get_all_experiments() else "Real data"
                 }
                 emit("update", update_data)
             except Exception as e:
-                emit("error", {"message": str(e)})
+                self.logger.error(f"Error handling update request: {e}")
+                emit("error", {"message": f"Failed to update data: {e}"})
 
     def start_dashboard(self):
         """Start the interactive dashboard."""
@@ -386,6 +412,70 @@ class InteractiveWebDashboard:
         except Exception as e:
             self.logger.error(f"Error getting config summary: {e}")
             return {}
+
+    def _get_sample_experiments(self) -> Dict[str, Dict[str, Any]]:
+        """Get sample experiment data for demonstration purposes."""
+        return {
+            "sample_primary": {
+                "id": "sample_primary",
+                "metadata": {
+                    "name": "Primary Falsification Test",
+                    "description": "Sample primary falsification test",
+                    "total_trials": 1000,
+                    "test_type": "primary"
+                },
+                "start_time": datetime.now() - timedelta(hours=2),
+                "status": "completed",
+                "progress": 100.0,
+                "current_trial": 1000,
+                "total_trials": 1000,
+                "results": [
+                    {
+                        "trial": 1,
+                        "falsified": True,
+                        "confidence": 0.95,
+                        "response_time": 1.23
+                    },
+                    {
+                        "trial": 2, 
+                        "falsified": False,
+                        "confidence": 0.12,
+                        "response_time": 0.87
+                    }
+                ],
+                "trials": [],
+                "last_update": datetime.now() - timedelta(hours=1),
+                "statistics": {
+                    "trials_per_second": 2.5,
+                    "estimated_completion": None,
+                    "falsifications_detected": 234,
+                    "success_rate": 76.6
+                }
+            },
+            "sample_consciousness": {
+                "id": "sample_consciousness",
+                "metadata": {
+                    "name": "Consciousness Without Ignition Test",
+                    "description": "Sample consciousness test",
+                    "total_trials": 500,
+                    "test_type": "consciousness-without-ignition"
+                },
+                "start_time": datetime.now() - timedelta(minutes=30),
+                "status": "running",
+                "progress": 65.0,
+                "current_trial": 325,
+                "total_trials": 500,
+                "results": [],
+                "trials": [],
+                "last_update": datetime.now() - timedelta(minutes=5),
+                "statistics": {
+                    "trials_per_second": 1.8,
+                    "estimated_completion": datetime.now() + timedelta(minutes=97),
+                    "falsifications_detected": 87,
+                    "success_rate": 73.2
+                }
+            }
+        }
 
     def get_dashboard_url(self) -> str:
         """Get dashboard URL."""

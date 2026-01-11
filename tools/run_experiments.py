@@ -135,9 +135,19 @@ def run_experiment(experiment_name: str, **kwargs):
 
         run_func = getattr(module, run_func_name)
 
+        # Handle parameter name mapping for compatibility
+        mapped_kwargs = kwargs.copy()
+        if (
+            "n_trials" in mapped_kwargs
+            and "n_trials_per_condition" not in mapped_kwargs
+        ):
+            mapped_kwargs["n_trials_per_condition"] = mapped_kwargs.pop("n_trials")
+
         # Run the experiment with the provided kwargs
-        logger.info(f"Running {experiment_name} experiment with parameters: {kwargs}")
-        return run_func(**kwargs)
+        logger.info(
+            f"Running {experiment_name} experiment with parameters: {mapped_kwargs}"
+        )
+        return run_func(**mapped_kwargs)
 
     except ImportError as e:
         logger.error(f"Error importing experiment module: {e}")
