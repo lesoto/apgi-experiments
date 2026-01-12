@@ -306,12 +306,15 @@ class ConfigManager:
         """Validate overall configuration structure."""
         if not isinstance(config_data, dict):
             raise ConfigurationError("Configuration must be a JSON object/dictionary")
-        
+
         valid_sections = [
-            "apgi_parameters", "experimental_config", "retry_config", 
-            "performance_thresholds", "stimulus_parameters"
+            "apgi_parameters",
+            "experimental_config",
+            "retry_config",
+            "performance_thresholds",
+            "stimulus_parameters",
         ]
-        
+
         for section in config_data:
             if section not in valid_sections:
                 raise ConfigurationError(
@@ -319,18 +322,21 @@ class ConfigManager:
                     f"Valid sections are: {', '.join(valid_sections)}"
                 )
 
-    def _validate_parameter_section(self, section_name: str, section_data: Dict[str, Any]) -> None:
+    def _validate_parameter_section(
+        self, section_name: str, section_data: Dict[str, Any]
+    ) -> None:
         """Validate a parameter section with detailed error messages."""
         if not isinstance(section_data, dict):
             raise ConfigurationError(
                 f"Section '{section_name}' must be a JSON object/dictionary"
             )
-        
+
         # Import validator for detailed validation
         try:
             from .validation.parameter_validator import get_validator
+
             validator = get_validator()
-            
+
             if section_name == "apgi_parameters":
                 result = validator.validate_apgi_parameters(**section_data)
             elif section_name == "experimental_config":
@@ -343,18 +349,20 @@ class ConfigManager:
                 result = validator.validate_stimulus_parameters(**section_data)
             else:
                 return  # Skip validation for unknown sections
-            
+
             if not result.is_valid:
                 raise ConfigurationError(
                     f"Validation failed for section '{section_name}':\n"
                     f"{result.get_message()}"
                 )
-                
+
         except ImportError:
             # Fallback to basic validation if validator not available
             self._basic_parameter_validation(section_name, section_data)
 
-    def _basic_parameter_validation(self, section_name: str, section_data: Dict[str, Any]) -> None:
+    def _basic_parameter_validation(
+        self, section_name: str, section_data: Dict[str, Any]
+    ) -> None:
         """Basic validation when detailed validator is not available."""
         for param_name, param_value in section_data.items():
             # Type validation
@@ -363,7 +371,7 @@ class ConfigManager:
                     f"Parameter '{section_name}.{param_name}' must be a number, string, or boolean, "
                     f"but got {type(param_value).__name__}"
                 )
-            
+
             # Range validation for numeric parameters
             if isinstance(param_value, (int, float)):
                 if param_value < 0 and "precision" in param_name.lower():
@@ -387,7 +395,7 @@ class ConfigManager:
                         f"Parameter '{section_name}.{param_name}' must be positive, "
                         f"but got {param_value}. Steepness controls sigmoid slope and must be positive."
                     )
-                
+
                 # Specific range validations
                 if section_name == "apgi_parameters":
                     self._validate_apgi_parameter_range(param_name, param_value)
@@ -421,7 +429,9 @@ class ConfigManager:
                 f"but got {value}. Typical values: 1.0-3.0"
             )
 
-    def _validate_experimental_parameter_range(self, param_name: str, value: float) -> None:
+    def _validate_experimental_parameter_range(
+        self, param_name: str, value: float
+    ) -> None:
         """Validate experimental parameter ranges."""
         if param_name == "n_trials" and not (1 <= value <= 100000):
             raise ConfigurationError(
@@ -439,7 +449,9 @@ class ConfigManager:
                 f"but got {value}. Common values: 0.05, 0.01, 0.001"
             )
 
-    def _validate_performance_parameter_range(self, param_name: str, value: float) -> None:
+    def _validate_performance_parameter_range(
+        self, param_name: str, value: float
+    ) -> None:
         """Validate performance threshold parameter ranges."""
         if param_name == "min_rt" and not (0.05 <= value <= 5.0):
             raise ConfigurationError(

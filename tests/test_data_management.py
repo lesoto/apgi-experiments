@@ -4,18 +4,13 @@ Tests for data management modules.
 
 import pytest
 import tempfile
-import json
-import numpy as np
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
 from datetime import datetime
 
 from apgi_framework.data.data_manager import IntegratedDataManager
-from apgi_framework.data.storage_manager import StorageManager, StorageError
+from apgi_framework.data.storage_manager import StorageManager
 from apgi_framework.data.data_exporter import DataExporter
 from apgi_framework.data.report_generator import ReportGenerator
-from apgi_framework.data.visualizer import APGIVisualizer
-from apgi_framework.exceptions import DataManagementError
 
 
 class TestIntegratedDataManager:
@@ -39,7 +34,7 @@ class TestIntegratedDataManager:
         with tempfile.TemporaryDirectory() as temp_dir:
             output_dir = Path(temp_dir) / "test_outputs"
 
-            manager = IntegratedDataManager(
+            IntegratedDataManager(
                 base_output_dir=str(output_dir), enable_dashboard=False
             )
 
@@ -51,9 +46,7 @@ class TestIntegratedDataManager:
     def test_store_experiment_data(self):
         """Test registering experiment data."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            manager = IntegratedDataManager(
-                storage_path=temp_dir, backend="sqlite"
-            )
+            manager = IntegratedDataManager(storage_path=temp_dir, backend="sqlite")
 
             # Mock experiment data
             experiment_data = {
@@ -139,9 +132,7 @@ class TestIntegratedDataManager:
             # Mock statistical summary
             from apgi_framework.core.data_models import StatisticalSummary
 
-            summary = StatisticalSummary(
-                total_trials=1000, mean_effect_size=0.15
-            )
+            summary = StatisticalSummary(total_trials=1000, mean_effect_size=0.15)
 
             # Generate visualizations (this is the actual method)
             figure_paths = manager.generate_visualizations(
@@ -209,10 +200,15 @@ class TestStorageManager:
             assert storage.auto_backup is False
 
     @staticmethod
-    def create_test_dataset(dataset_id="test_dataset_001", participant_id="P001", data=None):
+    def create_test_dataset(
+        dataset_id="test_dataset_001", participant_id="P001", data=None
+    ):
         """Helper to create a test ExperimentalDataset."""
-        from apgi_framework.data.data_models import ExperimentalDataset, ExperimentMetadata
-        
+        from apgi_framework.data.data_models import (
+            ExperimentalDataset,
+            ExperimentMetadata,
+        )
+
         if data is None:
             data = {
                 "p3b_amplitudes": [5.2, 4.8],
@@ -220,7 +216,7 @@ class TestStorageManager:
                 "neural_signatures": {"p3b_amplitude": 5.2},
                 "consciousness_assessments": {"subjective_report": True},
             }
-            
+
         metadata = ExperimentMetadata(
             experiment_id=dataset_id,
             experiment_name=f"Test Experiment {dataset_id}",
@@ -229,7 +225,7 @@ class TestStorageManager:
             n_trials=10,
             created_at=datetime.now(),
         )
-        
+
         return ExperimentalDataset(metadata=metadata, data=data)
 
     def test_store_dataset(self):
@@ -279,7 +275,7 @@ class TestStorageManager:
                 self.create_test_dataset("dataset_002", "P002"),
                 self.create_test_dataset("dataset_003", "P001"),
             ]
-            
+
             for dataset in datasets:
                 storage.store_dataset(dataset)
 
@@ -361,8 +357,7 @@ class TestStorageManager:
             # Store some datasets
             for i in range(5):
                 dataset = self.create_test_dataset(
-                    dataset_id=f"dataset_{i:03d}",
-                    data={"values": list(range(10))}
+                    dataset_id=f"dataset_{i:03d}", data={"values": list(range(10))}
                 )
                 storage.store_dataset(dataset)
 
@@ -400,15 +395,13 @@ class TestStorageManager:
 
             # Simulate concurrent operations
             import threading
-            import time
 
             results = []
 
             def store_dataset(index):
                 try:
                     dataset = self.create_test_dataset(
-                        dataset_id=f"concurrent_{index}",
-                        data={}
+                        dataset_id=f"concurrent_{index}", data={}
                     )
                     result = storage.store_dataset(dataset)
                     results.append(result)
@@ -476,7 +469,6 @@ class TestDataExporter:
             # Mock experimental trials using correct data model
             from apgi_framework.core.data_models import (
                 ExperimentalTrial,
-                APGIParameters,
                 NeuralSignatures,
                 ConsciousnessAssessment,
             )
@@ -539,7 +531,6 @@ class TestReportGenerator:
             # Mock experimental trials using correct data model
             from apgi_framework.core.data_models import (
                 ExperimentalTrial,
-                APGIParameters,
                 NeuralSignatures,
                 ConsciousnessAssessment,
             )

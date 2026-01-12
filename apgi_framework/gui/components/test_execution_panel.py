@@ -425,14 +425,38 @@ class TestExecutionPanel(ctk.CTkFrame):
                 "adhd",
                 "autism",
             ]
-            # This would be implemented with a CTkComboBox in a full implementation
-            pass
+
+            # Create dropdown for disorder selection
+            disorder_frame = ctk.CTkFrame(params_frame)
+            disorder_frame.pack(fill="x", pady=5)
+
+            ctk.CTkLabel(disorder_frame, text="Disorder:").pack(anchor="w")
+            disorder_var = tk.StringVar(value=conditions[0])
+            disorder_menu = ctk.CTkOptionMenu(
+                disorder_frame, variable=disorder_var, values=conditions
+            )
+            disorder_menu.pack(fill="x", pady=2)
+
+            # Store reference for later use
+            self.test_params["disorder"] = disorder_var
 
         elif self.test_name == "Threshold Detection":
             # Add dropdown for modalities
             modalities = ["visual", "auditory", "interoceptive", "somatosensory"]
-            # This would be implemented with a CTkComboBox in a full implementation
-            pass
+
+            # Create dropdown for modality selection
+            modality_frame = ctk.CTkFrame(params_frame)
+            modality_frame.pack(fill="x", pady=5)
+
+            ctk.CTkLabel(modality_frame, text="Modality:").pack(anchor="w")
+            modality_var = tk.StringVar(value=modalities[0])
+            modality_menu = ctk.CTkOptionMenu(
+                modality_frame, variable=modality_var, values=modalities
+            )
+            modality_menu.pack(fill="x", pady=2)
+
+            # Store reference for later use
+            self.test_params["modality"] = modality_var
 
     def _run_test(self):
         """Run the falsification test in a separate thread."""

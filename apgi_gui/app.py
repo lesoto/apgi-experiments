@@ -326,6 +326,42 @@ class APGIFrameworkApp(ctk.CTk):
         # Save the theme preference
         self.config.save()
 
+        # Propagate theme changes to all components
+        self._propagate_theme_to_components()
+
+    def _propagate_theme_to_components(self) -> None:
+        """Propagate current theme to all UI components."""
+        try:
+            # Update main area components
+            if hasattr(self, "main_area"):
+                self._update_widget_theme(self.main_area)
+
+            # Update sidebar components
+            if hasattr(self, "sidebar"):
+                self._update_widget_theme(self.sidebar)
+
+            # Update status bar
+            if hasattr(self, "status_bar"):
+                self._update_widget_theme(self.status_bar)
+
+        except Exception as e:
+            self.logger.error(f"Error propagating theme: {e}")
+
+    def _update_widget_theme(self, widget) -> None:
+        """Recursively update theme for a widget and its children."""
+        try:
+            # Update the widget itself if it has theme-related methods
+            if hasattr(widget, "configure"):
+                # For CustomTkinter widgets, theme is handled globally
+                pass
+
+            # Recursively update all child widgets
+            for child in widget.winfo_children():
+                self._update_widget_theme(child)
+
+        except Exception as e:
+            self.logger.debug(f"Error updating widget theme: {e}")
+
     def show_help(self) -> None:
         """Show the help dialog."""
         help_text = """APGI Framework GUI Help
@@ -853,7 +889,9 @@ For more information, visit the project documentation."""
             save_entry.pack(fill="x", pady=5)
 
             browse_save_btn = ctk.CTkButton(
-                save_frame, text="Browse", command=self._browse_save_location
+                save_frame,
+                text="Browse",
+                command=lambda: self._browse_save_location(save_location_var),
             )
             browse_save_btn.pack(pady=5)
 
@@ -1044,15 +1082,13 @@ For more information, visit the project documentation."""
             self.logger.error(f"Error opening preferences: {e}")
             self.update_status("Error opening preferences", "error")
 
-    def _browse_save_location(self) -> None:
-        """Browse for save location."""
+    def _browse_save_location(self, save_location_var: tk.StringVar) -> None:
+        """Browse for save location and update the variable."""
         directory = tk.filedialog.askdirectory(
             title="Select Default Save Location", initialdir=self.config.data_dir
         )
         if directory:
-            # Update the save location entry in preferences
-            # This would need to be connected to the preferences dialog
-            pass
+            save_location_var.set(directory)
 
     def _save_preferences(self, window, prefs: dict) -> None:
         """Save preferences to config."""

@@ -239,14 +239,8 @@ class Sidebar(ctk.CTkFrame):
     def cleanup_on_exit(self):
         """Clean up resources and save preferences on application exit."""
         try:
-            # Save recent files to preferences
-            if hasattr(self.app, "recent_files") and self.app.recent_files:
-                recent_files_str = [str(path) for path in self.app.recent_files]
-                self.user_prefs.preferences["recent_files"] = recent_files_str
-                self.user_prefs.save_preferences()
-                self.logger.info(
-                    f"Saved {len(recent_files_str)} recent files to preferences"
-                )
+            # Recent files are already handled by the main app (_save_recent_files)
+            # No need to duplicate here to avoid inconsistency
 
             # Stop file monitoring
             self.stop_file_monitoring()
@@ -381,19 +375,23 @@ class Sidebar(ctk.CTkFrame):
         Args:
             file_path: Path to the deleted file
         """
-        # Remove from timestamps
-        self.file_timestamps.pop(str(file_path), None)
+        try:
+            # Remove from timestamps
+            self.file_timestamps.pop(str(file_path), None)
 
-        # Remove from recent files if it was deleted
-        if file_path in self.app.recent_files:
-            self.app.recent_files.remove(file_path)
-            self.app.config.save()
-            self.update_recent_files()
+            # Remove from recent files if it was deleted
+            if file_path in self.app.recent_files:
+                self.app.recent_files.remove(file_path)
+                self.app.config.save()
+                self.update_recent_files()
 
             # Update status
-            self.app.update_status(
-                f"File '{file_path.name}' was deleted", color="warning"
-            )
+            self.app.update_status(f"File deleted: {file_path.name}", "info")
+        except KeyError:
+            # File not in timestamps - this is fine
+            pass
+        except Exception as e:
+            self.logger.error(f"Error handling file deletion: {e}")
 
     def on_recent_select(self, event):
         """Handle recent file selection (legacy method for compatibility).

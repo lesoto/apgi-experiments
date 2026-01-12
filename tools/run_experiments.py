@@ -7,19 +7,17 @@ This script demonstrates the APGI model through several experiments that explore
 import ast
 import matplotlib.pyplot as plt
 import numpy as np
-from typing import List, Dict, Any, Tuple
 import argparse
 import importlib
 import sys
 from pathlib import Path
-import seaborn as sns
 
 # Add project root to Python path first
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 # Now import modules
-from models.apgi_model import APGIModel, APGIParams, plot_simulation
+from models.apgi_model import APGIModel, APGIParams
 from apgi_framework.logging.standardized_logging import get_logger
 
 plt.style.use("ggplot")
@@ -464,7 +462,7 @@ def main():
 
     # Run the experiment
     try:
-        result = run_experiment(args.experiment, **experiment_kwargs)
+        run_experiment(args.experiment, **experiment_kwargs)
         logger.info("\nExperiment completed successfully!")
         return 0
     except Exception as e:

@@ -209,9 +209,10 @@ class CodeSandbox:
                 stdout_capture = io.StringIO()
                 stderr_capture = io.StringIO()
 
-                with contextlib.redirect_stdout(
-                    stdout_capture
-                ), contextlib.redirect_stderr(stderr_capture):
+                with (
+                    contextlib.redirect_stdout(stdout_capture),
+                    contextlib.redirect_stderr(stderr_capture),
+                ):
 
                     exec(code, exec_context)
 

@@ -50,18 +50,90 @@ except ImportError as e:
         pass
 
     def get_validator():
-        class MockValidator:
-            def validate_apgi_parameters(self, **kwargs):
-                class MockResult:
-                    def __init__(self):
-                        self.is_valid = True
+        """Get validator instance with proper fallback handling."""
+        try:
+            from apgi_framework.validation import get_validator as get_real_validator
 
-                    def get_message(self):
-                        return "Mock validation"
+            validator = get_real_validator()
+            logger.info("Using real parameter validator")
+            return validator
+        except ImportError as e:
+            logger.warning(f"Could not import real validator: {e}")
 
-                return MockResult()
+            class FallbackValidator:
+                """Fallback validator with clear indication of limited functionality."""
 
-        return MockValidator()
+                def validate_apgi_parameters(self, **kwargs):
+                    return FallbackResult(
+                        is_valid=True,
+                        errors=[],
+                        warnings=["Validation disabled - using fallback validator"],
+                        suggestions=[
+                            "Install APGI Framework validation module for full validation"
+                        ],
+                    )
+
+                def validate_experimental_config(self, **kwargs):
+                    return FallbackResult(
+                        is_valid=True,
+                        errors=[],
+                        warnings=["Validation disabled - using fallback validator"],
+                        suggestions=[
+                            "Install APGI Framework validation module for full validation"
+                        ],
+                    )
+
+                def validate_neural_thresholds(self, **kwargs):
+                    return FallbackResult(
+                        is_valid=True,
+                        errors=[],
+                        warnings=["Validation disabled - using fallback validator"],
+                        suggestions=[
+                            "Install APGI Framework validation module for full validation"
+                        ],
+                    )
+
+                def validate_all(self, **kwargs):
+                    return FallbackResult(
+                        is_valid=False,
+                        errors=["Full validation not available in fallback mode"],
+                        warnings=["Validation disabled - using fallback validator"],
+                        suggestions=[
+                            "Install APGI Framework validation module for full validation"
+                        ],
+                    )
+
+            class FallbackResult:
+                def __init__(self, is_valid, errors, warnings, suggestions):
+                    self.is_valid = is_valid
+                    self.errors = errors
+                    self.warnings = warnings
+                    self.suggestions = suggestions
+
+                def get_message(self):
+                    messages = []
+                    if self.errors:
+                        messages.append("ERRORS:")
+                        for error in self.errors:
+                            messages.append(f"  ❌ {error}")
+                    if self.warnings:
+                        messages.append("WARNINGS:")
+                        for warning in self.warnings:
+                            messages.append(f"  ⚠️  {warning}")
+                    if self.suggestions:
+                        messages.append("SUGGESTIONS:")
+                        for suggestion in self.suggestions:
+                            messages.append(f"  💡 {suggestion}")
+                    return (
+                        "\n".join(messages)
+                        if messages
+                        else "⚠️ Limited validation mode"
+                    )
+
+            logger.warning(
+                "Using fallback validator - validation functionality limited"
+            )
+            return FallbackValidator()
 
 
 logger = (

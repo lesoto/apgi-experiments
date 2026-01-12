@@ -371,7 +371,7 @@ class AutomaticBackupSystem:
             with open(backup_file, "r") as f:
                 session_dict = json.load(f)
 
-            # TODO: Convert dictionary back to SessionData
+            # Convert dictionary back to SessionData
             session_data = self._dict_to_session_data(session_dict)
 
             logger.info(f"Restored session from backup: {backup_file}")

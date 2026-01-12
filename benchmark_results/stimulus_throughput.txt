@@ -1,1 +1,1 @@
-Throughput: 158714.31 stimuli/second
+Throughput: 248015.87 stimuli/second

@@ -41,6 +41,7 @@ class APGIFrameworkCLI:
         except ImportError:
             # Fallback to standardized logging if centralized logging is not available
             from .logging.standardized_logging import get_logger
+
             self.logger = get_logger(__name__)
             return
 
@@ -336,7 +337,7 @@ Examples:
 
         try:
             # Initialize controller with config if provided
-            if hasattr(args, 'config') and args.config:
+            if hasattr(args, "config") and args.config:
                 self.initialize_controller(args.config)
             elif not self.controller:
                 self.initialize_controller(None)
@@ -1160,7 +1161,7 @@ Examples:
         # Initialize controller for commands that need it
         if parsed_args.command not in [
             "generate-config",
-            "batch-test", 
+            "batch-test",
             "test-results",
             "test-analysis",
             "test-coverage",

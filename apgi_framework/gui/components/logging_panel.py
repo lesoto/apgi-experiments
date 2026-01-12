@@ -577,17 +577,28 @@ class LoggingPanel(ctk.CTkFrame):
             if selected_text:
                 self.clipboard_clear()
                 self.clipboard_append(selected_text)
-        except Exception:
-            pass
+                self.show_status("Selected text copied to clipboard", "success")
+            else:
+                self.show_status("No text selected to copy", "warning")
+        except tk.TclError:
+            self.show_status("No text selected to copy", "warning")
+        except Exception as e:
+            self.show_status(f"Failed to copy selected text: {e}", "error")
+            self.logger.error(f"Copy selected text failed: {e}")
 
     def _copy_all(self):
         """Copy all log text to clipboard."""
         try:
             all_text = self.log_text.get("1.0", "end")
-            self.clipboard_clear()
-            self.clipboard_append(all_text)
-        except Exception:
-            pass
+            if all_text.strip():
+                self.clipboard_clear()
+                self.clipboard_append(all_text)
+                self.show_status("All log text copied to clipboard", "success")
+            else:
+                self.show_status("No log text to copy", "warning")
+        except Exception as e:
+            self.show_status(f"Failed to copy all log text: {e}", "error")
+            self.logger.error(f"Copy all log text failed: {e}")
 
     def _find_text(self):
         """Find text in log display."""

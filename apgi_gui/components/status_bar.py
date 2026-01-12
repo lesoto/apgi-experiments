@@ -17,6 +17,7 @@ except ImportError:
     # Fallback for direct execution
     import sys
     from pathlib import Path
+
     project_root = Path(__file__).parent.parent.parent.parent
     sys.path.insert(0, str(project_root))
     from apgi_framework.utils.font_manager import get_ui_font
@@ -69,10 +70,12 @@ class StatusBar(ctk.CTkFrame):
             super().destroy()
         except AttributeError as e:
             if "_font" in str(e):
-                # Ignore CustomTkinter font attribute error
-                pass
+                # Ignore CustomTkinter font attribute error - this is expected
+                logger.debug(f"Ignoring expected CustomTkinter font error: {e}")
             else:
-                raise e
+                # Log other attribute errors
+                logger.warning(f"Unexpected AttributeError during destroy: {e}")
+                raise
 
     def setup_ui(self):
         """Set up the status bar UI components."""
@@ -123,9 +126,7 @@ class StatusBar(ctk.CTkFrame):
         # Time label
         try:
             ui_font = get_ui_font(12)
-            self.time_label = ctk.CTkLabel(
-                self, text="", anchor="e", font=ui_font
-            )
+            self.time_label = ctk.CTkLabel(self, text="", anchor="e", font=ui_font)
         except Exception:
             # Fallback to default font
             self.time_label = ctk.CTkLabel(
@@ -138,9 +139,7 @@ class StatusBar(ctk.CTkFrame):
         # Zoom level label
         try:
             ui_font = get_ui_font(12)
-            self.zoom_label = ctk.CTkLabel(
-                self, text="100%", anchor="e", font=ui_font
-            )
+            self.zoom_label = ctk.CTkLabel(self, text="100%", anchor="e", font=ui_font)
         except Exception:
             # Fallback to default font
             self.zoom_label = ctk.CTkLabel(
@@ -214,13 +213,18 @@ class StatusBar(ctk.CTkFrame):
             self.status_label.configure(text_color=None)
             self.logger.debug("Status color reset to default")
         except Exception as e:
-            # If reset fails, set to a neutral color
+            # If reset fails, set to a neutral color and inform user
             try:
                 self.status_label.configure(text_color="gray")
                 self.logger.warning(f"Failed to reset status color, using gray: {e}")
+                self.show_temporary_message(
+                    "Status display error - using fallback color", "warning"
+                )
             except Exception as e2:
                 self.logger.error(f"Failed to set fallback status color: {e2}")
-                pass
+                self.show_temporary_message(
+                    "Status display error - color reset failed", "error"
+                )
 
     def set_file(self, file_path: Optional[str]) -> None:
         """Update the current file display.

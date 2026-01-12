@@ -14,13 +14,13 @@ from typing import Union, Optional, TYPE_CHECKING
 import warnings
 import logging
 
-from ..exceptions import MathematicalError
+from apgi_framework.exceptions import MathematicalError
 
 if TYPE_CHECKING:
-    from .precision import PrecisionCalculator
-    from .prediction_error import PredictionErrorProcessor
-    from .somatic_marker import SomaticMarkerEngine
-    from .threshold import ThresholdManager
+    from apgi_framework.core.precision import PrecisionCalculator
+    from apgi_framework.core.prediction_error import PredictionErrorProcessor
+    from apgi_framework.core.somatic_marker import SomaticMarkerEngine
+    from apgi_framework.core.threshold import ThresholdManager
 
 
 class APGIEquation:
@@ -59,7 +59,7 @@ class APGIEquation:
         self.prediction_error_processor = prediction_error_processor
         self.somatic_marker_engine = somatic_marker_engine
         self.threshold_manager = threshold_manager
-        
+
         # Initialize logger
         self.logger = logging.getLogger(__name__)
 
@@ -115,7 +115,9 @@ class APGIEquation:
             surprise = 0.0
         elif surprise > 10:
             # Log at debug level only - this is expected for large prediction errors
-            self.logger.debug(f"Surprise value {surprise:.3f} exceeds typical range (0-10), clamping to 10")
+            self.logger.debug(
+                f"Surprise value {surprise:.3f} exceeds typical range (0-10), clamping to 10"
+            )
             surprise = 10.0
 
         return float(surprise)

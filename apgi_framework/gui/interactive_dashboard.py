@@ -105,19 +105,23 @@ class InteractiveWebDashboard:
             """Get all experiments data."""
             try:
                 experiments = self.experiment_monitor.get_all_experiments()
-                
+
                 # If no experiments, provide sample data for demonstration
                 if not experiments:
                     self.logger.info("No experiments found, providing sample data")
                     experiments = self._get_sample_experiments()
-                
+
                 return jsonify(
                     {
                         "success": True,
                         "data": experiments,
                         "timestamp": datetime.now().isoformat(),
                         "count": len(experiments),
-                        "message": "Sample data" if not self.experiment_monitor.get_all_experiments() else "Real data"
+                        "message": (
+                            "Sample data"
+                            if not self.experiment_monitor.get_all_experiments()
+                            else "Real data"
+                        ),
                     }
                 )
             except Exception as e:
@@ -283,16 +287,22 @@ class InteractiveWebDashboard:
             try:
                 experiments = self.experiment_monitor.get_all_experiments()
                 if not experiments:
-                    self.logger.info("No experiments found, providing sample data for WebSocket")
+                    self.logger.info(
+                        "No experiments found, providing sample data for WebSocket"
+                    )
                     experiments = self._get_sample_experiments()
-                    
+
                 emit(
                     "initial_data",
                     {
                         "experiments": experiments,
                         "config": self._get_config_summary(),
                         "timestamp": datetime.now().isoformat(),
-                        "message": "Sample data" if not self.experiment_monitor.get_all_experiments() else "Real data"
+                        "message": (
+                            "Sample data"
+                            if not self.experiment_monitor.get_all_experiments()
+                            else "Real data"
+                        ),
                     },
                 )
             except Exception as e:
@@ -311,13 +321,19 @@ class InteractiveWebDashboard:
             try:
                 experiments = self.experiment_monitor.get_all_experiments()
                 if not experiments:
-                    self.logger.info("No experiments found, providing sample data for update")
+                    self.logger.info(
+                        "No experiments found, providing sample data for update"
+                    )
                     experiments = self._get_sample_experiments()
-                    
+
                 update_data = {
                     "experiments": experiments,
                     "timestamp": datetime.now().isoformat(),
-                    "message": "Sample data" if not self.experiment_monitor.get_all_experiments() else "Real data"
+                    "message": (
+                        "Sample data"
+                        if not self.experiment_monitor.get_all_experiments()
+                        else "Real data"
+                    ),
                 }
                 emit("update", update_data)
             except Exception as e:
@@ -422,7 +438,7 @@ class InteractiveWebDashboard:
                     "name": "Primary Falsification Test",
                     "description": "Sample primary falsification test",
                     "total_trials": 1000,
-                    "test_type": "primary"
+                    "test_type": "primary",
                 },
                 "start_time": datetime.now() - timedelta(hours=2),
                 "status": "completed",
@@ -434,14 +450,14 @@ class InteractiveWebDashboard:
                         "trial": 1,
                         "falsified": True,
                         "confidence": 0.95,
-                        "response_time": 1.23
+                        "response_time": 1.23,
                     },
                     {
-                        "trial": 2, 
+                        "trial": 2,
                         "falsified": False,
                         "confidence": 0.12,
-                        "response_time": 0.87
-                    }
+                        "response_time": 0.87,
+                    },
                 ],
                 "trials": [],
                 "last_update": datetime.now() - timedelta(hours=1),
@@ -449,8 +465,8 @@ class InteractiveWebDashboard:
                     "trials_per_second": 2.5,
                     "estimated_completion": None,
                     "falsifications_detected": 234,
-                    "success_rate": 76.6
-                }
+                    "success_rate": 76.6,
+                },
             },
             "sample_consciousness": {
                 "id": "sample_consciousness",
@@ -458,7 +474,7 @@ class InteractiveWebDashboard:
                     "name": "Consciousness Without Ignition Test",
                     "description": "Sample consciousness test",
                     "total_trials": 500,
-                    "test_type": "consciousness-without-ignition"
+                    "test_type": "consciousness-without-ignition",
                 },
                 "start_time": datetime.now() - timedelta(minutes=30),
                 "status": "running",
@@ -472,9 +488,9 @@ class InteractiveWebDashboard:
                     "trials_per_second": 1.8,
                     "estimated_completion": datetime.now() + timedelta(minutes=97),
                     "falsifications_detected": 87,
-                    "success_rate": 73.2
-                }
-            }
+                    "success_rate": 73.2,
+                },
+            },
         }
 
     def get_dashboard_url(self) -> str:

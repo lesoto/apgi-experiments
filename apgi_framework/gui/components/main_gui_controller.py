@@ -26,27 +26,90 @@ try:
     from .test_execution_panel import TestExecutionPanel
     from .results_visualization_panel import ResultsVisualizationPanel
     from .logging_panel import LoggingPanel
+
+    GUI_COMPONENTS_AVAILABLE = True
 except ImportError as e:
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger("main_gui_controller")
     logger.warning(f"Could not import GUI components: {e}")
+    GUI_COMPONENTS_AVAILABLE = False
 
-    # Create fallback classes
+    # Create fallback classes only if imports fail
     class ParameterConfigPanel:
         def __init__(self, parent, *args, **kwargs):
-            pass
+            self.parent = parent
+            self._create_placeholder()
+
+        def _create_placeholder(self):
+            """Create placeholder UI."""
+            frame = ctk.CTkFrame(self.parent)
+            frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+            ctk.CTkLabel(
+                frame,
+                text="Parameter Configuration",
+                font=ctk.CTkFont(size=16, weight="bold"),
+            ).pack(pady=10)
+            ctk.CTkLabel(
+                frame,
+                text="Parameter configuration component not available",
+                text_color="gray",
+            ).pack(pady=5)
 
     class TestExecutionPanel:
         def __init__(self, parent, *args, **kwargs):
-            pass
+            self.parent = parent
+            self._create_placeholder()
+
+        def _create_placeholder(self):
+            """Create placeholder UI."""
+            frame = ctk.CTkFrame(self.parent)
+            frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+            ctk.CTkLabel(
+                frame, text="Test Execution", font=ctk.CTkFont(size=16, weight="bold")
+            ).pack(pady=10)
+            ctk.CTkLabel(
+                frame, text="Test execution component not available", text_color="gray"
+            ).pack(pady=5)
 
     class ResultsVisualizationPanel:
         def __init__(self, parent, *args, **kwargs):
-            pass
+            self.parent = parent
+            self._create_placeholder()
+
+        def _create_placeholder(self):
+            """Create placeholder UI."""
+            frame = ctk.CTkFrame(self.parent)
+            frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+            ctk.CTkLabel(
+                frame,
+                text="Results Visualization",
+                font=ctk.CTkFont(size=16, weight="bold"),
+            ).pack(pady=10)
+            ctk.CTkLabel(
+                frame,
+                text="Results visualization component not available",
+                text_color="gray",
+            ).pack(pady=5)
 
     class LoggingPanel:
         def __init__(self, parent, *args, **kwargs):
-            pass
+            self.parent = parent
+            self._create_placeholder()
+
+        def _create_placeholder(self):
+            """Create placeholder UI."""
+            frame = ctk.CTkFrame(self.parent)
+            frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+            ctk.CTkLabel(
+                frame, text="Logging", font=ctk.CTkFont(size=16, weight="bold")
+            ).pack(pady=10)
+            ctk.CTkLabel(
+                frame, text="Logging component not available", text_color="gray"
+            ).pack(pady=5)
 
 
 # Import framework components
@@ -137,6 +200,15 @@ class MainGUIController:
 
     def _initialize_components(self):
         """Initialize all GUI components."""
+        if not GUI_COMPONENTS_AVAILABLE:
+            logger.warning("GUI components not available - using placeholder panels")
+            # Initialize placeholder panels
+            self.parameter_panel = ParameterConfigPanel(self.parent)
+            self.results_panel = ResultsVisualizationPanel(self.parent)
+            self.logging_panel = LoggingPanel(self.parent)
+            self.system_initialized = True
+            return
+
         try:
             # Initialize parameter configuration panel
             self.parameter_panel = ParameterConfigPanel(

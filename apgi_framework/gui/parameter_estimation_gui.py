@@ -8,7 +8,7 @@ heartbeat detection, and dual-modality oddball).
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext, filedialog
 from typing import Dict, Any, Optional, Callable
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 import logging
 import threading
@@ -17,16 +17,7 @@ import threading
 logger = logging.getLogger(__name__)
 
 # Import available modules
-try:
-    from .progress_monitoring import RealTimeProgressMonitor
-except ImportError:
-    # Fallback for direct execution
-    import sys
-    from pathlib import Path
-
-    project_root = Path(__file__).parent.parent.parent
-    sys.path.insert(0, str(project_root))
-    from apgi_framework.gui.progress_monitoring import RealTimeProgressMonitor
+from apgi_framework.gui.progress_monitoring import RealTimeProgressMonitor
 
 # Import core modules with corrected paths
 try:
@@ -35,9 +26,11 @@ try:
         HeartbeatDetectionTask,
         DualModalityOddballTask,
     )
+
     logger.info("Successfully imported behavioral task classes")
 except ImportError as e:
     logger.warning(f"Failed to import behavioral tasks: {e}")
+
     # Fallback placeholder classes
     class DetectionTask:
         def __init__(self, *args, **kwargs):
@@ -56,7 +49,7 @@ except ImportError as e:
 
 
 try:
-    from ..data.parameter_estimation_dao import ParameterEstimationDAO
+    from apgi_framework.data.parameter_estimation_dao import ParameterEstimationDAO
 except ImportError:
 
     class ParameterEstimationDAO:
@@ -65,7 +58,7 @@ except ImportError:
 
 
 try:
-    from ..data.parameter_estimation_models import SessionData, TaskType
+    from apgi_framework.data.parameter_estimation_models import SessionData, TaskType
 except ImportError:
 
     class SessionData:
@@ -428,10 +421,17 @@ class ParameterEstimationGUI:
         self._update_time()
 
     def _update_time(self) -> None:
-        """Update time display in status bar."""
+        """Update time display in status bar with drift prevention."""
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.time_label.config(text=current_time)
-        self.root.after(1000, self._update_time)
+
+        # Schedule next update to run at the start of the next second
+        now = datetime.now()
+        next_second = (now.replace(microsecond=0) + timedelta(seconds=1)).timestamp()
+        current_timestamp = now.timestamp()
+        delay_ms = int((next_second - current_timestamp) * 1000)
+
+        self.root.after(delay_ms, self._update_time)
 
     def _new_session(self) -> None:
         """Create new session."""

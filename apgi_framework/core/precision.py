@@ -9,7 +9,7 @@ import numpy as np
 from typing import Union, Optional, Tuple
 import warnings
 
-from ..exceptions import MathematicalError
+from apgi_framework.exceptions import MathematicalError
 
 
 class PrecisionCalculator:

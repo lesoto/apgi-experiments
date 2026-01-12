@@ -27,7 +27,7 @@ logger = get_logger(__name__)
 @dataclass
 class DeploymentConfig:
     """Deployment configuration."""
-    
+
     environment: str = "production"
     docker_image: str = "apgi-framework"
     docker_tag: str = "latest"
@@ -44,7 +44,7 @@ class DeploymentConfig:
 @dataclass
 class DeploymentStatus:
     """Current deployment status."""
-    
+
     is_running: bool = False
     container_id: Optional[str] = None
     start_time: Optional[datetime] = None
@@ -59,7 +59,7 @@ class DeploymentStatus:
 class DeploymentAutomationManager:
     """
     Advanced deployment automation manager.
-    
+
     Features:
     - Automated deployment and environment setup
     - Health monitoring and auto-recovery
@@ -67,11 +67,11 @@ class DeploymentAutomationManager:
     - Rolling updates
     - Multi-environment support
     """
-    
+
     def __init__(self, config_path: Optional[Path] = None):
         """
         Initialize deployment automation manager.
-        
+
         Args:
             config_path: Path to deployment configuration file
         """
@@ -80,26 +80,26 @@ class DeploymentAutomationManager:
         self.config = self._load_config()
         self.status = DeploymentStatus()
         self.validator = DeploymentValidator()
-        
+
         # Monitoring thread
         self._monitoring_active = False
         self._monitoring_thread: Optional[threading.Thread] = None
-        
+
         # Deployment history
         self.deployment_history: List[Dict[str, Any]] = []
-        
+
     def _load_config(self) -> DeploymentConfig:
         """Load deployment configuration."""
         if self.config_path.exists():
             try:
-                with open(self.config_path, 'r') as f:
+                with open(self.config_path, "r") as f:
                     data = yaml.safe_load(f)
                 return DeploymentConfig(**data)
             except Exception as e:
                 self.logger.warning(f"Failed to load config, using defaults: {e}")
-        
+
         return DeploymentConfig()
-    
+
     def _save_config(self) -> None:
         """Save deployment configuration."""
         try:
@@ -116,123 +116,139 @@ class DeploymentAutomationManager:
                 "backup_enabled": self.config.backup_enabled,
                 "monitoring_enabled": self.config.monitoring_enabled,
             }
-            
-            with open(self.config_path, 'w') as f:
+
+            with open(self.config_path, "w") as f:
                 yaml.dump(config_dict, f, default_flow_style=False)
-                
+
         except Exception as e:
             self.logger.error(f"Failed to save config: {e}")
-    
+
     def deploy(self, force: bool = False) -> bool:
         """
         Perform automated deployment.
-        
+
         Args:
             force: Force redeployment even if running
-            
+
         Returns:
             True if deployment successful
         """
         self.logger.info(f"Starting automated deployment for {self.config.environment}")
-        
+
         try:
             # Check if already running
             if self._is_container_running() and not force:
-                self.logger.info("Container already running, use force=True to redeploy")
+                self.logger.info(
+                    "Container already running, use force=True to redeploy"
+                )
                 return True
-            
+
             # Validate deployment prerequisites
             validation_report = self.validator.validate_deployment()
             if not validation_report.overall_passed:
                 self.logger.error("Deployment validation failed")
                 self.logger.error(self.validator.generate_summary())
                 return False
-            
+
             # Stop existing container
             self._stop_container()
-            
+
             # Create backup if enabled
             if self.config.backup_enabled:
                 self._create_backup()
-            
+
             # Build and deploy
             if not self._build_image():
                 return False
-            
+
             if not self._start_container():
                 return False
-            
+
             # Wait for health check
             if not self._wait_for_health_check():
                 self.logger.error("Health check failed after deployment")
                 return False
-            
+
             # Start monitoring
             if self.config.monitoring_enabled:
                 self._start_monitoring()
-            
+
             # Record deployment
             self._record_deployment("success")
-            
+
             self.logger.info("Deployment completed successfully")
             return True
-            
+
         except Exception as e:
             self.logger.error(f"Deployment failed: {e}")
             self._record_deployment("failed", str(e))
             return False
-    
+
     def _is_container_running(self) -> bool:
         """Check if container is running."""
         try:
             result = subprocess.run(
-                ["docker", "ps", "--filter", f"name={self.config.container_name}", "--quiet"],
-                capture_output=True, text=True, check=True
+                [
+                    "docker",
+                    "ps",
+                    "--filter",
+                    f"name={self.config.container_name}",
+                    "--quiet",
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
             )
             return bool(result.stdout.strip())
         except subprocess.CalledProcessError:
             return False
-    
+
     def _stop_container(self) -> None:
         """Stop existing container."""
         try:
             self.logger.info("Stopping existing container...")
             subprocess.run(
                 ["docker", "stop", self.config.container_name],
-                capture_output=True, check=False
+                capture_output=True,
+                check=False,
             )
             subprocess.run(
                 ["docker", "rm", self.config.container_name],
-                capture_output=True, check=False
+                capture_output=True,
+                check=False,
             )
         except Exception as e:
             self.logger.warning(f"Error stopping container: {e}")
-    
+
     def _build_image(self) -> bool:
         """Build Docker image."""
         try:
-            self.logger.info(f"Building Docker image: {self.config.docker_image}:{self.config.docker_tag}")
-            
+            self.logger.info(
+                f"Building Docker image: {self.config.docker_image}:{self.config.docker_tag}"
+            )
+
             cmd = [
-                "docker", "build",
-                "-t", f"{self.config.docker_image}:{self.config.docker_tag}",
-                "."
+                "docker",
+                "build",
+                "-t",
+                f"{self.config.docker_image}:{self.config.docker_tag}",
+                ".",
             ]
-            
+
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
             self.logger.info("Docker image built successfully")
             return True
-            
+
         except subprocess.CalledProcessError as e:
             self.logger.error(f"Failed to build Docker image: {e}")
             self.logger.error(f"Build output: {e.stderr}")
             return False
-    
+
     def _start_container(self) -> bool:
         """Start container."""
         try:
             self.logger.info("Starting container...")
-            
+
             # Prepare volume mounts
             volumes = []
             default_volumes = {
@@ -241,16 +257,16 @@ class DeploymentAutomationManager:
                 "./session_state": "/app/session_state",
                 "./logs": "/app/logs",
             }
-            
+
             all_volumes = {**default_volumes, **self.config.volumes}
             for host_path, container_path in all_volumes.items():
                 volumes.extend(["-v", f"{host_path}:{container_path}"])
-            
+
             # Prepare port mappings
             ports = []
             for host_port, container_port in self.config.ports.items():
                 ports.extend(["-p", f"{host_port}:{container_port}"])
-            
+
             # Prepare environment variables
             env_vars = []
             default_env = {
@@ -258,41 +274,45 @@ class DeploymentAutomationManager:
                 "APGI_LOG_LEVEL": "INFO",
                 "PYTHONPATH": "/app",
             }
-            
+
             all_env = {**default_env, **self.config.environment_vars}
             for key, value in all_env.items():
                 env_vars.extend(["-e", f"{key}={value}"])
-            
+
             # Build docker run command
             cmd = [
-                "docker", "run", "-d",
-                "--name", self.config.container_name,
-                "--restart", "unless-stopped",
+                "docker",
+                "run",
+                "-d",
+                "--name",
+                self.config.container_name,
+                "--restart",
+                "unless-stopped",
                 *volumes,
                 *ports,
                 *env_vars,
-                f"{self.config.docker_image}:{self.config.docker_tag}"
+                f"{self.config.docker_image}:{self.config.docker_tag}",
             ]
-            
+
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-            
+
             # Get container ID
             self.status.container_id = result.stdout.strip()
             self.status.is_running = True
             self.status.start_time = datetime.now()
-            
+
             self.logger.info(f"Container started: {self.status.container_id}")
             return True
-            
+
         except subprocess.CalledProcessError as e:
             self.logger.error(f"Failed to start container: {e}")
             self.logger.error(f"Docker output: {e.stderr}")
             return False
-    
+
     def _wait_for_health_check(self, timeout: int = 60) -> bool:
         """Wait for health check to pass."""
         self.logger.info("Waiting for health check...")
-        
+
         start_time = time.time()
         while time.time() - start_time < timeout:
             try:
@@ -300,42 +320,53 @@ class DeploymentAutomationManager:
                 if not self._is_container_running():
                     self.logger.error("Container stopped during health check")
                     return False
-                
+
                 # Perform health check
                 result = subprocess.run(
-                    ["docker", "exec", self.config.container_name, 
-                     "python", "-c", "import apgi_framework; print('OK')"],
-                    capture_output=True, text=True, timeout=10, check=False
+                    [
+                        "docker",
+                        "exec",
+                        self.config.container_name,
+                        "python",
+                        "-c",
+                        "import apgi_framework; print('OK')",
+                    ],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                    check=False,
                 )
-                
+
                 if result.returncode == 0:
                     self.logger.info("Health check passed")
                     self.status.health_status = "healthy"
                     self.status.last_health_check = datetime.now()
                     return True
-                
+
                 time.sleep(2)
-                
+
             except subprocess.TimeoutExpired:
                 self.logger.warning("Health check timeout")
                 continue
             except Exception as e:
                 self.logger.warning(f"Health check error: {e}")
                 time.sleep(2)
-        
+
         self.logger.error("Health check timed out")
         return False
-    
+
     def _start_monitoring(self) -> None:
         """Start monitoring thread."""
         if self._monitoring_active:
             return
-        
+
         self._monitoring_active = True
-        self._monitoring_thread = threading.Thread(target=self._monitoring_loop, daemon=True)
+        self._monitoring_thread = threading.Thread(
+            target=self._monitoring_loop, daemon=True
+        )
         self._monitoring_thread.start()
         self.logger.info("Monitoring started")
-    
+
     def _monitoring_loop(self) -> None:
         """Monitoring loop."""
         while self._monitoring_active:
@@ -351,77 +382,101 @@ class DeploymentAutomationManager:
                             self._wait_for_health_check()
                         else:
                             self.status.error_count += 1
-                
+
                 time.sleep(self.config.health_check_interval)
-                
+
             except Exception as e:
                 self.logger.error(f"Monitoring error: {e}")
                 time.sleep(self.config.health_check_interval)
-    
+
     def _update_container_stats(self) -> None:
         """Update container resource statistics."""
         try:
             # Get container stats
             result = subprocess.run(
-                ["docker", "stats", "--no-stream", "--format", 
-                 "{{.CPUPerc}}\t{{.MemPerc}}", self.config.container_name],
-                capture_output=True, text=True, check=True
+                [
+                    "docker",
+                    "stats",
+                    "--no-stream",
+                    "--format",
+                    "{{.CPUPerc}}\t{{.MemPerc}}",
+                    self.config.container_name,
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
             )
-            
+
             if result.stdout.strip():
-                cpu_str, mem_str = result.stdout.strip().split('\t')
-                self.status.cpu_usage = float(cpu_str.rstrip('%'))
-                self.status.memory_usage = float(mem_str.rstrip('%'))
-                
+                cpu_str, mem_str = result.stdout.strip().split("\t")
+                self.status.cpu_usage = float(cpu_str.rstrip("%"))
+                self.status.memory_usage = float(mem_str.rstrip("%"))
+
         except Exception as e:
             self.logger.warning(f"Failed to update container stats: {e}")
-    
+
     def _perform_health_check(self) -> None:
         """Perform health check."""
         try:
             result = subprocess.run(
-                ["docker", "exec", self.config.container_name,
-                 "python", "-c", "import apgi_framework; print('OK')"],
-                capture_output=True, text=True, timeout=10, check=False
+                [
+                    "docker",
+                    "exec",
+                    self.config.container_name,
+                    "python",
+                    "-c",
+                    "import apgi_framework; print('OK')",
+                ],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                check=False,
             )
-            
+
             self.status.last_health_check = datetime.now()
-            
+
             if result.returncode == 0:
                 self.status.health_status = "healthy"
             else:
                 self.status.health_status = "unhealthy"
                 self.status.error_count += 1
                 self.status.last_error = result.stderr
-                
+
         except Exception as e:
             self.status.health_status = "error"
             self.status.error_count += 1
             self.status.last_error = str(e)
-    
+
     def _create_backup(self) -> None:
         """Create deployment backup."""
         try:
-            backup_dir = Path("backups") / f"deployment_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            backup_dir = (
+                Path("backups")
+                / f"deployment_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            )
             backup_dir.mkdir(parents=True, exist_ok=True)
-            
+
             # Backup configuration
             if self.config_path.exists():
                 import shutil
+
                 shutil.copy2(self.config_path, backup_dir / "deployment_config.yaml")
-            
+
             # Backup data directories
             for source in ["data", "apgi_outputs", "session_state"]:
                 source_path = Path(source)
                 if source_path.exists():
                     import shutil
-                    shutil.copytree(source_path, backup_dir / source, dirs_exist_ok=True)
-            
+
+                    shutil.copytree(
+                        source_path, backup_dir / source, dirs_exist_ok=True
+                    )
+
             self.logger.info(f"Backup created: {backup_dir}")
-            
+
         except Exception as e:
             self.logger.error(f"Backup failed: {e}")
-    
+
     def _record_deployment(self, status: str, error: Optional[str] = None) -> None:
         """Record deployment in history."""
         deployment_record = {
@@ -432,20 +487,26 @@ class DeploymentAutomationManager:
             "error": error,
             "container_id": self.status.container_id,
         }
-        
+
         self.deployment_history.append(deployment_record)
-        
+
         # Keep only last 50 deployments
         if len(self.deployment_history) > 50:
             self.deployment_history = self.deployment_history[-50:]
-    
+
     def get_status(self) -> Dict[str, Any]:
         """Get current deployment status."""
         return {
             "is_running": self.status.is_running,
             "container_id": self.status.container_id,
-            "start_time": self.status.start_time.isoformat() if self.status.start_time else None,
-            "last_health_check": self.status.last_health_check.isoformat() if self.status.last_health_check else None,
+            "start_time": (
+                self.status.start_time.isoformat() if self.status.start_time else None
+            ),
+            "last_health_check": (
+                self.status.last_health_check.isoformat()
+                if self.status.last_health_check
+                else None
+            ),
             "health_status": self.status.health_status,
             "cpu_usage": self.status.cpu_usage,
             "memory_usage": self.status.memory_usage,
@@ -453,14 +514,14 @@ class DeploymentAutomationManager:
             "last_error": self.status.last_error,
             "monitoring_active": self._monitoring_active,
         }
-    
+
     def stop_monitoring(self) -> None:
         """Stop monitoring."""
         self._monitoring_active = False
         if self._monitoring_thread:
             self._monitoring_thread.join(timeout=5)
         self.logger.info("Monitoring stopped")
-    
+
     def cleanup(self) -> None:
         """Cleanup resources."""
         self.stop_monitoring()
