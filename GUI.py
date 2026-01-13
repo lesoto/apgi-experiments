@@ -1299,6 +1299,7 @@ class APGIFrameworkGUI(ctk.CTk):
             btn.grid(row=idx, column=0, sticky="ew", padx=5, pady=2)
 
     def create_export_section(self, parent):
+        """Create export section."""
         exports = [
             ("Export as PNG", self.export_as_png),
             ("Export as PDF", self.export_as_pdf),
@@ -1316,113 +1317,8 @@ class APGIFrameworkGUI(ctk.CTk):
             )
             btn.grid(row=idx, column=0, sticky="ew", padx=5, pady=2)
 
-    # ------------------------------------------------------------------
-    # MAIN AREA
-    # ------------------------------------------------------------------
     def create_main_area(self):
-        main = ctk.CTkFrame(self, fg_color="white")
-        main.grid(row=0, column=1, sticky="nsew", padx=0, pady=0)
-        main.grid_rowconfigure(0, weight=1)
-        main.grid_columnconfigure(0, weight=1)
-
-        # Output Display Frame - takes up most of the space
-        output_frame = ctk.CTkFrame(main, fg_color="#2b2b2b")
-        output_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
-        output_frame.grid_rowconfigure(1, weight=1)
-        output_frame.grid_columnconfigure(0, weight=1)
-
-        # Output Title
-        output_title = ctk.CTkLabel(
-            output_frame,
-            text="Output Console",
-            font=get_font(14, "bold"),
-            text_color="white",
-            fg_color="#2b2b2b",
-        )
-        output_title.grid(row=0, column=0, sticky="nw", padx=10, pady=10)
-
-        # Output Text Area
-        self.console_text = ctk.CTkTextbox(
-            output_frame,
-            fg_color="black",
-            text_color="white",
-            font=get_font(10, family="monospace"),
-        )
-        self.console_text.grid(row=1, column=0, sticky="nsew", padx=10, pady=(0, 10))
-
-        # Add initial console message
-        self.log_to_console("APGI Framework GUI Initialized")
-        self.log_to_console("Ready to run consciousness evaluation tests")
-        self.log_to_console(
-            "System time: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        )
-
-        # Bottom button bar
-        bar = ctk.CTkFrame(main, fg_color="#e0e0e0", height=50)
-        bar.grid(row=1, column=0, sticky="ew", padx=10, pady=(0, 10))
-        bar.grid_columnconfigure(tuple(range(5)), weight=1)
-
-        btn_info = [
-            ("Load Test Data", self.load_test_data),
-            ("Run Consciousness Evaluation", self.run_primary_falsification_test),
-            ("Interoceptive Gating", self.run_interoceptive_gating_experiment),
-            ("AI Benchmarking", self.run_ai_benchmarking_experiment),
-            ("Help", self.show_help),
-        ]
-
-        for idx, (txt, cmd) in enumerate(btn_info):
-            btn = ctk.CTkButton(
-                bar,
-                text=txt,
-                fg_color="#3a7ebf",
-                hover_color="#1f538d",
-                command=cmd,
-                width=200,
-            )
-            btn.grid(row=idx, column=0, sticky="ew", padx=5, pady=2)
-
-    def create_visualization_section(self, parent):
-        """Create visualization section."""
-        visualizations = [
-            ("Plot Results", self.plot_results),
-            ("Neural Signatures Plot", self.plot_neural_signatures),
-            ("Parameter Space", self.plot_parameter_space),
-            ("Time Series Analysis", self.plot_time_series),
-        ]
-
-        for idx, (text, command) in enumerate(visualizations):
-            btn = ctk.CTkButton(
-                parent,
-                text=text,
-                fg_color="#3a7ebf",
-                hover_color="#1f538d",
-                command=command,
-                width=200,
-            )
-            btn.grid(row=idx, column=0, sticky="ew", padx=5, pady=2)
-
-    def create_export_section(self, parent):
-        exports = [
-            ("Export as PNG", self.export_as_png),
-            ("Export as PDF", self.export_as_pdf),
-            ("Export Data as CSV", self.export_as_csv),
-        ]
-
-        for idx, (text, command) in enumerate(exports):
-            btn = ctk.CTkButton(
-                parent,
-                text=text,
-                fg_color="#3a7ebf",
-                hover_color="#1f538d",
-                command=command,
-                width=200,
-            )
-            btn.grid(row=idx, column=0, sticky="ew", padx=5, pady=2)
-
-    # ------------------------------------------------------------------
-    # MAIN AREA
-    # ------------------------------------------------------------------
-    def create_main_area(self):
+        """Create the main area with console and button bar."""
         main = ctk.CTkFrame(self, fg_color="white")
         main.grid(row=0, column=1, sticky="nsew", padx=0, pady=0)
         main.grid_rowconfigure(0, weight=1)
@@ -1520,9 +1416,16 @@ class APGIFrameworkGUI(ctk.CTk):
                 from pathlib import Path
 
                 sys.path.insert(0, str(Path(__file__).parent))
-                from examples.run_primary_falsification_test import (
-                    run_primary_falsification_test_basic,
+                import importlib.util
+                
+                # Load module with numeric name
+                spec = importlib.util.spec_from_file_location(
+                    "run_primary_falsification_test", 
+                    "examples/01_run_primary_falsification_test.py"
                 )
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                run_primary_falsification_test_basic = module.run_primary_falsification_test_basic
             except ImportError:
                 # Fallback if import fails
                 run_primary_falsification_test_basic = None
@@ -2199,7 +2102,15 @@ class APGIFrameworkGUI(ctk.CTk):
         self.update_status("Running Threshold Effects...")
 
         try:
-            # Import from run_experiments
+            # Import from tools.run_experiments
+            import sys
+            from pathlib import Path
+            
+            # Add tools directory to path
+            tools_path = Path(__file__).parent / "tools"
+            if str(tools_path) not in sys.path:
+                sys.path.insert(0, str(tools_path))
+            
             from run_experiments import experiment_threshold_effects
 
             # Run in separate thread
@@ -2248,7 +2159,15 @@ class APGIFrameworkGUI(ctk.CTk):
         self.update_status("Running Somatic Markers...")
 
         try:
-            # Import from run_experiments
+            # Import from tools.run_experiments
+            import sys
+            from pathlib import Path
+            
+            # Add tools directory to path
+            tools_path = Path(__file__).parent / "tools"
+            if str(tools_path) not in sys.path:
+                sys.path.insert(0, str(tools_path))
+            
             from run_experiments import experiment_somatic_markers
 
             # Get APGI parameters to use for somatic marker values
@@ -2297,7 +2216,15 @@ class APGIFrameworkGUI(ctk.CTk):
         self.update_status("Running Precision Effects...")
 
         try:
-            # Import from run_experiments
+            # Import from tools.run_experiments
+            import sys
+            from pathlib import Path
+            
+            # Add tools directory to path
+            tools_path = Path(__file__).parent / "tools"
+            if str(tools_path) not in sys.path:
+                sys.path.insert(0, str(tools_path))
+            
             from run_experiments import experiment_precision_effects
 
             # Get APGI parameters
@@ -2363,7 +2290,15 @@ class APGIFrameworkGUI(ctk.CTk):
         self.update_status("Running Dynamic Threshold...")
 
         try:
-            # Import from run_experiments
+            # Import from tools.run_experiments
+            import sys
+            from pathlib import Path
+            
+            # Add tools directory to path
+            tools_path = Path(__file__).parent / "tools"
+            if str(tools_path) not in sys.path:
+                sys.path.insert(0, str(tools_path))
+            
             from run_experiments import experiment_dynamic_threshold
 
             # Get threshold parameter from GUI
@@ -5210,9 +5145,6 @@ class APGIFrameworkGUI(ctk.CTk):
     # BUTTON COMMANDS
     # ------------------------------------------------------------------
     def load_test_data(self):
-        """Load test data for analysis."""
-        self.log_to_console("Loading test data...")
-        # Simulate loading test data
         import time
 
         time.sleep(0.5)
@@ -5358,325 +5290,7 @@ class APGIFrameworkGUI(ctk.CTk):
     def _on_data_error(self, error_msg):
         """Handle data loading error."""
         self.log_to_console(f"Error generating example data: {error_msg}")
-        messagebox.showerror(
-            "Data Error", f"Failed to generate example data: {error_msg}"
-        )
-
-    def run_surprise_dynamics_analysis(self):
-        """Run surprise dynamics analysis using actual framework."""
-        self.log_to_console("Running Surprise Dynamics Analysis...")
-        self.update_status("Running Surprise Dynamics...")
-
-        try:
-            # Import actual analysis module
-            from core.analysis.surprise_dynamics import SurpriseDynamicsAnalyzer
-
-            # Check if we have current results to analyze
-            if not self.current_results:
-                self.log_to_console(
-                    "Warning: No current results available for analysis"
-                )
-                messagebox.showwarning(
-                    "No Data",
-                    "Please run a falsification test first to generate data for analysis.",
-                )
-                self.update_status("Ready")
-                return
-
-            # Run in separate thread
-            def run_analysis():
-                try:
-                    analyzer = SurpriseDynamicsAnalyzer()
-
-                    # Extract data from current results
-                    results_data = self.current_results.get("results", {})
-
-                    # Run surprise dynamics analysis
-                    dynamics_results = analyzer.analyze_surprise_dynamics(
-                        data=results_data, time_window=1000, overlap=0.5  # ms
-                    )
-
-                    # Store analysis results
-                    self.current_results["surprise_dynamics"] = {
-                        "timestamp": datetime.datetime.now().isoformat(),
-                        "dynamics": (
-                            dynamics_results.__dict__
-                            if hasattr(dynamics_results, "__dict__")
-                            else dynamics_results
-                        ),
-                        "summary": {
-                            "mean_surprise": getattr(
-                                dynamics_results, "mean_surprise", 0.75
-                            ),
-                            "surprise_variance": getattr(
-                                dynamics_results, "surprise_variance", 0.12
-                            ),
-                            "dynamics_complexity": getattr(
-                                dynamics_results, "complexity", 0.68
-                            ),
-                        },
-                    }
-
-                    self.after(
-                        0,
-                        self._on_test_complete,
-                        "Surprise Dynamics Analysis",
-                        dynamics_results,
-                    )
-
-                except Exception as e:
-                    self.after(
-                        0, self._on_test_error, "Surprise Dynamics Analysis", str(e)
-                    )
-
-            run_in_thread(run_analysis)
-
-        except ImportError as e:
-            self.log_to_console(f"Surprise dynamics module not available: {e}")
-            # Fallback to basic analysis
-            self.log_to_console("Running basic surprise analysis...")
-            self.current_results["surprise_dynamics"] = {
-                "timestamp": datetime.datetime.now().isoformat(),
-                "summary": {"status": "Basic analysis completed"},
-            }
-            messagebox.showinfo(
-                "Analysis", "Basic surprise dynamics analysis completed."
-            )
-            self.update_status("Ready")
-        except Exception as e:
-            self.log_to_console(f"Error setting up surprise dynamics: {e}")
-            messagebox.showerror("Error", f"Failed to run surprise dynamics: {e}")
-            self.update_status("Ready")
-
-    def run_disorder_classification(self):
-        """Run disorder classification using actual clinical framework."""
-        self.log_to_console("Running Disorder Classification...")
-        self.update_status("Running Disorder Classification...")
-
-        try:
-            # Check if we have current results to analyze
-            if not self.current_results:
-                self.log_to_console(
-                    "Warning: No current results available for classification"
-                )
-                messagebox.showwarning(
-                    "No Data",
-                    "Please run a falsification test first to generate data for classification.",
-                )
-                self.update_status("Ready")
-                return
-
-            # Run in separate thread
-            def run_classification():
-                try:
-                    # Use the disorder classifier if available
-                    if self.disorder_classifier:
-                        # Extract data from current results
-                        results_data = self.current_results.get("results", {})
-
-                        # Run classification
-                        classification_results = (
-                            self.disorder_classifier.classify_disorder(
-                                neural_data=results_data, patient_profile={}
-                            )
-                        )
-
-                        # Store results
-                        self.current_results["disorder_classification"] = {
-                            "timestamp": datetime.datetime.now().isoformat(),
-                            "classification": (
-                                classification_results.__dict__
-                                if hasattr(classification_results, "__dict__")
-                                else classification_results
-                            ),
-                            "summary": {
-                                "predicted_disorder": getattr(
-                                    classification_results, "predicted_disorder", "None"
-                                ),
-                                "confidence": getattr(
-                                    classification_results, "confidence", 0.85
-                                ),
-                                "risk_factors": getattr(
-                                    classification_results, "risk_factors", []
-                                ),
-                            },
-                        }
-
-                        self.after(
-                            0,
-                            self._on_test_complete,
-                            "Disorder Classification",
-                            classification_results,
-                        )
-                    else:
-                        # Fallback analysis
-                        self.log_to_console(
-                            "Disorder classifier not available, running basic analysis..."
-                        )
-                        self.current_results["disorder_classification"] = {
-                            "timestamp": datetime.datetime.now().isoformat(),
-                            "summary": {
-                                "status": "Basic classification completed",
-                                "note": "Full disorder classifier not available",
-                            },
-                        }
-                        self.after(
-                            0,
-                            self._on_test_complete,
-                            "Disorder Classification",
-                            "Basic analysis",
-                        )
-
-                except Exception as e:
-                    self.after(
-                        0, self._on_test_error, "Disorder Classification", str(e)
-                    )
-
-            run_in_thread(run_classification)
-
-        except Exception as e:
-            self.log_to_console(f"Error setting up disorder classification: {e}")
-            messagebox.showerror("Error", f"Failed to run disorder classification: {e}")
-            self.update_status("Ready")
-
-    def run_clinical_parameter_extraction(self):
-        """Run clinical parameter extraction using actual framework."""
-        self.log_to_console("Running Clinical Parameter Extraction...")
-        self.update_status("Running Clinical Extraction...")
-
-        try:
-            # Check if we have current results to analyze
-            if not self.current_results:
-                self.log_to_console(
-                    "Warning: No current results available for extraction"
-                )
-                messagebox.showwarning(
-                    "No Data",
-                    "Please run a falsification test first to generate data for extraction.",
-                )
-                self.update_status("Ready")
-                return
-
-            # Run in separate thread
-            def run_extraction():
-                try:
-                    # Use clinical extractor if available
-                    if self.clinical_extractor:
-                        # Extract data from current results
-                        results_data = self.current_results.get("results", {})
-
-                        # Run parameter extraction
-                        extraction_results = self.clinical_extractor.extract_parameters(
-                            neural_data=results_data, clinical_context={}
-                        )
-
-                        # Store results
-                        self.current_results["clinical_extraction"] = {
-                            "timestamp": datetime.datetime.now().isoformat(),
-                            "parameters": (
-                                extraction_results.__dict__
-                                if hasattr(extraction_results, "__dict__")
-                                else extraction_results
-                            ),
-                            "summary": {
-                                "apgi_parameters": getattr(
-                                    extraction_results, "apgi_parameters", {}
-                                ),
-                                "clinical_indicators": getattr(
-                                    extraction_results, "clinical_indicators", []
-                                ),
-                                "severity_score": getattr(
-                                    extraction_results, "severity_score", 0.3
-                                ),
-                            },
-                        }
-
-                        self.after(
-                            0,
-                            self._on_test_complete,
-                            "Clinical Parameter Extraction",
-                            extraction_results,
-                        )
-                    else:
-                        # Fallback analysis
-                        self.log_to_console(
-                            "Clinical extractor not available, running basic analysis..."
-                        )
-                        self.current_results["clinical_extraction"] = {
-                            "timestamp": datetime.datetime.now().isoformat(),
-                            "summary": {
-                                "status": "Basic parameter extraction completed",
-                                "note": "Full clinical extractor not available",
-                            },
-                        }
-                        self.after(
-                            0,
-                            self._on_test_complete,
-                            "Clinical Parameter Extraction",
-                            "Basic analysis",
-                        )
-
-                except Exception as e:
-                    self.after(
-                        0, self._on_test_error, "Clinical Parameter Extraction", str(e)
-                    )
-
-            run_in_thread(run_extraction)
-
-        except Exception as e:
-            self.log_to_console(f"Error setting up clinical parameter extraction: {e}")
-            messagebox.showerror(
-                "Error", f"Failed to run clinical parameter extraction: {e}"
-            )
-            self.update_status("Ready")
-
-    def run_patient_profile_analysis(self):
-        """Run patient profile analysis."""
-        self.log_to_console("Running Patient Profile Analysis...")
-        self.update_status("Running Patient Profile...")
-
-        try:
-            # Check if we have current results to analyze
-            if not self.current_results:
-                self.log_to_console(
-                    "Warning: No current results available for profile analysis"
-                )
-                messagebox.showwarning(
-                    "No Data",
-                    "Please run a falsification test first to generate data for analysis.",
-                )
-                self.update_status("Ready")
-                return
-
-            # Basic profile analysis
-            profile_data = {
-                "timestamp": datetime.datetime.now().isoformat(),
-                "test_history": [self.current_results.get("test", "Unknown")],
-                "last_assessment": self.current_results.get(
-                    "timestamp", datetime.datetime.now().isoformat()
-                ),
-                "risk_factors": [],
-                "recommendations": [
-                    "Continue monitoring",
-                    "Follow-up assessment recommended",
-                ],
-            }
-
-            # Store profile results
-            self.current_results["patient_profile"] = profile_data
-
-            self.log_to_console("Patient profile analysis completed")
-            messagebox.showinfo(
-                "Profile Analysis", "Patient profile analysis completed successfully."
-            )
-            self.update_status("Ready")
-
-        except Exception as e:
-            self.log_to_console(f"Error in patient profile analysis: {e}")
-            messagebox.showerror(
-                "Error", f"Failed to run patient profile analysis: {e}"
-            )
-            self.update_status("Ready")
+        messagebox.showerror("Data Error", f"Failed to generate example data: {error_msg}")
 
     def show_help(self):
         """Show help information."""
@@ -5732,7 +5346,8 @@ For detailed documentation, please refer to the user manual.
         """Execute a Python script."""
         # Check for known experiment scripts
         experiment_scripts = {
-            "run_experiments.py": "Main experiment runner",
+            "tools/run_experiments.py": "Main experiment runner",
+            "run_experiments.py": "Main experiment runner (tools)",
             "examples/01_run_primary_falsification_test.py": "Primary falsification test example",
             "examples/02_batch_processing_configurations.py": "Batch processing example",
             "examples/03_custom_analysis_saved_results.py": "Custom analysis example",
@@ -5746,6 +5361,17 @@ For detailed documentation, please refer to the user manual.
         # Check if script is in current directory
         if script_name in self.get_python_files():
             script_path = script_name
+        # Check tools directory
+        elif script_name.startswith("tools/") or script_name == "run_experiments.py":
+            if script_name == "run_experiments.py":
+                potential_paths = ["tools/run_experiments.py", script_name]
+            else:
+                potential_paths = [script_name]
+            
+            for potential_path in potential_paths:
+                if os.path.exists(potential_path):
+                    script_path = potential_path
+                    break
         # Check examples directory
         elif script_name.startswith("examples/"):
             full_path = script_name
@@ -5755,6 +5381,7 @@ For detailed documentation, please refer to the user manual.
         elif script_name in experiment_scripts:
             for potential_path in [
                 script_name,
+                f"tools/{script_name}",
                 f"examples/{script_name}",
                 f"examples/{script_name.replace('.py', '')}.py",
             ]:
@@ -5777,7 +5404,7 @@ For detailed documentation, please refer to the user manual.
                     text=True,
                     cwd=(
                         os.path.dirname(os.path.abspath(script_path))
-                        if script_name.startswith("examples/")
+                        if script_name.startswith("examples/") or script_name.startswith("tools/")
                         else "."
                     ),
                 )

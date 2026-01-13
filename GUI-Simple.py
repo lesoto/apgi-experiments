@@ -12,11 +12,18 @@ import sys
 import os
 from pathlib import Path
 import logging
+import json
+import subprocess
+import threading
+import importlib
+
+# Set matplotlib backend before importing to avoid threading issues
+import matplotlib
+matplotlib.use('Agg')  # Use non-interactive backend to prevent GUI conflicts
 
 # Set up logging with standardized system
 try:
     from apgi_framework.logging.standardized_logging import get_logger
-
     logger = get_logger("gui_simple")
 except ImportError:
     # Fallback to basic logging
@@ -24,7 +31,19 @@ except ImportError:
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
-    logger = logging.getLogger("TEMPLATE")
+    logger = logging.getLogger("gui_simple")
+
+# Add project root to path
+project_root = Path(__file__).parent
+sys.path.insert(0, str(project_root))
+
+# Import experiment runner
+try:
+    from tools.run_experiments import get_available_experiments, run_experiment
+    EXPERIMENTS_AVAILABLE = True
+except ImportError:
+    EXPERIMENTS_AVAILABLE = False
+    logger.warning("Experiment runner not available, using simulation mode")
 
 
 class TemplateGUI:
@@ -82,13 +101,20 @@ class TemplateGUI:
             row=0, column=0, sticky=tk.W, pady=5
         )
 
-        self.experiment_var = tk.StringVar(value="threshold_effects")
-        experiments = [
-            "Threshold Effects",
-            "Somatic Markers",
-            "Precision Effects",
-            "Dynamic Threshold",
-        ]
+        self.experiment_var = tk.StringVar(value="interoceptive_gating")
+        
+        # Get available experiments
+        if EXPERIMENTS_AVAILABLE:
+            try:
+                available_experiments = get_available_experiments()
+                experiments = list(available_experiments.keys())
+                if not experiments:
+                    experiments = ["interoceptive_gating", "somatic_marker_priming", "metabolic_cost"]
+            except Exception as e:
+                logger.warning(f"Could not load experiments: {e}")
+                experiments = ["interoceptive_gating", "somatic_marker_priming", "metabolic_cost"]
+        else:
+            experiments = ["interoceptive_gating", "somatic_marker_priming", "metabolic_cost"]
 
         experiment_combo = ttk.Combobox(
             control_frame,
@@ -106,23 +132,23 @@ class TemplateGUI:
         param_frame = ttk.Frame(control_frame)
         param_frame.grid(row=3, column=0, sticky=(tk.W, tk.E), pady=5)
 
-        # Threshold parameter
-        ttk.Label(param_frame, text="Threshold (θₜ):").grid(
+        # Participants parameter
+        ttk.Label(param_frame, text="Participants:").grid(
             row=0, column=0, sticky=tk.W
         )
-        self.threshold_var = tk.DoubleVar(value=5.0)
+        self.threshold_var = tk.DoubleVar(value=10.0)
         threshold_spinbox = ttk.Spinbox(
-            param_frame, from_=1.0, to=10.0, textvariable=self.threshold_var, width=10
+            param_frame, from_=1, to=50, textvariable=self.threshold_var, width=10
         )
         threshold_spinbox.grid(row=0, column=1, padx=5)
 
-        # Simulations parameter
-        ttk.Label(param_frame, text="Simulations:").grid(
+        # Trials parameter
+        ttk.Label(param_frame, text="Trials/Condition:").grid(
             row=1, column=0, sticky=tk.W, pady=5
         )
-        self.simulations_var = tk.IntVar(value=10)
+        self.simulations_var = tk.IntVar(value=50)
         simulations_spinbox = ttk.Spinbox(
-            param_frame, from_=1, to=100, textvariable=self.simulations_var, width=10
+            param_frame, from_=10, to=200, textvariable=self.simulations_var, width=10
         )
         simulations_spinbox.grid(row=1, column=1, padx=5)
 
@@ -217,11 +243,118 @@ class TemplateGUI:
         self.results_text.delete(1.0, tk.END)
         self.results_text.insert(tk.END, f"Running Experiment: {experiment}\n")
         self.results_text.insert(tk.END, f"Parameters:\n")
-        self.results_text.insert(tk.END, f"  - Threshold (θₜ): {threshold}\n")
-        self.results_text.insert(tk.END, f"  - Simulations: {simulations}\n\n")
+        self.results_text.insert(tk.END, f"  - Participants: {int(threshold)}\n")
+        self.results_text.insert(tk.END, f"  - Trials per condition: {simulations}\n\n")
 
-        # Simulate experiment progress
+        # Run experiment in separate thread to avoid GUI freezing
+        thread = threading.Thread(
+            target=self._run_experiment_thread,
+            args=(experiment, threshold, simulations),
+            daemon=True
+        )
+        thread.start()
+        
+        # Start progress simulation
         self.root.after(100, self.simulate_experiment_progress, 0)
+
+    def _run_experiment_thread(self, experiment, threshold, simulations):
+        """Run experiment in background thread with isolation to prevent crashes."""
+        try:
+            if EXPERIMENTS_AVAILABLE:
+                # Use subprocess isolation to prevent GUI crashes
+                experiment_params = {
+                    'n_participants': int(threshold),
+                    'n_trials_per_condition': simulations
+                }
+                
+                # Create a simple Python script to run the experiment
+                script_content = f'''
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+try:
+    from tools.run_experiments import run_experiment
+    result = run_experiment("{experiment}", n_participants={int(threshold)}, n_trials_per_condition={simulations})
+    print("SUCCESS: Experiment completed")
+    print(f"RESULT: {{result}}")
+except Exception as e:
+    print(f"ERROR: {{e}}")
+    import traceback
+    traceback.print_exc()
+'''
+                
+                # Write script to temporary file
+                import tempfile
+                with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+                    f.write(script_content)
+                    script_path = f.name
+                
+                try:
+                    # Run experiment in subprocess to isolate from GUI
+                    result = subprocess.run(
+                        [sys.executable, script_path],
+                        capture_output=True,
+                        text=True,
+                        timeout=60  # 60 second timeout
+                    )
+                    
+                    output = result.stdout
+                    error = result.stderr
+                    
+                    if result.returncode == 0 and "SUCCESS:" in output:
+                        # Extract result from output
+                        lines = output.split('\n')
+                        result_line = next((line for line in lines if line.startswith("RESULT:")), "")
+                        if result_line:
+                            result_value = result_line.replace("RESULT: ", "")
+                        else:
+                            result_value = "Experiment completed successfully"
+                        
+                        self.root.after(0, self._update_experiment_results, output, result_value, None)
+                    else:
+                        error_msg = error or output or "Unknown error occurred"
+                        self.root.after(0, self._update_experiment_results, None, None, error_msg)
+                        
+                except subprocess.TimeoutExpired:
+                    error_msg = "Experiment timed out after 60 seconds"
+                    self.root.after(0, self._update_experiment_results, None, None, error_msg)
+                except Exception as e:
+                    error_msg = f"Failed to run experiment subprocess: {e}"
+                    self.root.after(0, self._update_experiment_results, None, None, error_msg)
+                finally:
+                    # Clean up temporary script
+                    try:
+                        os.unlink(script_path)
+                    except:
+                        pass
+                        
+            else:
+                # Simulation mode
+                self.root.after(2000, self._update_experiment_results, "Simulation mode - experiment runner not available", None, None)
+                
+        except Exception as e:
+            logger.error(f"Error running experiment {experiment}: {e}")
+            self.root.after(0, self._update_experiment_results, None, None, str(e))
+
+    def _update_experiment_results(self, output, result, error):
+        """Update GUI with experiment results."""
+        if error:
+            self.results_text.insert(tk.END, f"ERROR: {error}\n")
+            messagebox.showerror("Experiment Error", f"Failed to run experiment: {error}")
+        else:
+            if output:
+                self.results_text.insert(tk.END, f"Output:\n{output}\n")
+            if result:
+                self.results_text.insert(tk.END, f"Result: {result}\n")
+            
+            # Add summary
+            self.results_text.insert(tk.END, "\n" + "=" * 50 + "\n")
+            self.results_text.insert(tk.END, "EXPERIMENT COMPLETED\n")
+            self.results_text.insert(tk.END, "=" * 50 + "\n\n")
+        
+        self.results_text.see(tk.END)
+        self.complete_experiment()
 
     def simulate_experiment_progress(self, progress):
         """Simulate experiment progress."""
@@ -247,57 +380,46 @@ class TemplateGUI:
         """Complete the experiment simulation."""
         self.progress_var.set(0)
         self.status_label.config(text="Experiment completed")
-
-        # Show results
-        self.results_text.insert(tk.END, "\n" + "=" * 50 + "\n")
-        self.results_text.insert(tk.END, "EXPERIMENT RESULTS\n")
-        self.results_text.insert(tk.END, "=" * 50 + "\n\n")
-
-        experiment = self.experiment_var.get()
-        threshold = self.threshold_var.get()
-        simulations = self.simulations_var.get()
-
-        # Simulate some results based on experiment type
-        if "Threshold" in experiment:
-            self.results_text.insert(tk.END, f"Threshold Analysis Results:\n")
-            self.results_text.insert(
-                tk.END, f"  - Optimal threshold: {threshold:.2f}\n"
+        
+        # Show completion message if not already shown by _update_experiment_results
+        if "EXPERIMENT COMPLETED" not in self.results_text.get(1.0, tk.END):
+            experiment = self.experiment_var.get()
+            threshold = self.threshold_var.get()
+            simulations = self.simulations_var.get()
+            
+            # Show results
+            self.results_text.insert(tk.END, "\n" + "=" * 50 + "\n")
+            self.results_text.insert(tk.END, "EXPERIMENT RESULTS\n")
+            self.results_text.insert(tk.END, "=" * 50 + "\n\n")
+            
+            # Simulate some results based on experiment type
+            if "interoceptive" in experiment:
+                self.results_text.insert(tk.END, f"Interoceptive Gating Results:\n")
+                self.results_text.insert(tk.END, f"  - Gating threshold: {threshold:.2f}\n")
+                self.results_text.insert(tk.END, f"  - Success rate: {75 + (threshold/20)*100:.1f}%\n")
+                self.results_text.insert(tk.END, f"  - Processing time: {2.5 + (simulations/50):.2f}s\n")
+            elif "somatic" in experiment:
+                self.results_text.insert(tk.END, f"Somatic Marker Results:\n")
+                self.results_text.insert(tk.END, f"  - Marker influence: {0.3 + (threshold/15):.3f}\n")
+                self.results_text.insert(tk.END, f"  - Modulation effect: {0.6 + (simulations/200):.3f}\n")
+                self.results_text.insert(tk.END, f"  - Response latency: {80 + threshold:.0f} ms\n")
+            elif "metabolic" in experiment:
+                self.results_text.insert(tk.END, f"Metabolic Cost Results:\n")
+                self.results_text.insert(tk.END, f"  - Energy consumption: {threshold * 10:.1f} units\n")
+                self.results_text.insert(tk.END, f"  - Efficiency score: {85 + (simulations/10):.1f}%\n")
+                self.results_text.insert(tk.END, f"  - Cost-benefit ratio: {1.2 - (threshold/50):.2f}\n")
+            else:
+                self.results_text.insert(tk.END, f"General Experiment Results:\n")
+                self.results_text.insert(tk.END, f"  - Data points processed: {simulations * 100}\n")
+                self.results_text.insert(tk.END, f"  - Success rate: {85 + (threshold/2):.1f}%\n")
+                self.results_text.insert(tk.END, f"  - Processing time: {2.5 + (simulations/50):.2f}s\n")
+            
+            self.results_text.insert(tk.END, f"\nExperiment completed successfully!\n")
+            self.results_text.see(tk.END)
+            
+            messagebox.showinfo(
+                "Experiment Complete", f"{experiment} completed successfully!"
             )
-            self.results_text.insert(
-                tk.END, f"  - Ignition probability: {0.75 + (threshold/20):.3f}\n"
-            )
-            self.results_text.insert(
-                tk.END, f"  - Convergence time: {150 + simulations:.0f} steps\n"
-            )
-        elif "Somatic" in experiment:
-            self.results_text.insert(tk.END, f"Somatic Marker Analysis:\n")
-            self.results_text.insert(
-                tk.END, f"  - Marker influence: {0.3 + (threshold/15):.3f}\n"
-            )
-            self.results_text.insert(
-                tk.END, f"  - Modulation effect: {0.6 + (simulations/200):.3f}\n"
-            )
-            self.results_text.insert(
-                tk.END, f"  - Response latency: {80 + threshold:.0f} ms\n"
-            )
-        else:
-            self.results_text.insert(tk.END, f"General Experiment Results:\n")
-            self.results_text.insert(
-                tk.END, f"  - Data points processed: {simulations * 100}\n"
-            )
-            self.results_text.insert(
-                tk.END, f"  - Success rate: {85 + (threshold/2):.1f}%\n"
-            )
-            self.results_text.insert(
-                tk.END, f"  - Processing time: {2.5 + (simulations/50):.2f}s\n"
-            )
-
-        self.results_text.insert(tk.END, f"\nExperiment completed successfully!\n")
-        self.results_text.see(tk.END)
-
-        messagebox.showinfo(
-            "Experiment Complete", f"{experiment} completed successfully!"
-        )
 
     def clear_results(self):
         """Clear the results display."""
@@ -330,19 +452,37 @@ class TemplateGUI:
 
         if filename:
             try:
-                # Simple config loading simulation
-                self.threshold_var.set(6.0)
-                self.simulations_var.set(20)
-                self.experiment_var.set("Precision Effects")
-
+                # Load actual JSON configuration
+                with open(filename, 'r') as f:
+                    config = json.load(f)
+                
+                # Update GUI with loaded values
+                if 'n_participants' in config or 'participants' in config:
+                    participants = config.get('n_participants', config.get('participants', 10))
+                    self.threshold_var.set(float(participants))
+                if 'n_trials_per_condition' in config or 'trials' in config:
+                    trials = config.get('n_trials_per_condition', config.get('trials', 50))
+                    self.simulations_var.set(int(trials))
+                if 'experiment' in config:
+                    self.experiment_var.set(str(config['experiment']))
+                
                 self.status_label.config(
                     text=f"Configuration loaded from {Path(filename).name}"
                 )
                 messagebox.showinfo(
-                    "Config Loaded", f"Configuration loaded from {filename}"
+                    "Config Loaded", f"Configuration loaded from {filename}\n\nLoaded values:\n{json.dumps(config, indent=2)}"
                 )
+                
+                logger.info(f"Configuration loaded from {filename}: {config}")
+                
+            except json.JSONDecodeError as e:
+                error_msg = f"Invalid JSON format: {e}"
+                logger.error(error_msg)
+                messagebox.showerror("Load Error", error_msg)
             except Exception as e:
-                messagebox.showerror("Load Error", f"Failed to load configuration: {e}")
+                error_msg = f"Failed to load configuration: {e}"
+                logger.error(error_msg)
+                messagebox.showerror("Load Error", error_msg)
 
     def run(self):
         """Start the GUI application."""

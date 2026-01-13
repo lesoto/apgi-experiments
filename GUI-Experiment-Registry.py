@@ -14,12 +14,32 @@ import os
 from pathlib import Path
 import time
 from typing import Dict, Any
+import logging
+import subprocess
+import tempfile
+
+# Set matplotlib backend before importing to avoid threading issues
+import matplotlib
+matplotlib.use('Agg')  # Use non-interactive backend to prevent GUI conflicts
 
 # Add project root to Python path
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
+# Import experiment runner
 from tools.run_experiments import EXPERIMENTS, run_experiment
+
+# Set up logging with standardized system
+try:
+    from apgi_framework.logging.standardized_logging import get_logger
+    logger = get_logger("gui_experiment_registry")
+except ImportError:
+    # Fallback to basic logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
+    logger = logging.getLogger("gui_experiment_registry")
 
 
 class ExperimentRegistryGUI:
@@ -233,40 +253,75 @@ class ExperimentRegistryGUI:
                 lines = content.split("\n")
                 docstring_lines = []
                 in_docstring = False
+                docstring_start = False
 
                 for line in lines:
                     if '"""' in line:
                         if not in_docstring:
                             in_docstring = True
-                            docstring_lines.append(line.strip('"""'))
+                            docstring_start = True
+                            # Extract content after the opening """
+                            cleaned_line = line.replace('"""', '').strip()
+                            if cleaned_line:
+                                docstring_lines.append(cleaned_line)
                         else:
+                            # End of docstring
                             break
                     elif in_docstring:
-                        docstring_lines.append(line)
+                        docstring_lines.append(line.rstrip())
 
-                docstring = "\n".join(docstring_lines[:20])  # Limit to first 20 lines
+                # If no docstring found, provide basic info
+                if not docstring_lines:
+                    docstring_lines = [
+                        "No description available.",
+                        f"This experiment implements the {exp_name} paradigm.",
+                        "\nParameters:",
+                        f"- n_participants: Number of participants (default: 5)",
+                        f"- n_trials_per_condition: Number of trials per condition (default: 20)"
+                    ]
+
+                docstring = "\n".join(docstring_lines[:25])  # Limit to first 25 lines
 
                 # Display details
                 details = f"Experiment: {exp_name}\n"
                 details += f"Module: {module_path}\n"
-                details += f"Status: {self.experiment_status[exp_name]}\n"
+                details += f"Status: {self.experiment_status.get(exp_name, 'Not Run')}\n"
                 details += f"\n{'='*50}\n\n"
                 details += docstring
 
                 self.details_text.delete(1.0, tk.END)
                 self.details_text.insert(1.0, details)
             else:
+                # File not found - provide basic info
+                details = f"Experiment: {exp_name}\n"
+                details += f"Module: {module_path}\n"
+                details += f"Status: {self.experiment_status.get(exp_name, 'Not Run')}\n"
+                details += f"\n{'='*50}\n\n"
+                details += "Source file not found.\n\n"
+                details += "This experiment is registered but the source file may be missing.\n"
+                details += f"Expected location: {full_path}\n\n"
+                details += "Parameters:\n"
+                details += "- n_participants: Number of participants\n"
+                details += "- n_trials_per_condition: Number of trials per condition"
+
                 self.details_text.delete(1.0, tk.END)
-                self.details_text.insert(
-                    1.0,
-                    f"Experiment: {exp_name}\nModule: {module_path}\n\nFile not found.",
-                )
+                self.details_text.insert(1.0, details)
+                
         except Exception as e:
+            logger.error(f"Error loading experiment details for {exp_name}: {e}")
+            # Provide fallback information
+            details = f"Experiment: {exp_name}\n"
+            details += f"Module: {module_path}\n"
+            details += f"Status: {self.experiment_status.get(exp_name, 'Not Run')}\n"
+            details += f"\n{'='*50}\n\n"
+            details += f"Error loading details: {str(e)}\n\n"
+            details += "This experiment is registered but could not be loaded.\n\n"
+            details += "Parameters:\n"
+            details += "- n_participants: Number of participants\n"
+            details += "- n_trials_per_condition: Number of trials per condition"
+
             self.details_text.delete(1.0, tk.END)
-            self.details_text.insert(
-                1.0,
-                f"Experiment: {exp_name}\nModule: {module_path}\n\nError loading details: {e}",
-            )
+            self.details_text.insert(1.0, details)
 
     def browse_output_file(self):
         """Browse for output file location."""
@@ -326,31 +381,95 @@ class ExperimentRegistryGUI:
         thread.start()
 
     def _run_experiment(self, exp_name):
-        """Run a single experiment (called from thread)."""
+        """Run a single experiment (called from thread) with subprocess isolation."""
         try:
             self.running = True
             self.log_output(f"Starting experiment: {exp_name}")
             self.update_status(f"Running: {exp_name}")
 
-            # Prepare parameters
+            # Prepare parameters with correct names
             params = {
                 "n_participants": self.n_participants.get(),
-                "n_trials": self.n_trials.get(),
+                "n_trials_per_condition": self.n_trials.get(),
             }
 
             if self.output_file.get():
                 params["output_file"] = self.output_file.get()
+            
+            # Create a simple Python script to run the experiment
+            script_content = f'''
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-            # Run experiment
-            start_time = time.time()
-            result = run_experiment(exp_name, **params)
-            end_time = time.time()
-
-            # Update status
-            self.experiment_status[exp_name] = "Success"
-            self.log_output(
-                f"✓ {exp_name} completed successfully in {end_time - start_time:.2f} seconds"
-            )
+try:
+    from tools.run_experiments import run_experiment
+    result = run_experiment("{exp_name}", n_participants={params["n_participants"]}, n_trials_per_condition={params["n_trials_per_condition"]})
+    print("SUCCESS: Experiment completed")
+    print(f"RESULT: {{result}}")
+except Exception as e:
+    print(f"ERROR: {{e}}")
+    import traceback
+    traceback.print_exc()
+'''
+            
+            # Write script to temporary file
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+                f.write(script_content)
+                script_path = f.name
+            
+            try:
+                # Run experiment in subprocess to isolate from GUI
+                start_time = time.time()
+                result = subprocess.run(
+                    [sys.executable, script_path],
+                    capture_output=True,
+                    text=True,
+                    timeout=120  # 2 minute timeout
+                )
+                end_time = time.time()
+                
+                output = result.stdout
+                error = result.stderr
+                
+                if result.returncode == 0 and "SUCCESS:" in output:
+                    # Extract result from output
+                    lines = output.split('\n')
+                    result_line = next((line for line in lines if line.startswith("RESULT:")), "")
+                    if result_line:
+                        result_value = result_line.replace("RESULT: ", "")
+                    else:
+                        result_value = "Experiment completed successfully"
+                    
+                    # Update status
+                    self.experiment_status[exp_name] = "Success"
+                    self.log_output(
+                        f"✓ {exp_name} completed successfully in {end_time - start_time:.2f} seconds"
+                    )
+                    if result_value != "Experiment completed successfully":
+                        self.log_output(f"Result: {result_value}")
+                else:
+                    self.experiment_status[exp_name] = "Failed"
+                    error_msg = error or output or "Unknown error occurred"
+                    self.log_output(f"✗ {exp_name} failed: {error_msg}")
+                    messagebox.showerror("Experiment Failed", f"Experiment {exp_name} failed: {error_msg}")
+                    
+            except subprocess.TimeoutExpired:
+                self.experiment_status[exp_name] = "Failed"
+                error_msg = "Experiment timed out after 120 seconds"
+                self.log_output(f"✗ {exp_name} failed: {error_msg}")
+                messagebox.showerror("Experiment Failed", f"Experiment {exp_name} timed out")
+            except Exception as e:
+                self.experiment_status[exp_name] = "Failed"
+                error_msg = f"Failed to run experiment subprocess: {e}"
+                self.log_output(f"✗ {exp_name} failed: {error_msg}")
+                messagebox.showerror("Experiment Failed", f"Experiment {exp_name} failed: {error_msg}")
+            finally:
+                # Clean up temporary script
+                try:
+                    os.unlink(script_path)
+                except:
+                    pass
 
             # Update GUI if this experiment is selected
             if self.current_experiment.get() == exp_name:
@@ -367,7 +486,7 @@ class ExperimentRegistryGUI:
             self.update_status("Ready")
 
     def _run_all_experiments(self):
-        """Run all experiments (called from thread)."""
+        """Run all experiments (called from thread) with subprocess isolation."""
         try:
             self.running = True
             total_experiments = len(EXPERIMENTS)
@@ -384,25 +503,86 @@ class ExperimentRegistryGUI:
                 progress = (completed / total_experiments) * 100
                 self.progress_var.set(progress)
 
-                # Prepare parameters
+                # Prepare parameters with correct names
                 params = {
                     "n_participants": self.n_participants.get(),
-                    "n_trials": self.n_trials.get(),
+                    "n_trials_per_condition": self.n_trials.get(),
                 }
+                
+                # Create a simple Python script to run the experiment
+                script_content = f'''
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+try:
+    from tools.run_experiments import run_experiment
+    result = run_experiment("{exp_name}", n_participants={params["n_participants"]}, n_trials_per_condition={params["n_trials_per_condition"]})
+    print("SUCCESS: Experiment completed")
+    print(f"RESULT: {{result}}")
+except Exception as e:
+    print(f"ERROR: {{e}}")
+    import traceback
+    traceback.print_exc()
+'''
+                
+                # Write script to temporary file
+                with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+                    f.write(script_content)
+                    script_path = f.name
 
                 try:
+                    # Run experiment in subprocess to isolate from GUI
                     start_time = time.time()
-                    result = run_experiment(exp_name, **params)
-                    end_time = time.time()
-
-                    self.experiment_status[exp_name] = "Success"
-                    self.log_output(
-                        f"✓ {exp_name} - Success ({end_time - start_time:.2f}s)"
+                    result = subprocess.run(
+                        [sys.executable, script_path],
+                        capture_output=True,
+                        text=True,
+                        timeout=120  # 2 minute timeout
                     )
-
+                    end_time = time.time()
+                    
+                    output = result.stdout
+                    error = result.stderr
+                    
+                    if result.returncode == 0 and "SUCCESS:" in output:
+                        # Extract result from output
+                        lines = output.split('\n')
+                        result_line = next((line for line in lines if line.startswith("RESULT:")), "")
+                        if result_line:
+                            result_value = result_line.replace("RESULT: ", "")
+                        else:
+                            result_value = "Experiment completed successfully"
+                        
+                        self.experiment_status[exp_name] = "Success"
+                        self.log_output(
+                            f"✓ {exp_name} - Success ({end_time - start_time:.2f}s)"
+                        )
+                        if result_value != "Experiment completed successfully":
+                            self.log_output(f"  Result: {result_value}")
+                        logger.info(f"Experiment {exp_name} completed in batch run")
+                    else:
+                        self.experiment_status[exp_name] = "Failed"
+                        error_msg = error or output or "Unknown error occurred"
+                        self.log_output(f"✗ {exp_name} - Failed: {error_msg}")
+                        logger.error(f"Experiment {exp_name} failed in batch run: {error_msg}")
+                        
+                except subprocess.TimeoutExpired:
+                    self.experiment_status[exp_name] = "Failed"
+                    error_msg = "Experiment timed out after 120 seconds"
+                    self.log_output(f"✗ {exp_name} - Failed: {error_msg}")
+                    logger.error(f"Experiment {exp_name} timed out in batch run")
                 except Exception as e:
                     self.experiment_status[exp_name] = "Failed"
-                    self.log_output(f"✗ {exp_name} - Failed: {str(e)}")
+                    error_msg = f"Failed to run experiment subprocess: {e}"
+                    self.log_output(f"✗ {exp_name} - Failed: {error_msg}")
+                    logger.error(f"Experiment {exp_name} subprocess failed in batch run: {e}")
+                finally:
+                    # Clean up temporary script
+                    try:
+                        os.unlink(script_path)
+                    except:
+                        pass
 
                 completed += 1
 
@@ -422,7 +602,8 @@ class ExperimentRegistryGUI:
 
         except Exception as e:
             self.log_output(f"Error running all experiments: {e}")
-            messagebox.showerror("Error", f"Error running all experiments: {e}")
+            logger.error(f"Error in batch experiment run: {e}")
+            self.root.after(0, lambda: messagebox.showerror("Error", f"Error running all experiments: {e}"))
 
         finally:
             self.running = False

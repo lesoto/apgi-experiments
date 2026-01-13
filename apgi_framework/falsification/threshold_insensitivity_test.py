@@ -562,7 +562,7 @@ class ThresholdInsensitivityTest:
         # Count insensitive trials
         insensitive_trials = [r for r in trial_results if r.is_falsifying]
         total_insensitive = len(insensitive_trials)
-        insensitivity_rate = total_insensitive / len(trial_results)
+        insensitivity_rate = total_insensitive / len(trial_results) if trial_results else 0
 
         # Calculate mean confidence
         mean_confidence = np.mean([r.confidence_level for r in trial_results])
@@ -771,7 +771,7 @@ class ThresholdInsensitivityTest:
                 trial_result = self._run_single_trial(
                     trial_id=f"{test_id}_trial_{trial_idx:03d}",
                     participant_id=participant_id,
-                    drug_condition=drug_condition,
+                    drug_type=drug_condition,
                     confidence_threshold=confidence_threshold,
                 )
                 trial_results.append(trial_result)

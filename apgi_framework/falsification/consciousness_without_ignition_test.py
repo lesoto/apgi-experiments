@@ -462,7 +462,7 @@ class ConsciousnessWithoutIgnitionTest:
         # Count falsifying trials
         falsifying_trials = [r for r in trial_results if r.is_falsifying]
         total_falsifying = len(falsifying_trials)
-        falsification_rate = total_falsifying / len(trial_results)
+        falsification_rate = total_falsifying / len(trial_results) if trial_results else 0
 
         # Calculate mean confidence
         mean_confidence = np.mean([r.confidence_level for r in trial_results])
@@ -473,7 +473,7 @@ class ConsciousnessWithoutIgnitionTest:
 
         for participant_id, trials in participant_results.items():
             participant_falsifying = [t for t in trials if t.is_falsifying]
-            participant_rate = len(participant_falsifying) / len(trials)
+            participant_rate = len(participant_falsifying) / len(trials) if trials else 0
             participant_falsification_rates[participant_id] = participant_rate
 
             if participant_rate > 0:
@@ -657,7 +657,9 @@ class ConsciousnessWithoutIgnitionTest:
                 # Continue with other trials
 
         # Analyze results
-        result = self._analyze_results(test_id, trial_results, n_trials, n_participants)
+        result = self._analyze_results(
+            test_id, trial_results, participant_results, n_trials, n_participants
+        )
 
         logger.info(
             f"Test completed: {result.total_falsifying_trials} falsifying trials "

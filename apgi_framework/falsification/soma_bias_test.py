@@ -799,3 +799,23 @@ class SomaBiasTest:
         )
 
         return result
+
+    def _generate_participant_profiles(self, n_participants: int) -> Dict[str, Dict]:
+        """Generate basic participant profiles for soma-bias test.
+        
+        Args:
+            n_participants: Number of participants to generate
+            
+        Returns:
+            Dictionary mapping participant IDs to their profiles
+        """
+        participants = {}
+        for i in range(n_participants):
+            participant_id = f"participant_{i+1:02d}"
+            participants[participant_id] = {
+                "participant_id": participant_id,
+                "age": np.random.normal(35, 10),  # Age around 35 ± 10 years
+                "gender": np.random.choice(["male", "female", "other"]),
+                "baseline_somatic_gain": np.random.uniform(0.5, 2.0),
+            }
+        return participants
