@@ -52,7 +52,7 @@ class SuiteMetrics:
     maintenance_index: float
 
 
-class TestSuiteGenerator:
+class SuiteGenerator:
     """Comprehensive test suite generator and analyzer."""
 
     def __init__(self, config_manager: Optional[ConfigManager] = None):

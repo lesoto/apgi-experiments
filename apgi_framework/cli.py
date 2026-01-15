@@ -19,7 +19,7 @@ from .exceptions import APGIFrameworkError, ConfigurationError
 from .testing.batch_runner import BatchTestRunner, run_failed_tests
 from .testing.persistence import TestResultPersistence, store_test_results
 from .testing.test_generator import (
-    TestSuiteGenerator,
+    SuiteGenerator,
     analyze_test_coverage,
     generate_missing_tests,
     create_coverage_report,
@@ -683,7 +683,7 @@ Examples:
     def manage_test_coverage(self, args: argparse.Namespace) -> None:
         """Manage test coverage analysis and generation."""
         try:
-            generator = TestSuiteGenerator()
+            generator = SuiteGenerator()
 
             if args.analyze:
                 self.logger.info("Analyzing test coverage gaps")

@@ -84,7 +84,7 @@ logger = (
 )
 
 
-class TestExecutionPanel(ctk.CTkFrame):
+class ExecutionPanel(ctk.CTkFrame):
     """
     Panel for running falsification tests with progress tracking and result management.
 

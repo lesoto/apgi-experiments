@@ -4,6 +4,14 @@ Tests critical performance paths and identifies regressions.
 """
 
 import pytest
+
+try:
+    import pytest_benchmark
+    HAS_BENCHMARK = True
+except ImportError:
+    HAS_BENCHMARK = False
+
+pytest.importorskip("pytest_benchmark")
 import numpy as np
 import pandas as pd
 import time

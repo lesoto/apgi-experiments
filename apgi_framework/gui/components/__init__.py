@@ -6,7 +6,7 @@ apgi_falsification_gui.py file to improve maintainability and testability.
 """
 
 from .parameter_config_panel import ParameterConfigPanel, create_parameter_config_panel
-from .test_execution_panel import TestExecutionPanel, create_test_execution_panel
+from .test_execution_panel import ExecutionPanel, create_test_execution_panel
 from .results_visualization_panel import (
     ResultsVisualizationPanel,
     create_results_visualization_panel,
@@ -17,7 +17,7 @@ from .main_gui_controller import MainGUIController, create_main_gui_controller
 __all__ = [
     # Main components
     "ParameterConfigPanel",
-    "TestExecutionPanel",
+    "ExecutionPanel",
     "ResultsVisualizationPanel",
     "LoggingPanel",
     "MainGUIController",

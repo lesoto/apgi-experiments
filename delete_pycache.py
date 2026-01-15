@@ -70,6 +70,8 @@ DEFAULT_FILE_PATTERNS = [
     "*.txt.bak",
     "apgi_demo_visualization.png",
     "apgi_gui.log",
+    "test_physio_data.npz",
+    "test_pupil_data.npz",
 ]
 
 DEFAULT_EXTRA_DIR_NAMES = {
