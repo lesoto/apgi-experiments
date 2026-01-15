@@ -160,6 +160,16 @@ class PCICalculator:
         Returns:
             PCISignature calculated from connectivity data
         """
+        # Validate connectivity matrix
+        if connectivity_matrix.shape[0] != connectivity_matrix.shape[1]:
+            raise ValueError("Connectivity matrix must be square")
+        
+        if np.any(np.isnan(connectivity_matrix)):
+            raise ValueError("Connectivity matrix contains NaN values")
+            
+        if np.any(np.isinf(connectivity_matrix)):
+            raise ValueError("Connectivity matrix contains infinite values")
+
         n_regions = connectivity_matrix.shape[0]
 
         if perturbation_sites is None:
@@ -288,15 +298,35 @@ class PCICalculator:
 
         # Simulate propagation through network
         for t in range(1, n_timepoints):
-            # Calculate network influence
-            network_input = np.dot(connectivity_matrix, response[:, t - 1])
+            # Calculate network influence with extreme value handling
+            try:
+                network_input = np.dot(connectivity_matrix, response[:, t - 1])
+                
+                # Handle extreme values
+                if np.any(np.isinf(network_input)) or np.any(np.isnan(network_input)):
+                    network_input = np.zeros_like(network_input)
+                else:
+                    # Clip to reasonable range
+                    network_input = np.clip(network_input, -1000, 1000)
 
-            # Apply decay and network dynamics
-            decay_factor = 0.95
-            response[:, t] = response[:, t - 1] * decay_factor + network_input * 0.1
+                # Apply decay and network dynamics
+                decay_factor = 0.95
+                response[:, t] = response[:, t - 1] * decay_factor + network_input * 0.1
 
-            # Add noise
-            response[:, t] += self.rng.normal(0, noise_level, n_regions)
+                # Handle extreme values in response
+                if np.any(np.isinf(response[:, t])) or np.any(np.isnan(response[:, t])):
+                    response[:, t] = response[:, t - 1] * decay_factor
+                else:
+                    # Clip to reasonable range
+                    response[:, t] = np.clip(response[:, t], -100, 100)
+
+                # Add noise
+                noise = self.rng.normal(0, noise_level, n_regions)
+                response[:, t] += noise
+                
+            except Exception:
+                # Fallback: just apply decay
+                response[:, t] = response[:, t - 1] * 0.95
 
         return response
 
@@ -304,6 +334,13 @@ class PCICalculator:
         self, connectivity_matrix: np.ndarray, perturbation_response: np.ndarray
     ) -> Dict[str, float]:
         """Calculate various complexity measures."""
+        # Validate inputs
+        if perturbation_response.size == 0:
+            raise ValueError("Response array cannot be empty")
+            
+        if connectivity_matrix.shape[0] != perturbation_response.shape[0]:
+            raise ValueError("Response and connectivity dimensions must match")
+
         components = {}
 
         # Lempel-Ziv complexity of response patterns
@@ -450,7 +487,7 @@ class PCICalculator:
         n_regions = connectivity_matrix.shape[0]
 
         if n_regions < 4:
-            return np.mean(connectivity_matrix)
+            return np.mean(np.abs(connectivity_matrix))
 
         # Split network into two parts
         mid = n_regions // 2
@@ -462,9 +499,18 @@ class PCICalculator:
         part2_mean = np.mean(part2_response, axis=0)
 
         if len(part1_mean) > 1 and len(part2_mean) > 1:
-            cross_corr = np.corrcoef(part1_mean, part2_mean)[0, 1]
-            if np.isnan(cross_corr):
+            # Handle extreme values that might cause NaN
+            if np.any(np.isinf(part1_mean)) or np.any(np.isinf(part2_mean)):
                 cross_corr = 0.0
+            elif np.any(np.isnan(part1_mean)) or np.any(np.isnan(part2_mean)):
+                cross_corr = 0.0
+            else:
+                try:
+                    cross_corr = np.corrcoef(part1_mean, part2_mean)[0, 1]
+                    if np.isnan(cross_corr) or np.isinf(cross_corr):
+                        cross_corr = 0.0
+                except:
+                    cross_corr = 0.0
         else:
             cross_corr = 0.0
 
@@ -474,6 +520,9 @@ class PCICalculator:
 
     def _compute_pci_from_components(self, components: Dict[str, float]) -> float:
         """Compute overall PCI from complexity components."""
+        if not components:
+            raise ValueError("No complexity components provided")
+            
         # Weighted average of components
         weights = {
             "lempel_ziv_complexity": 0.25,

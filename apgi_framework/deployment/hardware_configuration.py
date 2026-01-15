@@ -107,8 +107,8 @@ class CardiacSensorConfig:
     """Configuration for cardiac sensor."""
 
     sensor_name: str
-    sensor_type: str = "ecg"  # ecg, ppg
     sampling_rate: int
+    sensor_type: str = "ecg"  # ecg, ppg
 
     # Signal processing
     r_peak_detection_method: str = "pan_tompkins"

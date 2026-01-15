@@ -35,8 +35,29 @@ class MockController:
         self.falsification_engine = mock.Mock()
         self.statistical_analyzer = mock.Mock()
         self.data_manager = mock.Mock()
+        self._initialized = True
 
         # Mock common method calls
+        self.initialize_system = mock.Mock()
+        self.run_system_validation = mock.Mock(return_value={"overall": True})
+        self.get_falsification_tests = mock.Mock(
+            return_value={
+                "primary": mock.Mock(),
+                "consciousness_without_ignition": mock.Mock(),
+                "threshold_insensitivity": mock.Mock(),
+                "soma_bias": mock.Mock(),
+            }
+        )
+        
+        # Mock falsification test results
+        for test_name, test_mock in self.get_falsification_tests.return_value.items():
+            test_mock.run_test.return_value = mock.Mock(
+                is_falsified=False,
+                p_value=0.1,
+                effect_size=0.3,
+                confidence_level=0.95
+            )
+
         self.system_validator.run_validation.return_value = mock.Mock()
         self.falsification_engine.run_primary_falsification.return_value = {
             "results": []
@@ -283,7 +304,7 @@ class TestWorkflowOrchestrator:
                                     result = self.orchestrator.run_complete_workflow()
 
                                     assert isinstance(result, WorkflowResult)
-                                    assert result.status == WorkflowStatus.COMPLETED
+                                    assert result.overall_status == WorkflowStatus.COMPLETED
                                     assert result.workflow_id is not None
 
     def test_run_parallel_workflow(self):
@@ -304,7 +325,7 @@ class TestWorkflowOrchestrator:
                                 result = self.orchestrator.run_parallel_workflow()
 
                                 assert isinstance(result, WorkflowResult)
-                                assert result.status == WorkflowStatus.COMPLETED
+                                assert result.overall_status == WorkflowStatus.COMPLETED
 
     def test_execute_stage(self):
         """Test stage execution."""

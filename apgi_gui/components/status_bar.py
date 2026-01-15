@@ -71,10 +71,10 @@ class StatusBar(ctk.CTkFrame):
         except AttributeError as e:
             if "_font" in str(e):
                 # Ignore CustomTkinter font attribute error - this is expected
-                logger.debug(f"Ignoring expected CustomTkinter font error: {e}")
+                self.logger.debug(f"Ignoring expected CustomTkinter font error: {e}")
             else:
                 # Log other attribute errors
-                logger.warning(f"Unexpected AttributeError during destroy: {e}")
+                self.logger.warning(f"Unexpected AttributeError during destroy: {e}")
                 raise
 
     def setup_ui(self):

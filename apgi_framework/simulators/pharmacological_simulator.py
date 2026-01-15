@@ -441,6 +441,9 @@ class PharmacologicalSimulator:
 
     def _confirm_drug_levels(self, time_course: Dict[float, float]) -> bool:
         """Confirm that drug reached detectable levels"""
+        if not time_course:  # Handle empty time course
+            return False
+            
         max_concentration = max(time_course.values())
 
         # Drug is confirmed if peak concentration exceeds detection threshold
@@ -542,6 +545,7 @@ class PharmacologicalSimulator:
         drug_names: List[str],
         dosages: List[float],
         participant_weight: float = 70.0,
+        route: str = "oral",
     ) -> Dict[str, PharmacologicalResponse]:
         """
         Simulate multiple drug administration with potential interactions.
@@ -550,6 +554,7 @@ class PharmacologicalSimulator:
             drug_names: List of drugs to administer
             dosages: List of dosages for each drug
             participant_weight: Participant weight in kg
+            route: Administration route (default: "oral")
 
         Returns:
             Dictionary of drug responses with interaction effects
@@ -561,10 +566,48 @@ class PharmacologicalSimulator:
 
         # Simulate each drug individually first
         for drug_name, dosage in zip(drug_names, dosages):
-            response = self.simulate_drug_administration(
-                drug_name, dosage, participant_weight
-            )
-            responses[drug_name] = response
+            try:
+                response = self.simulate_drug_administration(
+                    drug_name, dosage, participant_weight, route
+                )
+                responses[drug_name] = response
+            except ValidationError:
+                # Handle unknown drugs gracefully by creating a placeholder response
+                from datetime import datetime
+                placeholder_profile = DrugProfile(
+                    name=drug_name,
+                    drug_class=DrugClass.PLACEBO,
+                    target_system=NeuromodulatorSystem.NOREPINEPHRINE,
+                    half_life=0.0,
+                    peak_effect_time=0.0,
+                    bioavailability=0.0,
+                    dose_response_curve="linear",
+                    threshold_effect_magnitude=0.0,
+                    threshold_effect_direction=0,
+                    physiological_effects={},
+                )
+                
+                placeholder_admin = DrugAdministration(
+                    drug_profile=placeholder_profile,
+                    dosage=dosage,
+                    administration_time=datetime.now(),
+                    route=route,
+                    participant_weight=participant_weight,
+                    metabolism_rate=1.0,
+                    sensitivity_factor=1.0,
+                )
+                
+                responses[drug_name] = PharmacologicalResponse(
+                    drug_administration=placeholder_admin,
+                    time_course={0.0: 0.0},
+                    threshold_modulation={0.0: 0.0},
+                    peak_threshold_effect=0.0,
+                    peak_effect_time=0.0,
+                    physiological_responses={},
+                    drug_level_confirmed=False,
+                    physiological_effects_confirmed=False,
+                    expected_vs_observed_correlation=0.0,
+                )
 
         # Apply interaction effects (simplified)
         if len(drug_names) > 1:

@@ -1,7 +1,7 @@
 """Default parameters configuration for APGI Framework GUI."""
 
 from dataclasses import dataclass
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
 
 @dataclass

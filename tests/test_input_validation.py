@@ -71,19 +71,25 @@ class TestValidateFilePath:
 
     def test_validate_file_path_not_existing_must_not_exist(self):
         """Test validating non-existing file when must_exist=False."""
-        non_existent_path = "/tmp/non_existent_file_12345.txt"
+        import platform
+        if platform.system() == "Windows":
+            non_existent_path = "C:\\tmp\\non_existent_file_12345.txt"
+        else:
+            non_existent_path = "/tmp/non_existent_file_12345.txt"
 
         result = validate_file_path(non_existent_path, must_exist=False)
 
         assert isinstance(result, Path)
-        assert str(result) == non_existent_path
+        # Compare normalized paths to handle Windows vs Unix differences
+        assert result.as_posix() == Path(non_existent_path).as_posix()
 
     def test_validate_file_path_path_traversal(self):
         """Test path traversal protection."""
-        malicious_path = "../../../etc/passwd"
-
-        with pytest.raises(ValidationError, match="Path traversal not allowed"):
-            validate_file_path(malicious_path, must_exist=False)
+        malicious_paths = ["../../../etc/passwd", "..\\..\\..\\windows\\system32\\config\\sam"]
+        
+        for malicious_path in malicious_paths:
+            with pytest.raises(ValidationError, match="Path traversal not allowed"):
+                validate_file_path(malicious_path, must_exist=False)
 
     def test_validate_file_path_allowed_extensions_success(self):
         """Test file path with allowed extension."""
@@ -586,6 +592,11 @@ class TestEdgeCases:
 
     def test_validate_file_path_symlink(self):
         """Test validating symlink path."""
+        import platform
+        if platform.system() == "Windows":
+            # Skip symlink test on Windows due to privilege requirements
+            pytest.skip("Symlink test requires administrator privileges on Windows")
+            
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
             temp_path = Path(temp_file.name)
 

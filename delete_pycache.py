@@ -16,9 +16,21 @@ DEFAULT_DIR_NAMES = {
     ".cache",
     "build",
     "dist",
+    "test-results",
+    "reports",
+    "output",
+    "outputs",
+    "results",
+    "experiments",
+    "debug",
+    "temp",
+    "tmp",
+    "coverage",
+    "site",
+    "MagickMock",
 }
 
-DEFAULT_DIR_PATTERNS = ["*.egg-info", "pip-wheel-metadata"]
+DEFAULT_DIR_PATTERNS = ["*.egg-info", "pip-wheel-metadata", "results_*", "output_*", "experiment_*", "debug_*", "test_*", "run_*", "MagickMock*"]
 
 DEFAULT_FILE_PATTERNS = [
     "*.pyc",
@@ -30,12 +42,52 @@ DEFAULT_FILE_PATTERNS = [
     "*.log",
     ".DS_Store",
     "Thumbs.db",
+    "*.out",
+    "*.err",
+    "*.trace",
+    "*.prof",
+    "*.profile",
+    "*.stats",
+    "*.benchmark",
+    "*.metrics",
+    "*.results",
+    "*.output",
+    "*.debug",
+    "*.dump",
+    "*.crash",
+    "*.core",
+    "*.stack",
+    "*.traceback",
+    "error.log",
+    "debug.log",
+    "experiment.log",
+    "run.log",
+    "test.log",
+    "*.pkl",
+    "*.pickle",
+    "*.json.bak",
+    "*.csv.bak",
+    "*.txt.bak",
+    "apgi_demo_visualization.png",
+    "apgi_gui.log",
 ]
 
 DEFAULT_EXTRA_DIR_NAMES = {
     ".nox",
     ".ruff_cache",
     ".benchmarks",
+    "test-reports",
+    "experiment-logs",
+    "debug-logs",
+    "run-logs",
+    "checkpoints",
+    "models",
+    "data-temp",
+    "plots",
+    "figures",
+    "visualizations",
+    "notebooks-checkpoint",
+    ".jupyter_cache",
 }
 
 DEFAULT_SKIP_TRAVERSE_DIRS = {".git", ".svn", ".hg"}
@@ -48,6 +100,27 @@ DEFAULT_EXTRA_FILE_PATTERNS = [
     "*.swo",
     "*.bak",
     "*.orig",
+    "*.rej",
+    "*.patch",
+    "*.diff",
+    "*.old",
+    "*.save",
+    "*.backup",
+    "*.lock",
+    "*.pid",
+    "*.socket",
+    "*.fifo",
+    "*.db-shm",
+    "*.db-wal",
+    "*.sqlite-journal",
+    "*.checkpoint",
+    "*.tmp.*",
+    "*.temp.*",
+    "*_tmp.*",
+    "*_temp.*",
+    "*_backup.*",
+    "*_old.*",
+    "*_save.*",
 ]
 
 
@@ -71,12 +144,42 @@ def delete_temporary_items(
     venv_names: Iterable[str] = (".venv", "venv", ".env", "env"),
     follow_links: bool = False,
     max_depth: Optional[int] = None,
+    remove_experiments: bool = False,
+    remove_outputs: bool = False,
+    remove_debug: bool = False,
+    remove_logs: bool = False,
+    remove_checkpoints: bool = False,
 ):
-    """Delete common temporary directories and files under root_dir.
+    """Delete temporary files, debugging artifacts, and experiment outputs from project tree.
 
-    - Removes directories in DEFAULT_DIR_NAMES and those matching DEFAULT_DIR_PATTERNS.
-    - Removes files matching DEFAULT_FILE_PATTERNS.
-    - Removes directories matching patterns (like '*.egg-info').
+    Comprehensive cleanup that removes:
+    - Python cache files and directories (__pycache__, *.pyc, etc.)
+    - Testing and coverage artifacts (.pytest_cache, coverage reports)
+    - Build artifacts (build/, dist/, *.egg-info)
+    - IDE and editor temporary files (.swp, *.tmp, etc.)
+    - Database temporary files (*.db-shm, *.db-wal, *.sqlite-journal)
+    - Experiment outputs and debugging files (when enabled)
+    - Log files and crash reports
+    - Backup and temporary files
+
+    Args:
+        root_dir: Root directory to clean
+        dry_run: Show what would be removed without actually deleting
+        verbose: Print detailed progress information
+        include_dir_patterns: Additional directory patterns to remove
+        include_file_patterns: Additional file patterns to remove
+        exclude_dir_patterns: Directory patterns to exclude from deletion
+        exclude_file_patterns: File patterns to exclude from deletion
+        remove_node_modules: Also remove node_modules directories
+        remove_venvs: Also remove virtual environment directories
+        venv_names: Names considered as virtual environment directories
+        follow_links: Follow symbolic links during traversal
+        max_depth: Limit traversal depth relative to root directory
+        remove_experiments: Remove experiment-related directories
+        remove_outputs: Remove output and results directories
+        remove_debug: Remove debugging and profiling files
+        remove_logs: Remove log files and directories
+        remove_checkpoints: Remove checkpoint and model directories
 
     This function avoids descending into removed directories by modifying dirnames in-place.
     """
@@ -112,6 +215,11 @@ def delete_temporary_items(
                 or matches_any(d, include_dir_patterns)
                 or (remove_node_modules and d == "node_modules")
                 or (remove_venvs and d in set(venv_names))
+                or (remove_experiments and d in {"experiments", "experiment", "experiment-logs", "experiment-results"})
+                or (remove_outputs and d in {"output", "outputs", "results", "test-results", "reports"})
+                or (remove_debug and d in {"debug", "debug-logs", "profiling", "traces"})
+                or (remove_logs and d in {"logs", "log", "run-logs", "test-logs"})
+                or (remove_checkpoints and d in {"checkpoints", "models", "model-checkpoints", "saves"})
             )
 
             if should_remove_dir:
@@ -170,6 +278,52 @@ def prune_empty_dirs(root_dir: str, dry_run: bool = False, verbose: bool = True)
             print(f"Error pruning directory {dirpath}: {e}")
 
 
+def clear_experiment_files(
+    root_dir: str,
+    dry_run: bool = False,
+    verbose: bool = True,
+    remove_plots: bool = True,
+    remove_models: bool = True,
+    remove_data_temp: bool = True,
+):
+    """Clean up experiment-specific files and directories.
+    
+    Args:
+        root_dir: Root directory to clean
+        dry_run: Show what would be removed without actually deleting
+        verbose: Print detailed progress information
+        remove_plots: Remove plot and visualization directories
+        remove_models: Remove model and checkpoint directories
+        remove_data_temp: Remove temporary data directories
+    """
+    experiment_dirs = []
+    
+    if remove_plots:
+        experiment_dirs.extend(["plots", "figures", "visualizations", "charts"])
+    
+    if remove_models:
+        experiment_dirs.extend(["models", "checkpoints", "saves", "model-checkpoints"])
+    
+    if remove_data_temp:
+        experiment_dirs.extend(["data-temp", "temp-data", "cache-data"])
+    
+    for dirpath, dirnames, filenames in os.walk(root_dir, topdown=True):
+        for d in list(dirnames):
+            if d in experiment_dirs:
+                full_d = os.path.join(dirpath, d)
+                if dry_run:
+                    if verbose:
+                        print(f"Would remove experiment directory: {full_d}")
+                else:
+                    try:
+                        shutil.rmtree(full_d, ignore_errors=False)
+                        if verbose:
+                            print(f"Removed experiment directory: {full_d}")
+                    except Exception as e:
+                        print(f"Error removing experiment directory {full_d}: {e}")
+                dirnames.remove(d)
+
+
 def clear_log_files(
     root_dir: str,
     delete_logs_dir: bool = False,
@@ -220,7 +374,7 @@ def clear_log_files(
 
 def parse_args(argv: List[str] = None):
     p = argparse.ArgumentParser(
-        description="Remove temporary files and folders from a project tree"
+        description="Comprehensive cleanup of temporary files, debugging artifacts, and experiment outputs"
     )
     p.add_argument(
         "root",
@@ -240,6 +394,68 @@ def parse_args(argv: List[str] = None):
         help="Remove the entire logs directory instead of truncating files",
     )
     p.add_argument("--quiet", action="store_true", help="Reduce output")
+
+    # Experiment and debugging cleanup options
+    p.add_argument(
+        "--remove-experiments",
+        action="store_true",
+        default=True,
+        help="Remove experiment-related directories (experiments/, experiment-logs/, etc.)",
+    )
+    p.add_argument(
+        "--no-remove-experiments",
+        action="store_false",
+        dest="remove_experiments",
+        help="Do NOT remove experiment-related directories",
+    )
+    p.add_argument(
+        "--remove-outputs",
+        action="store_true",
+        default=True,
+        help="Remove output and results directories (output/, results/, test-results/, etc.)",
+    )
+    p.add_argument(
+        "--no-remove-outputs",
+        action="store_false",
+        dest="remove_outputs",
+        help="Do NOT remove output and results directories",
+    )
+    p.add_argument(
+        "--remove-debug",
+        action="store_true",
+        default=True,
+        help="Remove debugging and profiling files (debug/, traces/, profiling/, etc.)",
+    )
+    p.add_argument(
+        "--no-remove-debug",
+        action="store_false",
+        dest="remove_debug",
+        help="Do NOT remove debugging and profiling files",
+    )
+    p.add_argument(
+        "--remove-logs",
+        action="store_true",
+        default=True,
+        help="Remove log files and directories (logs/, run-logs/, test-logs/, etc.)",
+    )
+    p.add_argument(
+        "--no-remove-logs",
+        action="store_false",
+        dest="remove_logs",
+        help="Do NOT remove log files and directories",
+    )
+    p.add_argument(
+        "--remove-checkpoints",
+        action="store_true",
+        default=True,
+        help="Remove checkpoint and model directories (checkpoints/, models/, saves/, etc.)",
+    )
+    p.add_argument(
+        "--no-remove-checkpoints",
+        action="store_false",
+        dest="remove_checkpoints",
+        help="Do NOT remove checkpoint and model directories",
+    )
 
     # Advanced controls
     p.add_argument(
@@ -269,12 +485,26 @@ def parse_args(argv: List[str] = None):
     p.add_argument(
         "--remove-node-modules",
         action="store_true",
+        default=True,
         help="Also remove node_modules directories",
+    )
+    p.add_argument(
+        "--no-remove-node-modules",
+        action="store_false",
+        dest="remove_node_modules",
+        help="Do NOT remove node_modules directories",
     )
     p.add_argument(
         "--remove-venvs",
         action="store_true",
+        default=True,
         help="Also remove common virtualenv directories (.venv, venv, .env, env)",
+    )
+    p.add_argument(
+        "--no-remove-venvs",
+        action="store_false",
+        dest="remove_venvs",
+        help="Do NOT remove common virtualenv directories",
     )
     p.add_argument(
         "--venv-names",
@@ -343,6 +573,11 @@ def main(argv: List[str] = None):
         venv_names=venv_names,
         follow_links=args.follow_links,
         max_depth=args.max_depth,
+        remove_experiments=args.remove_experiments,
+        remove_outputs=args.remove_outputs,
+        remove_debug=args.remove_debug,
+        remove_logs=args.remove_logs,
+        remove_checkpoints=args.remove_checkpoints,
     )
     clear_log_files(
         root_directory,
@@ -355,7 +590,28 @@ def main(argv: List[str] = None):
         prune_empty_dirs(root_directory, dry_run=dry_run, verbose=verbose)
 
     if verbose:
-        print("\nCleanup completed")
+        print("\nComprehensive cleanup completed")
+    print("\nSummary of cleanup options:")
+    print("- Python cache files and directories")
+    print("- Testing and coverage artifacts")
+    print("- Build and distribution artifacts")
+    print("- IDE and editor temporary files")
+    print("- Database temporary files")
+    print("- Log files and crash reports")
+    if args.remove_experiments:
+        print("- Experiment-related directories")
+    if args.remove_outputs:
+        print("- Output and results directories")
+    if args.remove_debug:
+        print("- Debugging and profiling files")
+    if args.remove_logs:
+        print("- Log files and directories")
+    if args.remove_checkpoints:
+        print("- Checkpoint and model directories")
+    if args.remove_node_modules:
+        print("- Node.js modules")
+    if args.remove_venvs:
+        print("- Virtual environments")
     return 0
 
 

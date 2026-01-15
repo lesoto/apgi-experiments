@@ -67,7 +67,12 @@ class MockController:
                 "soma_bias": mock.Mock(),
             }
         )
-        self.get_data_manager = mock.Mock(return_value=mock.Mock())
+        self.get_data_manager = mock.Mock(
+            return_value={
+                "storage": mock.Mock(),
+                "validator": mock.Mock(),
+            }
+        )
 
         # Mock equation methods
         equation_mock = self.get_mathematical_engine.return_value["equation"]
@@ -109,10 +114,14 @@ class MockController:
         primary_mock = self.get_falsification_tests.return_value["primary"]
         primary_mock.run_test = mock.Mock(return_value=mock.Mock())
 
-        # Mock data manager
+        # Mock data manager components
         data_manager_mock = self.get_data_manager.return_value
-        data_manager_mock.save_data = mock.Mock(return_value=True)
-        data_manager_mock.load_data = mock.Mock(return_value={})
+        storage_mock = data_manager_mock["storage"]
+        storage_mock.save_dataset = mock.Mock(return_value=True)
+        storage_mock.load_dataset = mock.Mock(return_value={})
+        
+        validator_mock = data_manager_mock["validator"]
+        validator_mock.validate_dataset = mock.Mock(return_value=True)
 
 
 class TestValidationTestResult:
