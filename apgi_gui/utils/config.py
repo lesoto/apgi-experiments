@@ -274,9 +274,9 @@ class AppConfig:
         """Set the current theme.
 
         Args:
-            value: Theme name ("light" or "dark")
+            value: Theme name ("light", "dark", or "system")
         """
-        if value in ["light", "dark"]:
+        if value in ["light", "dark", "system"]:
             self._config["theme"] = value
 
     @property

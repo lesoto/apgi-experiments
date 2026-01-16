@@ -104,9 +104,8 @@ class StatusBar(ctk.CTkFrame):
 
         # Progress bar (hidden by default)
         self.progress_bar = ctk.CTkProgressBar(self)
-        self.progress_bar.grid(row=0, column=1, padx=10, pady=5, sticky="ew")
         self.progress_bar.set(0)
-        self.progress_bar.grid_remove()  # Hide initially
+        # Don't grid initially to prevent visual flicker - will be gridded when shown
 
         # Current file label
         try:
@@ -235,16 +234,18 @@ class StatusBar(ctk.CTkFrame):
         if file_path:
             self.logger.debug(f"Setting file display: {file_path}")
 
+            # Convert to Path object for consistent handling
+            path_obj = Path(file_path)
+
             # Show just the filename if path is long
-            if len(file_path) > 50:
-                path_obj = Path(file_path)
+            if len(str(path_obj)) > 50:
                 parts = path_obj.parts
                 if len(parts) > 3:
                     display_name = str(Path("...") / parts[-2] / parts[-1])
                 else:
-                    display_name = file_path
+                    display_name = str(path_obj)
             else:
-                display_name = file_path
+                display_name = str(path_obj)
 
             self.file_label.configure(text=f"📄 {display_name}")
         else:

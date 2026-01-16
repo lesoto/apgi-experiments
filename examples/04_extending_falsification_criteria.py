@@ -23,13 +23,15 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from apgi_framework.core import (
     APGIEquation,
     FalsificationResult,
-    ConsciousnessAssessment,
 )
 from apgi_framework.simulators import (
-    NeuralSignatureSimulator,
-    PhysiologicalResponseSimulator,
+    P3bSimulator,
+    GammaSimulator,
+    BOLDSimulator,
+    P3bSignature,
+    GammaSignature,
+    BOLDSignature,
 )
-from apgi_framework.falsification import BaseFalsificationTest, FalsificationCriteria
 import logging
 
 # Setup logging with standardized system
@@ -58,6 +60,32 @@ class CustomFalsificationResult:
     statistical_power: float
     detailed_metrics: Dict[str, Any]
     interpretation: str
+
+
+@dataclass
+class ConsciousnessAssessment:
+    """Mock consciousness assessment for metacognitive calibration test."""
+
+    confidence_rating: float
+    forced_choice_accuracy: float
+
+
+class ConsciousnessAssessmentSimulator:
+    """Mock simulator for consciousness assessment in metacognitive calibration test."""
+
+    def __init__(self, random_seed: Optional[int] = None):
+        """Initialize the mock simulator."""
+        self.rng = np.random.RandomState(random_seed)
+
+    def simulate_conscious_trial(self) -> ConsciousnessAssessment:
+        """Simulate a consciousness assessment trial."""
+        confidence = self.rng.uniform(0.3, 0.9)
+        # For conscious trials, accuracy should correlate with confidence
+        accuracy = confidence + self.rng.normal(0, 0.15)
+        accuracy = np.clip(accuracy, 0.0, 1.0)
+        return ConsciousnessAssessment(
+            confidence_rating=confidence, forced_choice_accuracy=accuracy
+        )
 
 
 class TemporalDynamicsFalsificationTest:
@@ -420,6 +448,72 @@ def display_custom_test_result(result: CustomFalsificationResult):
     logger.info(f"\nInterpretation:")
     logger.info(f"  {result.interpretation}")
     logger.info("=" * 60 + "\n")
+
+
+def run_ai_benchmarking_experiment(**kwargs):
+    """
+    Wrapper function for ai_benchmarking experiment.
+    Maps to temporal dynamics falsification test.
+    """
+    temporal_test = TemporalDynamicsFalsificationTest()
+    n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 1000))
+    result = temporal_test.run_test(n_trials=n_trials)
+    display_custom_test_result(result)
+    return result
+
+
+def run_change_blindness_experiment(**kwargs):
+    """Wrapper for change_blindness experiment."""
+    temporal_test = TemporalDynamicsFalsificationTest()
+    n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 1000))
+    result = temporal_test.run_test(n_trials=n_trials)
+    display_custom_test_result(result)
+    return result
+
+
+def run_simon_effect_experiment(**kwargs):
+    """Wrapper for simon_effect experiment."""
+    crossmodal_test = CrossModalIntegrationTest()
+    n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 1000))
+    result = crossmodal_test.run_test(n_trials=n_trials)
+    display_custom_test_result(result)
+    return result
+
+
+def run_inattentional_blindness_experiment(**kwargs):
+    """Wrapper for inattentional_blindness experiment."""
+    crossmodal_test = CrossModalIntegrationTest()
+    n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 1000))
+    result = crossmodal_test.run_test(n_trials=n_trials)
+    display_custom_test_result(result)
+    return result
+
+
+def run_drm_false_memory_experiment(**kwargs):
+    """Wrapper for drm_false_memory experiment."""
+    metacog_test = MetacognitiveCalibrationTest()
+    n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 1000))
+    result = metacog_test.run_test(n_trials=n_trials)
+    display_custom_test_result(result)
+    return result
+
+
+def run_multisensory_integration_experiment(**kwargs):
+    """Wrapper for multisensory_integration experiment."""
+    metacog_test = MetacognitiveCalibrationTest()
+    n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 1000))
+    result = metacog_test.run_test(n_trials=n_trials)
+    display_custom_test_result(result)
+    return result
+
+
+def run_virtual_navigation_experiment(**kwargs):
+    """Wrapper for virtual_navigation experiment."""
+    temporal_test = TemporalDynamicsFalsificationTest()
+    n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 1000))
+    result = temporal_test.run_test(n_trials=n_trials)
+    display_custom_test_result(result)
+    return result
 
 
 if __name__ == "__main__":

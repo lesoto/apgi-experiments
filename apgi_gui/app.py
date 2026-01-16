@@ -4,7 +4,7 @@ import os
 import json
 import logging
 import tkinter as tk
-from tkinter import TclError
+from tkinter import TclError, filedialog
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 from collections import deque
@@ -230,6 +230,14 @@ class APGIFrameworkApp(ctk.CTk):
             file_path = Path(file_path)
 
         try:
+            # Validate file path
+            if not file_path.exists():
+                self.update_status(f"Error [file not found]: {file_path.name}", "error")
+                return
+            if not file_path.is_file():
+                self.update_status(f"Error [not a file]: {file_path.name}", "error")
+                return
+
             with open(file_path, "r") as f:
                 data = json.load(f)
 
@@ -245,7 +253,12 @@ class APGIFrameworkApp(ctk.CTk):
 
             self.update_status(f"Opened {file_path.name}")
 
+        except (OSError, PermissionError, RuntimeError) as e:
+            # Log specific errors but continue monitoring
+            self.logger.error(f"Error [file monitoring]: {e}")
         except Exception as e:
+            # Log unexpected errors with full traceback
+            self.logger.error(f"Error [unexpected file monitoring]: {e}", exc_info=True)
             self.update_status(f"Error opening file: {e}", "error")
 
     def save_file(self) -> None:
@@ -461,7 +474,7 @@ For more information, visit the project documentation."""
                 focused.mark_set("insert", "1.0")
                 focused.see("insert")
         except (AttributeError, TclError) as e:
-            logger.warning(f"Failed to select all text: {e}")
+            self.logger.warning(f"Failed to select all text: {e}")
 
     def copy(self) -> None:
         """Copy selected content."""
@@ -472,7 +485,7 @@ For more information, visit the project documentation."""
                 self.clipboard_append(focused.selection_get())
                 self.update_status("Copied to clipboard")
         except (AttributeError, TclError) as e:
-            logger.warning(f"Nothing to copy: {e}")
+            self.logger.warning(f"Nothing to copy: {e}")
             self.update_status("Nothing to copy", "warning")
 
     def paste(self) -> None:
@@ -484,7 +497,7 @@ For more information, visit the project documentation."""
                 focused.insert("insert", clipboard_content)
                 self.update_status("Pasted from clipboard")
         except (AttributeError, TclError) as e:
-            logger.warning(f"Nothing to paste: {e}")
+            self.logger.warning(f"Nothing to paste: {e}")
             self.update_status("Nothing to paste", "warning")
 
     def cut(self) -> None:
@@ -498,7 +511,7 @@ For more information, visit the project documentation."""
                 focused.delete("sel.first", "sel.last")
                 self.update_status("Cut to clipboard")
         except (AttributeError, TclError) as e:
-            logger.warning(f"Nothing to cut: {e}")
+            self.logger.warning(f"Nothing to cut: {e}")
             self.update_status("Nothing to cut", "warning")
 
     def toggle_fullscreen(self) -> None:
@@ -619,8 +632,10 @@ For more information, visit the project documentation."""
         try:
             self.main_area.tabview.set(tab_name)
             self.update_status(f"Switched to {tab_name} tab")
-        except (AttributeError, KeyError) as e:
-            logger.error(f"Failed to switch to {tab_name} tab: {e}")
+        except (AttributeError, KeyError, IndexError) as e:
+            # Log specific error and fallback to configuration
+            self.logger.error(f"Error [tab change]: {e}")
+            self.create_configuration_content()
             self.update_status(f"Failed to switch to {tab_name} tab", "error")
 
     def next_tab(self) -> None:
@@ -632,7 +647,7 @@ For more information, visit the project documentation."""
             next_index = (current_index + 1) % len(tabs)
             self.switch_to_tab(tabs[next_index])
         except (AttributeError, IndexError) as e:
-            logger.warning(f"Failed to switch to next tab: {e}")
+            self.logger.warning(f"Failed to switch to next tab: {e}")
 
     def previous_tab(self) -> None:
         """Switch to the previous tab."""
@@ -643,7 +658,7 @@ For more information, visit the project documentation."""
             prev_index = (current_index - 1) % len(tabs)
             self.switch_to_tab(tabs[prev_index])
         except (AttributeError, IndexError) as e:
-            logger.warning(f"Failed to switch to previous tab: {e}")
+            self.logger.warning(f"Failed to switch to previous tab: {e}")
 
     def run_analysis(self) -> None:
         """Run the current analysis."""
@@ -682,7 +697,7 @@ For more information, visit the project documentation."""
             log_window.title("Application Log Viewer")
             log_window.geometry("900x600")
             log_window.transient(self)
-            log_window.grab_set()  # Fix typo: was grabab_set()
+            log_window.grab_set()
 
             # Configure grid
             log_window.grid_columnconfigure(0, weight=1)
@@ -814,10 +829,11 @@ For more information, visit the project documentation."""
 
             # Display last 1000 lines to prevent memory issues
             if len(lines) > 1000:
+                original_count = len(lines)
                 lines = lines[-1000:]
                 log_text.insert(
                     "1.0",
-                    f"Showing last 1000 lines of {len(lines) + 1000} total lines\n\n",
+                    f"Showing last 1000 lines of {original_count} total lines\n\n",
                 )
 
             # Insert lines
@@ -864,7 +880,7 @@ For more information, visit the project documentation."""
             pref_window.title("Preferences")
             pref_window.geometry("700x600")
             pref_window.transient(self)
-            pref_window.grab_set()  # Fix typo: was grabab_set()
+            pref_window.grab_set()
 
             # Configure grid
             pref_window.grid_columnconfigure(0, weight=1)

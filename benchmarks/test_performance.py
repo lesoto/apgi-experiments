@@ -7,6 +7,7 @@ import pytest
 
 try:
     import pytest_benchmark
+
     HAS_BENCHMARK = True
 except ImportError:
     HAS_BENCHMARK = False

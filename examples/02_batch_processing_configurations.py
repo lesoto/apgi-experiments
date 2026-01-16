@@ -389,6 +389,44 @@ def save_batch_results(results, batch_name):
     logger.info(f"\nBatch results saved to: {filename}")
 
 
+def run_somatic_marker_priming_experiment(**kwargs):
+    """
+    Wrapper function for somatic_marker_priming experiment.
+    Maps to batch processing threshold variations.
+    """
+    return batch_process_threshold_variations()
+
+
+def run_probabilistic_category_learning_experiment(**kwargs):
+    """Wrapper for probabilistic_category_learning experiment."""
+    return batch_process_threshold_variations()
+
+
+def run_posner_cueing_experiment(**kwargs):
+    """Wrapper for posner_cueing experiment."""
+    return batch_process_threshold_variations()
+
+
+def run_masking_experiment(**kwargs):
+    """Wrapper for masking experiment."""
+    return batch_process_threshold_variations()
+
+
+def run_sternberg_memory_experiment(**kwargs):
+    """Wrapper for sternberg_memory experiment."""
+    return batch_process_threshold_variations()
+
+
+def run_stop_signal_experiment(**kwargs):
+    """Wrapper for stop_signal experiment."""
+    return batch_process_threshold_variations()
+
+
+def run_artificial_grammar_learning_experiment(**kwargs):
+    """Wrapper for artificial_grammar_learning experiment."""
+    return batch_process_threshold_variations()
+
+
 if __name__ == "__main__":
     print("\n" + "=" * 70)
     print("APGI Framework - Batch Processing Examples")

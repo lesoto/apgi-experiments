@@ -48,14 +48,11 @@ class MockController:
                 "soma_bias": mock.Mock(),
             }
         )
-        
+
         # Mock falsification test results
         for test_name, test_mock in self.get_falsification_tests.return_value.items():
             test_mock.run_test.return_value = mock.Mock(
-                is_falsified=False,
-                p_value=0.1,
-                effect_size=0.3,
-                confidence_level=0.95
+                is_falsified=False, p_value=0.1, effect_size=0.3, confidence_level=0.95
             )
 
         self.system_validator.run_validation.return_value = mock.Mock()
@@ -304,7 +301,10 @@ class TestWorkflowOrchestrator:
                                     result = self.orchestrator.run_complete_workflow()
 
                                     assert isinstance(result, WorkflowResult)
-                                    assert result.overall_status == WorkflowStatus.COMPLETED
+                                    assert (
+                                        result.overall_status
+                                        == WorkflowStatus.COMPLETED
+                                    )
                                     assert result.workflow_id is not None
 
     def test_run_parallel_workflow(self):

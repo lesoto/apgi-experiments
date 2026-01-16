@@ -24,6 +24,108 @@ from apgi_framework.utils.font_utils import get_font
 from dataclasses import dataclass
 from enum import Enum
 
+# Import tooltip manager
+try:
+    from apgi_gui.utils.tooltip_manager import add_tooltip, add_parameter_tooltips
+
+    TOOLTIPS_AVAILABLE = True
+except ImportError:
+    # Fallback tooltip implementation
+    TOOLTIPS_AVAILABLE = False
+
+    def add_tooltip(widget, param_name):
+        pass
+
+    def add_parameter_tooltips(widgets):
+        pass
+
+
+# Import keyboard manager
+try:
+    from apgi_gui.utils.keyboard_manager import (
+        KeyboardManager,
+        setup_standard_shortcuts,
+    )
+
+    KEYBOARD_SHORTCUTS_AVAILABLE = True
+except ImportError:
+    # Fallback keyboard implementation
+    KEYBOARD_SHORTCUTS_AVAILABLE = False
+
+    class KeyboardManager:
+        def __init__(self, root):
+            pass
+
+        def bind_shortcut(self, *args, **kwargs):
+            pass
+
+    def setup_standard_shortcuts(*args, **kwargs):
+        pass
+
+
+# Import undo/redo manager
+try:
+    from apgi_gui.utils.undo_redo_manager import (
+        UndoRedoManager,
+        WidgetTracker,
+        create_undo_redo_menu,
+    )
+
+    UNDO_REDO_AVAILABLE = True
+except ImportError:
+    # Fallback undo/redo implementation
+    UNDO_REDO_AVAILABLE = False
+
+    class UndoRedoManager:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def undo(self):
+            pass
+
+        def redo(self):
+            pass
+
+        def can_undo(self):
+            return False
+
+        def can_redo(self):
+            return False
+
+    class WidgetTracker:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def track_widget(self, *args, **kwargs):
+            pass
+
+    def create_undo_redo_menu(*args, **kwargs):
+        pass
+
+
+# Import theme manager
+try:
+    from apgi_gui.utils.theme_manager import ThemeManager, get_system_theme_preference
+
+    THEME_AVAILABLE = True
+except ImportError:
+    # Fallback theme implementation
+    THEME_AVAILABLE = False
+
+    class ThemeManager:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def set_theme(self, *args, **kwargs):
+            pass
+
+        def toggle_dark_mode(self):
+            pass
+
+    def get_system_theme_preference():
+        return "light"
+
+
 # APGI Framework imports
 try:
     # Core modules
@@ -556,6 +658,32 @@ class APGIFrameworkGUI(ctk.CTk):
         self.error_handler = None
         self.config_validator = ConfigurationValidator()
 
+        # Initialize keyboard shortcuts
+        if KEYBOARD_SHORTCUTS_AVAILABLE:
+            self.keyboard_manager = KeyboardManager(self)
+            setup_standard_shortcuts(self, self.keyboard_manager)
+            # Add custom shortcuts for this GUI
+            self._setup_custom_shortcuts()
+        else:
+            self.keyboard_manager = None
+
+        # Initialize undo/redo functionality
+        if UNDO_REDO_AVAILABLE:
+            self.undo_manager = UndoRedoManager(max_history=100)
+            self.widget_tracker = WidgetTracker(self.undo_manager)
+        else:
+            self.undo_manager = None
+            self.widget_tracker = None
+
+        # Initialize theme manager
+        if THEME_AVAILABLE:
+            self.theme_manager = ThemeManager(self)
+            # Try to load system preference
+            system_theme = get_system_theme_preference()
+            self.theme_manager.set_theme(system_theme)
+        else:
+            self.theme_manager = None
+
         # Initialize framework components
         self.config_manager = None
         self.cli_handler = None
@@ -951,10 +1079,76 @@ class APGIFrameworkGUI(ctk.CTk):
         self.bind("<Control-s>", lambda e: self.save_config())
         self.bind("<Control-q>", lambda e: self.quit())
 
+    def _setup_custom_shortcuts(self):
+        """Setup custom shortcuts specific to this GUI."""
+        if self.keyboard_manager:
+            # Falsification tests
+            self.keyboard_manager.bind_shortcut(
+                "F9",
+                self.run_primary_falsification_test,
+                "Run primary falsification test",
+            )
+            self.keyboard_manager.bind_shortcut(
+                "F10", self.run_cwi_test, "Run consciousness-without-ignition test"
+            )
+            self.keyboard_manager.bind_shortcut(
+                "F11",
+                self.run_threshold_insensitivity_test,
+                "Run threshold insensitivity test",
+            )
+            self.keyboard_manager.bind_shortcut(
+                "F12", self.run_soma_bias_test, "Run soma bias test"
+            )
+
+            # Analysis functions
+            self.keyboard_manager.bind_shortcut(
+                "Ctrl+Shift+A",
+                self.run_bayesian_estimation,
+                "Run Bayesian parameter estimation",
+            )
+            self.keyboard_manager.bind_shortcut(
+                "Ctrl+Shift+E",
+                self.run_effect_size_analysis,
+                "Run effect size analysis",
+            )
+
+            # Visualization
+            self.keyboard_manager.bind_shortcut(
+                "Ctrl+Shift+V", self.plot_parameter_space, "Plot parameter space"
+            )
+            self.keyboard_manager.bind_shortcut(
+                "Ctrl+Shift+P",
+                self.generate_report,
+                "Generate comprehensive report",
+            )
+
     def update_status(self, message):
         """Update status bar message."""
         self.status_label.configure(text=message)
         self.update_idletasks()
+
+    def undo(self):
+        """Perform undo operation."""
+        if self.undo_manager and self.undo_manager.can_undo():
+            description = self.undo_manager.undo()
+            if description:
+                self.update_status(f"Undone: {description}")
+                self.log_to_console(f"Undo: {description}")
+
+    def redo(self):
+        """Perform redo operation."""
+        if self.undo_manager and self.undo_manager.can_redo():
+            description = self.undo_manager.redo()
+            if description:
+                self.update_status(f"Redone: {description}")
+                self.log_to_console(f"Redo: {description}")
+
+    def toggle_dark_mode(self):
+        """Toggle between light and dark mode."""
+        if self.theme_manager:
+            new_theme = self.theme_manager.toggle_dark_mode()
+            self.update_status(f"Theme changed to: {new_theme.title()}")
+            self.log_to_console(f"Theme changed to: {new_theme.title()}")
 
     def update_system_status_display(self):
         """Update system status display."""
@@ -1079,10 +1273,20 @@ class APGIFrameworkGUI(ctk.CTk):
 
             label = ctk.CTkLabel(frame, text=label_text, width=140)
             label.pack(side="left", padx=(0, 5))
+            add_tooltip(label, param_name)
 
             entry = ctk.CTkEntry(frame, width=80)
             entry.pack(side="right")
             entry.insert(0, default_value)
+            add_tooltip(entry, param_name)
+
+            # Track for undo/redo
+            if self.widget_tracker:
+                self.widget_tracker.track_widget(entry, "parameter")
+                if hasattr(self.widget_tracker, "tracked_widgets"):
+                    self.widget_tracker.tracked_widgets[str(id(entry))][
+                        "param_name"
+                    ] = param_name
 
             self.apgi_params[param_name] = entry
 
@@ -1147,10 +1351,20 @@ class APGIFrameworkGUI(ctk.CTk):
 
             label = ctk.CTkLabel(frame, text=label_text, width=140)
             label.pack(side="left", padx=(0, 5))
+            add_tooltip(label, param_name)
 
             entry = ctk.CTkEntry(frame, width=80)
             entry.pack(side="right")
             entry.insert(0, default_value)
+            add_tooltip(entry, param_name)
+
+            # Track for undo/redo
+            if self.widget_tracker:
+                self.widget_tracker.track_widget(entry, "parameter")
+                if hasattr(self.widget_tracker, "tracked_widgets"):
+                    self.widget_tracker.tracked_widgets[str(id(entry))][
+                        "param_name"
+                    ] = param_name
 
             self.exp_setup_params[param_name] = entry
 
@@ -1417,15 +1631,17 @@ class APGIFrameworkGUI(ctk.CTk):
 
                 sys.path.insert(0, str(Path(__file__).parent))
                 import importlib.util
-                
+
                 # Load module with numeric name
                 spec = importlib.util.spec_from_file_location(
-                    "run_primary_falsification_test", 
-                    "examples/01_run_primary_falsification_test.py"
+                    "run_primary_falsification_test",
+                    "examples/01_run_primary_falsification_test.py",
                 )
                 module = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(module)
-                run_primary_falsification_test_basic = module.run_primary_falsification_test_basic
+                run_primary_falsification_test_basic = (
+                    module.run_primary_falsification_test_basic
+                )
             except ImportError:
                 # Fallback if import fails
                 run_primary_falsification_test_basic = None
@@ -2105,12 +2321,12 @@ class APGIFrameworkGUI(ctk.CTk):
             # Import from tools.run_experiments
             import sys
             from pathlib import Path
-            
+
             # Add tools directory to path
             tools_path = Path(__file__).parent / "tools"
             if str(tools_path) not in sys.path:
                 sys.path.insert(0, str(tools_path))
-            
+
             from run_experiments import experiment_threshold_effects
 
             # Run in separate thread
@@ -2162,12 +2378,12 @@ class APGIFrameworkGUI(ctk.CTk):
             # Import from tools.run_experiments
             import sys
             from pathlib import Path
-            
+
             # Add tools directory to path
             tools_path = Path(__file__).parent / "tools"
             if str(tools_path) not in sys.path:
                 sys.path.insert(0, str(tools_path))
-            
+
             from run_experiments import experiment_somatic_markers
 
             # Get APGI parameters to use for somatic marker values
@@ -2219,12 +2435,12 @@ class APGIFrameworkGUI(ctk.CTk):
             # Import from tools.run_experiments
             import sys
             from pathlib import Path
-            
+
             # Add tools directory to path
             tools_path = Path(__file__).parent / "tools"
             if str(tools_path) not in sys.path:
                 sys.path.insert(0, str(tools_path))
-            
+
             from run_experiments import experiment_precision_effects
 
             # Get APGI parameters
@@ -2293,12 +2509,12 @@ class APGIFrameworkGUI(ctk.CTk):
             # Import from tools.run_experiments
             import sys
             from pathlib import Path
-            
+
             # Add tools directory to path
             tools_path = Path(__file__).parent / "tools"
             if str(tools_path) not in sys.path:
                 sys.path.insert(0, str(tools_path))
-            
+
             from run_experiments import experiment_dynamic_threshold
 
             # Get threshold parameter from GUI
@@ -5290,7 +5506,9 @@ class APGIFrameworkGUI(ctk.CTk):
     def _on_data_error(self, error_msg):
         """Handle data loading error."""
         self.log_to_console(f"Error generating example data: {error_msg}")
-        messagebox.showerror("Data Error", f"Failed to generate example data: {error_msg}")
+        messagebox.showerror(
+            "Data Error", f"Failed to generate example data: {error_msg}"
+        )
 
     def show_help(self):
         """Show help information."""
@@ -5367,7 +5585,7 @@ For detailed documentation, please refer to the user manual.
                 potential_paths = ["tools/run_experiments.py", script_name]
             else:
                 potential_paths = [script_name]
-            
+
             for potential_path in potential_paths:
                 if os.path.exists(potential_path):
                     script_path = potential_path
@@ -5404,7 +5622,8 @@ For detailed documentation, please refer to the user manual.
                     text=True,
                     cwd=(
                         os.path.dirname(os.path.abspath(script_path))
-                        if script_name.startswith("examples/") or script_name.startswith("tools/")
+                        if script_name.startswith("examples/")
+                        or script_name.startswith("tools/")
                         else "."
                     ),
                 )

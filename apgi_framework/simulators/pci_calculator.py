@@ -163,10 +163,10 @@ class PCICalculator:
         # Validate connectivity matrix
         if connectivity_matrix.shape[0] != connectivity_matrix.shape[1]:
             raise ValueError("Connectivity matrix must be square")
-        
+
         if np.any(np.isnan(connectivity_matrix)):
             raise ValueError("Connectivity matrix contains NaN values")
-            
+
         if np.any(np.isinf(connectivity_matrix)):
             raise ValueError("Connectivity matrix contains infinite values")
 
@@ -301,7 +301,7 @@ class PCICalculator:
             # Calculate network influence with extreme value handling
             try:
                 network_input = np.dot(connectivity_matrix, response[:, t - 1])
-                
+
                 # Handle extreme values
                 if np.any(np.isinf(network_input)) or np.any(np.isnan(network_input)):
                     network_input = np.zeros_like(network_input)
@@ -323,7 +323,7 @@ class PCICalculator:
                 # Add noise
                 noise = self.rng.normal(0, noise_level, n_regions)
                 response[:, t] += noise
-                
+
             except Exception:
                 # Fallback: just apply decay
                 response[:, t] = response[:, t - 1] * 0.95
@@ -337,7 +337,7 @@ class PCICalculator:
         # Validate inputs
         if perturbation_response.size == 0:
             raise ValueError("Response array cannot be empty")
-            
+
         if connectivity_matrix.shape[0] != perturbation_response.shape[0]:
             raise ValueError("Response and connectivity dimensions must match")
 
@@ -522,7 +522,7 @@ class PCICalculator:
         """Compute overall PCI from complexity components."""
         if not components:
             raise ValueError("No complexity components provided")
-            
+
         # Weighted average of components
         weights = {
             "lempel_ziv_complexity": 0.25,

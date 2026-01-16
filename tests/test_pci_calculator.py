@@ -121,9 +121,7 @@ class TestPCICalculator:
 
         assert isinstance(signature, PCISignature)
         assert signature.pci_value > 0.4
-        assert (
-            signature.connectivity_strength > 0.5
-        )  # Should be in reasonable range
+        assert signature.connectivity_strength > 0.5  # Should be in reasonable range
 
     def test_generate_unconscious_signature(self):
         """Test generating unconscious PCI signature."""
@@ -221,7 +219,13 @@ class TestPCICalculator:
         )
 
         assert isinstance(components, dict)
-        expected_keys = ["lempel_ziv_complexity", "perturbational_complexity", "integration_measure", "differentiation_measure", "information_integration"]
+        expected_keys = [
+            "lempel_ziv_complexity",
+            "perturbational_complexity",
+            "integration_measure",
+            "differentiation_measure",
+            "information_integration",
+        ]
         for key in expected_keys:
             assert key in components
             assert isinstance(components[key], (int, float))
@@ -229,7 +233,9 @@ class TestPCICalculator:
     def test_lempel_ziv_complexity(self):
         """Test Lempel-Ziv complexity calculation."""
         # Test with simple patterns
-        simple_response = np.array([[1, 0, 1, 0, 1, 0, 1, 0] for _ in range(8)])  # 8 regions, 8 time points
+        simple_response = np.array(
+            [[1, 0, 1, 0, 1, 0, 1, 0] for _ in range(8)]
+        )  # 8 regions, 8 time points
         lzc = self.calculator._lempel_ziv_complexity(simple_response)
 
         assert isinstance(lzc, (int, float))

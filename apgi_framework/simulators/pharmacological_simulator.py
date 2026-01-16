@@ -443,7 +443,7 @@ class PharmacologicalSimulator:
         """Confirm that drug reached detectable levels"""
         if not time_course:  # Handle empty time course
             return False
-            
+
         max_concentration = max(time_course.values())
 
         # Drug is confirmed if peak concentration exceeds detection threshold
@@ -574,6 +574,7 @@ class PharmacologicalSimulator:
             except ValidationError:
                 # Handle unknown drugs gracefully by creating a placeholder response
                 from datetime import datetime
+
                 placeholder_profile = DrugProfile(
                     name=drug_name,
                     drug_class=DrugClass.PLACEBO,
@@ -586,7 +587,7 @@ class PharmacologicalSimulator:
                     threshold_effect_direction=0,
                     physiological_effects={},
                 )
-                
+
                 placeholder_admin = DrugAdministration(
                     drug_profile=placeholder_profile,
                     dosage=dosage,
@@ -596,7 +597,7 @@ class PharmacologicalSimulator:
                     metabolism_rate=1.0,
                     sensitivity_factor=1.0,
                 )
-                
+
                 responses[drug_name] = PharmacologicalResponse(
                     drug_administration=placeholder_admin,
                     time_course={0.0: 0.0},

@@ -18,12 +18,11 @@ try:
     from ..data.parameter_estimation_models import SessionData
     from ..data.parameter_estimation_dao import ParameterEstimationDAO
     from ..security.secure_pickle import (
+        SecurePickleError,
         safe_pickle_load,
         safe_pickle_dump,
-        SecurePickleError,
     )
 except ImportError:
-    # Handle relative import when run directly
     SessionData = None
     ParameterEstimationDAO = None
 
@@ -31,10 +30,19 @@ except ImportError:
         pass
 
     def safe_pickle_load(*args, **kwargs):
-        pass
+        return None
 
     def safe_pickle_dump(*args, **kwargs):
-        pass
+        return None
+
+
+# Import error logging utilities
+try:
+    from .error_logging_utils import get_error_log_dir
+except ImportError:
+    # Fallback if utility not available
+    def get_error_log_dir(gui_config_path=None):
+        return Path.home() / ".apgi" / "error_logs"
 
 
 logger = logging.getLogger(__name__)
@@ -666,13 +674,16 @@ class UserGuidanceSystem:
             logger.warning(message)
             return False
 
-    def log_error_with_context(self, error: Exception, context: Dict[str, Any]) -> None:
+    def log_error_with_context(
+        self, error: Exception, context: Dict[str, Any], log_dir: Optional[Path] = None
+    ) -> None:
         """
         Log error with full context information.
 
         Args:
             error: Exception that occurred
             context: Context information dictionary
+            log_dir: Optional directory for error logs. If None, uses configured directory or default
         """
         error_info = {
             "error_type": type(error).__name__,
@@ -685,11 +696,13 @@ class UserGuidanceSystem:
         logger.error(f"Error with context: {json.dumps(error_info, indent=2)}")
 
         # Optionally save to error log file
-        error_log_dir = Path("error_logs")
-        error_log_dir.mkdir(exist_ok=True)
+        # Use provided log_dir or get from config system
+        if log_dir is None:
+            log_dir = get_error_log_dir()
+        log_dir.mkdir(parents=True, exist_ok=True)
 
         error_log_file = (
-            error_log_dir / f"error_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            log_dir / f"error_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         )
 
         try:

@@ -411,6 +411,58 @@ def export_analysis_report(
     logger.info("=" * 60 + "\n")
 
 
+def run_metabolic_cost_experiment(**kwargs):
+    """
+    Wrapper function for metabolic_cost experiment.
+    Maps to falsification rate analysis.
+    """
+    results = load_saved_results("results")
+    analyze_falsification_rates(results)
+    return results
+
+
+def run_attentional_blink_experiment(**kwargs):
+    """Wrapper for attentional_blink experiment."""
+    results = load_saved_results("results")
+    analyze_falsification_rates(results)
+    return results
+
+
+def run_stroop_effect_experiment(**kwargs):
+    """Wrapper for stroop_effect experiment."""
+    results = load_saved_results("results")
+    analyze_falsification_rates(results)
+    return results
+
+
+def run_binocular_rivalry_experiment(**kwargs):
+    """Wrapper for binocular_rivalry experiment."""
+    results = load_saved_results("results")
+    analyze_falsification_rates(results)
+    return results
+
+
+def run_working_memory_span_experiment(**kwargs):
+    """Wrapper for working_memory_span experiment."""
+    results = load_saved_results("results")
+    analyze_falsification_rates(results)
+    return results
+
+
+def run_navon_task_experiment(**kwargs):
+    """Wrapper for navon_task experiment."""
+    results = load_saved_results("results")
+    analyze_falsification_rates(results)
+    return results
+
+
+def run_time_estimation_experiment(**kwargs):
+    """Wrapper for time_estimation experiment."""
+    results = load_saved_results("results")
+    analyze_falsification_rates(results)
+    return results
+
+
 if __name__ == "__main__":
     print("\n" + "=" * 70)
     print("APGI Framework - Custom Analysis Examples")

@@ -275,11 +275,11 @@ class Sidebar(ctk.CTkFrame):
                 time.sleep(self.monitor_interval)
             except (OSError, PermissionError, RuntimeError) as e:
                 # Log specific errors but continue monitoring
-                self.logger.error(f"File monitoring error: {e}")
+                self.logger.warning(f"File monitoring error: {e}")
                 time.sleep(self.monitor_interval)
             except Exception as e:
                 # Log unexpected errors with full traceback
-                self.logger.error(
+                self.logger.warning(
                     f"Unexpected file monitoring error: {e}", exc_info=True
                 )
                 time.sleep(self.monitor_interval)
@@ -316,8 +316,9 @@ class Sidebar(ctk.CTkFrame):
                         self.file_timestamps.pop(file_path_str, None)
                     self.after(0, lambda: self._handle_file_deleted(file_path))
 
-            except (OSError, PermissionError):
+            except (OSError, PermissionError) as e:
                 # File might be inaccessible - remove from monitoring
+                self.logger.warning(f"File monitoring error for {file_path_str}: {e}")
                 with self.file_lock:
                     self.file_timestamps.pop(file_path_str, None)
                 continue
@@ -360,12 +361,13 @@ class Sidebar(ctk.CTkFrame):
         if hasattr(self.app, "current_file") and self.app.current_file == file_path:
             # Show notification to user
             self.app.update_status(
-                f"File '{file_path.name}' was modified externally", color="warning"
+                f"File '{file_path.name}' was modified externally", level="warning"
             )
 
             # Update file timestamp
             try:
-                self.file_timestamps[str(file_path)] = file_path.stat().st_mtime
+                with self.file_lock:
+                    self.file_timestamps[str(file_path)] = file_path.stat().st_mtime
             except (OSError, PermissionError):
                 pass
 
@@ -377,7 +379,8 @@ class Sidebar(ctk.CTkFrame):
         """
         try:
             # Remove from timestamps
-            self.file_timestamps.pop(str(file_path), None)
+            with self.file_lock:
+                self.file_timestamps.pop(str(file_path), None)
 
             # Remove from recent files if it was deleted
             if file_path in self.app.recent_files:
@@ -392,16 +395,6 @@ class Sidebar(ctk.CTkFrame):
             pass
         except Exception as e:
             self.logger.error(f"Error handling file deletion: {e}")
-
-    def on_recent_select(self, event):
-        """Handle recent file selection (legacy method for compatibility).
-
-        Args:
-            event: Listbox selection event (no longer used)
-        """
-        # This method is kept for compatibility but no longer used
-        # since we replaced the Listbox with CustomTkinter buttons
-        pass
 
     def refresh(self):
         """Refresh the sidebar content."""

@@ -20,7 +20,8 @@ import tempfile
 
 # Set matplotlib backend before importing to avoid threading issues
 import matplotlib
-matplotlib.use('Agg')  # Use non-interactive backend to prevent GUI conflicts
+
+matplotlib.use("Agg")  # Use non-interactive backend to prevent GUI conflicts
 
 # Add project root to Python path
 project_root = Path(__file__).parent
@@ -29,9 +30,112 @@ sys.path.insert(0, str(project_root))
 # Import experiment runner
 from tools.run_experiments import EXPERIMENTS, run_experiment
 
+# Import tooltip manager
+try:
+    from apgi_gui.utils.tooltip_manager import add_tooltip, add_parameter_tooltips
+
+    TOOLTIPS_AVAILABLE = True
+except ImportError:
+    # Fallback tooltip implementation
+    TOOLTIPS_AVAILABLE = False
+
+    def add_tooltip(widget, param_name):
+        pass
+
+    def add_parameter_tooltips(widgets):
+        pass
+
+
+# Import keyboard manager
+try:
+    from apgi_gui.utils.keyboard_manager import (
+        KeyboardManager,
+        setup_standard_shortcuts,
+    )
+
+    KEYBOARD_SHORTCUTS_AVAILABLE = True
+except ImportError:
+    # Fallback keyboard implementation
+    KEYBOARD_SHORTCUTS_AVAILABLE = False
+
+    class KeyboardManager:
+        def __init__(self, root):
+            pass
+
+        def bind_shortcut(self, *args, **kwargs):
+            pass
+
+    def setup_standard_shortcuts(*args, **kwargs):
+        pass
+
+
+# Import undo/redo manager
+try:
+    from apgi_gui.utils.undo_redo_manager import (
+        UndoRedoManager,
+        WidgetTracker,
+        create_undo_redo_menu,
+    )
+
+    UNDO_REDO_AVAILABLE = True
+except ImportError:
+    # Fallback undo/redo implementation
+    UNDO_REDO_AVAILABLE = False
+
+    class UndoRedoManager:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def undo(self):
+            pass
+
+        def redo(self):
+            pass
+
+        def can_undo(self):
+            return False
+
+        def can_redo(self):
+            return False
+
+    class WidgetTracker:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def track_widget(self, *args, **kwargs):
+            pass
+
+    def create_undo_redo_menu(*args, **kwargs):
+        pass
+
+
+# Import theme manager
+try:
+    from apgi_gui.utils.theme_manager import ThemeManager, get_system_theme_preference
+
+    THEME_AVAILABLE = True
+except ImportError:
+    # Fallback theme implementation
+    THEME_AVAILABLE = False
+
+    class ThemeManager:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def set_theme(self, *args, **kwargs):
+            pass
+
+        def toggle_dark_mode(self):
+            pass
+
+    def get_system_theme_preference():
+        return "light"
+
+
 # Set up logging with standardized system
 try:
     from apgi_framework.logging.standardized_logging import get_logger
+
     logger = get_logger("gui_experiment_registry")
 except ImportError:
     # Fallback to basic logging
@@ -57,13 +161,55 @@ class ExperimentRegistryGUI:
         self.output_file = tk.StringVar(value="")
         self.running = False
 
+        # Thread management
+        self.experiment_threads = []
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+
         # Experiment status tracking
         self.experiment_status = {}
         self.initialize_experiment_status()
 
+        # Initialize keyboard shortcuts
+        if KEYBOARD_SHORTCUTS_AVAILABLE:
+            self.keyboard_manager = KeyboardManager(self.root)
+            setup_standard_shortcuts(self, self.keyboard_manager)
+            # Add custom shortcuts for this GUI
+            self._setup_custom_shortcuts()
+        else:
+            self.keyboard_manager = None
+
+        # Initialize undo/redo functionality
+        if UNDO_REDO_AVAILABLE:
+            self.undo_manager = UndoRedoManager(max_history=50)
+            self.widget_tracker = WidgetTracker(self.undo_manager)
+        else:
+            self.undo_manager = None
+            self.widget_tracker = None
+
+        # Initialize theme manager
+        if THEME_AVAILABLE:
+            self.theme_manager = ThemeManager(self.root)
+            # Try to load system preference
+            system_theme = get_system_theme_preference()
+            self.theme_manager.set_theme(system_theme)
+        else:
+            self.theme_manager = None
+
         # Create GUI
         self.create_widgets()
         self.populate_experiment_list()
+
+    def _setup_custom_shortcuts(self):
+        """Setup custom shortcuts specific to this GUI."""
+        if self.keyboard_manager:
+            # Run selected experiment
+            self.keyboard_manager.bind_shortcut(
+                "Return", self.run_selected_experiment, "Run selected experiment"
+            )
+            # Run all experiments
+            self.keyboard_manager.bind_shortcut(
+                "Ctrl+Shift+R", self.run_all_experiments, "Run all experiments"
+            )
 
     def initialize_experiment_status(self):
         """Initialize status tracking for all experiments."""
@@ -144,22 +290,40 @@ class ExperimentRegistryGUI:
         params_frame.grid(row=1, column=0, sticky=(tk.W, tk.E), pady=(0, 10))
 
         # Number of participants
-        ttk.Label(params_frame, text="Number of Participants:").grid(
-            row=0, column=0, sticky=tk.W
-        )
+        participants_label = ttk.Label(params_frame, text="Number of Participants:")
+        participants_label.grid(row=0, column=0, sticky=tk.W)
+        add_tooltip(participants_label, "n_participants")
+
         participants_spinbox = ttk.Spinbox(
             params_frame, from_=1, to=100, width=10, textvariable=self.n_participants
         )
         participants_spinbox.grid(row=0, column=1, sticky=tk.W, padx=(10, 0))
+        add_tooltip(participants_spinbox, "n_participants")
+
+        # Track for undo/redo
+        if self.widget_tracker:
+            self.widget_tracker.track_widget(participants_spinbox, "parameter")
+            self.widget_tracker.tracked_widgets[str(id(participants_spinbox))][
+                "param_name"
+            ] = "n_participants"
 
         # Number of trials
-        ttk.Label(params_frame, text="Number of Trials:").grid(
-            row=1, column=0, sticky=tk.W, pady=(5, 0)
-        )
+        trials_label = ttk.Label(params_frame, text="Number of Trials:")
+        trials_label.grid(row=1, column=0, sticky=tk.W, pady=(5, 0))
+        add_tooltip(trials_label, "n_trials_per_condition")
+
         trials_spinbox = ttk.Spinbox(
             params_frame, from_=1, to=1000, width=10, textvariable=self.n_trials
         )
         trials_spinbox.grid(row=1, column=1, sticky=tk.W, padx=(10, 0), pady=(5, 0))
+        add_tooltip(trials_spinbox, "n_trials_per_condition")
+
+        # Track for undo/redo
+        if self.widget_tracker:
+            self.widget_tracker.track_widget(trials_spinbox, "parameter")
+            self.widget_tracker.tracked_widgets[str(id(trials_spinbox))][
+                "param_name"
+            ] = "n_trials_per_condition"
 
         # Output file
         ttk.Label(params_frame, text="Output File (optional):").grid(
@@ -175,6 +339,16 @@ class ExperimentRegistryGUI:
             file_frame, text="Browse...", command=self.browse_output_file
         )
         browse_button.pack(side=tk.RIGHT, padx=(5, 0))
+
+        # Theme selection
+        if self.theme_manager:
+            theme_label = ttk.Label(params_frame, text="Theme:")
+            theme_label.grid(row=3, column=0, sticky=tk.W, pady=(20, 5))
+
+            theme_selector = self.theme_manager.create_theme_selector(params_frame)
+            theme_selector.grid(
+                row=4, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5
+            )
 
         # Control buttons
         button_frame = ttk.Frame(right_frame)
@@ -261,7 +435,7 @@ class ExperimentRegistryGUI:
                             in_docstring = True
                             docstring_start = True
                             # Extract content after the opening """
-                            cleaned_line = line.replace('"""', '').strip()
+                            cleaned_line = line.replace('"""', "").strip()
                             if cleaned_line:
                                 docstring_lines.append(cleaned_line)
                         else:
@@ -277,7 +451,7 @@ class ExperimentRegistryGUI:
                         f"This experiment implements the {exp_name} paradigm.",
                         "\nParameters:",
                         f"- n_participants: Number of participants (default: 5)",
-                        f"- n_trials_per_condition: Number of trials per condition (default: 20)"
+                        f"- n_trials_per_condition: Number of trials per condition (default: 20)",
                     ]
 
                 docstring = "\n".join(docstring_lines[:25])  # Limit to first 25 lines
@@ -285,7 +459,9 @@ class ExperimentRegistryGUI:
                 # Display details
                 details = f"Experiment: {exp_name}\n"
                 details += f"Module: {module_path}\n"
-                details += f"Status: {self.experiment_status.get(exp_name, 'Not Run')}\n"
+                details += (
+                    f"Status: {self.experiment_status.get(exp_name, 'Not Run')}\n"
+                )
                 details += f"\n{'='*50}\n\n"
                 details += docstring
 
@@ -295,7 +471,9 @@ class ExperimentRegistryGUI:
                 # File not found - provide basic info
                 details = f"Experiment: {exp_name}\n"
                 details += f"Module: {module_path}\n"
-                details += f"Status: {self.experiment_status.get(exp_name, 'Not Run')}\n"
+                details += (
+                    f"Status: {self.experiment_status.get(exp_name, 'Not Run')}\n"
+                )
                 details += f"\n{'='*50}\n\n"
                 details += "Source file not found.\n\n"
                 details += "This experiment is registered but the source file may be missing.\n"
@@ -306,7 +484,7 @@ class ExperimentRegistryGUI:
 
                 self.details_text.delete(1.0, tk.END)
                 self.details_text.insert(1.0, details)
-                
+
         except Exception as e:
             logger.error(f"Error loading experiment details for {exp_name}: {e}")
             # Provide fallback information
@@ -356,7 +534,7 @@ class ExperimentRegistryGUI:
 
         # Run in separate thread to avoid GUI freezing
         thread = threading.Thread(target=self._run_experiment, args=(exp_name,))
-        thread.daemon = True
+        self.experiment_threads.append(thread)
         thread.start()
 
     def run_all_experiments(self):
@@ -377,7 +555,7 @@ class ExperimentRegistryGUI:
 
         # Run in separate thread
         thread = threading.Thread(target=self._run_all_experiments)
-        thread.daemon = True
+        self.experiment_threads.append(thread)
         thread.start()
 
     def _run_experiment(self, exp_name):
@@ -395,12 +573,15 @@ class ExperimentRegistryGUI:
 
             if self.output_file.get():
                 params["output_file"] = self.output_file.get()
-            
+
             # Create a simple Python script to run the experiment
-            script_content = f'''
+            script_content = f"""
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+
+# Add the actual project root to Python path
+project_root = Path("{project_root}")
+sys.path.insert(0, str(project_root))
 
 try:
     from tools.run_experiments import run_experiment
@@ -411,13 +592,13 @@ except Exception as e:
     print(f"ERROR: {{e}}")
     import traceback
     traceback.print_exc()
-'''
-            
+"""
+
             # Write script to temporary file
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
                 f.write(script_content)
                 script_path = f.name
-            
+
             try:
                 # Run experiment in subprocess to isolate from GUI
                 start_time = time.time()
@@ -425,22 +606,24 @@ except Exception as e:
                     [sys.executable, script_path],
                     capture_output=True,
                     text=True,
-                    timeout=120  # 2 minute timeout
+                    timeout=120,  # 2 minute timeout
                 )
                 end_time = time.time()
-                
+
                 output = result.stdout
                 error = result.stderr
-                
+
                 if result.returncode == 0 and "SUCCESS:" in output:
                     # Extract result from output
-                    lines = output.split('\n')
-                    result_line = next((line for line in lines if line.startswith("RESULT:")), "")
+                    lines = output.split("\n")
+                    result_line = next(
+                        (line for line in lines if line.startswith("RESULT:")), ""
+                    )
                     if result_line:
                         result_value = result_line.replace("RESULT: ", "")
                     else:
                         result_value = "Experiment completed successfully"
-                    
+
                     # Update status
                     self.experiment_status[exp_name] = "Success"
                     self.log_output(
@@ -452,23 +635,31 @@ except Exception as e:
                     self.experiment_status[exp_name] = "Failed"
                     error_msg = error or output or "Unknown error occurred"
                     self.log_output(f"✗ {exp_name} failed: {error_msg}")
-                    messagebox.showerror("Experiment Failed", f"Experiment {exp_name} failed: {error_msg}")
-                    
+                    messagebox.showerror(
+                        "Experiment Failed",
+                        f"Experiment {exp_name} failed: {error_msg}",
+                    )
+
             except subprocess.TimeoutExpired:
                 self.experiment_status[exp_name] = "Failed"
                 error_msg = "Experiment timed out after 120 seconds"
                 self.log_output(f"✗ {exp_name} failed: {error_msg}")
-                messagebox.showerror("Experiment Failed", f"Experiment {exp_name} timed out")
+                messagebox.showerror(
+                    "Experiment Failed", f"Experiment {exp_name} timed out"
+                )
             except Exception as e:
                 self.experiment_status[exp_name] = "Failed"
                 error_msg = f"Failed to run experiment subprocess: {e}"
                 self.log_output(f"✗ {exp_name} failed: {error_msg}")
-                messagebox.showerror("Experiment Failed", f"Experiment {exp_name} failed: {error_msg}")
+                messagebox.showerror(
+                    "Experiment Failed", f"Experiment {exp_name} failed: {error_msg}"
+                )
             finally:
                 # Clean up temporary script
                 try:
                     os.unlink(script_path)
-                except:
+                except Exception as e:
+                    # Ignore cleanup errors - temp file will be cleaned by OS
                     pass
 
             # Update GUI if this experiment is selected
@@ -508,12 +699,15 @@ except Exception as e:
                     "n_participants": self.n_participants.get(),
                     "n_trials_per_condition": self.n_trials.get(),
                 }
-                
+
                 # Create a simple Python script to run the experiment
-                script_content = f'''
+                script_content = f"""
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+
+# Add the actual project root to Python path
+project_root = Path("{project_root}")
+sys.path.insert(0, str(project_root))
 
 try:
     from tools.run_experiments import run_experiment
@@ -524,10 +718,12 @@ except Exception as e:
     print(f"ERROR: {{e}}")
     import traceback
     traceback.print_exc()
-'''
-                
+"""
+
                 # Write script to temporary file
-                with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+                with tempfile.NamedTemporaryFile(
+                    mode="w", suffix=".py", delete=False
+                ) as f:
                     f.write(script_content)
                     script_path = f.name
 
@@ -538,22 +734,24 @@ except Exception as e:
                         [sys.executable, script_path],
                         capture_output=True,
                         text=True,
-                        timeout=120  # 2 minute timeout
+                        timeout=120,  # 2 minute timeout
                     )
                     end_time = time.time()
-                    
+
                     output = result.stdout
                     error = result.stderr
-                    
+
                     if result.returncode == 0 and "SUCCESS:" in output:
                         # Extract result from output
-                        lines = output.split('\n')
-                        result_line = next((line for line in lines if line.startswith("RESULT:")), "")
+                        lines = output.split("\n")
+                        result_line = next(
+                            (line for line in lines if line.startswith("RESULT:")), ""
+                        )
                         if result_line:
                             result_value = result_line.replace("RESULT: ", "")
                         else:
                             result_value = "Experiment completed successfully"
-                        
+
                         self.experiment_status[exp_name] = "Success"
                         self.log_output(
                             f"✓ {exp_name} - Success ({end_time - start_time:.2f}s)"
@@ -565,8 +763,10 @@ except Exception as e:
                         self.experiment_status[exp_name] = "Failed"
                         error_msg = error or output or "Unknown error occurred"
                         self.log_output(f"✗ {exp_name} - Failed: {error_msg}")
-                        logger.error(f"Experiment {exp_name} failed in batch run: {error_msg}")
-                        
+                        logger.error(
+                            f"Experiment {exp_name} failed in batch run: {error_msg}"
+                        )
+
                 except subprocess.TimeoutExpired:
                     self.experiment_status[exp_name] = "Failed"
                     error_msg = "Experiment timed out after 120 seconds"
@@ -576,12 +776,15 @@ except Exception as e:
                     self.experiment_status[exp_name] = "Failed"
                     error_msg = f"Failed to run experiment subprocess: {e}"
                     self.log_output(f"✗ {exp_name} - Failed: {error_msg}")
-                    logger.error(f"Experiment {exp_name} subprocess failed in batch run: {e}")
+                    logger.error(
+                        f"Experiment {exp_name} subprocess failed in batch run: {e}"
+                    )
                 finally:
                     # Clean up temporary script
                     try:
                         os.unlink(script_path)
-                    except:
+                    except Exception as e:
+                        # Ignore cleanup errors - temp file will be cleaned by OS
                         pass
 
                 completed += 1
@@ -603,7 +806,12 @@ except Exception as e:
         except Exception as e:
             self.log_output(f"Error running all experiments: {e}")
             logger.error(f"Error in batch experiment run: {e}")
-            self.root.after(0, lambda: messagebox.showerror("Error", f"Error running all experiments: {e}"))
+            self.root.after(
+                0,
+                lambda: messagebox.showerror(
+                    "Error", f"Error running all experiments: {e}"
+                ),
+            )
 
         finally:
             self.running = False
@@ -612,6 +820,28 @@ except Exception as e:
     def clear_output(self):
         """Clear the output console."""
         self.output_text.delete(1.0, tk.END)
+
+    def on_closing(self):
+        """Handle window closing with proper thread cleanup."""
+        # Wait for all experiment threads to complete
+        for thread in self.experiment_threads:
+            if thread.is_alive():
+                thread.join(timeout=5.0)
+        self.root.destroy()
+
+    def undo(self):
+        """Perform undo operation."""
+        if self.undo_manager and self.undo_manager.can_undo():
+            description = self.undo_manager.undo()
+            if description:
+                self.update_status(f"Undone: {description}")
+
+    def redo(self):
+        """Perform redo operation."""
+        if self.undo_manager and self.undo_manager.can_redo():
+            description = self.undo_manager.redo()
+            if description:
+                self.update_status(f"Redone: {description}")
 
 
 def main():

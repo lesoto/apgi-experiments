@@ -259,7 +259,9 @@ class MainArea(ctk.CTkFrame):
             pady=self.ui_config["spacing"]["padding_large_y"],
             sticky="ew",
         )
-        button_frame.grid_columnconfigure((0, 1, 2), weight=1)
+        button_frame.grid_columnconfigure(
+            (0, 1, 2), weight=1
+        )  # 3 columns for 3 buttons
 
         self.apply_btn = ctk.CTkButton(
             button_frame,
@@ -1123,7 +1125,11 @@ class MainArea(ctk.CTkFrame):
 
                 export_data = {
                     "analysis_id": self.current_analysis_result.analysis_id,
-                    "timestamp": self.current_analysis_result.timestamp.isoformat(),
+                    "timestamp": (
+                        self.current_analysis_result.timestamp.isoformat()
+                        if isinstance(self.current_analysis_result.timestamp, datetime)
+                        else self.current_analysis_result.timestamp
+                    ),
                     "analysis_type": self.current_analysis_result.analysis_type,
                     "statistics": self.current_analysis_result.statistics,
                     "p_values": self.current_analysis_result.p_values,
@@ -1289,6 +1295,10 @@ class MainArea(ctk.CTkFrame):
             # Clear previous plot
             for widget in self.plot_canvas_frame.winfo_children():
                 widget.destroy()
+
+            # Close old figure to prevent memory leak
+            if self.current_figure is not None:
+                plt.close(self.current_figure)
 
             # Get plot parameters
             plot_type = self.plot_type_var.get()
@@ -1605,16 +1615,19 @@ PARAMETERS:
             details += f"  {key}: {value}\n"
 
         details += f"\nDATA SUMMARY:\n"
-        details += f"Shape: {result.get('data_summary', {}).get('shape', 'N/A')}\n"
+        details += f"Shape: {(result.get('data_summary') or {}).get('shape', 'N/A')}\n"
+        # Show first 5 columns (safe slice - handles shorter arrays)
         details += (
-            f"Columns: {result.get('data_summary', {}).get('columns', [])[:5]}...\n"
+            f"Columns: {(result.get('data_summary') or {}).get('columns', [])[:5]}...\n"
         )
 
         if result.get("statistics"):
             details += "\nKEY STATISTICS:\n"
+            # Show first 5 statistics (safe slice - handles shorter arrays)
             for key, value in list(result.get("statistics", {}).items())[:5]:
                 if isinstance(value, dict):
                     details += f"  {key}:\n"
+                    # Show first 3 sub-values (safe slice - handles shorter arrays)
                     for sub_key, sub_value in list(value.items())[:3]:
                         details += f"    {sub_key}: {sub_value:.4f}\n"
                 else:
@@ -1622,6 +1635,7 @@ PARAMETERS:
 
         if result.get("plots"):
             details += f"\nPLOTS GENERATED: {len(result['plots'])}\n"
+            # Show first 3 plots (safe slice - handles shorter arrays)
             for plot_id, plot_path in list(result["plots"].items())[:3]:
                 details += f"  {plot_id}: {Path(plot_path).name}\n"
 
@@ -1675,6 +1689,7 @@ PARAMETERS:
                     stats = result.get("statistics", {})
                     if stats:
                         comparison += "  Key Statistics:\n"
+                        # Show first 3 stats (safe slice - handles shorter arrays)
                         for key, value in list(stats.items())[:3]:
                             if isinstance(value, (int, float)):
                                 comparison += f"    {key}: {value:.4f}\n"
@@ -1740,7 +1755,7 @@ PARAMETERS:
                             "num_statistics": len(result.get("statistics", {})),
                             "num_plots": len(result.get("plots", {})),
                             "data_shape": str(
-                                result.get("data_summary", {}).get("shape", "")
+                                (result.get("data_summary") or {}).get("shape", "")
                             ),
                         }
                     )

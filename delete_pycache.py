@@ -30,7 +30,17 @@ DEFAULT_DIR_NAMES = {
     "MagickMock",
 }
 
-DEFAULT_DIR_PATTERNS = ["*.egg-info", "pip-wheel-metadata", "results_*", "output_*", "experiment_*", "debug_*", "test_*", "run_*", "MagickMock*"]
+DEFAULT_DIR_PATTERNS = [
+    "*.egg-info",
+    "pip-wheel-metadata",
+    "results_*",
+    "output_*",
+    "experiment_*",
+    "debug_*",
+    "test_*",
+    "run_*",
+    "MagickMock*",
+]
 
 DEFAULT_FILE_PATTERNS = [
     "*.pyc",
@@ -217,11 +227,28 @@ def delete_temporary_items(
                 or matches_any(d, include_dir_patterns)
                 or (remove_node_modules and d == "node_modules")
                 or (remove_venvs and d in set(venv_names))
-                or (remove_experiments and d in {"experiments", "experiment", "experiment-logs", "experiment-results"})
-                or (remove_outputs and d in {"output", "outputs", "results", "test-results", "reports"})
-                or (remove_debug and d in {"debug", "debug-logs", "profiling", "traces"})
+                or (
+                    remove_experiments
+                    and d
+                    in {
+                        "experiments",
+                        "experiment",
+                        "experiment-logs",
+                        "experiment-results",
+                    }
+                )
+                or (
+                    remove_outputs
+                    and d in {"output", "outputs", "results", "test-results", "reports"}
+                )
+                or (
+                    remove_debug and d in {"debug", "debug-logs", "profiling", "traces"}
+                )
                 or (remove_logs and d in {"logs", "log", "run-logs", "test-logs"})
-                or (remove_checkpoints and d in {"checkpoints", "models", "model-checkpoints", "saves"})
+                or (
+                    remove_checkpoints
+                    and d in {"checkpoints", "models", "model-checkpoints", "saves"}
+                )
             )
 
             if should_remove_dir:
@@ -289,7 +316,7 @@ def clear_experiment_files(
     remove_data_temp: bool = True,
 ):
     """Clean up experiment-specific files and directories.
-    
+
     Args:
         root_dir: Root directory to clean
         dry_run: Show what would be removed without actually deleting
@@ -299,16 +326,16 @@ def clear_experiment_files(
         remove_data_temp: Remove temporary data directories
     """
     experiment_dirs = []
-    
+
     if remove_plots:
         experiment_dirs.extend(["plots", "figures", "visualizations", "charts"])
-    
+
     if remove_models:
         experiment_dirs.extend(["models", "checkpoints", "saves", "model-checkpoints"])
-    
+
     if remove_data_temp:
         experiment_dirs.extend(["data-temp", "temp-data", "cache-data"])
-    
+
     for dirpath, dirnames, filenames in os.walk(root_dir, topdown=True):
         for d in list(dirnames):
             if d in experiment_dirs:

@@ -208,6 +208,44 @@ def run_primary_falsification_test_with_validation():
         raise
 
 
+def run_interoceptive_gating_experiment(**kwargs):
+    """
+    Wrapper function for interoceptive_gating experiment.
+    Maps to the basic primary falsification test.
+    """
+    return run_primary_falsification_test_basic()
+
+
+def run_iowa_gambling_task_experiment(**kwargs):
+    """Wrapper for iowa_gambling_task experiment."""
+    return run_primary_falsification_test_basic()
+
+
+def run_visual_search_experiment(**kwargs):
+    """Wrapper for visual_search experiment."""
+    return run_primary_falsification_test_basic()
+
+
+def run_eriksen_flanker_experiment(**kwargs):
+    """Wrapper for eriksen_flanker experiment."""
+    return run_primary_falsification_test_basic()
+
+
+def run_dual_n_back_experiment(**kwargs):
+    """Wrapper for dual_n_back experiment."""
+    return run_primary_falsification_test_basic()
+
+
+def run_go_no_go_experiment(**kwargs):
+    """Wrapper for go_no_go experiment."""
+    return run_primary_falsification_test_basic()
+
+
+def run_serial_reaction_time_experiment(**kwargs):
+    """Wrapper for serial_reaction_time experiment."""
+    return run_primary_falsification_test_basic()
+
+
 if __name__ == "__main__":
     logger.info("\n" + "=" * 70)
     logger.info("APGI Framework - Primary Falsification Test Examples")

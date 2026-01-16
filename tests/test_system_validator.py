@@ -119,7 +119,7 @@ class MockController:
         storage_mock = data_manager_mock["storage"]
         storage_mock.save_dataset = mock.Mock(return_value=True)
         storage_mock.load_dataset = mock.Mock(return_value={})
-        
+
         validator_mock = data_manager_mock["validator"]
         validator_mock.validate_dataset = mock.Mock(return_value=True)
 

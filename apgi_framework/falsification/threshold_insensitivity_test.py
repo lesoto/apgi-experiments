@@ -562,7 +562,9 @@ class ThresholdInsensitivityTest:
         # Count insensitive trials
         insensitive_trials = [r for r in trial_results if r.is_falsifying]
         total_insensitive = len(insensitive_trials)
-        insensitivity_rate = total_insensitive / len(trial_results) if trial_results else 0
+        insensitivity_rate = (
+            total_insensitive / len(trial_results) if trial_results else 0
+        )
 
         # Calculate mean confidence
         mean_confidence = np.mean([r.confidence_level for r in trial_results])

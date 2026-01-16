@@ -802,10 +802,10 @@ class SomaBiasTest:
 
     def _generate_participant_profiles(self, n_participants: int) -> Dict[str, Dict]:
         """Generate basic participant profiles for soma-bias test.
-        
+
         Args:
             n_participants: Number of participants to generate
-            
+
         Returns:
             Dictionary mapping participant IDs to their profiles
         """

@@ -246,8 +246,11 @@ class TestStorageManager:
             except PermissionError:
                 # Skip test on Windows if file permissions are restricted
                 import platform
+
                 if platform.system() == "Windows":
-                    pytest.skip("Skipping test due to Windows file permission restrictions")
+                    pytest.skip(
+                        "Skipping test due to Windows file permission restrictions"
+                    )
                 else:
                     raise
 
@@ -272,8 +275,11 @@ class TestStorageManager:
             except PermissionError:
                 # Skip test on Windows if file permissions are restricted
                 import platform
+
                 if platform.system() == "Windows":
-                    pytest.skip("Skipping test due to Windows file permission restrictions")
+                    pytest.skip(
+                        "Skipping test due to Windows file permission restrictions"
+                    )
                 else:
                     raise
 

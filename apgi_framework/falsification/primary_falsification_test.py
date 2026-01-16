@@ -458,7 +458,9 @@ class PrimaryFalsificationTest:
         # Count falsifying trials
         falsifying_trials = [r for r in trial_results if r.is_falsifying]
         total_falsifying = len(falsifying_trials)
-        falsification_rate = total_falsifying / len(trial_results) if trial_results else 0
+        falsification_rate = (
+            total_falsifying / len(trial_results) if trial_results else 0
+        )
 
         # Calculate mean confidence
         mean_confidence = np.mean([r.confidence_level for r in trial_results])
