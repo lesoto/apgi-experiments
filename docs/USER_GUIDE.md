@@ -98,11 +98,11 @@ The APGI Framework is a comprehensive scientific computing platform designed for
 
 ### Launching the Application
 
-**Method 1: Desktop Shortcut**
+#### Method 1: Desktop Shortcut
 
 - Double-click the APGI Framework shortcut on your desktop
 
-**Method 2: Command Line**
+#### Method 2: Command Line
 
    ```bash
    # Activate virtual environment
@@ -112,7 +112,7 @@ The APGI Framework is a comprehensive scientific computing platform designed for
    python -m apgi_gui
    ```
 
-**Method 3: Development Mode**
+#### Method 3: Development Mode
 
    ```bash
    python launch_gui.py
@@ -143,7 +143,7 @@ The APGI Framework is a comprehensive scientific computing platform designed for
 
 ### Main Window Layout
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │ Menu Bar: File | Edit | View | Analysis | Tools | Help │
 ├─────────────┬───────────────────────────────────────────┤
@@ -278,27 +278,30 @@ The framework automatically validates loaded data:
 
 #### Choosing Analysis Type
 
-**Descriptive Analysis**
+#### Descriptive Analysis
+
 - Basic statistics (mean, std, min, max)
 - Data distribution analysis
 - Missing value analysis
 
-**Comparative Analysis**
+#### Comparative Analysis
 - Group comparisons
 - Statistical tests (t-test, ANOVA)
 - Effect size calculations
 
-**Correlation Analysis**
+#### Correlation Analysis
+
 - Correlation matrices
 - Partial correlations
 - Network analysis
 
-**Time Series Analysis**
+#### Time Series Analysis
 - Trend analysis
 - Seasonality detection
 - Spectral analysis
 
-**Bayesian Analysis**
+#### Bayesian Analysis
+
 - Parameter estimation
 - Model comparison
 - Posterior analysis
@@ -321,6 +324,7 @@ params = {
 ### Step 3: Running Analysis
 
 #### GUI Execution
+
 1. Configure analysis parameters
 2. Click "Run Analysis" button
 3. Monitor progress in status bar
@@ -350,6 +354,7 @@ print(result.effect_sizes)
 ### Step 4: Results Interpretation
 
 #### Statistical Output
+
 - **Descriptive Statistics**: Central tendency and variability
 - **Inferential Statistics**: Test statistics and p-values
 - **Effect Sizes**: Practical significance measures
@@ -365,6 +370,7 @@ print(result.effect_sizes)
 ### Supported Data Formats
 
 #### CSV Files
+
 - Standard comma-separated values
 - Automatic type detection
 - Missing value handling
@@ -375,6 +381,7 @@ print(result.effect_sizes)
 - Nested data support
 
 #### Pickle Files
+
 - Python object serialization
 - Fast loading for large datasets
 - Preserves data types
@@ -383,7 +390,7 @@ print(result.effect_sizes)
 
 #### Project Structure
 
-```
+```text
 your_project/
 ├── data/
 │   ├── raw/
@@ -407,6 +414,7 @@ your_project/
 ### Data Preprocessing
 
 #### Cleaning Operations
+
 - **Missing Value Handling**: Imputation or removal
 - **Outlier Detection**: Statistical identification
 - **Data Normalization**: Standardization and scaling
@@ -426,6 +434,7 @@ your_project/
 ```python
 from apgi_framework.analysis import BaseModel
 
+class CustomAnalysis(BaseModel):
     def analyze(self, data, parameters):
         # Implement your analysis logic
         results = {

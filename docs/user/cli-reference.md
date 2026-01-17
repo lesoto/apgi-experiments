@@ -123,7 +123,7 @@ python -m apgi_framework.cli run-test primary --trials 2000
 **Default**: 1000  
 **Required**: No
 
-**--participants, -p**
+#### --participants, -p
 
 Number of participants to simulate (for multi-participant tests).
 
@@ -137,7 +137,7 @@ python -m apgi_framework.cli run-test soma-bias --participants 200
 **Required**: No  
 **Applicable to**: soma-bias test
 
-**--seed**
+#### --seed
 
 Random seed for reproducibility.
 

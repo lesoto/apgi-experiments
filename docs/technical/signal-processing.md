@@ -304,7 +304,7 @@ while recording:
 Default quality thresholds (configurable):
 
 | Metric                     | Threshold | Description                              | Units   |
-|----------------------------|-----------|-----------------------------------------|---------|
+|----------------------------|:---------:|-----------------------------------------|:--------:|
 | EEG Quality                | ≥ 0.6     | Minimum acceptable EEG quality           | -       |
 | EEG Artifact Rate          | ≤ 15%     | Maximum artifact percentage              | %       |
 | EEG Bad Channels           | ≤ 5       | Maximum number of bad channels           | count   |

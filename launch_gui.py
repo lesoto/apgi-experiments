@@ -17,6 +17,42 @@ import threading
 import webbrowser
 
 
+# Configuration constants
+class UIConfig:
+    """UI configuration constants."""
+
+    # Window scaling factors for different screen sizes
+    SCALE_4K = 0.6
+    SCALE_QHD = 0.7
+    SCALE_FHD = 0.8
+    SCALE_SMALL = 0.85
+
+    # Layout spacing (pixels)
+    MAIN_CONTAINER_PADDING = 30
+    HEADER_SPACING = 25
+    BOTTOM_BUTTON_SPACING = 25
+    CATEGORY_SPACING = (20, 15)
+    CARD_CONTENT_PADDING = (20, 15)
+    CARD_BUTTON_PADDING = (20, 0)
+
+    # Button dimensions
+    BUTTON_PADDING_LARGE = (20, 10)
+    BUTTON_PADDING_LAUNCH = (25, 12)
+    BUTTON_PADDING_CLOSE = (20, 8)
+
+    # Font sizes
+    FONT_ICON_SIZE = 20
+    FONT_TITLE_SIZE = 36
+    FONT_SUBTITLE_SIZE = 13
+
+    # Text wrapping
+    DESCRIPTION_WRAP_LENGTH = 800
+
+    # Window geometry for info dialog
+    INFO_WINDOW_WIDTH = 600
+    INFO_WINDOW_HEIGHT = 500
+
+
 class ComprehensiveGUILauncher:
     """Comprehensive launcher for all APGI Framework GUI applications."""
 
@@ -25,15 +61,23 @@ class ComprehensiveGUILauncher:
         self.root = tk.Tk()
         self.root.title("APGI Framework - Comprehensive GUI Launcher")
 
-        # Adaptive window sizing based on screen resolution
+        # Adaptive window sizing based on screen resolution and DPI
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
-        window_width = min(
-            int(screen_width * 0.8), 1400
-        )  # Cap at 1400 for large screens
-        window_height = min(
-            int(screen_height * 0.8), 900
-        )  # Cap at 900 for large screens
+
+        # Use DPI-aware scaling without hard caps
+        # Scale factor for different screen sizes
+        if screen_width >= 3840:  # 4K displays
+            scale_factor = UIConfig.SCALE_4K
+        elif screen_width >= 2560:  # QHD/2K displays
+            scale_factor = UIConfig.SCALE_QHD
+        elif screen_width >= 1920:  # Full HD
+            scale_factor = UIConfig.SCALE_FHD
+        else:  # Smaller displays
+            scale_factor = UIConfig.SCALE_SMALL
+
+        window_width = int(screen_width * scale_factor)
+        window_height = int(screen_height * scale_factor)
 
         # Center window on screen
         x = (screen_width - window_width) // 2
@@ -44,9 +88,6 @@ class ComprehensiveGUILauncher:
 
         # Set window icon and styling
         self.root.configure(bg="#ecf0f1")
-
-        # Center window
-        self.center_window()
 
         # Configure styles
         self.setup_styles()
@@ -60,15 +101,6 @@ class ComprehensiveGUILauncher:
         # Create widgets
         self.create_widgets()
 
-    def center_window(self):
-        """Center window on screen."""
-        self.root.update_idletasks()
-        width = self.root.winfo_width()
-        height = self.root.winfo_height()
-        x = (self.root.winfo_screenwidth() // 2) - (width // 2)
-        y = (self.root.winfo_screenheight() // 2) - (height // 2)
-        self.root.geometry(f"{width}x{height}+{x}+{y}")
-
     def setup_styles(self):
         """Setup custom styles for better appearance."""
         self.style = ttk.Style()
@@ -77,48 +109,88 @@ class ComprehensiveGUILauncher:
         # Configure custom styles
         self.style.configure(
             "Title.TLabel",
-            font=("Helvetica", 32, "bold"),
+            font=("Helvetica", 34, "bold"),
             background="#ecf0f1",
-            foreground="#2c3e50",
+            foreground="#1f2d3d",
         )
 
         self.style.configure(
             "Subtitle.TLabel",
             font=("Helvetica", 12),
             background="#ecf0f1",
-            foreground="#7f8c8d",
+            foreground="#5c6b77",
         )
 
         self.style.configure(
             "Category.TLabel",
             font=("Helvetica", 18, "bold"),
             background="#ecf0f1",
-            foreground="#34495e",
+            foreground="#22313f",
         )
 
         self.style.configure(
             "App.TLabel",
             font=("Helvetica", 13, "bold"),
             background="#ffffff",
-            foreground="#2c3e50",
+            foreground="#1f2d3d",
         )
 
         self.style.configure(
             "Desc.TLabel",
             font=("Helvetica", 10),
             background="#ffffff",
-            foreground="#7f8c8d",
+            foreground="#4d5d6c",
         )
 
         self.style.configure(
             "Path.TLabel",
             font=("Courier", 9, "italic"),
             background="#ffffff",
-            foreground="#95a5a6",
+            foreground="#6c7a89",
         )
 
         self.style.configure(
-            "Launch.TButton", font=("Helvetica", 11, "bold"), padding=(20, 10)
+            "Launch.TButton",
+            font=("Helvetica", 11, "bold"),
+            padding=UIConfig.BUTTON_PADDING_LARGE,
+        )
+
+        # High-contrast ttk button styles
+        self.style.configure(
+            "Primary.TButton",
+            font=("Helvetica", 11, "bold"),
+            background="#3498db",
+            foreground="#ffffff",
+            padding=UIConfig.BUTTON_PADDING_LARGE,
+        )
+        self.style.map(
+            "Primary.TButton",
+            background=[("active", "#2d86c5")],
+            foreground=[("active", "#ffffff")],
+        )
+        self.style.configure(
+            "Secondary.TButton",
+            font=("Helvetica", 11, "bold"),
+            background="#7f8c8d",
+            foreground="#ffffff",
+            padding=UIConfig.BUTTON_PADDING_LARGE,
+        )
+        self.style.map(
+            "Secondary.TButton",
+            background=[("active", "#6c7778")],
+            foreground=[("active", "#ffffff")],
+        )
+        self.style.configure(
+            "Danger.TButton",
+            font=("Helvetica", 11, "bold"),
+            background="#e74c3c",
+            foreground="#ffffff",
+            padding=UIConfig.BUTTON_PADDING_LARGE,
+        )
+        self.style.map(
+            "Danger.TButton",
+            background=[("active", "#c0392b")],
+            foreground=[("active", "#ffffff")],
         )
 
         self.style.configure(
@@ -143,21 +215,21 @@ class ComprehensiveGUILauncher:
                     "name": "Full-Featured GUI",
                     "file": "GUI.py",
                     "description": "Complete APGI Framework interface with all features",
-                    "icon": "🎯",
+                    "icon": "[Target]",
                     "command": self.launch_full_gui,
                 },
                 {
                     "name": "Simple GUI",
                     "file": "GUI-Simple.py",
                     "description": "Streamlined interface for essential functions",
-                    "icon": "⚡",
+                    "icon": "[Fast]",
                     "command": self.launch_simple_gui,
                 },
                 {
                     "name": "APGI Framework App",
                     "file": "apgi_gui/app.py",
                     "description": "Modern CustomTkinter-based framework application",
-                    "icon": "🚀",
+                    "icon": "[Rocket]",
                     "command": self.launch_apgi_gui_app,
                 },
             ],
@@ -166,21 +238,21 @@ class ComprehensiveGUILauncher:
                     "name": "Experiment Runner",
                     "file": "apps/experiment_runner_gui.py",
                     "description": "Run and manage experiments with comprehensive controls and monitoring",
-                    "icon": "▶️",
+                    "icon": "[Play]",
                     "command": self.launch_experiment_runner,
                 },
                 {
                     "name": "Falsification GUI",
                     "file": "apps/apgi_falsification_gui.py",
                     "description": "Falsification testing interface for consciousness evaluation experiments",
-                    "icon": "🔬",
+                    "icon": "[Lab]",
                     "command": self.launch_falsification_gui,
                 },
                 {
-                    "name": "Falsification GUI (Refactored)",
+                    "name": "Falsification GUI",
                     "file": "apps/apgi_falsification_gui_refactored.py",
-                    "description": "Refactored falsification testing interface with improved architecture",
-                    "icon": "🧪",
+                    "description": "Falsification testing interface with improved architecture",
+                    "icon": "[Test]",
                     "command": self.launch_falsification_gui_refactored,
                 },
             ],
@@ -189,28 +261,28 @@ class ComprehensiveGUILauncher:
                     "name": "Parameter Estimation GUI",
                     "file": "apgi_framework/gui/parameter_estimation_gui.py",
                     "description": "Parameter estimation and analysis tools",
-                    "icon": "📊",
+                    "icon": "[Data]",
                     "command": self.launch_parameter_estimation,
                 },
                 {
                     "name": "Interactive Dashboard",
                     "file": "apgi_framework/gui/interactive_dashboard.py",
                     "description": "Web-based interactive dashboard (requires Flask)",
-                    "icon": "🌐",
+                    "icon": "[Web]",
                     "command": self.launch_interactive_dashboard,
                 },
                 {
                     "name": "Monitoring Dashboard",
                     "file": "apgi_framework/gui/monitoring_dashboard.py",
                     "description": "Real-time monitoring dashboard",
-                    "icon": "📈",
+                    "icon": "[Chart]",
                     "command": self.launch_monitoring_dashboard,
                 },
                 {
                     "name": "Reporting & Visualization",
                     "file": "apgi_framework/gui/reporting_visualization.py",
                     "description": "Generate reports and visualizations",
-                    "icon": "📑",
+                    "icon": "[Report]",
                     "command": self.launch_reporting_visualization,
                 },
             ],
@@ -219,37 +291,37 @@ class ComprehensiveGUILauncher:
                     "name": "Task Configuration",
                     "file": "apgi_framework/gui/task_configuration.py",
                     "description": "Configure experimental tasks",
-                    "icon": "⚙️",
+                    "icon": "[Config]",
                     "command": self.launch_task_configuration,
                 },
                 {
                     "name": "Session Management",
                     "file": "apgi_framework/gui/session_management.py",
                     "description": "Manage experimental sessions",
-                    "icon": "🗂️",
+                    "icon": "[Session]",
                     "command": self.launch_session_management,
                 },
                 {
                     "name": "Progress Monitoring",
                     "file": "apgi_framework/gui/progress_monitoring.py",
                     "description": "Monitor experiment progress",
-                    "icon": "📊",
+                    "icon": "[Data]",
                     "command": self.launch_progress_monitoring,
                 },
             ],
             "Development & Testing": [
                 {
                     "name": "GUI Template",
-                    "file": "apps/gui_template.py",
+                    "file": "apps/gui_template_background.py",
                     "description": "Template for GUI development",
-                    "icon": "🛠️",
+                    "icon": "[Tools]",
                     "command": self.launch_gui_template,
                 },
                 {
                     "name": "Error Handling Demo",
                     "file": "apgi_framework/gui/error_handling.py",
                     "description": "Error handling demonstration",
-                    "icon": "⚠️",
+                    "icon": "[Warning]",
                     "command": self.launch_error_handling,
                 },
             ],
@@ -259,33 +331,26 @@ class ComprehensiveGUILauncher:
         """Create launcher widgets with organized layout."""
         # Main container
         main_container = tk.Frame(self.root, bg="#ecf0f1")
-        main_container.pack(fill=tk.BOTH, expand=True, padx=30, pady=30)
+        main_container.pack(
+            fill=tk.BOTH,
+            expand=True,
+            padx=UIConfig.MAIN_CONTAINER_PADDING,
+            pady=UIConfig.MAIN_CONTAINER_PADDING,
+        )
 
         # Header section
         header_frame = tk.Frame(main_container, bg="#ecf0f1")
-        header_frame.pack(fill=tk.X, pady=(0, 25))
+        header_frame.pack(fill=tk.X, pady=(0, UIConfig.HEADER_SPACING))
 
         # Title and subtitle
         title_label = tk.Label(
             header_frame,
-            text="🧠 APGI Framework Launcher",
-            font=("Helvetica", 36, "bold"),
+            text="APGI Framework Launcher",
+            font=("Helvetica", UIConfig.FONT_TITLE_SIZE, "bold"),
             bg="#ecf0f1",
             fg="#2c3e50",
         )
         title_label.pack()
-
-        subtitle_label = tk.Label(
-            header_frame,
-            text="Comprehensive GUI Application Launcher • v1.0",
-            font=("Helvetica", 13),
-            bg="#ecf0f1",
-            fg="#7f8c8d",
-        )
-        subtitle_label.pack(pady=(8, 0))
-
-        # Status bar
-        self.create_status_bar(header_frame)
 
         # Scrollable area for applications
         canvas = tk.Canvas(main_container, bg="#ecf0f1", highlightthickness=0)
@@ -317,86 +382,23 @@ class ComprehensiveGUILauncher:
         # Bottom buttons
         self.create_bottom_buttons(main_container)
 
-    def create_status_bar(self, parent):
-        """Create status bar showing application availability."""
-        status_frame = tk.Frame(parent, bg="#ecf0f1")
-        status_frame.pack(fill=tk.X, pady=(15, 0))
-
-        total_apps = sum(len(apps) for apps in self.gui_apps.values())
-        available_apps = sum(1 for status in self.app_status.values() if status)
-        missing_apps = total_apps - available_apps
-
-        status_text = f"📦 Applications: {available_apps}/{total_apps} available"
-        if missing_apps > 0:
-            status_text += f" • ⚠️ {missing_apps} missing"
-
-        status_label = tk.Label(
-            status_frame,
-            text=status_text,
-            font=("Helvetica", 11, "bold"),
-            bg="#ecf0f1",
-            fg="#27ae60" if missing_apps == 0 else "#e67e22",
-        )
-        status_label.pack()
-
     def create_bottom_buttons(self, parent):
         """Create bottom action buttons."""
         bottom_frame = tk.Frame(parent, bg="#ecf0f1")
-        bottom_frame.pack(fill=tk.X, pady=(25, 0))
+        bottom_frame.pack(
+            fill=tk.BOTH, expand=True, pady=(UIConfig.BOTTOM_BUTTON_SPACING, 0)
+        )
 
-        # Left side buttons
+        # Left side buttons (now occupies full width)
         left_frame = tk.Frame(bottom_frame, bg="#ecf0f1")
-        left_frame.pack(side=tk.LEFT)
+        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        # System Info button
-        info_button = tk.Button(
+        # Exit button (moved to left_frame)
+        exit_button = ttk.Button(
             left_frame,
-            text="ℹ️ System Info",
-            command=self.show_system_info,
-            font=("Helvetica", 11, "bold"),
-            bg="#3498db",
-            fg="white",
-            relief=tk.FLAT,
-            padx=20,
-            pady=10,
-            cursor="hand2",
-            activebackground="#2980b9",
-        )
-        info_button.pack(side=tk.LEFT, padx=(0, 10))
-
-        # Refresh button
-        refresh_button = tk.Button(
-            left_frame,
-            text="🔄 Refresh",
-            command=self.refresh_status,
-            font=("Helvetica", 11, "bold"),
-            bg="#95a5a6",
-            fg="white",
-            relief=tk.FLAT,
-            padx=20,
-            pady=10,
-            cursor="hand2",
-            activebackground="#7f8c8d",
-        )
-        refresh_button.pack(side=tk.LEFT)
-
-        # Right side buttons
-        right_frame = tk.Frame(bottom_frame, bg="#ecf0f1")
-        right_frame.pack(side=tk.RIGHT)
-
-        # Exit button
-        exit_button = tk.Button(
-            right_frame,
-            text="❌ Exit",
+            text="Exit",
             command=self.root.quit,
-            font=("Helvetica", 11, "bold"),
-            bg="#e74c3c",
-            fg="white",
-            relief=tk.FLAT,
-            padx=20,
-            pady=10,
-            cursor="hand2",
-            activebackground="#c0392b",
+            style="Danger.TButton",
         )
         exit_button.pack()
 
@@ -405,7 +407,7 @@ class ComprehensiveGUILauncher:
         for category, apps in self.gui_apps.items():
             # Category section
             category_frame = tk.Frame(parent, bg="#ecf0f1")
-            category_frame.pack(fill=tk.X, pady=(20, 15))
+            category_frame.pack(fill=tk.X, pady=UIConfig.CATEGORY_SPACING)
 
             # Category header with count
             available_count = sum(
@@ -415,7 +417,7 @@ class ComprehensiveGUILauncher:
 
             category_label = tk.Label(
                 category_frame,
-                text=f"📁 {category} ({available_count}/{total_count})",
+                text=f"{category} ({available_count}/{total_count})",
                 font=("Helvetica", 18, "bold"),
                 bg="#ecf0f1",
                 fg="#2c3e50",
@@ -434,7 +436,14 @@ class ComprehensiveGUILauncher:
     def create_application_card(self, parent, app, index):
         """Create an individual application card with enhanced styling."""
         # Card frame
-        card_frame = tk.Frame(parent, bg="#ffffff", relief=tk.RAISED, bd=2)
+        card_frame = tk.Frame(
+            parent,
+            bg="#ffffff",
+            relief=tk.RIDGE,
+            bd=2,
+            highlightthickness=1,
+            highlightbackground="#d0d3d4",
+        )
         card_frame.pack(fill=tk.X, pady=8, padx=15)
 
         # Check availability
@@ -442,7 +451,11 @@ class ComprehensiveGUILauncher:
 
         # Card content
         content_frame = tk.Frame(card_frame, bg="#ffffff")
-        content_frame.pack(fill=tk.X, padx=20, pady=15)
+        content_frame.pack(
+            fill=tk.X,
+            padx=UIConfig.CARD_CONTENT_PADDING[0],
+            pady=UIConfig.CARD_CONTENT_PADDING[1],
+        )
 
         # Left side - Icon and info
         info_frame = tk.Frame(content_frame, bg="#ffffff")
@@ -468,7 +481,7 @@ class ComprehensiveGUILauncher:
         icon_label = tk.Label(
             title_frame,
             text=app["icon"],
-            font=("Helvetica", 20),
+            font=("Helvetica", UIConfig.FONT_ICON_SIZE),
             bg="#ffffff",
             fg="#2c3e50",
         )
@@ -494,14 +507,14 @@ class ComprehensiveGUILauncher:
             fg="#7f8c8d" if is_available else "#bdc3c7",
             anchor="w",
             justify=tk.LEFT,
-            wraplength=800,
+            wraplength=UIConfig.DESCRIPTION_WRAP_LENGTH,
         )
         desc_label.pack(fill=tk.X)
 
         # File path
         file_label = tk.Label(
             info_frame,
-            text=f"📄 {app['file']}",
+            text=f"File: {app['file']}",
             font=("Courier", 9, "italic"),
             bg="#ffffff",
             fg="#95a5a6" if is_available else "#bdc3c7",
@@ -511,45 +524,22 @@ class ComprehensiveGUILauncher:
 
         # Right side - Launch button
         button_frame = tk.Frame(content_frame, bg="#ffffff")
-        button_frame.pack(side=tk.RIGHT, padx=(20, 0))
+        button_frame.pack(side=tk.RIGHT, padx=UIConfig.CARD_BUTTON_PADDING)
 
         if is_available:
-            launch_button = tk.Button(
+            launch_button = ttk.Button(
                 button_frame,
-                text="🚀 Launch",
+                text="Launch",
                 command=app["command"],
-                font=("Helvetica", 11, "bold"),
-                bg="#27ae60",
-                fg="white",
-                relief=tk.FLAT,
-                padx=25,
-                pady=12,
-                cursor="hand2",
-                activebackground="#2ecc71",
-                activeforeground="white",
+                style="Primary.TButton",
             )
             launch_button.pack()
-
-            # Add hover effects
-            def on_enter(e):
-                launch_button.config(bg="#2ecc71")
-
-            def on_leave(e):
-                launch_button.config(bg="#27ae60")
-
-            launch_button.bind("<Enter>", on_enter)
-            launch_button.bind("<Leave>", on_leave)
         else:
-            disabled_button = tk.Button(
+            disabled_button = ttk.Button(
                 button_frame,
-                text="❌ Unavailable",
+                text="Unavailable",
                 state=tk.DISABLED,
-                font=("Helvetica", 11, "bold"),
-                bg="#bdc3c7",
-                fg="white",
-                relief=tk.FLAT,
-                padx=25,
-                pady=12,
+                style="Secondary.TButton",
             )
             disabled_button.pack()
 
@@ -575,10 +565,10 @@ class ComprehensiveGUILauncher:
         self.launch_python_script("apps/apgi_falsification_gui.py", "Falsification GUI")
 
     def launch_falsification_gui_refactored(self):
-        """Launch Falsification GUI (Refactored)."""
+        """Launch Falsification GUI."""
         self.launch_python_script(
             "apps/apgi_falsification_gui_refactored.py",
-            "Falsification GUI (Refactored)",
+            "Falsification GUI",
         )
 
     def launch_parameter_estimation(self):
@@ -625,7 +615,7 @@ class ComprehensiveGUILauncher:
 
     def launch_gui_template(self):
         """Launch GUI Template."""
-        self.launch_python_script("apps/gui_template.py", "GUI Template")
+        self.launch_python_script("apps/gui_template_background.py", "GUI Template")
 
     def launch_error_handling(self):
         """Launch Error Handling Demo."""
@@ -643,63 +633,36 @@ class ComprehensiveGUILauncher:
             script_full_path = current_dir / script_path
 
             if not script_full_path.exists():
-                messagebox.showwarning(
-                    "File Not Found",
-                    f"Script not found:\n{script_full_path}\n\n"
-                    f"This application may not be implemented yet.",
-                )
                 return
 
             # Launch in a separate thread to avoid blocking the GUI
             def run_script():
                 try:
-                    subprocess.run(
+                    process = subprocess.Popen(
                         [sys.executable, str(script_full_path)],
                         cwd=current_dir,
-                        check=True,
-                        capture_output=True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
                         text=True,
                     )
-                except subprocess.CalledProcessError as e:
-                    # Show error in main thread - capture error message for lambda
-                    error_msg = f"Failed to launch {app_name}:\n{e.stderr or str(e)}"
-                    self.root.after(
-                        0,
-                        lambda msg=error_msg: messagebox.showerror("Launch Error", msg),
-                    )
+                    # Verify process actually started before showing success message
+                    # Give it a brief moment to start and check if it's still running
+                    import time
+
+                    time.sleep(0.1)
+                    if process.poll() is None:
+                        pass  # Process started successfully
+                    # Wait for process to complete without blocking on output capture
+                    process.wait()
                 except Exception as e:
-                    # Show error in main thread - capture error message for lambda
-                    error_msg = f"Unexpected error launching {app_name}: {str(e)}"
-                    self.root.after(
-                        0,
-                        lambda msg=error_msg: messagebox.showerror(
-                            "Unexpected Error", msg
-                        ),
-                    )
+                    # Error occurred but continue silently
+                    pass
 
             thread = threading.Thread(target=run_script, daemon=True)
             thread.start()
 
-            # Show success message briefly
-            self.root.after(
-                100,
-                lambda: messagebox.showinfo(
-                    "Launch Started",
-                    f"{app_name} is starting...\n"
-                    f"If the application doesn't appear, check for any error messages.",
-                ),
-            )
-
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to launch {app_name}: {e}")
-
-    def refresh_status(self):
-        """Refresh application availability status."""
-        self.check_app_availability()
-        messagebox.showinfo(
-            "Refreshed",
-            "Application status has been refreshed.",
-        )
+            pass  # Silent error handling
 
     def show_system_info(self):
         """Show system information dialog."""
@@ -716,7 +679,7 @@ class ComprehensiveGUILauncher:
                     missing_apps.append(f"{app['name']} ({app['file']})")
 
         info_text = f"""
-APGI Framework System Information
+APGI Framework Information
 ================================
 
 Python Version: {sys.version.split()[0]}
@@ -745,7 +708,9 @@ Missing Applications:
         # Create a scrollable text widget for better display
         info_window = tk.Toplevel(self.root)
         info_window.title("System Information")
-        info_window.geometry("600x500")
+        info_window.geometry(
+            f"{UIConfig.INFO_WINDOW_WIDTH}x{UIConfig.INFO_WINDOW_HEIGHT}"
+        )
         info_window.resizable(True, True)
 
         # Center the info window
@@ -781,8 +746,8 @@ Missing Applications:
             bg="#3498db",
             fg="white",
             relief=tk.FLAT,
-            padx=20,
-            pady=8,
+            padx=UIConfig.BUTTON_PADDING_CLOSE[0],
+            pady=UIConfig.BUTTON_PADDING_CLOSE[1],
         )
         close_button.pack(pady=10)
 

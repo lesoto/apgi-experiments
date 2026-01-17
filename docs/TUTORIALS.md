@@ -3,9 +3,11 @@
 ## Tutorial 1: Getting Started with Your First Experiment
 
 ### Objective
+
 Learn to set up and run a basic detection task experiment from start to finish.
 
 ### Prerequisites
+
 - APGI Framework installed
 - Basic understanding of experimental psychology concepts
 - 15 minutes of time
@@ -13,16 +15,19 @@ Learn to set up and run a basic detection task experiment from start to finish.
 ### Step 1: Launch the Application
 
 1. **Start the APGI Framework**
+
    ```bash
    python launch_gui.py
    ```
 
 2. **Choose Your Experience Level**
+
    - Beginner: Recommended for first-time users
    - Intermediate: Some familiarity with similar software
    - Advanced: Skip basic tutorials
 
 3. **Complete the Welcome Wizard**
+
    - Set your preferred data directory
    - Choose default experiment settings
    - Enable auto-save (recommended)
@@ -32,7 +37,8 @@ Learn to set up and run a basic detection task experiment from start to finish.
 1. **File → New Experiment**
 2. **Select Experiment Type**: Detection Task
 3. **Basic Configuration**:
-   ```
+
+   ```text
    Participant ID: P001
    Session ID: S001
    Number of Trials: 50
@@ -40,6 +46,7 @@ Learn to set up and run a basic detection task experiment from start to finish.
    ```
 
 4. **Advanced Settings** (for now, keep defaults):
+
    - Stimulus intensity range: 0.01 - 1.0
    - Trial duration: 500ms
    - Response window: 2000ms
@@ -69,6 +76,7 @@ Learn to set up and run a basic detection task experiment from start to finish.
 3. **Save Results**: File → Save As → "P001_Detection_001.json"
 
 ### What You Learned
+
 - How to create and configure an experiment
 - How to run a detection task
 - How to interpret basic results
@@ -79,9 +87,11 @@ Learn to set up and run a basic detection task experiment from start to finish.
 ## Tutorial 2: Data Analysis and Visualization
 
 ### Objective
+
 Learn to analyze experimental data and create meaningful visualizations.
 
 ### Prerequisites
+
 - Completed Tutorial 1
 - Have experimental data available
 - 20 minutes of time
@@ -181,7 +191,7 @@ Learn to set up and run an interoceptive awareness experiment.
 1. **File → New Experiment**
 2. **Select**: Heartbeat Detection Task
 3. **Basic Settings**:
-   ```
+   ```text
    Participant ID: P001
    Number of Trials: 60
    Asynchrony Window: 300ms
@@ -214,7 +224,7 @@ Learn to set up and run an interoceptive awareness experiment.
    - "Respond as quickly and accurately as possible"
 
 2. **Trial Structure**:
-   ```
+   ```text
    1. Wait for tone (2-5 seconds)
    2. Hear tone (synchronous or asynchronous)
    3. Make judgment (Sync/Async)
@@ -576,21 +586,21 @@ Learn to automate experiment processing for large datasets.
 
 ### Troubleshooting Quick Fixes
 
-| Problem | Solution |
-|---------|----------|
-| GUI not responding | Check memory usage, close other apps |
-| Can't import data | Verify file format and permissions |
-| Experiment crashes | Reduce trial count, check sensors |
-| Slow analysis | Enable parallel processing |
+| Problem               | Solution                                  |
+|-----------------------|-------------------------------------------|
+| GUI not responding    | Check memory usage, close other apps        |
+| Can't import data     | Verify file format and permissions           |
+| Experiment crashes    | Reduce trial count, check sensors           |
+| Slow analysis         | Enable parallel processing                  |
 
 ### Default Settings
 
-| Parameter | Default | Recommended Range |
-|-----------|---------|------------------|
-| Trials | 100 | 50-200 |
-| Response Window | 2000ms | 1000-3000ms |
-| Stimulus Duration | 500ms | 100-1000ms |
-| Inter-trial Interval | 1000ms | 500-2000ms |
+| Parameter            | Default   | Recommended Range    |
+|----------------------|-----------|----------------------|
+| Trials               | 100       | 50-200               |
+| Response Window      | 2000ms    | 1000-3000ms          |
+| Stimulus Duration    | 500ms     | 100-1000ms           |
+| Inter-trial Interval | 1000ms    | 500-2000ms           |
 
 ---
 

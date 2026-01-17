@@ -2,18 +2,18 @@
   "session_id": "test_session",
   "participant_id": "test_participant",
   "protocol_version": "1.0.0",
-  "start_time": "2026-01-15T19:22:36.905639",
-  "end_time": "2026-01-15T19:23:36.908873",
+  "start_time": "2026-01-16T21:51:49.191454",
+  "end_time": "2026-01-16T21:52:49.194456",
   "tasks": {
     "detection": {
-      "start_time": "2026-01-15T19:22:36.906023",
+      "start_time": "2026-01-16T21:51:49.191699",
       "trials": [],
       "parameters": {},
       "quality_metrics": {},
-      "end_time": "2026-01-15T19:22:36.906055"
+      "end_time": "2026-01-16T21:51:49.191733"
     }
   },
   "quality_metrics": {},
   "events": [],
-  "duration_minutes": 1.0000539
+  "duration_minutes": 1.0000500333333333
 }

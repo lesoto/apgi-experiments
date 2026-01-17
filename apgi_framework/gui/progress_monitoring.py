@@ -157,3 +157,88 @@ class RealTimeProgressMonitor:
         self.estimated_completion = None
 
         logger.info("Progress monitor reset")
+
+
+if __name__ == "__main__":
+    """Launch the progress monitoring demo as a standalone application."""
+    import tkinter as tk
+    from tkinter import ttk, messagebox
+
+    class ProgressMonitorDemo:
+        """Demo application for progress monitoring."""
+
+        def __init__(self):
+            self.root = tk.Tk()
+            self.root.title("Progress Monitoring Demo")
+            self.root.geometry("600x400")
+
+            self.monitor = RealTimeProgressMonitor()
+            self.setup_ui()
+
+        def setup_ui(self):
+            """Setup demo UI."""
+            # Main frame
+            main_frame = ttk.Frame(self.root, padding="20")
+            main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+
+            # Title
+            title = ttk.Label(
+                main_frame, text="Progress Monitoring Demo", font=("Arial", 16, "bold")
+            )
+            title.grid(row=0, column=0, columnspan=2, pady=(0, 20))
+
+            # Start button
+            start_btn = ttk.Button(
+                main_frame, text="Start Demo Task", command=self.start_demo
+            )
+            start_btn.grid(row=1, column=0, padx=5, pady=5)
+
+            # Status display
+            self.status_text = tk.Text(main_frame, height=15, width=60)
+            self.status_text.grid(row=2, column=0, columnspan=2, pady=10)
+
+        def start_demo(self):
+            """Start demo task."""
+            self.monitor.start_task("Demo Task", 100)
+            self.update_progress()
+
+        def update_progress(self):
+            """Update progress display."""
+            if self.monitor.is_active():
+                # Simulate progress
+                completed = self.monitor.completed_trials + 1
+                if completed <= self.monitor.total_trials:
+                    self.monitor.update_progress(completed)
+
+                    # Update display
+                    status = self.monitor.get_status()
+                    self.status_text.delete(1.0, tk.END)
+                    self.status_text.insert(tk.END, f"Task: {status['current_task']}\n")
+                    self.status_text.insert(
+                        tk.END, f"Progress: {status['progress_percent']:.1f}%\n"
+                    )
+                    self.status_text.insert(
+                        tk.END,
+                        f"Completed: {status['completed_trials']}/{status['total_trials']}\n",
+                    )
+                    self.status_text.insert(
+                        tk.END, f"Elapsed: {status['elapsed_time']}\n"
+                    )
+                    if status["estimated_completion"]:
+                        self.status_text.insert(
+                            tk.END, f"ETA: {status['estimated_completion']}\n"
+                        )
+
+                    # Schedule next update
+                    self.root.after(100, self.update_progress)
+                else:
+                    self.monitor.complete_task(success=True)
+                    messagebox.showinfo("Complete", "Demo task completed successfully!")
+
+        def run(self):
+            """Run the demo."""
+            self.root.mainloop()
+
+    # Run demo
+    demo = ProgressMonitorDemo()
+    demo.run()

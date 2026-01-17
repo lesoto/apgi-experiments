@@ -34,26 +34,20 @@ ERROR: Could not find a version that satisfies the requirement...
 1. **Check Python version**:
 
    ```bash
-
    python --version  # Should be 3.8 or higher
-
    ```
 
 2. **Upgrade pip**:
 
    ```bash
-
    python -m pip install --upgrade pip
-
    ```
 
 3. **Install dependencies individually**:
 
    ```bash
-
    pip install numpy scipy matplotlib pandas
    pip install -r requirements.txt
-
    ```
 
 4. **Use virtual environment**:

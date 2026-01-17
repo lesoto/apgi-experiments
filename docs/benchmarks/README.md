@@ -11,6 +11,7 @@ This directory contains comprehensive performance benchmarks for the APGI Framew
 ## Running Benchmarks
 
 ### Basic Benchmark Run
+
 ```bash
 # Run all benchmarks
 pytest benchmarks/ --benchmark-only
@@ -23,6 +24,7 @@ pytest benchmarks/ --benchmark-only -v
 ```
 
 ### Advanced Profiling
+
 ```bash
 # Run with memory profiling
 pytest benchmarks/ --benchmark-only --benchmark-profile
@@ -35,6 +37,7 @@ pytest benchmarks/ --benchmark-only --benchmark-compare=previous_results.json
 ```
 
 ### Manual Profiling
+
 ```python
 from benchmarks.profiling_utils import Profiler, BenchmarkRunner
 
@@ -55,26 +58,31 @@ results = runner.run_benchmark_suite({
 ## Benchmark Categories
 
 ### 1. APGI Agent Performance
+
 - Agent update speed
 - Memory usage over time
 - Scaling with observation size
 
 ### 2. Analysis Engine Performance
+
 - Small, medium, and large dataset analysis
 - Performance scaling analysis
 - Memory efficiency
 
 ### 3. Stimulus Generator Performance
+
 - Simple vs complex stimulus generation
 - Throughput measurement
 - Resource usage
 
 ### 4. Data Processing Performance
+
 - EEG data processing
 - Behavioral data analysis
 - Feature extraction speed
 
 ### 5. Memory Performance
+
 - Large array allocation
 - Memory cleanup verification
 - Memory leak detection
@@ -82,6 +90,7 @@ results = runner.run_benchmark_suite({
 ## Performance Targets
 
 ### Response Time Targets
+
 - Agent update: < 1ms
 - Small data analysis: < 100ms
 - Medium data analysis: < 1s
@@ -89,11 +98,13 @@ results = runner.run_benchmark_suite({
 - Stimulus generation: > 100 stimuli/second
 
 ### Memory Usage Targets
+
 - Agent memory growth: < 10MB per 1000 updates
 - Analysis memory scaling: Linear with data size
 - Memory cleanup: > 90% of allocated memory freed
 
 ### Scaling Targets
+
 - Analysis performance: < 2x time for 5x data
 - Memory usage: < 2x memory for 5x data
 
@@ -121,6 +132,7 @@ The benchmarks are integrated into the CI/CD pipeline:
 ## Best Practices
 
 ### Writing Benchmarks
+
 1. Use realistic data sizes
 2. Test both happy path and edge cases
 3. Include memory usage tests
@@ -128,6 +140,7 @@ The benchmarks are integrated into the CI/CD pipeline:
 5. Use meaningful benchmark names
 
 ### Analyzing Results
+
 1. Look for performance regressions
 2. Identify memory leaks
 3. Check scaling behavior
@@ -135,6 +148,7 @@ The benchmarks are integrated into the CI/CD pipeline:
 5. Compare across different environments
 
 ### Performance Optimization
+
 1. Profile before optimizing
 2. Focus on hot paths
 3. Consider algorithmic complexity
@@ -144,12 +158,14 @@ The benchmarks are integrated into the CI/CD pipeline:
 ## Troubleshooting
 
 ### Common Issues
+
 1. **Import errors**: Make sure APGI modules are properly installed
 2. **Memory issues**: Reduce data sizes for memory-constrained environments
 3. **Timeouts**: Increase timeout limits for slow benchmarks
 4. **Inconsistent results**: Run multiple times and average
 
 ### Debug Mode
+
 ```bash
 # Run with debug output
 pytest benchmarks/ --benchmark-only -v -s

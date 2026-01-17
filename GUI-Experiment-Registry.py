@@ -156,8 +156,8 @@ class ExperimentRegistryGUI:
 
         # Variables
         self.current_experiment = tk.StringVar()
-        self.n_participants = tk.IntVar(value=5)
-        self.n_trials = tk.IntVar(value=20)
+        self.n_participants = tk.IntVar(value=2)
+        self.n_trials = tk.IntVar(value=50)
         self.output_file = tk.StringVar(value="")
         self.running = False
 
@@ -606,7 +606,7 @@ except Exception as e:
                     [sys.executable, script_path],
                     capture_output=True,
                     text=True,
-                    timeout=120,  # 2 minute timeout
+                    timeout=300,  # 5 minute timeout
                 )
                 end_time = time.time()
 
@@ -642,7 +642,7 @@ except Exception as e:
 
             except subprocess.TimeoutExpired:
                 self.experiment_status[exp_name] = "Failed"
-                error_msg = "Experiment timed out after 120 seconds"
+                error_msg = "Experiment timed out after 300 seconds"
                 self.log_output(f"✗ {exp_name} failed: {error_msg}")
                 messagebox.showerror(
                     "Experiment Failed", f"Experiment {exp_name} timed out"
@@ -734,7 +734,7 @@ except Exception as e:
                         [sys.executable, script_path],
                         capture_output=True,
                         text=True,
-                        timeout=120,  # 2 minute timeout
+                        timeout=300,  # 5 minute timeout
                     )
                     end_time = time.time()
 
@@ -769,7 +769,7 @@ except Exception as e:
 
                 except subprocess.TimeoutExpired:
                     self.experiment_status[exp_name] = "Failed"
-                    error_msg = "Experiment timed out after 120 seconds"
+                    error_msg = "Experiment timed out after 300 seconds"
                     self.log_output(f"✗ {exp_name} - Failed: {error_msg}")
                     logger.error(f"Experiment {exp_name} timed out in batch run")
                 except Exception as e:

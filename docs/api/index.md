@@ -23,11 +23,13 @@ or visit the main documentation at: ../README.md
 ### Core Modules
 
 #### APGI Framework
+
 ```python
 from apgi_framework import APGIFramework
 ```
 
 #### Configuration
+
 ```python
 from apgi_framework.config import ConfigManager, APGIParameters
 ```
@@ -35,6 +37,7 @@ from apgi_framework.config import ConfigManager, APGIParameters
 ### Data Management
 
 #### Data Manager
+
 ```python
 from apgi_framework.data.data_manager import IntegratedDataManager
 ```
@@ -42,6 +45,7 @@ from apgi_framework.data.data_manager import IntegratedDataManager
 ### Analysis Tools
 
 #### Bayesian Models
+
 ```python
 from apgi_framework.analysis.bayesian_models import BayesianParameterEstimator
 ```
@@ -49,6 +53,7 @@ from apgi_framework.analysis.bayesian_models import BayesianParameterEstimator
 ### GUI Components
 
 #### Main GUI Controller
+
 ```python
 from apgi_framework.gui.components.main_gui_controller import MainGUIController
 ```

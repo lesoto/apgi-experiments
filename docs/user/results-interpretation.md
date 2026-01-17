@@ -97,10 +97,10 @@ Falsification testing follows Karl Popper's philosophy: we attempt to **disprove
 
 #### Important: These tests are designed to **falsify**, not confirm.
 
-| Result | Interpretation | Strength |
-| -------- | --------------- | ---------- |
-| NOT Falsified | Framework survives this test | Moderate support |
-| Falsified | Framework contradicted | Strong evidence against |
+| Result        | Interpretation                    | Strength               |
+|---------------|-----------------------------------|------------------------|
+| NOT Falsified | Framework survives this test      | Moderate support       |
+| Falsified     | Framework contradicted            | Strong evidence against |
 
 #### Key Point: "Not falsified" ≠ "proven true". It means that the framework survived this particular challenge.
 
@@ -114,12 +114,12 @@ Falsification testing follows Karl Popper's philosophy: we attempt to **disprove
 
 #### Interpretation:
 
-| Range | Interpretation | Action |
-| ------- | --------------- | -------- |
-| 0.0 - 0.5 | Low confidence | Increase sample size, check data quality |
-| 0.5 - 0.7 | Moderate confidence | Acceptable for exploratory research |
-| 0.7 - 0.9 | High confidence | Acceptable for most purposes |
-| 0.9 - 1.0 | Very high confidence | Publication-quality evidence |
+| Range       | Interpretation                    | Action                                  |
+|-------------|-----------------------------------|-----------------------------------------|
+| 0.0 - 0.5   | Low confidence                    | Increase sample size, check data quality    |
+| 0.5 - 0.7   | Moderate confidence                | Acceptable for exploratory research        |
+| 0.7 - 0.9   | High confidence                   | Acceptable for most purposes               |
+| 0.9 - 1.0   | Very high confidence               | Publication-quality evidence                |
 
 **Example**:
 
@@ -137,12 +137,12 @@ Interpretation: High confidence in the result.
 
 **Interpretation**:
 
-| P-value | Interpretation | Significance |
-| --------- | --------------- | -------------- |
-| < 0.001 | Extremely significant | *** |
-| < 0.01 | Highly significant | ** |
-| < 0.05 | Significant | * |
-| ≥ 0.05 | Not significant | ns |
+| P-value    | Interpretation            | Significance |
+|-------------|--------------------------|-------------|
+| < 0.001     | Extremely significant      | ***         |
+| < 0.01      | Highly significant         | **          |
+| < 0.05      | Significant               | *           |
+| ≥ 0.05      | Not significant           | ns          |
 
 **Common Misinterpretations**:
 
@@ -166,12 +166,12 @@ Only 0.3% chance of observing this if null hypothesis true.
 
 **Interpretation**:
 
-|  | d |  | Interpretation | Practical Significance |
-| ------ | --------------- | ---------------------- |
-| < 0.2 | Negligible | Very small, may not matter |
-| 0.2 - 0.5 | Small | Noticeable to experts |
-| 0.5 - 0.8 | Medium | Noticeable to informed observers |
-| ≥ 0.8 | Large | Obvious to anyone |
+| d          | Interpretation            | Practical Significance           |
+|------------|--------------------------|--------------------------------|
+| < 0.2      | Negligible               | Very small, may not matter        |
+| 0.2 - 0.5  | Small                    | Noticeable to experts             |
+| 0.5 - 0.8  | Medium                   | Noticeable to informed observers   |
+| ≥ 0.8      | Large                    | Obvious to anyone                |
 
 **Why it matters**: P-values depend on sample size, but effect sizes don't. A large sample can make a tiny effect "significant" (low p-value) but practically meaningless (small d).
 
@@ -191,12 +191,12 @@ Difference is noticeable and practically meaningful.
 
 **Interpretation**:
 
-| Power | Interpretation | Action |
-| ------- | --------------- | -------- |
-| < 0.5 | Underpowered | Increase sample size significantly |
-| 0.5 - 0.8 | Adequate | Acceptable for exploratory work |
-| ≥ 0.8 | Well-powered | Standard target for research |
-| ≥ 0.95 | Very well-powered | Excellent for detecting effects |
+| Power       | Interpretation            | Action                                |
+|-------------|--------------------------|---------------------------------------|
+| < 0.5       | Underpowered             | Increase sample size significantly          |
+| 0.5 - 0.8   | Adequate                 | Acceptable for exploratory work          |
+| ≥ 0.8       | Well-powered             | Standard target for research             |
+| ≥ 0.95      | Very well-powered         | Excellent for detecting effects          |
 
 **Why it matters**: Low power means you might miss real effects (false negatives). High power ensures you can detect effects if they exist.
 

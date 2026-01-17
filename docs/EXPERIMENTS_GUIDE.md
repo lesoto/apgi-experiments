@@ -73,14 +73,9 @@ You can run experiments directly from the command line:
 python tools/run_experiments.py experiment_name
 
 # With parameters
-
-```bash
 python tools/run_experiments.py experiment_name --n_participants 10 --n_trials 50
-```
 
 # With output file
-
-```bash
 python tools/run_experiments.py experiment_name --n_participants 10 --n_trials 50 --output results.csv
 ```
 

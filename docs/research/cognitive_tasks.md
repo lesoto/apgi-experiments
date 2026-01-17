@@ -54,6 +54,7 @@ research/cognitive_tasks/experiments/
 ## Base Classes
 
 ### CognitiveTaskExperiment
+
 The foundational base class for all cognitive experiments, providing:
 - APGI model integration
 - Trial data management
@@ -61,6 +62,7 @@ The foundational base class for all cognitive experiments, providing:
 - Comprehensive summary statistics
 
 ### Specialized Base Classes
+
 - **TrialBasedTask**: For experiments with discrete trials
 - **BlockBasedTask**: For experiments with block structures
 - **AdaptiveTask**: For experiments with difficulty adjustment
@@ -69,12 +71,12 @@ The foundational base class for all cognitive experiments, providing:
 
 Each experiment maps cognitive processes to APGI parameters:
 
-| Parameter | Cognitive Interpretation | Measurement |
-|-----------|------------------------|--------------|
-| **θₜ** (threshold) | Decision/attention threshold | Response criteria |
-| **π** (precision) | Confidence/certainty | Response confidence |
-| **ε** (prediction error) | Unexpected events | Conflict/surprise |
-| **β** (inverse temperature) | Response consistency | Choice variability |
+| Parameter                | Cognitive Interpretation                 | Measurement                      |
+|--------------------------|------------------------------------------|----------------------------------|
+| **θₜ** (threshold)       | Decision/attention threshold             | Response criteria                 |
+| **π** (precision)         | Confidence/certainty                      | Response confidence               |
+| **ε** (prediction error)  | Unexpected events                         | Conflict/surprise                 |
+| **β** (inverse temperature) | Response consistency                     | Choice variability                |
 
 ## Implemented Experiments
 
@@ -173,15 +175,14 @@ Each experiment maps cognitive processes to APGI parameters:
 ```python
 from research.cognitive_tasks.experiments.decision_making.iowa_gambling_task import run_iowa_gambling_task_experiment
 
-# Run Iowa Gambling Task with custom parameters
-experiment = run_iowa_gambling_task_experiment(
-    n_participants=20,
-    n_trials=100,
-    output_file='iowa_gambling_results.csv'
-)
+# Run with default parameters
+results = run_iowa_gambling_task_experiment()
 
 # Access results
-results = experiment.data
+summary = results['summary']
+participant_data = results['participant_data']
+
+# Get specific participant summary
 summary = experiment.participant_data[1]['summary']
 ```
 
@@ -192,10 +193,10 @@ from tools.run_experiments import run_experiment
 
 # Run any registered experiment
 results = run_experiment(
-    'iowa_gambling_task',
+    'stroop_effect',
     n_participants=20,
-    n_trials=100,
-    output_file='results.csv'
+    congruent_ratio=0.7,
+    apgi_params={'theta_t': 0.5, 'pi': 1.0}
 )
 ```
 
@@ -204,19 +205,14 @@ results = run_experiment(
 ```python
 from research.cognitive_tasks.experiments import TrialBasedTask, TrialBasedTaskConfig
 
-class CustomTaskConfig(TrialBasedTaskConfig):
-    custom_parameter: float = 1.0
+@dataclass
+class CustomExperimentConfig(TrialBasedTaskConfig):
+    stimulus_duration: float = 0.5
+    response_window: float = 2.0
 
-class CustomTask(TrialBasedTask):
-    def __init__(self, config=None):
-        super().__init__(config)
-    
-    def generate_trial_parameters(self, participant_id, trial_number):
+class CustomExperiment(TrialBasedTask):
+    def generate_trial(self, config: CustomExperimentConfig):
         # Implement trial generation
-        return {}
-    
-    def process_response(self, response, correct_response):
-        # Implement response processing
         return {}
 ```
 
@@ -242,6 +238,7 @@ class ExperimentConfig:
 ## Data Structure
 
 ### Trial Data
+
 Each trial includes:
 - Basic trial information (ID, participant, condition)
 - Stimulus parameters
@@ -249,6 +246,7 @@ Each trial includes:
 - APGI parameters (surprise, ignition probability, somatic marker)
 
 ### Summary Statistics
+
 Comprehensive summaries include:
 - Overall performance metrics
 - Condition-specific effects
@@ -289,6 +287,7 @@ EXPERIMENTS = {
 ## Future Development
 
 ### Remaining Experiments (13/24 complete)
+
 - **Memory**: N-back, Sternberg, Working Memory Span, DRM
 - **Executive Control**: Go/No-Go, Stop Signal  
 - **Perception**: Navon Task, Multisensory Integration
@@ -297,6 +296,7 @@ EXPERIMENTS = {
 - **Timing/Navigation**: Time Estimation, Virtual Navigation
 
 ### Planned Enhancements
+
 - Real-time APGI parameter visualization
 - Cross-experiment parameter comparison
 - Machine learning-based parameter optimization

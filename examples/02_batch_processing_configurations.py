@@ -409,22 +409,164 @@ def run_posner_cueing_experiment(**kwargs):
 
 def run_masking_experiment(**kwargs):
     """Wrapper for masking experiment."""
+    # Use reduced parameters for GUI testing
+    n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 50))
+    if n_trials < 100:  # Quick mode for GUI
+        return run_quick_batch_test(n_trials)
     return batch_process_threshold_variations()
 
 
 def run_sternberg_memory_experiment(**kwargs):
     """Wrapper for sternberg_memory experiment."""
+    # Use reduced parameters for GUI testing
+    n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 50))
+    if n_trials < 100:  # Quick mode for GUI
+        return run_quick_batch_test(n_trials)
     return batch_process_threshold_variations()
 
 
-def run_stop_signal_experiment(**kwargs):
-    """Wrapper for stop_signal experiment."""
+def run_posner_cueing_experiment(**kwargs):
+    """Wrapper for posner_cueing experiment."""
+    # Use reduced parameters for GUI testing
+    n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 50))
+    if n_trials < 100:  # Quick mode for GUI
+        return run_quick_batch_test(n_trials)
+    return batch_process_threshold_variations()
+
+
+def run_probabilistic_category_learning_experiment(**kwargs):
+    """Wrapper for probabilistic_category_learning experiment."""
+    # Use reduced parameters for GUI testing
+    n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 50))
+    if n_trials < 100:  # Quick mode for GUI
+        return run_quick_batch_test(n_trials)
+    return batch_process_threshold_variations()
+
+
+def run_serial_reaction_time_experiment(**kwargs):
+    """Wrapper for serial_reaction_time experiment."""
+    # Use reduced parameters for GUI testing
+    n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 50))
+    if n_trials < 100:  # Quick mode for GUI
+        return run_quick_batch_test(n_trials)
+    return batch_process_threshold_variations()
+
+
+def run_somatic_marker_priming_experiment(**kwargs):
+    """Wrapper for somatic_marker_priming experiment."""
+    # Use reduced parameters for GUI testing
+    n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 50))
+    if n_trials < 100:  # Quick mode for GUI
+        return run_quick_batch_test(n_trials)
+    return batch_process_threshold_variations()
+
+
+def run_interoceptive_gating_experiment(**kwargs):
+    """Wrapper for interoceptive_gating experiment."""
+    # Use reduced parameters for GUI testing
+    n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 50))
+    if n_trials < 100:  # Quick mode for GUI
+        return run_quick_batch_test(n_trials)
+    return batch_process_threshold_variations()
+
+
+def run_iowa_gambling_task_experiment(**kwargs):
+    """Wrapper for iowa_gambling_task experiment."""
+    # Use reduced parameters for GUI testing
+    n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 50))
+    if n_trials < 100:  # Quick mode for GUI
+        return run_quick_batch_test(n_trials)
+    return batch_process_threshold_variations()
+
+
+def run_visual_search_experiment(**kwargs):
+    """Wrapper for visual_search experiment."""
+    # Use reduced parameters for GUI testing
+    n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 50))
+    if n_trials < 100:  # Quick mode for GUI
+        return run_quick_batch_test(n_trials)
     return batch_process_threshold_variations()
 
 
 def run_artificial_grammar_learning_experiment(**kwargs):
     """Wrapper for artificial_grammar_learning experiment."""
+    # Use reduced parameters for GUI testing
+    n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 50))
+    if n_trials < 100:  # Quick mode for GUI
+        return run_quick_batch_test(n_trials)
     return batch_process_threshold_variations()
+
+
+def run_dual_n_back_experiment(**kwargs):
+    """Wrapper for dual_n_back experiment."""
+    # Use reduced parameters for GUI testing
+    n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 50))
+    if n_trials < 100:  # Quick mode for GUI
+        return run_quick_batch_test(n_trials)
+    return batch_process_threshold_variations()
+
+
+def run_eriksen_flanker_experiment(**kwargs):
+    """Wrapper for eriksen_flanker experiment."""
+    # Use reduced parameters for GUI testing
+    n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 50))
+    if n_trials < 100:  # Quick mode for GUI
+        return run_quick_batch_test(n_trials)
+    return batch_process_threshold_variations()
+
+
+def run_go_no_go_experiment(**kwargs):
+    """Wrapper for go_no_go experiment."""
+    # Use reduced parameters for GUI testing
+    n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 50))
+    if n_trials < 100:  # Quick mode for GUI
+        return run_quick_batch_test(n_trials)
+    return batch_process_threshold_variations()
+
+
+def run_stop_signal_experiment(**kwargs):
+    """Wrapper for stop_signal experiment."""
+    # Use reduced parameters for GUI testing
+    n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 50))
+    if n_trials < 100:  # Quick mode for GUI
+        return run_quick_batch_test(n_trials)
+    return batch_process_threshold_variations()
+
+
+def run_quick_batch_test(n_trials=50):
+    """
+    Quick batch test for GUI experiments - runs just one configuration.
+    """
+    logger.info(f"Running quick batch test with {n_trials} trials")
+
+    try:
+        # Initialize system once
+        controller = MainApplicationController()
+        controller.initialize_system()
+
+        # Set standard parameters
+        controller.config_manager.update_apgi_parameters(
+            threshold=3.5,
+            extero_precision=2.0,
+            intero_precision=1.5,
+            steepness=2.0,
+            somatic_gain=1.3,
+        )
+
+        # Run primary falsification test with reduced trials
+        tests = controller.get_falsification_tests()
+        result = tests["primary"].run_falsification_test(n_trials=n_trials)
+
+        logger.info(f"Quick test completed - Falsified: {result.is_falsified}")
+
+        # Cleanup
+        controller.shutdown_system()
+
+        return result
+
+    except Exception as e:
+        logger.error(f"Quick batch test failed: {e}")
+        raise
 
 
 if __name__ == "__main__":

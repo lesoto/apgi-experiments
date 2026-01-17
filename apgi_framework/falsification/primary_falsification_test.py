@@ -18,7 +18,7 @@ from ..simulators.bold_simulator import BOLDSimulator
 from ..simulators.pci_calculator import PCICalculator
 from ..config import get_config_manager
 from ..exceptions import ValidationError, SimulationError
-from .error_handling_wrapper import with_error_handling, log_test_execution
+from .error_handling_wrapper import with_error_handling
 import logging
 
 logger = logging.getLogger(__name__)
@@ -188,15 +188,13 @@ class PrimaryFalsificationTest:
             )
 
             end_time = datetime.now()
-            log_test_execution("Primary Falsification Test", start_time, end_time, True)
+            logger.info(f"Primary Falsification Test completed successfully in {(end_time - start_time).total_seconds():.2f}s")
 
             return result
 
         except Exception as e:
             end_time = datetime.now()
-            log_test_execution(
-                "Primary Falsification Test", start_time, end_time, False, e
-            )
+            logger.error(f"Primary Falsification Test failed after {(end_time - start_time).total_seconds():.2f}s: {str(e)}")
             raise
 
     def _run_single_trial(

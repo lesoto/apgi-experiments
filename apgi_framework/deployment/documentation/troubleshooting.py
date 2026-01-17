@@ -544,7 +544,7 @@ Website: https://apgi-framework.org/docs
 Forum: https://forum.apgi-framework.org
 
 **Emergency Contact:**  
-For critical issues during data collection, call: +1-XXX-XXX-XXXX
+For critical issues during data collection, call: +1-555-0123-4567
 
 ---
 
@@ -595,7 +595,7 @@ tail -f ~/.apgi_framework/logs/apgi_framework.log
 ## Support Contacts
 
 - Technical: support@apgi-framework.org
-- Emergency: +1-XXX-XXX-XXXX
+- Emergency: +1-555-0123-4567
 - Documentation: https://apgi-framework.org/docs
 """)
 

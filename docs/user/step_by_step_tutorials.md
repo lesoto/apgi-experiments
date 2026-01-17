@@ -23,7 +23,8 @@ Learn to run a basic parameter estimation experiment and interpret the results.
 2. Navigate to `http://localhost:8000`
 3. You should see the APGI Framework dashboard
 
-**Expected View:**
+### Expected View:
+
 - Welcome screen with navigation menu
 - "New Experiment" button prominently displayed
 
@@ -40,7 +41,8 @@ Learn to run a basic parameter estimation experiment and interpret the results.
 
 3. Click **"Create Experiment"**
 
-**Troubleshooting:**
+### Troubleshooting:
+
 - If button is disabled, ensure all required fields are filled
 - If experiment type is not available, check framework is fully loaded
 
@@ -51,11 +53,11 @@ Learn to run a basic parameter estimation experiment and interpret the results.
 1. In the experiment setup page, you'll see parameter configuration
 2. Set the following initial values:
 
-| Parameter | Value | Description |
-|-----------|-------|-------------|
-| θ₀ (Ignition Threshold) | 0.5 | Threshold for conscious ignition |
-| Πᵢ (Interoceptive Precision) | 1.0 | Precision of interoceptive signals |
-| β (Somatic Bias) | 0.0 | Baseline somatic bias |
+| Parameter                     | Value | Description                           |
+|-------------------------------|-------|---------------------------------------|
+| θ₀ (Ignition Threshold)       | 0.5   | Threshold for conscious ignition       |
+| Πᵢ (Interoceptive Precision)  | 1.0   | Precision of interoceptive signals    |
+| β (Somatic Bias)              | 0.0   | Baseline somatic bias                  |
 
 3. **Advanced Settings** (click to expand):
    - **Number of Trials**: 1000
@@ -72,7 +74,8 @@ Learn to run a basic parameter estimation experiment and interpret the results.
 2. Click **"Start Experiment"**
 3. You'll see a progress bar and real-time updates
 
-**What to Watch For:**
+### What to Watch For:
+
 - Progress percentage updating
 - Parameter estimates changing in real-time
 - Convergence diagnostics
@@ -152,7 +155,8 @@ Set up and use real-time monitoring for live data streams.
 2. Click **"Start Streaming"**
 3. Wait for connection status to show "Connected"
 
-**Expected Status Indicators:**
+### Expected Status Indicators:
+
 - 🟢 Streaming: Active
 - 🔌 Connection: Connected
 - 📊 Data Processing: Normal
@@ -248,12 +252,12 @@ For multi-subject analysis:
 
 Advanced sampling settings:
 
-| Setting | Recommended Value | When to Use |
-|----------|-------------------|--------------|
-| Chains | 4 | Standard analysis |
-| Iterations | 4000 | Complex models |
-| Thin | 2 | Large datasets |
-| Adapt Delta | 0.95 | Difficult posteriors |
+| Setting           | Recommended Value | When to Use                 |
+|-------------------|-------------------|-----------------------------|
+| Chains            | 4                 | Standard analysis           |
+| Iterations        | 4000              | Complex models              |
+| Thin              | 2                 | Large datasets              |
+| Adapt Delta       | 0.95              | Difficult posteriors        |
 
 ---
 
@@ -337,7 +341,8 @@ Compare different models and validate results.
 
 ### Step 3: Interpret Results
 
-**Model Selection Criteria:**
+### Model Selection Criteria:
+
 - Lower WAIC = Better model
 - Lower LOO-CV = Better predictive performance
 - Bayes Factor > 3 = Strong evidence
@@ -513,7 +518,7 @@ After completing these tutorials:
 
 ---
 
-**Happy Analyzing! 🧠✨**
+### Happy Analyzing! 🧠✨
 
 ---
 

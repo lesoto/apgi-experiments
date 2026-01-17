@@ -795,3 +795,10 @@ class QualityAlertSystem:
                 summary[level] += 1
 
         return summary
+
+
+if __name__ == "__main__":
+    """Launch the monitoring dashboard as a standalone application."""
+    root = tk.Tk()
+    app = MultiModalMonitoringDashboard(root)
+    root.mainloop()
