@@ -6,12 +6,71 @@ This module implements the primary falsification testing framework for the APGI
 neural signature validation, and experimental control mechanisms.
 """
 
-from .primary_falsification_test import PrimaryFalsificationTest
-from .consciousness_assessment import (
-    ConsciousnessAssessment,
-    ConsciousnessAssessmentSimulator,
-    ConsciousnessValidator,
-)
+from datetime import datetime
+
+# Import from tests directory for primary falsification test
+try:
+    from tests.falsification.primary_falsification_test import PrimaryFalsificationTest
+except ImportError:
+    # Fallback if tests module is not available
+    PrimaryFalsificationTest = None
+
+
+# Consciousness assessment classes - implemented inline below
+class ConsciousnessAssessment:
+    """Basic consciousness assessment functionality."""
+
+    def __init__(
+        self,
+        subjective_report: bool = False,
+        forced_choice_accuracy: float = 0.5,
+        confidence_rating: float = 0.5,
+        response_time: float = 1.0,
+    ):
+        self.subjective_report = subjective_report
+        self.forced_choice_accuracy = forced_choice_accuracy
+        self.confidence_rating = confidence_rating
+        self.response_time = response_time
+        self.timestamp = datetime.now()
+
+
+class ConsciousnessAssessmentSimulator:
+    """Simulator for consciousness assessment."""
+
+    def simulate_assessment(
+        self, consciousness_present: bool = True
+    ) -> ConsciousnessAssessment:
+        """Simulate a consciousness assessment."""
+        import numpy as np
+
+        if consciousness_present:
+            subjective = np.random.choice([True, False], p=[0.8, 0.2])
+            accuracy = np.random.normal(0.75, 0.1)
+            confidence = np.random.normal(0.7, 0.15)
+        else:
+            subjective = np.random.choice([True, False], p=[0.2, 0.8])
+            accuracy = np.random.normal(0.5, 0.05)
+            confidence = np.random.normal(0.3, 0.1)
+
+        accuracy = np.clip(accuracy, 0.0, 1.0)
+        confidence = np.clip(confidence, 0.0, 1.0)
+        response_time = np.random.exponential(1.0)
+
+        return ConsciousnessAssessment(subjective, accuracy, confidence, response_time)
+
+
+class ConsciousnessValidator:
+    """Validator for consciousness measures."""
+
+    def validate_assessment(self, assessment: ConsciousnessAssessment) -> bool:
+        """Validate a consciousness assessment."""
+        return (
+            0.0 <= assessment.forced_choice_accuracy <= 1.0
+            and 0.0 <= assessment.confidence_rating <= 1.0
+            and assessment.response_time > 0.0
+        )
+
+
 from .ai_acc_validation import AIACCValidator
 from .experimental_control import ExperimentalControlValidator
 from .result_interpretation import FalsificationInterpreter, ResultLogger
@@ -140,7 +199,8 @@ class ConsciousnessWithoutIgnitionTest:
         p_value = None
         try:
             chi2_stat, p_value, _, _ = stats.chi2_contingency(contingency_table)
-        except:
+        except (ValueError, RuntimeError) as e:
+            self.logger.warning(f"Chi-square test failed: {e}. Using fallback p-value.")
             p_value = 1.0
 
         # Determine if framework is falsified
@@ -490,7 +550,7 @@ class SomaBiasTest:
 
 
 __all__ = [
-    "PrimaryFalsificationTest",
+    "PrimaryFalsificationTest",  # May be None if not available
     "ConsciousnessAssessment",
     "ConsciousnessAssessmentSimulator",
     "ConsciousnessValidator",

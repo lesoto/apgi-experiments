@@ -6,7 +6,7 @@ import pytest
 import numpy as np
 from unittest.mock import patch, MagicMock
 
-from apgi_framework.falsification.primary_falsification_test import (
+from tests.falsification.primary_falsification_test import (
     PrimaryFalsificationTest,
 )
 from apgi_framework.falsification.consciousness_without_ignition_test import (

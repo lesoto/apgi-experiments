@@ -1331,7 +1331,9 @@ class APGIFrameworkGUI(ctk.CTk):
 
         # Title
         title_label = ctk.CTkLabel(
-            section_frame, text="⚙️ Experimental Setup", font=get_font(14, "bold")
+            section_frame,
+            text="Settings: Experimental Setup",
+            font=get_font(14, "bold"),
         )
         title_label.grid(row=0, column=0, pady=(10, 5), sticky="w")
 

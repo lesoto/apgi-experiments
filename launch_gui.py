@@ -46,7 +46,7 @@ class UIConfig:
     FONT_SUBTITLE_SIZE = 13
 
     # Text wrapping
-    DESCRIPTION_WRAP_LENGTH = 800
+    DESCRIPTION_WRAP_LENGTH = 1200  # Increased for better use of width
 
     # Window geometry for info dialog
     INFO_WINDOW_WIDTH = 600
@@ -232,6 +232,13 @@ class ComprehensiveGUILauncher:
                     "icon": "[Rocket]",
                     "command": self.launch_apgi_gui_app,
                 },
+                {
+                    "name": "Experiment Registry GUI",
+                    "file": "GUI-Experiment-Registry.py",
+                    "description": "Experiment registry and management interface",
+                    "icon": "[Registry]",
+                    "command": self.launch_experiment_registry,
+                },
             ],
             "Experiment Management": [
                 {
@@ -249,7 +256,7 @@ class ComprehensiveGUILauncher:
                     "command": self.launch_falsification_gui,
                 },
                 {
-                    "name": "Falsification GUI",
+                    "name": "Falsification GUI (Refactored)",
                     "file": "apps/apgi_falsification_gui_refactored.py",
                     "description": "Falsification testing interface with improved architecture",
                     "icon": "[Test]",
@@ -308,6 +315,27 @@ class ComprehensiveGUILauncher:
                     "icon": "[Data]",
                     "command": self.launch_progress_monitoring,
                 },
+                {
+                    "name": "Coverage Visualization",
+                    "file": "apgi_framework/gui/coverage_visualization.py",
+                    "description": "Test coverage visualization tool",
+                    "icon": "[Coverage]",
+                    "command": self.launch_coverage_visualization,
+                },
+                {
+                    "name": "Enhanced Monitoring Dashboard",
+                    "file": "apgi_framework/gui/enhanced_monitoring_dashboard.py",
+                    "description": "Enhanced monitoring with advanced features",
+                    "icon": "[Monitor]",
+                    "command": self.launch_enhanced_monitoring_dashboard,
+                },
+                {
+                    "name": "Results Viewer",
+                    "file": "apgi_framework/gui/results_viewer.py",
+                    "description": "View and analyze experiment results",
+                    "icon": "[Results]",
+                    "command": self.launch_results_viewer,
+                },
             ],
             "Development & Testing": [
                 {
@@ -318,11 +346,122 @@ class ComprehensiveGUILauncher:
                     "command": self.launch_gui_template,
                 },
                 {
+                    "name": "GUI Template (Main)",
+                    "file": "apps/gui_template.py",
+                    "description": "Main GUI template for development",
+                    "icon": "[Template]",
+                    "command": self.launch_gui_template_main,
+                },
+                {
                     "name": "Error Handling Demo",
                     "file": "apgi_framework/gui/error_handling.py",
                     "description": "Error handling demonstration",
                     "icon": "[Warning]",
                     "command": self.launch_error_handling,
+                },
+            ],
+            "CLI Tools & Utilities": [
+                {
+                    "name": "Comprehensive Test Runner",
+                    "file": "run_tests.py",
+                    "description": "Run comprehensive test suite with GUI integration",
+                    "icon": "[Test]",
+                    "command": self.launch_test_runner,
+                },
+                {
+                    "name": "Experiment Runner (CLI)",
+                    "file": "tools/run_experiments.py",
+                    "description": "Command-line experiment runner with all experiments",
+                    "icon": "[CLI]",
+                    "command": self.launch_experiment_runner_cli,
+                },
+                {
+                    "name": "Framework CLI",
+                    "file": "apgi_framework/cli.py",
+                    "description": "Main command-line interface for APGI Framework",
+                    "icon": "[Terminal]",
+                    "command": self.launch_framework_cli,
+                },
+                {
+                    "name": "Diagnostics CLI",
+                    "file": "apgi_framework/validation/diagnostics_cli.py",
+                    "description": "System diagnostics and validation tools",
+                    "icon": "[Diag]",
+                    "command": self.launch_diagnostics_cli,
+                },
+                {
+                    "name": "Deployment CLI",
+                    "file": "apgi_framework/deployment/cli.py",
+                    "description": "Deployment automation and management",
+                    "icon": "[Deploy]",
+                    "command": self.launch_deployment_cli,
+                },
+            ],
+            "Setup & Deployment": [
+                {
+                    "name": "Setup Script",
+                    "file": "setup.py",
+                    "description": "Installation and setup script",
+                    "icon": "[Setup]",
+                    "command": self.launch_setup_script,
+                },
+                {
+                    "name": "Quick Deploy",
+                    "file": "quick_deploy.py",
+                    "description": "Quick deployment tool",
+                    "icon": "[Quick]",
+                    "command": self.launch_quick_deploy,
+                },
+                {
+                    "name": "Delete Cache",
+                    "file": "delete_pycache.py",
+                    "description": "Clean Python cache files",
+                    "icon": "[Clean]",
+                    "command": self.launch_delete_cache,
+                },
+            ],
+            "Examples & Demos": [
+                {
+                    "name": "Data Loader Example",
+                    "file": "examples/data_loader.py",
+                    "description": "Data loading utility example",
+                    "icon": "[Data]",
+                    "command": self.launch_data_loader_example,
+                },
+                {
+                    "name": "Coverage Collector Demo",
+                    "file": "examples/coverage_collector_demo.py",
+                    "description": "Coverage collection demonstration",
+                    "icon": "[Coverage]",
+                    "command": self.launch_coverage_collector_demo,
+                },
+                {
+                    "name": "Primary Falsification Test",
+                    "file": "examples/01_run_primary_falsification_test.py",
+                    "description": "Run primary falsification test example",
+                    "icon": "[Primary]",
+                    "command": self.launch_primary_falsification_test,
+                },
+                {
+                    "name": "Batch Processing Config",
+                    "file": "examples/02_batch_processing_configurations.py",
+                    "description": "Batch processing configuration example",
+                    "icon": "[Batch]",
+                    "command": self.launch_batch_processing_config,
+                },
+                {
+                    "name": "Custom Analysis Results",
+                    "file": "examples/03_custom_analysis_saved_results.py",
+                    "description": "Custom analysis of saved results",
+                    "icon": "[Analysis]",
+                    "command": self.launch_custom_analysis_results,
+                },
+                {
+                    "name": "Extending Falsification Criteria",
+                    "file": "examples/04_extending_falsification_criteria.py",
+                    "description": "Extend falsification criteria example",
+                    "icon": "[Extend]",
+                    "command": self.launch_extending_falsification_criteria,
                 },
             ],
         }
@@ -363,8 +502,16 @@ class ComprehensiveGUILauncher:
             "<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
         )
 
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.create_window(
+            (0, 0), window=scrollable_frame, anchor="nw", width=canvas.winfo_width()
+        )
         canvas.configure(yscrollcommand=scrollbar.set)
+
+        # Bind canvas resize to update window width
+        def _on_canvas_configure(event):
+            canvas.itemconfig(canvas.find_all()[0], width=event.width)
+
+        canvas.bind("<Configure>", _on_canvas_configure)
 
         # Create application sections
         self.create_application_sections(scrollable_frame)
@@ -407,7 +554,9 @@ class ComprehensiveGUILauncher:
         for category, apps in self.gui_apps.items():
             # Category section
             category_frame = tk.Frame(parent, bg="#ecf0f1")
-            category_frame.pack(fill=tk.X, pady=UIConfig.CATEGORY_SPACING)
+            category_frame.pack(
+                fill=tk.BOTH, expand=True, pady=UIConfig.CATEGORY_SPACING
+            )
 
             # Category header with count
             available_count = sum(
@@ -427,7 +576,7 @@ class ComprehensiveGUILauncher:
 
             # Applications grid
             apps_frame = tk.Frame(category_frame, bg="#ecf0f1")
-            apps_frame.pack(fill=tk.X)
+            apps_frame.pack(fill=tk.BOTH, expand=True)
 
             # Create application cards
             for i, app in enumerate(apps):
@@ -444,7 +593,7 @@ class ComprehensiveGUILauncher:
             highlightthickness=1,
             highlightbackground="#d0d3d4",
         )
-        card_frame.pack(fill=tk.X, pady=8, padx=15)
+        card_frame.pack(fill=tk.X, pady=8, padx=0)
 
         # Check availability
         is_available = self.app_status.get(app["file"], False)
@@ -452,7 +601,8 @@ class ComprehensiveGUILauncher:
         # Card content
         content_frame = tk.Frame(card_frame, bg="#ffffff")
         content_frame.pack(
-            fill=tk.X,
+            fill=tk.BOTH,
+            expand=True,
             padx=UIConfig.CARD_CONTENT_PADDING[0],
             pady=UIConfig.CARD_CONTENT_PADDING[1],
         )
@@ -507,7 +657,7 @@ class ComprehensiveGUILauncher:
             fg="#7f8c8d" if is_available else "#bdc3c7",
             anchor="w",
             justify=tk.LEFT,
-            wraplength=UIConfig.DESCRIPTION_WRAP_LENGTH,
+            wraplength=1000,  # Increased for better width utilization
         )
         desc_label.pack(fill=tk.X)
 
@@ -555,6 +705,12 @@ class ComprehensiveGUILauncher:
     def launch_apgi_gui_app(self):
         """Launch APGI Framework App."""
         self.launch_python_script("apgi_gui/app.py", "APGI Framework App")
+
+    def launch_experiment_registry(self):
+        """Launch Experiment Registry GUI."""
+        self.launch_python_script(
+            "GUI-Experiment-Registry.py", "Experiment Registry GUI"
+        )
 
     def launch_experiment_runner(self):
         """Launch Experiment Runner."""
@@ -623,6 +779,103 @@ class ComprehensiveGUILauncher:
             "apgi_framework/gui/error_handling.py", "Error Handling Demo"
         )
 
+    # Additional GUI launch methods
+    def launch_coverage_visualization(self):
+        """Launch Coverage Visualization."""
+        self.launch_python_script(
+            "apgi_framework/gui/coverage_visualization.py", "Coverage Visualization"
+        )
+
+    def launch_enhanced_monitoring_dashboard(self):
+        """Launch Enhanced Monitoring Dashboard."""
+        self.launch_python_script(
+            "apgi_framework/gui/enhanced_monitoring_dashboard.py",
+            "Enhanced Monitoring Dashboard",
+        )
+
+    def launch_results_viewer(self):
+        """Launch Results Viewer."""
+        self.launch_python_script(
+            "apgi_framework/gui/results_viewer.py", "Results Viewer"
+        )
+
+    def launch_gui_template_main(self):
+        """Launch GUI Template (Main)."""
+        self.launch_python_script("apps/gui_template.py", "GUI Template (Main)")
+
+    # CLI Tools launch methods
+    def launch_test_runner(self):
+        """Launch Comprehensive Test Runner."""
+        self.launch_python_script("run_tests.py", "Comprehensive Test Runner")
+
+    def launch_experiment_runner_cli(self):
+        """Launch Experiment Runner (CLI)."""
+        self.launch_python_script("tools/run_experiments.py", "Experiment Runner (CLI)")
+
+    def launch_framework_cli(self):
+        """Launch Framework CLI."""
+        self.launch_python_script("apgi_framework/cli.py", "Framework CLI")
+
+    def launch_diagnostics_cli(self):
+        """Launch Diagnostics CLI."""
+        self.launch_python_script(
+            "apgi_framework/validation/diagnostics_cli.py", "Diagnostics CLI"
+        )
+
+    def launch_deployment_cli(self):
+        """Launch Deployment CLI."""
+        self.launch_python_script("apgi_framework/deployment/cli.py", "Deployment CLI")
+
+    # Setup & Deployment launch methods
+    def launch_setup_script(self):
+        """Launch Setup Script."""
+        self.launch_python_script("setup.py", "Setup Script")
+
+    def launch_quick_deploy(self):
+        """Launch Quick Deploy."""
+        self.launch_python_script("quick_deploy.py", "Quick Deploy")
+
+    def launch_delete_cache(self):
+        """Launch Delete Cache."""
+        self.launch_python_script("delete_pycache.py", "Delete Cache")
+
+    # Examples & Demos launch methods
+    def launch_data_loader_example(self):
+        """Launch Data Loader Example."""
+        self.launch_python_script("examples/data_loader.py", "Data Loader Example")
+
+    def launch_coverage_collector_demo(self):
+        """Launch Coverage Collector Demo."""
+        self.launch_python_script(
+            "examples/coverage_collector_demo.py", "Coverage Collector Demo"
+        )
+
+    def launch_primary_falsification_test(self):
+        """Launch Primary Falsification Test."""
+        self.launch_python_script(
+            "examples/01_run_primary_falsification_test.py",
+            "Primary Falsification Test",
+        )
+
+    def launch_batch_processing_config(self):
+        """Launch Batch Processing Config."""
+        self.launch_python_script(
+            "examples/02_batch_processing_configurations.py", "Batch Processing Config"
+        )
+
+    def launch_custom_analysis_results(self):
+        """Launch Custom Analysis Results."""
+        self.launch_python_script(
+            "examples/03_custom_analysis_saved_results.py", "Custom Analysis Results"
+        )
+
+    def launch_extending_falsification_criteria(self):
+        """Launch Extending Falsification Criteria."""
+        self.launch_python_script(
+            "examples/04_extending_falsification_criteria.py",
+            "Extending Falsification Criteria",
+        )
+
     def launch_python_script(self, script_path, app_name):
         """Launch a Python script in a separate process."""
         try:
@@ -633,6 +886,11 @@ class ComprehensiveGUILauncher:
             script_full_path = current_dir / script_path
 
             if not script_full_path.exists():
+                messagebox.showerror(
+                    "File Not Found",
+                    f"The script {script_path} was not found.\n"
+                    f"Expected path: {script_full_path}",
+                )
                 return
 
             # Launch in a separate thread to avoid blocking the GUI
@@ -651,18 +909,23 @@ class ComprehensiveGUILauncher:
 
                     time.sleep(0.1)
                     if process.poll() is None:
-                        pass  # Process started successfully
-                    # Wait for process to complete without blocking on output capture
-                    process.wait()
+                        print(f"Successfully launched {app_name}")
+                    else:
+                        stdout, stderr = process.communicate()
+                        error_msg = stderr if stderr else stdout
+                        print(f"Failed to launch {app_name}: {error_msg}")
                 except Exception as e:
-                    # Error occurred but continue silently
-                    pass
+                    messagebox.showerror(
+                        "Launch Error", f"Failed to launch {app_name}: {str(e)}"
+                    )
 
             thread = threading.Thread(target=run_script, daemon=True)
             thread.start()
 
         except Exception as e:
-            pass  # Silent error handling
+            messagebox.showerror(
+                "System Error", f"System error while launching {app_name}: {str(e)}"
+            )
 
     def show_system_info(self):
         """Show system information dialog."""

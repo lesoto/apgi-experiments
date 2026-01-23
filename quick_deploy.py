@@ -17,8 +17,11 @@ sys.path.insert(0, str(Path(__file__).parent))
 try:
     from apgi_framework.deployment.automation_manager import DeploymentAutomationManager
     from apgi_framework.logging.standardized_logging import get_logger
+    from apgi_framework.config.constants import TimingConstants
 except ImportError:
-    print("❌ APGI Framework not found. Please ensure you're in the correct directory.")
+    print(
+        "[ERROR] APGI Framework not found. Please ensure you're in the correct directory."
+    )
     sys.exit(1)
 
 logger = get_logger(__name__)
@@ -32,14 +35,14 @@ class QuickDeploy:
 
     def check_prerequisites(self) -> bool:
         """Check if Docker is available."""
-        print("🔍 Checking prerequisites...")
+        print("Checking prerequisites...")
 
         try:
             # Check Docker
             result = subprocess.run(
                 ["docker", "--version"], capture_output=True, text=True, check=True
             )
-            print(f"✅ Docker found: {result.stdout.strip()}")
+            print(f"[OK] Docker found: {result.stdout.strip()}")
 
             # Check Docker Compose
             result = subprocess.run(
@@ -48,12 +51,12 @@ class QuickDeploy:
                 text=True,
                 check=True,
             )
-            print(f"✅ Docker Compose found: {result.stdout.strip()}")
+            print(f"[OK] Docker Compose found: {result.stdout.strip()}")
 
             return True
 
         except (subprocess.CalledProcessError, FileNotFoundError):
-            print("❌ Docker or Docker Compose not found")
+            print("[ERROR] Docker or Docker Compose not found")
             print(
                 "Please install Docker Desktop from https://www.docker.com/products/docker-desktop"
             )
@@ -61,7 +64,7 @@ class QuickDeploy:
 
     def interactive_setup(self) -> bool:
         """Interactive setup for basic configuration."""
-        print("\n⚙️  Quick Setup")
+        print("\nSetup: Quick Setup")
         print("=" * 50)
 
         # Environment selection
@@ -102,12 +105,12 @@ class QuickDeploy:
         backup_choice = input("Enable automatic backups? [Y/n]: ").strip().lower()
         self.manager.config.backup_enabled = backup_choice != "n"
 
-        print("\n✅ Configuration complete!")
+        print("\n[OK] Configuration complete!")
         return True
 
     def deploy(self) -> bool:
         """Perform the deployment."""
-        print("\n🚀 Starting Deployment...")
+        print("\nStarting Deployment...")
         print("=" * 50)
 
         # Show progress spinner
@@ -123,7 +126,7 @@ class QuickDeploy:
                     if stop_spinner.is_set():
                         break
                     print(f"\r{char} Deploying...", end="", flush=True)
-                    time.sleep(0.1)
+                    time.sleep(TimingConstants.SHORT_DELAY)
 
         spinner_thread = threading.Thread(target=spinner, daemon=True)
         spinner_thread.start()
@@ -134,37 +137,37 @@ class QuickDeploy:
             print("\r" + " " * 30 + "\r", end="")  # Clear spinner line
 
             if success:
-                print("✅ Deployment successful!")
+                print("[OK] Deployment successful!")
                 self.show_success_info()
                 return True
             else:
-                print("❌ Deployment failed!")
+                print("[ERROR] Deployment failed!")
                 self.show_troubleshooting()
                 return False
 
         except Exception as e:
             stop_spinner.set()
-            print(f"\n❌ Deployment error: {e}")
+            print(f"\n[ERROR] Deployment error: {e}")
             self.show_troubleshooting()
             return False
 
     def show_success_info(self):
         """Show success information and next steps."""
-        print("\n🎉 APGI Framework is now running!")
+        print("\n[SUCCESS] APGI Framework is now running!")
         print("=" * 50)
 
         status = self.manager.get_status()
 
-        print(f"📊 Container ID: {status['container_id']}")
+        print(f"Container ID: {status['container_id']}")
         print(
-            f"🌐 Web Interface: http://localhost:{list(self.manager.config.ports.values())[0]}"
+            f"Web Interface: http://localhost:{list(self.manager.config.ports.values())[0]}"
         )
-        print(f"💚 Health Status: {status['health_status']}")
+        print(f"Health Status: {status['health_status']}")
 
         if status["monitoring_active"]:
-            print("📈 Auto-monitoring is enabled")
+            print("Auto-monitoring is enabled")
 
-        print("\n📋 Useful Commands:")
+        print("\nUseful Commands:")
         print("  python quick_deploy.py status    - Check deployment status")
         print("  python quick_deploy.py stop      - Stop the application")
         print("  python quick_deploy.py logs      - View logs")
@@ -181,7 +184,7 @@ class QuickDeploy:
 
     def show_troubleshooting(self):
         """Show troubleshooting information."""
-        print("\n🔧 Troubleshooting")
+        print("\nTroubleshooting")
         print("=" * 50)
 
         print("Common issues and solutions:")
@@ -200,34 +203,34 @@ class QuickDeploy:
         """Show current status."""
         status = self.manager.get_status()
 
-        print("📊 Deployment Status")
+        print("Deployment Status")
         print("=" * 50)
 
         if status["is_running"]:
-            print(f"✅ Running: Yes")
+            print(f"[OK] Running: Yes")
             print(
-                f"🌐 Web Interface: http://localhost:{list(self.manager.config.ports.values())[0]}"
+                f"Web Interface: http://localhost:{list(self.manager.config.ports.values())[0]}"
             )
-            print(f"💚 Health: {status['health_status']}")
-            print(f"📈 CPU: {status['cpu_usage']:.1f}%")
-            print(f"💾 Memory: {status['memory_usage']:.1f}%")
+            print(f"Health: {status['health_status']}")
+            print(f"CPU: {status['cpu_usage']:.1f}%")
+            print(f"Memory: {status['memory_usage']:.1f}%")
 
             if status["error_count"] > 0:
-                print(f"⚠️  Errors: {status['error_count']}")
+                print(f"[WARN] Errors: {status['error_count']}")
         else:
-            print("❌ Running: No")
-            print("🚀 Run 'python quick_deploy.py deploy' to start")
+            print("[ERROR] Running: No")
+            print("Run 'python quick_deploy.py deploy' to start")
 
     def stop_deployment(self):
         """Stop the deployment."""
-        print("🛑 Stopping APGI Framework...")
+        print("Stopping APGI Framework...")
         self.manager.cleanup()
-        print("✅ Stopped successfully")
+        print("[OK] Stopped successfully")
 
     def show_logs(self):
         """Show logs."""
         if not self.manager._is_container_running():
-            print("❌ Container is not running")
+            print("[ERROR] Container is not running")
             return
 
         print("📄 Showing logs (Ctrl+C to stop)...")
@@ -243,7 +246,7 @@ def main():
         # Default deployment flow
         deployer = QuickDeploy()
 
-        print("🎯 APGI Framework Quick Deploy")
+        print("APGI Framework Quick Deploy")
         print("=" * 50)
         print(
             "This script will help you deploy APGI Framework with minimal configuration."
@@ -280,7 +283,7 @@ def main():
         elif command == "logs":
             deployer.show_logs()
         elif command == "help":
-            print("🎯 APGI Framework Quick Deploy")
+            print("APGI Framework Quick Deploy")
             print("=" * 50)
             print("Commands:")
             print("  python quick_deploy.py deploy   - Deploy the application")
@@ -289,7 +292,7 @@ def main():
             print("  python quick_deploy.py logs     - View logs")
             print("  python quick_deploy.py help     - Show this help")
         else:
-            print(f"❌ Unknown command: {command}")
+            print(f"[ERROR] Unknown command: {command}")
             print("Run 'python quick_deploy.py help' for available commands")
 
 

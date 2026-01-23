@@ -296,9 +296,7 @@ class ThemeManager:
             accelerator="Ctrl+D",
         )
 
-    def create_theme_selector(
-        self, parent: Union[tk.Widget, ctk.CTkWidget]
-    ) -> Union[tk.Widget, ctk.CTkWidget]:
+    def create_theme_selector(self, parent) -> Any:
         """Create a theme selector widget."""
         try:
             import customtkinter as ctk
@@ -363,9 +361,7 @@ class ThemeManager:
             theme_name = theme_values[index]
             self.set_theme(theme_name)
 
-    def apply_theme_to_widget(
-        self, widget: Union[tk.Widget, ctk.CTkWidget], widget_type: str = "default"
-    ) -> None:
+    def apply_theme_to_widget(self, widget, widget_type: str = "default") -> None:
         """Apply current theme colors to a specific widget."""
         colors = self.get_current_colors()
 
@@ -450,9 +446,7 @@ def get_system_theme_preference() -> str:
     return "light"  # Default to light
 
 
-def create_theme_dialog(
-    parent: Union[tk.Widget, ctk.CTkWidget], theme_manager: ThemeManager
-) -> tk.Toplevel:
+def create_theme_dialog(parent, theme_manager: ThemeManager) -> tk.Toplevel:
     """Create a theme selection dialog."""
     dialog = tk.Toplevel(parent)
     dialog.title("Select Theme")

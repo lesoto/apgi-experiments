@@ -1,0 +1,223 @@
+# Testing Configuration for APGI Framework
+# This file provides centralized configuration for all testing activities
+
+[tool.pytest.ini_options]
+# Test discovery patterns
+testpaths = ["tests", "research/*/tests", "apgi_framework/tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["^Test"]
+python_functions = ["test_*"]
+
+# Add project root to Python path
+pythonpath = ["."]
+
+# Test execution settings
+addopts = [
+    "-v",
+    "--tb=short", 
+    "--strict-markers",
+    "--disable-warnings",
+    "--color=yes",
+    "--ignore=apgi_framework/utils/test_utils.py",
+    "--ignore=apgi_framework/testing/error_handler.py"
+]
+
+# Test markers
+markers = [
+    "unit: Unit tests (fast, isolated)",
+    "integration: Integration tests (slower, may use external resources)",
+    "research: Research-specific tests (domain-specific experiments)",
+    "core: Core framework tests (library code)",
+    "slow: Tests that take more than 1 second",
+    "neural: Tests requiring neural data processing",
+    "behavioral: Tests for behavioral experiments",
+    "gui: GUI component tests",
+    "performance: Performance and benchmark tests",
+    "smoke: Quick smoke tests"
+]
+
+# Minimum version
+minversion = "6.0"
+
+# Timeout settings
+timeout = 300
+
+# Logging
+log_cli = true
+log_cli_level = "INFO"
+log_cli_format = "%(asctime)s [%(levelname)8s] %(name)s: %(message)s"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+
+[tool.coverage.run]
+source = ["apgi_framework", "research"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/migrations/*",
+    "*/venv/*",
+    "*/env/*"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+show_missing = true
+precision = 2
+
+[tool.coverage.html]
+directory = "coverage_html_report"
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+# Testing Categories Configuration
+[testing.categories.unit]
+description = "Fast, isolated unit tests"
+timeout = 60
+parallel = true
+max_workers = 4
+
+[testing.categories.integration]
+description = "Slower integration tests with external dependencies"
+timeout = 300
+parallel = false
+
+[testing.categories.gui]
+description = "GUI component tests"
+timeout = 120
+parallel = false
+display_required = true
+
+[testing.categories.performance]
+description = "Performance benchmarks and load tests"
+timeout = 600
+parallel = false
+baseline_required = true
+
+[testing.categories.research]
+description = "Domain-specific research experiments"
+timeout = 1800
+parallel = false
+data_required = true
+
+# Test Organization Structure
+[testing.structure]
+# Main test directories
+main_dirs = ["tests", "apgi_framework/tests", "research/*/tests"]
+
+# Test categorization by directory pattern
+patterns = [
+    {pattern = "tests/unit/*", category = "unit"},
+    {pattern = "tests/integration/*", category = "integration"},
+    {pattern = "tests/gui/*", category = "gui"},
+    {pattern = "tests/performance/*", category = "performance"},
+    {pattern = "benchmarks/*", category = "performance"},
+    {pattern = "research/*/tests/*", category = "research"}
+]
+
+# Reporting Configuration
+[testing.reporting]
+# Default report formats
+formats = ["json", "html", "console"]
+
+# Report output directory
+output_dir = "test_reports"
+
+# Include coverage in reports
+include_coverage = true
+
+# Include performance metrics
+include_performance = true
+
+# Include test execution timeline
+include_timeline = true
+
+# Notification settings
+[testing.notifications]
+# Enable desktop notifications
+enable_desktop = false
+
+# Email settings for CI/CD
+email_on_failure = false
+email_recipients = []
+
+# Slack integration
+slack_webhook = ""
+slack_channel = "#testing"
+
+# Continuous Integration Settings
+[testing.ci]
+# Default CI platform
+platform = "github"  # github, gitlab, jenkins
+
+# Artifacts to upload
+artifacts = [
+    "test_reports/*",
+    "coverage_html_report/*",
+    "coverage.xml"
+]
+
+# Test result thresholds for passing
+[testing.ci.thresholds]
+min_coverage_percent = 80
+max_test_duration_seconds = 1800
+max_failures = 0
+max_errors = 0
+
+# Parallel execution settings
+[testing.parallel]
+# Enable parallel test execution by default
+enabled = true
+
+# Default number of workers (auto-detect if not specified)
+default_workers = "auto"
+
+# Maximum number of workers
+max_workers = 8
+
+# Categories that should not run in parallel
+exclude_categories = ["integration", "gui", "performance"]
+
+# Test Data Management
+[testing.data]
+# Directory for test data
+data_dir = "test_data"
+
+# Directory for test fixtures
+fixtures_dir = "test_fixtures"
+
+# Auto-generate test data
+auto_generate = false
+
+# Clean up test data after runs
+cleanup_after = true
+
+# Test Environment Configuration
+[testing.environment]
+# Default test environment
+default_env = "test"
+
+# Environment-specific settings
+[testing.environment.test]
+database_url = "sqlite:///:memory:"
+debug = true
+log_level = "DEBUG"
+
+[testing.environment.ci]
+database_url = "postgresql://test:test@localhost/test_db"
+debug = false
+log_level = "INFO"
+
+# Mock external services in CI
+mock_external = true

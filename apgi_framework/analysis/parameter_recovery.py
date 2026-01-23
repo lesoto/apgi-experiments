@@ -16,6 +16,7 @@ import pandas as pd
 from ..logging.standardized_logging import get_logger
 from .bayesian_models import ParameterEstimates
 from .parameter_estimation import JointParameterFitter
+from ..utils.progress_monitor import ProgressMonitor
 
 
 @dataclass
@@ -290,6 +291,10 @@ class SyntheticDataGenerator:
         """
         datasets = []
 
+        # Progress tracking for dataset generation
+        progress = ProgressMonitor(n_datasets, "Generating synthetic datasets")
+        progress.start()
+
         for i in range(n_datasets):
             # Sample ground truth parameters
             theta0 = self.rng.uniform(*theta0_range)
@@ -304,7 +309,9 @@ class SyntheticDataGenerator:
             )
 
             datasets.append((ground_truth, detection, heartbeat, oddball))
+            progress.update(message=f"Dataset {i+1}/{n_datasets}")
 
+        progress.complete()
         return datasets
 
 

@@ -16,6 +16,7 @@ import json
 import subprocess
 import threading
 import importlib
+from typing import List, Dict, Any, Optional
 
 # Add project root to path for tooltip import
 project_root = Path(__file__).parent

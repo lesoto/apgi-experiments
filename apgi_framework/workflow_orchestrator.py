@@ -7,17 +7,15 @@ aggregation with detailed reporting.
 """
 
 import logging
-from typing import Dict, Any, List, Optional, Tuple, Callable
+from typing import Dict, Any, List, Optional, Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
 import json
-import asyncio
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 
 from .main_controller import MainApplicationController
-from .config import ConfigManager
 from .exceptions import APGIFrameworkError, ValidationError
 
 

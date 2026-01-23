@@ -171,7 +171,9 @@ def analyze_statistical_power(results: List[Dict[str, Any]]):
 
     # Identify underpowered experiments
     if low_power > 0:
-        logger.info(f"\n⚠️  Warning: {low_power} experiments had low statistical power")
+        logger.info(
+            f"\n[WARN] Warning: {low_power} experiments had low statistical power"
+        )
         logger.info("  Consider increasing sample size for future experiments")
 
     logger.info("=" * 60 + "\n")
@@ -473,7 +475,7 @@ if __name__ == "__main__":
     results = load_saved_results("results")
 
     if not results:
-        print("\n⚠️  No saved results found. Run some experiments first!")
+        print("\n[WARN] No saved results found. Run some experiments first!")
         print("Try running: python examples/01_run_primary_falsification_test.py")
         sys.exit(0)
 

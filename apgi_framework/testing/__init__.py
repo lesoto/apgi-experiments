@@ -26,6 +26,24 @@ from .persistence import (
     store_test_results,
     get_test_performance_report,
 )
+from .ci_integrator import (
+    CIIntegrator,
+    CIConfiguration,
+    ChangeImpact,
+    ChangeAnalyzer,
+    PreCommitHookManager,
+    TestExecutionResult,
+)
+from .notification_manager import (
+    NotificationManager,
+    NotificationChannel,
+    TestFailureNotification,
+    TestHistoryTracker,
+    create_email_channel,
+    create_slack_channel,
+    create_teams_channel,
+    create_file_channel,
+)
 
 __all__ = [
     "BatchTestRunner",
@@ -42,4 +60,18 @@ __all__ = [
     "get_persistence_manager",
     "store_test_results",
     "get_test_performance_report",
+    "CIIntegrator",
+    "CIConfiguration",
+    "ChangeImpact",
+    "ChangeAnalyzer",
+    "PreCommitHookManager",
+    "TestExecutionResult",
+    "NotificationManager",
+    "NotificationChannel",
+    "TestFailureNotification",
+    "TestHistoryTracker",
+    "create_email_channel",
+    "create_slack_channel",
+    "create_teams_channel",
+    "create_file_channel",
 ]

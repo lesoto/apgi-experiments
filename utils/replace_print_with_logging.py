@@ -109,15 +109,14 @@ class PrintStatementTransformer(ast.NodeTransformer):
 
 
 def replace_print_in_file(file_path: Path, dry_run: bool = True) -> Dict[str, Any]:
-    """
-    Replace print statements in a Python file with logging calls.
+    """Replace print statements in a Python file with logging calls.
 
     Args:
-        file_path: Path to Python file
-        dry_run: If True, only report changes without modifying file
+        file_path: Path to Python file.
+        dry_run: If True, only report changes without modifying file.
 
     Returns:
-        Dictionary with transformation results
+        Dictionary with transformation results.
     """
     result = {
         "file_path": str(file_path),
@@ -215,14 +214,13 @@ class PrintStatementFinder(ast.NodeVisitor):
 
 
 def scan_directory_for_prints(directory: Path) -> Dict[str, Any]:
-    """
-    Scan directory for print statements in Python files.
+    """Scan directory for print statements in Python files.
 
     Args:
-        directory: Directory to scan
+        directory: Directory to scan.
 
     Returns:
-        Dictionary with scan results
+        Dictionary with scan results.
     """
     results = {
         "directory": str(directory),

@@ -23,6 +23,7 @@ from pathlib import Path
 import json
 
 from ..exceptions import VisualizationError, ValidationError
+from ..config.constants import VisualizationConstants
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +109,9 @@ class DataVisualizer:
                         mode="markers",
                         name=f"{col1} vs {col2}",
                         marker=dict(
-                            size=8, color=numeric_data[col1], colorscale="Viridis"
+                            size=VisualizationConstants.DEFAULT_MARKER_SIZE,
+                            color=numeric_data[col1],
+                            colorscale="Viridis",
                         ),
                     ),
                     row=1,
@@ -137,7 +140,7 @@ class DataVisualizer:
                 fig.add_trace(
                     go.Histogram(
                         x=numeric_data[col].dropna(),
-                        nbinsx=30,
+                        nbinsx=VisualizationConstants.DEFAULT_HISTOGRAM_BINS,
                         name=f"{col} Distribution",
                         marker_color="lightblue",
                     ),
@@ -179,7 +182,10 @@ class DataVisualizer:
 
             # Update layout
             fig.update_layout(
-                title=title, height=800, showlegend=True, template="plotly_white"
+                title=title,
+                height=VisualizationConstants.DEFAULT_PLOT_HEIGHT,
+                showlegend=True,
+                template=VisualizationConstants.DEFAULT_TEMPLATE,
             )
 
             # Save HTML if requested

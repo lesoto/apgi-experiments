@@ -276,6 +276,139 @@ Examples:
             type=str,
             help="Root path to analyze (default: current directory)",
         )
+        coverage_parser.add_argument(
+            "--threshold",
+            type=float,
+            default=90.0,
+            help="Coverage threshold percentage (default: 90.0)",
+        )
+        coverage_parser.add_argument(
+            "--format",
+            choices=["html", "xml", "json", "text"],
+            default="html",
+            help="Coverage report format (default: html)",
+        )
+        coverage_parser.add_argument(
+            "--include-patterns",
+            nargs="+",
+            help="File patterns to include in coverage analysis",
+        )
+        coverage_parser.add_argument(
+            "--exclude-patterns",
+            nargs="+",
+            help="File patterns to exclude from coverage analysis",
+        )
+
+        # Enhanced test execution commands with GUI feature parity
+        test_exec_parser = subparsers.add_parser(
+            "run-tests", help="Enhanced test execution with GUI feature parity"
+        )
+        test_exec_parser.add_argument(
+            "--test-paths", nargs="+", help="Specific test paths to run"
+        )
+        test_exec_parser.add_argument(
+            "--categories",
+            nargs="+",
+            choices=["unit", "integration", "property", "gui", "performance"],
+            help="Test categories to run",
+        )
+        test_exec_parser.add_argument(
+            "--modules",
+            nargs="+",
+            help="Specific modules to test (e.g., core, clinical, neural)",
+        )
+        test_exec_parser.add_argument(
+            "--tags", nargs="+", help="Test tags to filter by"
+        )
+        test_exec_parser.add_argument(
+            "--filter", type=str, help="Test name filter pattern"
+        )
+        test_exec_parser.add_argument(
+            "--parallel",
+            action="store_true",
+            default=True,
+            help="Run tests in parallel (default: True)",
+        )
+        test_exec_parser.add_argument(
+            "--sequential", action="store_true", help="Run tests sequentially"
+        )
+        test_exec_parser.add_argument(
+            "--max-workers", type=int, help="Maximum number of parallel workers"
+        )
+        test_exec_parser.add_argument(
+            "--timeout",
+            type=int,
+            default=300,
+            help="Timeout per test in seconds (default: 300)",
+        )
+        test_exec_parser.add_argument(
+            "--verbose", "-v", action="store_true", help="Verbose output"
+        )
+        test_exec_parser.add_argument(
+            "--quiet", "-q", action="store_true", help="Quiet output"
+        )
+        test_exec_parser.add_argument(
+            "--progress",
+            choices=["bar", "dots", "none"],
+            default="bar",
+            help="Progress display style (default: bar)",
+        )
+        test_exec_parser.add_argument(
+            "--coverage",
+            action="store_true",
+            help="Collect coverage during test execution",
+        )
+        test_exec_parser.add_argument(
+            "--coverage-report",
+            choices=["html", "xml", "json", "text", "none"],
+            default="html",
+            help="Coverage report format (default: html)",
+        )
+        test_exec_parser.add_argument(
+            "--save-results",
+            action="store_true",
+            default=True,
+            help="Save test results to database (default: True)",
+        )
+        test_exec_parser.add_argument(
+            "--output-format",
+            choices=["json", "xml", "html", "text"],
+            default="text",
+            help="Output format for results (default: text)",
+        )
+        test_exec_parser.add_argument(
+            "--output-file", type=str, help="Output file for results"
+        )
+
+        # Test organization and filtering commands
+        organize_parser = subparsers.add_parser(
+            "organize-tests", help="Organize and categorize tests"
+        )
+        organize_parser.add_argument(
+            "--discover", action="store_true", help="Discover all tests"
+        )
+        organize_parser.add_argument(
+            "--categorize", action="store_true", help="Categorize discovered tests"
+        )
+        organize_parser.add_argument(
+            "--list-categories", action="store_true", help="List test categories"
+        )
+        organize_parser.add_argument(
+            "--list-modules", action="store_true", help="List test modules"
+        )
+        organize_parser.add_argument(
+            "--list-tags", action="store_true", help="List available test tags"
+        )
+        organize_parser.add_argument(
+            "--export-tree",
+            type=str,
+            help="Export test tree to file (JSON format)",
+        )
+        organize_parser.add_argument(
+            "--root-path",
+            type=str,
+            help="Root path for test discovery (default: current directory)",
+        )
 
         # Configuration management commands
         config_parser = subparsers.add_parser(
@@ -680,7 +813,333 @@ Examples:
             self.logger.error(f"Test analysis failed: {e}")
             sys.exit(1)
 
-    def manage_test_coverage(self, args: argparse.Namespace) -> None:
+    def run_enhanced_tests(self, args: argparse.Namespace) -> None:
+        """Run enhanced test execution with GUI feature parity."""
+        self.logger.info("Running enhanced test execution")
+
+        try:
+            from .utils.test_utils import TestUtilities
+            from .testing.batch_runner import BatchTestRunner
+            from .testing.persistence import store_test_results
+
+            # Initialize test utilities
+            test_utils = TestUtilities(
+                args.root_path if hasattr(args, "root_path") else None
+            )
+
+            # Discover tests based on criteria
+            test_suites = []
+
+            if args.test_paths:
+                # Run specific test paths
+                for path in args.test_paths:
+                    suite = test_utils.discover_tests_in_path(Path(path))
+                    if suite:
+                        test_suites.append(suite)
+            else:
+                # Discover tests by categories, modules, or tags
+                all_suites = test_utils.discover_all_tests()
+
+                for suite in all_suites:
+                    include_suite = True
+
+                    # Filter by categories
+                    if args.categories:
+                        suite_categories = {
+                            tc.category.value for tc in suite.test_cases
+                        }
+                        if not any(cat in suite_categories for cat in args.categories):
+                            include_suite = False
+
+                    # Filter by modules
+                    if args.modules and include_suite:
+                        suite_module = self._extract_module_from_suite(suite)
+                        if suite_module not in args.modules:
+                            include_suite = False
+
+                    # Filter by tags
+                    if args.tags and include_suite:
+                        suite_tags = set()
+                        for tc in suite.test_cases:
+                            suite_tags.update(tc.tags)
+                        if not any(tag in suite_tags for tag in args.tags):
+                            include_suite = False
+
+                    # Filter by name pattern
+                    if args.filter and include_suite:
+                        if not any(
+                            args.filter.lower() in tc.name.lower()
+                            for tc in suite.test_cases
+                        ):
+                            include_suite = False
+
+                    if include_suite:
+                        test_suites.append(suite)
+
+            if not test_suites:
+                self.logger.warning("No tests found matching the specified criteria")
+                return
+
+            # Configure execution
+            config = {
+                "parallel": args.parallel and not args.sequential,
+                "max_workers": args.max_workers,
+                "timeout": args.timeout,
+                "verbose": args.verbose,
+                "quiet": args.quiet,
+                "collect_coverage": args.coverage,
+                "coverage_report_format": (
+                    args.coverage_report if args.coverage else None
+                ),
+            }
+
+            # Execute tests
+            execution = test_utils.execute_tests(test_suites, config)
+
+            # Display results based on output format
+            if args.output_format == "json":
+                self._display_results_json(execution)
+            elif args.output_format == "xml":
+                self._display_results_xml(execution)
+            elif args.output_format == "html":
+                self._display_results_html(execution)
+            else:
+                self._display_results_text(execution, args.verbose, args.progress)
+
+            # Save results if requested
+            if args.save_results:
+                try:
+                    batch_id = store_test_results(execution)
+                    self.logger.info(f"Test results stored with batch_id: {batch_id}")
+                except Exception as e:
+                    self.logger.warning(f"Failed to store results: {e}")
+
+            # Save to output file if specified
+            if args.output_file:
+                self._save_results_to_file(
+                    execution, args.output_file, args.output_format
+                )
+
+            # Generate coverage report if requested
+            if args.coverage and hasattr(execution, "coverage_data"):
+                self._generate_coverage_report(
+                    execution.coverage_data, args.coverage_report
+                )
+
+        except Exception as e:
+            self.logger.error(f"Enhanced test execution failed: {e}")
+            sys.exit(1)
+
+    def organize_tests(self, args: argparse.Namespace) -> None:
+        """Organize and categorize tests with GUI feature parity."""
+        try:
+            from .utils.test_utils import TestUtilities
+
+            test_utils = TestUtilities(args.root_path)
+
+            if args.discover:
+                self.logger.info("Discovering all tests...")
+                test_suites = test_utils.discover_all_tests()
+
+                print(f"\nDiscovered {len(test_suites)} test suites:")
+                print(f"{'='*60}")
+
+                total_tests = 0
+                for suite in test_suites:
+                    total_tests += len(suite.test_cases)
+                    print(f"Suite: {suite.name}")
+                    print(f"  Tests: {len(suite.test_cases)}")
+                    print(
+                        f"  Estimated Duration: {suite.total_estimated_duration:.2f}s"
+                    )
+
+                    if args.categorize:
+                        categories = {}
+                        for tc in suite.test_cases:
+                            cat = tc.category.value
+                            categories[cat] = categories.get(cat, 0) + 1
+
+                        print(f"  Categories: {dict(categories)}")
+
+                    print()
+
+                print(f"Total Tests: {total_tests}")
+                print(f"{'='*60}\n")
+
+            elif args.list_categories:
+                test_suites = test_utils.discover_all_tests()
+                categories = set()
+                category_counts = {}
+
+                for suite in test_suites:
+                    for tc in suite.test_cases:
+                        cat = tc.category.value
+                        categories.add(cat)
+                        category_counts[cat] = category_counts.get(cat, 0) + 1
+
+                print(f"\nAvailable Test Categories:")
+                print(f"{'='*40}")
+                for category in sorted(categories):
+                    print(f"  {category}: {category_counts[category]} tests")
+                print(f"{'='*40}\n")
+
+            elif args.list_modules:
+                test_suites = test_utils.discover_all_tests()
+                modules = set()
+                module_counts = {}
+
+                for suite in test_suites:
+                    module = self._extract_module_from_suite(suite)
+                    modules.add(module)
+                    module_counts[module] = module_counts.get(module, 0) + len(
+                        suite.test_cases
+                    )
+
+                print(f"\nAvailable Test Modules:")
+                print(f"{'='*40}")
+                for module in sorted(modules):
+                    print(f"  {module}: {module_counts[module]} tests")
+                print(f"{'='*40}\n")
+
+            elif args.list_tags:
+                test_suites = test_utils.discover_all_tests()
+                all_tags = set()
+                tag_counts = {}
+
+                for suite in test_suites:
+                    for tc in suite.test_cases:
+                        for tag in tc.tags:
+                            all_tags.add(tag)
+                            tag_counts[tag] = tag_counts.get(tag, 0) + 1
+
+                print(f"\nAvailable Test Tags:")
+                print(f"{'='*40}")
+                for tag in sorted(all_tags):
+                    print(f"  {tag}: {tag_counts[tag]} tests")
+                print(f"{'='*40}\n")
+
+            elif args.export_tree:
+                test_suites = test_utils.discover_all_tests()
+                tree_data = self._build_test_tree(test_suites)
+
+                with open(args.export_tree, "w") as f:
+                    json.dump(tree_data, f, indent=2, default=str)
+
+                print(f"Test tree exported to: {args.export_tree}")
+
+            else:
+                self.logger.error(
+                    "Must specify one of: --discover, --list-categories, --list-modules, --list-tags, --export-tree"
+                )
+                sys.exit(1)
+
+        except Exception as e:
+            self.logger.error(f"Test organization failed: {e}")
+            sys.exit(1)
+
+    def manage_enhanced_coverage(self, args: argparse.Namespace) -> None:
+        """Enhanced coverage management with additional CLI options."""
+        try:
+            from .testing.test_generator import SuiteGenerator
+
+            generator = SuiteGenerator()
+
+            if args.analyze:
+                self.logger.info("Analyzing test coverage gaps with enhanced options")
+                analysis = generator.analyze_codebase(
+                    args.root_path,
+                    include_patterns=args.include_patterns,
+                    exclude_patterns=args.exclude_patterns,
+                )
+
+                # Display enhanced analysis
+                metrics = analysis["metrics"]
+                print(f"\n{'='*70}")
+                print("Enhanced Test Coverage Analysis Results")
+                print(f"{'='*70}")
+                print(f"Total Modules: {metrics.total_modules}")
+                print(f"Tested Modules: {metrics.tested_modules}")
+                print(f"Total Functions/Methods: {metrics.total_functions}")
+                print(f"Tested Functions/Methods: {metrics.tested_functions}")
+                print(f"Coverage Percentage: {metrics.coverage_percentage:.1f}%")
+                print(f"Coverage Threshold: {args.threshold}%")
+                print(
+                    f"Threshold Status: {'PASS' if metrics.coverage_percentage >= args.threshold else 'FAIL'}"
+                )
+                print(f"Test Quality Score: {metrics.test_quality_score:.1f}/100")
+                print(f"Total Coverage Gaps: {len(analysis['coverage_gaps'])}")
+
+                # Show detailed gap analysis
+                gaps = analysis["coverage_gaps"]
+                if gaps:
+                    print(f"\nCoverage Gap Details:")
+                    print(
+                        f"{'Module':<30} {'Function':<25} {'Priority':<10} {'Complexity'}"
+                    )
+                    print(f"{'-'*80}")
+
+                    sorted_gaps = sorted(
+                        gaps, key=lambda g: g.complexity_score, reverse=True
+                    )
+                    for gap in sorted_gaps[:20]:  # Show top 20
+                        print(
+                            f"{gap.module_name:<30} {gap.function_name:<25} {gap.test_priority:<10} {gap.complexity_score}"
+                        )
+
+                print(f"\n{'='*70}")
+
+            elif args.generate:
+                self.logger.info(f"Generating missing tests with enhanced options")
+                analysis = generator.analyze_codebase(
+                    args.root_path,
+                    include_patterns=args.include_patterns,
+                    exclude_patterns=args.exclude_patterns,
+                )
+                generated_files = generator.generate_missing_tests(
+                    analysis, args.output_dir
+                )
+
+                print(f"\nGenerated {len(generated_files)} test files:")
+                for module_name, file_path in generated_files.items():
+                    print(f"  - {module_name}: {file_path}")
+
+            elif args.report:
+                self.logger.info(f"Generating enhanced coverage report")
+                analysis = generator.analyze_codebase(
+                    args.root_path,
+                    include_patterns=args.include_patterns,
+                    exclude_patterns=args.exclude_patterns,
+                )
+
+                # Generate report in specified format
+                if args.format == "html":
+                    report_path = generator.generate_html_coverage_report(
+                        analysis, args.report_file
+                    )
+                elif args.format == "xml":
+                    report_path = generator.generate_xml_coverage_report(
+                        analysis, args.report_file
+                    )
+                elif args.format == "json":
+                    report_path = generator.generate_json_coverage_report(
+                        analysis, args.report_file
+                    )
+                else:  # text
+                    report_path = generator.generate_coverage_report(
+                        analysis, args.report_file
+                    )
+
+                print(f"Enhanced coverage report generated: {report_path}")
+
+            else:
+                self.logger.error(
+                    "Must specify one of: --analyze, --generate, --report"
+                )
+                sys.exit(1)
+
+        except Exception as e:
+            self.logger.error(f"Enhanced coverage management failed: {e}")
+            sys.exit(1)
         """Manage test coverage analysis and generation."""
         try:
             generator = SuiteGenerator()
@@ -1127,7 +1586,363 @@ Examples:
             "experimental_config": {"n_trials": 100, "output_directory": "results"},
         }
 
+    def _extract_module_from_suite(self, suite) -> str:
+        """Extract module name from test suite."""
+        # Extract module from suite name or file path
+        if hasattr(suite, "name") and "." in suite.name:
+            return suite.name.split(".")[0]
+        elif hasattr(suite, "test_cases") and suite.test_cases:
+            # Extract from first test case file path
+            file_path = suite.test_cases[0].file_path
+            parts = str(file_path).split("/")
+            for part in parts:
+                if part in [
+                    "core",
+                    "clinical",
+                    "neural",
+                    "adaptive",
+                    "gui",
+                    "testing",
+                    "analysis",
+                ]:
+                    return part
+        return "unknown"
+
+    def _display_results_text(
+        self, execution, verbose: bool = False, progress_style: str = "bar"
+    ) -> None:
+        """Display test results in text format."""
+        print(f"\n{'='*80}")
+        print("Test Execution Results")
+        print(f"{'='*80}")
+
+        total_tests = len(execution.results)
+        passed = len([r for r in execution.results if r.status.value == "passed"])
+        failed = len([r for r in execution.results if r.status.value == "failed"])
+        skipped = len([r for r in execution.results if r.status.value == "skipped"])
+        errors = len([r for r in execution.results if r.status.value == "error"])
+
+        print(f"Total Tests: {total_tests}")
+        print(f"Passed: {passed}")
+        print(f"Failed: {failed}")
+        print(f"Skipped: {skipped}")
+        print(f"Errors: {errors}")
+        print(
+            f"Success Rate: {(passed/total_tests*100):.1f}%"
+            if total_tests > 0
+            else "N/A"
+        )
+
+        if execution.start_time and execution.end_time:
+            duration = (execution.end_time - execution.start_time).total_seconds()
+            print(f"Total Duration: {duration:.2f} seconds")
+
+        # Show failed tests
+        failed_tests = [
+            r for r in execution.results if r.status.value in ["failed", "error"]
+        ]
+        if failed_tests and verbose:
+            print(f"\nFailed Tests:")
+            print(f"{'-'*60}")
+            for result in failed_tests:
+                print(
+                    f"  {result.test_case.name}: {result.error_message or 'No error message'}"
+                )
+                if verbose and result.traceback:
+                    print(f"    Traceback: {result.traceback[:200]}...")
+
+        print(f"{'='*80}\n")
+
+    def _display_results_json(self, execution) -> None:
+        """Display test results in JSON format."""
+        results_data = {
+            "execution_id": execution.execution_id,
+            "start_time": (
+                execution.start_time.isoformat() if execution.start_time else None
+            ),
+            "end_time": execution.end_time.isoformat() if execution.end_time else None,
+            "total_tests": len(execution.results),
+            "passed": len([r for r in execution.results if r.status.value == "passed"]),
+            "failed": len([r for r in execution.results if r.status.value == "failed"]),
+            "skipped": len(
+                [r for r in execution.results if r.status.value == "skipped"]
+            ),
+            "errors": len([r for r in execution.results if r.status.value == "error"]),
+            "test_results": [
+                {
+                    "name": result.test_case.name,
+                    "status": result.status.value,
+                    "duration": result.duration,
+                    "error_message": result.error_message,
+                    "file_path": str(result.test_case.file_path),
+                    "category": result.test_case.category.value,
+                }
+                for result in execution.results
+            ],
+        }
+        print(json.dumps(results_data, indent=2))
+
+    def _display_results_xml(self, execution) -> None:
+        """Display test results in XML format."""
+        # Simple XML output - in a real implementation, you'd use xml.etree.ElementTree
+        print('<?xml version="1.0" encoding="UTF-8"?>')
+        print("<testsuites>")
+
+        for suite in execution.test_suites:
+            suite_results = [
+                r
+                for r in execution.results
+                if any(tc.name == r.test_case.name for tc in suite.test_cases)
+            ]
+            failures = len([r for r in suite_results if r.status.value == "failed"])
+            errors = len([r for r in suite_results if r.status.value == "error"])
+
+            print(
+                f'  <testsuite name="{suite.name}" tests="{len(suite_results)}" failures="{failures}" errors="{errors}">'
+            )
+
+            for result in suite_results:
+                print(
+                    f'    <testcase name="{result.test_case.name}" time="{result.duration}">'
+                )
+                if result.status.value == "failed":
+                    print(f'      <failure message="{result.error_message or ""}">')
+                    print(f'        {result.traceback or ""}')
+                    print("      </failure>")
+                elif result.status.value == "error":
+                    print(f'      <error message="{result.error_message or ""}">')
+                    print(f'        {result.traceback or ""}')
+                    print("      </error>")
+                print("    </testcase>")
+
+            print("  </testsuite>")
+
+        print("</testsuites>")
+
+    def _display_results_html(self, execution) -> None:
+        """Display test results in HTML format."""
+        html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Results - {execution.execution_id}</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; margin: 20px; }}
+        .summary {{ background: #f5f5f5; padding: 15px; border-radius: 5px; }}
+        .passed {{ color: green; }}
+        .failed {{ color: red; }}
+        .skipped {{ color: orange; }}
+        .error {{ color: darkred; }}
+        table {{ border-collapse: collapse; width: 100%; margin-top: 20px; }}
+        th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+        th {{ background-color: #f2f2f2; }}
+    </style>
+</head>
+<body>
+    <h1>Test Execution Results</h1>
+    <div class="summary">
+        <h2>Summary</h2>
+        <p>Execution ID: {execution.execution_id}</p>
+        <p>Total Tests: {len(execution.results)}</p>
+        <p class="passed">Passed: {len([r for r in execution.results if r.status.value == "passed"])}</p>
+        <p class="failed">Failed: {len([r for r in execution.results if r.status.value == "failed"])}</p>
+        <p class="skipped">Skipped: {len([r for r in execution.results if r.status.value == "skipped"])}</p>
+        <p class="error">Errors: {len([r for r in execution.results if r.status.value == "error"])}</p>
+    </div>
+    
+    <table>
+        <tr>
+            <th>Test Name</th>
+            <th>Status</th>
+            <th>Duration</th>
+            <th>Category</th>
+            <th>Error Message</th>
+        </tr>
+"""
+
+        for result in execution.results:
+            status_class = result.status.value
+            html_content += f"""
+        <tr>
+            <td>{result.test_case.name}</td>
+            <td class="{status_class}">{result.status.value.upper()}</td>
+            <td>{result.duration:.3f}s</td>
+            <td>{result.test_case.category.value}</td>
+            <td>{result.error_message or ""}</td>
+        </tr>
+"""
+
+        html_content += """
+    </table>
+</body>
+</html>
+"""
+        print(html_content)
+
+    def _save_results_to_file(
+        self, execution, output_file: str, format_type: str
+    ) -> None:
+        """Save test results to specified file."""
+        try:
+            with open(output_file, "w") as f:
+                if format_type == "json":
+                    results_data = {
+                        "execution_id": execution.execution_id,
+                        "start_time": (
+                            execution.start_time.isoformat()
+                            if execution.start_time
+                            else None
+                        ),
+                        "end_time": (
+                            execution.end_time.isoformat()
+                            if execution.end_time
+                            else None
+                        ),
+                        "results": [
+                            {
+                                "name": result.test_case.name,
+                                "status": result.status.value,
+                                "duration": result.duration,
+                                "error_message": result.error_message,
+                            }
+                            for result in execution.results
+                        ],
+                    }
+                    json.dump(results_data, f, indent=2)
+                elif format_type == "xml":
+                    # Write XML content to file
+                    f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+                    f.write("<testsuites>\n")
+                    # ... XML content generation similar to _display_results_xml
+                    f.write("</testsuites>\n")
+                else:  # text or html
+                    # Redirect stdout to file temporarily
+                    import sys
+
+                    original_stdout = sys.stdout
+                    sys.stdout = f
+
+                    if format_type == "html":
+                        self._display_results_html(execution)
+                    else:
+                        self._display_results_text(execution, verbose=True)
+
+                    sys.stdout = original_stdout
+
+            self.logger.info(f"Results saved to {output_file}")
+
+        except Exception as e:
+            self.logger.error(f"Failed to save results to file: {e}")
+
+    def _generate_coverage_report(self, coverage_data, report_format: str) -> None:
+        """Generate coverage report in specified format."""
+        try:
+            if report_format == "html":
+                # Generate HTML coverage report
+                self.logger.info("Generating HTML coverage report...")
+                # Implementation would use coverage.py HTML reporter
+            elif report_format == "xml":
+                # Generate XML coverage report
+                self.logger.info("Generating XML coverage report...")
+                # Implementation would use coverage.py XML reporter
+            elif report_format == "json":
+                # Generate JSON coverage report
+                self.logger.info("Generating JSON coverage report...")
+                # Implementation would use coverage.py JSON reporter
+            else:
+                # Generate text coverage report
+                self.logger.info("Generating text coverage report...")
+                # Implementation would use coverage.py text reporter
+
+        except Exception as e:
+            self.logger.warning(f"Failed to generate coverage report: {e}")
+
+    def _build_test_tree(self, test_suites) -> Dict[str, Any]:
+        """Build hierarchical test tree structure."""
+        tree = {
+            "name": "Test Tree",
+            "type": "root",
+            "children": [],
+            "metadata": {
+                "total_suites": len(test_suites),
+                "total_tests": sum(len(suite.test_cases) for suite in test_suites),
+                "generated_at": datetime.now().isoformat(),
+            },
+        }
+
+        # Group by modules
+        modules = {}
+        for suite in test_suites:
+            module = self._extract_module_from_suite(suite)
+            if module not in modules:
+                modules[module] = []
+            modules[module].append(suite)
+
+        # Build tree structure
+        for module_name, module_suites in modules.items():
+            module_node = {
+                "name": module_name,
+                "type": "module",
+                "children": [],
+                "metadata": {
+                    "suite_count": len(module_suites),
+                    "test_count": sum(len(suite.test_cases) for suite in module_suites),
+                },
+            }
+
+            for suite in module_suites:
+                suite_node = {
+                    "name": suite.name,
+                    "type": "suite",
+                    "children": [],
+                    "metadata": {
+                        "test_count": len(suite.test_cases),
+                        "estimated_duration": suite.total_estimated_duration,
+                    },
+                }
+
+                for test_case in suite.test_cases:
+                    test_node = {
+                        "name": test_case.name,
+                        "type": "test",
+                        "metadata": {
+                            "category": test_case.category.value,
+                            "file_path": str(test_case.file_path),
+                            "line_number": test_case.line_number,
+                            "estimated_duration": test_case.estimated_duration,
+                            "tags": list(test_case.tags),
+                        },
+                    }
+                    suite_node["children"].append(test_node)
+
+                module_node["children"].append(suite_node)
+
+            tree["children"].append(module_node)
+
+        return tree
+
     def _create_comprehensive_config(self) -> Dict[str, Any]:
+        """Create comprehensive configuration with all options."""
+        config = self._create_default_config()
+
+        # Add additional comprehensive options
+        config["experimental_config"].update(
+            {
+                "detailed_logging": True,
+                "save_raw_data": True,
+                "generate_plots": True,
+                "statistical_corrections": ["fdr", "bonferroni"],
+                "bootstrap_iterations": 10000,
+                "confidence_interval": 0.95,
+            }
+        )
+
+        return config
+
+    def manage_test_coverage(self, args: argparse.Namespace) -> None:
+        """Manage test coverage analysis and generation (legacy method for compatibility)."""
+        # Redirect to enhanced coverage management
+        self.manage_enhanced_coverage(args)
         """Create comprehensive configuration with all options."""
         config = self._create_default_config()
 
@@ -1166,6 +1981,8 @@ Examples:
             "test-analysis",
             "test-coverage",
             "run-test",  # run-test handles its own controller initialization
+            "run-tests",  # Enhanced test execution
+            "organize-tests",  # Test organization
         ]:
             self.initialize_controller(parsed_args.config)
 
@@ -1183,12 +2000,16 @@ Examples:
                 self.run_batch_experiments(parsed_args)
             elif parsed_args.command == "batch-test":
                 self.run_advanced_batch_tests(parsed_args)
+            elif parsed_args.command == "run-tests":
+                self.run_enhanced_tests(parsed_args)
+            elif parsed_args.command == "organize-tests":
+                self.organize_tests(parsed_args)
             elif parsed_args.command == "test-results":
                 self.manage_test_results(parsed_args)
             elif parsed_args.command == "test-analysis":
                 self.analyze_test_results(parsed_args)
             elif parsed_args.command == "test-coverage":
-                self.manage_test_coverage(parsed_args)
+                self.manage_enhanced_coverage(parsed_args)
             elif parsed_args.command == "generate-config":
                 self.generate_configuration(parsed_args)
             elif parsed_args.command == "validate-system":

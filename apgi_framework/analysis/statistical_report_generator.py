@@ -525,8 +525,9 @@ class StatisticalReportGenerator:
                 test_type="two_sample",
             )
             return power_result.power
-        except:
+        except (ValueError, RuntimeError, AttributeError) as e:
             # Fallback approximation
+            self.logger.warning(f"Power calculation failed: {e}. Using approximation.")
             return min(1.0, (abs(effect_size) * np.sqrt(sample_size)) / 2.8)
 
     def _generate_overall_conclusion(

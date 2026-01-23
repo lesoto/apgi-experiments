@@ -893,7 +893,7 @@ def create_test_execution_panel(
     progress_callback: Optional[Callable] = None,
     log_callback: Optional[Callable] = None,
     results_callback: Optional[Callable] = None,
-) -> TestExecutionPanel:
+) -> ExecutionPanel:
     """
     Create a test execution panel with default settings.
 
@@ -906,8 +906,8 @@ def create_test_execution_panel(
         results_callback: Optional results callback
 
     Returns:
-        Configured TestExecutionPanel instance
+        Configured ExecutionPanel instance
     """
-    return TestExecutionPanel(
+    return ExecutionPanel(
         parent, test_name, controller, progress_callback, log_callback, results_callback
     )

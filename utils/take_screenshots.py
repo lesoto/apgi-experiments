@@ -89,10 +89,10 @@ class APGIScreenshotDocumentation:
 
     def generate_comprehensive_documentation(self):
         """Generate complete screenshot documentation."""
-        print("🚀 Starting APGI System Desktop App Documentation")
+        print("Starting APGI System Desktop App Documentation")
         print("=" * 60)
 
-        print("\n📋 IMPORTANT SETUP INSTRUCTIONS:")
+        print("\nIMPORTANT SETUP INSTRUCTIONS:")
         print("   1. Make sure APGI GUI application is visible on screen")
         print("   2. Close any other applications that might interfere")
         print("   3. Click on the APGI application window to ensure it's active")
@@ -104,7 +104,7 @@ class APGIScreenshotDocumentation:
         try:
             input()  # Wait for user confirmation
         except KeyboardInterrupt:
-            print("\n❌ Documentation cancelled by user")
+            print("\n[ERROR] Documentation cancelled by user")
             return
 
         try:
@@ -120,12 +120,12 @@ class APGIScreenshotDocumentation:
             # 4. Generate comprehensive report
             self._generate_documentation_report()
 
-            print("\n✅ Documentation complete!")
-            print(f"📸 Screenshots: {self.screenshots_dir}")
-            print(f"📄 Reports: {self.reports_dir}")
+            print("\n[OK] Documentation complete!")
+            print(f"Screenshots: {self.screenshots_dir}")
+            print(f"Reports: {self.reports_dir}")
 
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"[ERROR] Error: {e}")
             import traceback
 
             traceback.print_exc()
@@ -135,12 +135,12 @@ class APGIScreenshotDocumentation:
 
     def _start_gui_app(self):
         """Start the GUI application."""
-        print("\n📱 Starting GUI Application...")
+        print("\nStarting GUI Application...")
 
         try:
             gui_script = self.base_dir / "GUI.py"
             if not gui_script.exists():
-                print(f"❌ GUI script not found: {gui_script}")
+                print(f"[ERROR] GUI script not found: {gui_script}")
                 print("Available GUI files:")
                 for gui_file in ["GUI.py", "GUI-Simple.py", "launch_gui.py"]:
                     if (self.base_dir / gui_file).exists():
@@ -152,7 +152,7 @@ class APGIScreenshotDocumentation:
                 [sys.executable, str(gui_script)], cwd=self.base_dir
             )
 
-            print("✅ GUI application started")
+            print("[OK] GUI application started")
             return True
 
         except Exception as e:
@@ -804,9 +804,7 @@ class APGIScreenshotDocumentation:
 
             # Fallback: if no parameter controls detected, use estimated positions
             if not self.parameter_controls and self.gui_window:
-                print(
-                    "    ⚠️ No parameter controls detected, using estimated positions"
-                )
+                print("    ⚠️ No parameter controls detected, using estimated positions")
                 start_x = 150
                 start_y = 200
                 param_width = 150

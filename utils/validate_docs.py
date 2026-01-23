@@ -131,14 +131,13 @@ class DocumentationValidator:
 
 
 def validate_documentation_links(readme_path: str = "README.md") -> Dict[str, any]:
-    """
-    Validate all documentation links in README.md.
+    """Validate all documentation links in README.md.
 
     Args:
-        readme_path: Path to README.md file
+        readme_path: Path to README.md file.
 
     Returns:
-        Dictionary with validation results
+        Dictionary with validation results.
     """
     validator = DocumentationValidator(readme_path)
     return validator.validate_all_links()

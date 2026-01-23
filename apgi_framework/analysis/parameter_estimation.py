@@ -311,7 +311,8 @@ class ConvergenceDiagnosticsCalculator:
                 np.sum(sp["treedepth__"] >= sp["treedepth__"].max())
                 for sp in sampler_params
             )
-        except:
+        except (AttributeError, KeyError, IndexError) as e:
+            self.logger.warning(f"Could not extract sampler diagnostics: {e}")
             divergences = 0
             tree_depth_exceeded = 0
             warnings_list.append("Could not extract sampler diagnostics")

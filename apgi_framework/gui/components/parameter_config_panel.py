@@ -125,9 +125,7 @@ except ImportError as e:
                         for suggestion in self.suggestions:
                             messages.append(f"  💡 {suggestion}")
                     return (
-                        "\n".join(messages)
-                        if messages
-                        else "⚠️ Limited validation mode"
+                        "\n".join(messages) if messages else "⚠️ Limited validation mode"
                     )
 
             logger.warning(

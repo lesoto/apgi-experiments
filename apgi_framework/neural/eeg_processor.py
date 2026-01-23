@@ -13,6 +13,8 @@ from scipy import signal
 from scipy.stats import zscore
 import time
 
+from apgi_framework.utils.progress_monitor import ProgressMonitor
+
 
 class FilterType(Enum):
     """Filter types for EEG processing."""
@@ -226,6 +228,9 @@ class FASTERArtifactDetector:
         mean_correlation = np.zeros(n_channels)
 
         # Compute mean correlation with other channels
+        progress = ProgressMonitor(n_channels, "Computing channel correlations")
+        progress.start()
+
         for i in range(n_channels):
             correlations = []
             for j in range(n_channels):
@@ -234,6 +239,9 @@ class FASTERArtifactDetector:
                     if not np.isnan(corr):
                         correlations.append(corr)
             mean_correlation[i] = np.mean(correlations) if correlations else 0
+            progress.update(message=f"Channel {i+1}/{n_channels}")
+
+        progress.complete()
 
         # Detect outliers using z-scores
         variance_z = np.abs(zscore(variance))

@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from typing import Dict, List, Tuple, Optional
+from apgi_framework.config.constants import ModelConstants
 
 
 @dataclass
@@ -25,55 +26,55 @@ class DefaultParameters:
         ParameterConfig(
             label="Learning Rate",
             key="learning_rate",
-            default_value="0.01",
+            default_value=str(ModelConstants.DEFAULT_LEARNING_RATE),
             description="Controls the rate of learning in the model",
-            min_value=0.0001,
-            max_value=1.0,
+            min_value=ModelConstants.LEARNING_RATE_RANGE[0],
+            max_value=ModelConstants.LEARNING_RATE_RANGE[1],
             parameter_type="float",
         ),
         ParameterConfig(
             label="Precision Weight",
             key="precision_weight",
-            default_value="1.0",
+            default_value=str(ModelConstants.DEFAULT_PRECISION_WEIGHT),
             description="Weight for precision in belief updating",
-            min_value=0.1,
-            max_value=10.0,
+            min_value=ModelConstants.PRECISION_WEIGHT_RANGE[0],
+            max_value=ModelConstants.PRECISION_WEIGHT_RANGE[1],
             parameter_type="float",
         ),
         ParameterConfig(
             label="Prediction Error Threshold",
             key="prediction_error_threshold",
-            default_value="0.5",
+            default_value=str(ModelConstants.DEFAULT_PREDICTION_ERROR_THRESHOLD),
             description="Threshold for prediction error detection",
-            min_value=0.01,
-            max_value=2.0,
+            min_value=ModelConstants.PREDICTION_ERROR_RANGE[0],
+            max_value=ModelConstants.PREDICTION_ERROR_RANGE[1],
             parameter_type="float",
         ),
         ParameterConfig(
             label="Interoceptive Gain",
             key="interoceptive_gain",
-            default_value="1.0",
+            default_value=str(ModelConstants.DEFAULT_INTEROCEPTIVE_GAIN),
             description="Gain factor for interoceptive signals",
-            min_value=0.1,
-            max_value=5.0,
+            min_value=ModelConstants.INTEROCEPTIVE_GAIN_RANGE[0],
+            max_value=ModelConstants.INTEROCEPTIVE_GAIN_RANGE[1],
             parameter_type="float",
         ),
         ParameterConfig(
             label="Somatic Bias",
             key="somatic_bias",
-            default_value="0.0",
+            default_value=str(ModelConstants.DEFAULT_SOMATIC_BIAS),
             description="Baseline bias for somatic signals",
-            min_value=-2.0,
-            max_value=2.0,
+            min_value=ModelConstants.SOMATIC_BIAS_RANGE[0],
+            max_value=ModelConstants.SOMATIC_BIAS_RANGE[1],
             parameter_type="float",
         ),
         ParameterConfig(
             label="Ignition Threshold",
             key="ignition_threshold",
-            default_value="2.0",
+            default_value=str(ModelConstants.DEFAULT_IGNITION_THRESHOLD),
             description="Threshold for neural ignition",
-            min_value=0.5,
-            max_value=5.0,
+            min_value=ModelConstants.IGNITION_THRESHOLD_RANGE[0],
+            max_value=ModelConstants.IGNITION_THRESHOLD_RANGE[1],
             parameter_type="float",
         ),
     ]

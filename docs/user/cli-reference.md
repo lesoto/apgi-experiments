@@ -48,9 +48,9 @@ Specify configuration file path.
 python -m apgi_framework.cli --config config.json run-test primary
 ```
 
-- **Type**: String (file path)
-- **Default**: None
-- **Required**: No
+- __Type__: String (file path)
+- __Default__: None
+- __Required__: No
 
 ### --log-level, -l
 
@@ -60,16 +60,16 @@ Set logging verbosity level.
 python -m apgi_framework.cli --log-level DEBUG run-test primary
 ```
 
-- **Type**: Choice (DEBUG, INFO, WARNING, ERROR)
-- **Default**: INFO
-- **Required**: No
+- __Type__: Choice (DEBUG, INFO, WARNING, ERROR)
+- __Default__: INFO
+- __Required__: No
 
-**Level Descriptions**:
+__Level Descriptions__:
 
-- **DEBUG**: Detailed diagnostic information
-- **INFO**: General informational messages
-- **WARNING**: Warning messages for potential issues
-- **ERROR**: Error messages only
+- __DEBUG__: Detailed diagnostic information
+- __INFO__: General informational messages
+- __WARNING__: Warning messages for potential issues
+- __ERROR__: Error messages only
 
 ### --output-dir, -o
 
@@ -79,9 +79,9 @@ Specify output directory for results.
 python -m apgi_framework.cli --output-dir results/my_experiment run-test primary
 ```
 
-**Type**: String (directory path)  
-**Default**: "results"  
-**Required**: No
+__Type__: String (directory path)  
+__Default__: "results"  
+__Required__: No
 
 ## Commands
 
@@ -97,11 +97,11 @@ python -m apgi_framework.cli run-test TEST_TYPE [OPTIONS]
 
 #### Arguments
 
-**TEST_TYPE** (required)
+__TEST_TYPE__ (required)
 
 Type of falsification test to run.
 
-**Choices**:
+__Choices__:
 
 - `primary`: Primary falsification test (full ignition without consciousness)
 - `consciousness-without-ignition`: Consciousness without ignition signatures
@@ -118,10 +118,10 @@ Number of trials to simulate.
 python -m apgi_framework.cli run-test primary --trials 2000
 ```
 
-**Type**: Integer  
-**Range**: 100-10000  
-**Default**: 1000  
-**Required**: No
+__Type__: Integer  
+__Range__: 100-10000  
+__Default__: 1000  
+__Required__: No
 
 #### --participants, -p
 
@@ -131,11 +131,11 @@ Number of participants to simulate (for multi-participant tests).
 python -m apgi_framework.cli run-test soma-bias --participants 200
 ```
 
-**Type**: Integer  
-**Range**: 10-1000  
-**Default**: 100  
-**Required**: No  
-**Applicable to**: soma-bias test
+__Type__: Integer  
+__Range__: 10-1000  
+__Default__: 100  
+__Required__: No  
+__Applicable to__: soma-bias test
 
 #### --seed
 
@@ -145,9 +145,9 @@ Random seed for reproducibility.
 python -m apgi_framework.cli run-test primary --seed 42
 ```
 
-**Type**: Integer  
-**Default**: None (random)  
-**Required**: No
+__Type__: Integer  
+__Default__: None (random)  
+__Required__: No
 
 #### Examples
 
@@ -184,7 +184,7 @@ python -m apgi_framework.cli run-batch [OPTIONS]
 
 #### Options
 
-**--all-tests**
+__--all-tests__
 
 Run all available falsification tests.
 
@@ -192,11 +192,11 @@ Run all available falsification tests.
 python -m apgi_framework.cli run-batch --all-tests
 ```
 
-**Type**: Flag  
-**Default**: False  
-**Required**: No (but either --all-tests or --tests must be specified)
+__Type__: Flag  
+__Default__: False  
+__Required__: No (but either --all-tests or --tests must be specified)
 
-**--tests**
+__--tests__
 
 Specify which tests to run.
 
@@ -204,12 +204,12 @@ Specify which tests to run.
 python -m apgi_framework.cli run-batch --tests primary soma-bias
 ```
 
-**Type**: List of choices  
-**Choices**: primary, consciousness-without-ignition, threshold-insensitivity, soma-bias  
-**Default**: None  
-**Required**: No (but either --all-tests or --tests must be specified)
+__Type__: List of choices  
+__Choices__: primary, consciousness-without-ignition, threshold-insensitivity, soma-bias  
+__Default__: None  
+__Required__: No (but either --all-tests or --tests must be specified)
 
-**--parallel**
+__--parallel__
 
 Run tests in parallel (experimental feature).
 
@@ -217,10 +217,10 @@ Run tests in parallel (experimental feature).
 python -m apgi_framework.cli run-batch --all-tests --parallel
 ```
 
-**Type**: Flag  
-**Default**: False  
-**Required**: No  
-**Note**: Experimental feature, may have stability issues
+__Type__: Flag  
+__Default__: False  
+__Required__: No  
+__Note__: Experimental feature, may have stability issues
 
 #### Examples
 
@@ -255,7 +255,7 @@ python -m apgi_framework.cli generate-config [OPTIONS]
 
 #### Options
 
-**--output**
+__--output__
 
 Output file path for configuration.
 
@@ -263,11 +263,11 @@ Output file path for configuration.
 python -m apgi_framework.cli generate-config --output my_config.json
 ```
 
-**Type**: String (file path)  
-**Default**: "apgi_config.json"  
-**Required**: No
+__Type__: String (file path)  
+__Default__: "apgi_config.json"  
+__Required__: No
 
-**--template**
+__--template__
 
 Configuration template type.
 
@@ -275,16 +275,16 @@ Configuration template type.
 python -m apgi_framework.cli generate-config --template comprehensive
 ```
 
-**Type**: Choice  
-**Choices**: default, minimal, comprehensive  
-**Default**: default  
-**Required**: No
+__Type__: Choice  
+__Choices__: default, minimal, comprehensive  
+__Default__: default  
+__Required__: No
 
-**Template Descriptions**:
+__Template Descriptions__:
 
-- **default**: Standard configuration with commonly used parameters
-- **minimal**: Minimal configuration with only essential parameters
-- **comprehensive**: Full configuration with all available options
+- __default__: Standard configuration with commonly used parameters
+- __minimal__: Minimal configuration with only essential parameters
+- __comprehensive__: Full configuration with all available options
 
 #### Examples
 
@@ -319,7 +319,7 @@ python -m apgi_framework.cli validate-system [OPTIONS]
 
 #### Options
 
-**--detailed**
+__--detailed__
 
 Show detailed validation results for each component.
 
@@ -327,9 +327,9 @@ Show detailed validation results for each component.
 python -m apgi_framework.cli validate-system --detailed
 ```
 
-**Type**: Flag  
-**Default**: False  
-**Required**: No
+__Type__: Flag  
+__Default__: False  
+__Required__: No
 
 #### Examples
 
@@ -350,12 +350,12 @@ python -m apgi_framework.cli --config my_config.json validate-system --detailed
 
 #### Output
 
-**Simple Output**:
+__Simple Output__:
 ```
 System Validation: PASS
 ```
 
-**Detailed Output**:
+__Detailed Output__:
 ```
 ============================================================
 System Validation Results (Detailed)
@@ -419,7 +419,7 @@ python -m apgi_framework.cli set-params [OPTIONS]
 
 #### Options
 
-**--extero-precision**
+__--extero-precision__
 
 Set exteroceptive precision value.
 
@@ -427,12 +427,12 @@ Set exteroceptive precision value.
 python -m apgi_framework.cli set-params --extero-precision 2.5
 ```
 
-**Type**: Float  
-**Range**: 0.1-10.0  
-**Default**: 2.0  
-**Required**: No
+__Type__: Float  
+__Range__: 0.1-10.0  
+__Default__: 2.0  
+__Required__: No
 
-**--intero-precision**
+__--intero-precision__
 
 Set interoceptive precision value.
 
@@ -440,12 +440,12 @@ Set interoceptive precision value.
 python -m apgi_framework.cli set-params --intero-precision 2.0
 ```
 
-**Type**: Float  
-**Range**: 0.1-10.0  
-**Default**: 1.5  
-**Required**: No
+__Type__: Float  
+__Range__: 0.1-10.0  
+__Default__: 1.5  
+__Required__: No
 
-**--threshold**
+__--threshold__
 
 Set ignition threshold value.
 
@@ -453,12 +453,12 @@ Set ignition threshold value.
 python -m apgi_framework.cli set-params --threshold 3.0
 ```
 
-**Type**: Float  
-**Range**: 0.5-10.0  
-**Default**: 3.5  
-**Required**: No
+__Type__: Float  
+__Range__: 0.5-10.0  
+__Default__: 3.5  
+__Required__: No
 
-**--steepness**
+__--steepness__
 
 Set sigmoid steepness value.
 
@@ -466,12 +466,12 @@ Set sigmoid steepness value.
 python -m apgi_framework.cli set-params --steepness 2.5
 ```
 
-**Type**: Float  
-**Range**: 0.1-5.0  
-**Default**: 2.0  
-**Required**: No
+__Type__: Float  
+__Range__: 0.1-5.0  
+__Default__: 2.0  
+__Required__: No
 
-**--somatic-gain**
+__--somatic-gain__
 
 Set somatic marker gain value.
 
@@ -479,10 +479,10 @@ Set somatic marker gain value.
 python -m apgi_framework.cli set-params --somatic-gain 1.5
 ```
 
-**Type**: Float  
-**Range**: 0.1-5.0  
-**Default**: 1.3  
-**Required**: No
+__Type__: Float  
+__Range__: 0.1-5.0  
+__Default__: 1.3  
+__Required__: No
 
 #### Examples
 
@@ -517,11 +517,11 @@ python -m apgi_framework.cli set-params \
 
 Precision (inverse variance) of exteroceptive (external sensory) prediction errors.
 
-**Range**: 0.1 - 10.0  
-**Default**: 2.0  
-**Units**: Dimensionless (inverse variance)
+__Range__: 0.1 - 10.0  
+__Default__: 2.0  
+__Units__: Dimensionless (inverse variance)
 
-**Interpretation**:
+__Interpretation__:
 
 - Higher values = more reliable external sensory signals
 - Lower values = noisier external signals
@@ -531,11 +531,11 @@ Precision (inverse variance) of exteroceptive (external sensory) prediction erro
 
 Precision (inverse variance) of interoceptive (internal bodily) prediction errors.
 
-**Range**: 0.1 - 10.0  
-**Default**: 1.5  
-**Units**: Dimensionless (inverse variance)
+__Range__: 0.1 - 10.0  
+__Default__: 1.5  
+__Units__: Dimensionless (inverse variance)
 
-**Interpretation**:
+__Interpretation__:
 
 - Higher values = more reliable internal bodily signals
 - Lower values = noisier internal signals
@@ -545,11 +545,11 @@ Precision (inverse variance) of interoceptive (internal bodily) prediction error
 
 Ignition threshold for conscious access.
 
-**Range**: 0.5 - 10.0  
-**Default**: 3.5  
-**Units**: Dimensionless (surprise units)
+__Range__: 0.5 - 10.0  
+__Default__: 3.5  
+__Units__: Dimensionless (surprise units)
 
-**Interpretation**:
+__Interpretation__:
 
 - Higher values = harder to trigger ignition (more conservative)
 - Lower values = easier to trigger ignition (more liberal)
@@ -559,11 +559,11 @@ Ignition threshold for conscious access.
 
 Steepness of sigmoid function for ignition probability.
 
-**Range**: 0.1 - 5.0  
-**Default**: 2.0  
-**Units**: Dimensionless
+__Range__: 0.1 - 5.0  
+__Default__: 2.0  
+__Units__: Dimensionless
 
-**Interpretation**:
+__Interpretation__:
 
 - Higher values = sharper threshold (more all-or-none)
 - Lower values = gradual threshold (more graded)
@@ -573,11 +573,11 @@ Steepness of sigmoid function for ignition probability.
 
 Gain factor for somatic marker modulation of interoceptive precision.
 
-**Range**: 0.1 - 5.0  
-**Default**: 1.3  
-**Units**: Dimensionless (multiplicative factor)
+__Range__: 0.1 - 5.0  
+__Default__: 1.3  
+__Units__: Dimensionless (multiplicative factor)
 
-**Interpretation**:
+__Interpretation__:
 
 - Higher values = stronger emotional/motivational modulation
 - Lower values = weaker modulation
@@ -589,11 +589,11 @@ Gain factor for somatic marker modulation of interoceptive precision.
 
 Number of trials to simulate in a test.
 
-**Range**: 100 - 10000  
-**Default**: 1000  
-**Units**: Count
+__Range__: 100 - 10000  
+__Default__: 1000  
+__Units__: Count
 
-**Recommendations**:
+__Recommendations__:
 
 - 1000: Standard testing
 - 2000+: High-power analyses
@@ -603,11 +603,11 @@ Number of trials to simulate in a test.
 
 Number of participants to simulate (for multi-participant tests).
 
-**Range**: 10 - 1000  
-**Default**: 100  
-**Units**: Count
+__Range__: 10 - 1000  
+__Default__: 100  
+__Units__: Count
 
-**Recommendations**:
+__Recommendations__:
 
 - 100: Standard testing
 - 200+: High-power analyses
@@ -617,11 +617,11 @@ Number of participants to simulate (for multi-participant tests).
 
 Random seed for reproducible results.
 
-**Range**: Any integer  
-**Default**: None (random)  
-**Units**: Integer
+__Range__: Any integer  
+__Default__: None (random)  
+__Units__: Integer
 
-**Usage**:
+__Usage__:
 
 - Set to specific value (e.g., 42) for reproducibility
 - Leave unset for different results each run
@@ -631,10 +631,10 @@ Random seed for reproducible results.
 
 Directory path for saving results.
 
-**Type**: String (directory path)  
-**Default**: "results"
+__Type__: String (directory path)  
+__Default__: "results"
 
-**Usage**:
+__Usage__:
 
 - Use descriptive names (e.g., "results/experiment_001")
 - Organize by experiment or date
@@ -644,11 +644,11 @@ Directory path for saving results.
 
 Logging verbosity level.
 
-**Type**: Choice  
-**Choices**: DEBUG, INFO, WARNING, ERROR  
-**Default**: INFO
+__Type__: Choice  
+__Choices__: DEBUG, INFO, WARNING, ERROR  
+__Default__: INFO
 
-**Usage**:
+__Usage__:
 
 - DEBUG: Troubleshooting and development
 - INFO: Normal operation
@@ -899,6 +899,6 @@ python -m apgi_framework.cli \
 
 ---
 
-**Version**: 1.0  
-**Last Updated**: 2025-01-07  
-**See Also**: USER_GUIDE.md, examples/
+__Version__: 1.0  
+__Last Updated__: 2025-01-07  
+__See Also__: USER_GUIDE.md, examples/

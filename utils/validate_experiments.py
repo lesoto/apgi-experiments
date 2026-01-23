@@ -16,6 +16,7 @@ sys.path.insert(0, str(project_root))
 
 from tools.run_experiments import EXPERIMENTS, run_experiment
 from apgi_framework.logging.standardized_logging import get_logger
+from apgi_framework.config.constants import ValidationConstants
 
 logger = get_logger("experiment_validation")
 
@@ -43,8 +44,8 @@ class ExperimentValidator:
             # Try to run experiment with minimal parameters
             result = run_experiment(
                 experiment_name,
-                n_participants=1,  # Minimal for testing
-                n_trials=5,  # Minimal for testing
+                n_participants=ValidationConstants.MIN_TEST_PARTICIPANTS,  # Minimal for testing
+                n_trials=ValidationConstants.MIN_TEST_TRIALS,  # Minimal for testing
                 output_file=None,  # No output file for testing
             )
 

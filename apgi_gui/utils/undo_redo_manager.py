@@ -73,7 +73,7 @@ class UndoRedoManager:
         action_type: str,
         description: str,
         data: Any,
-        widget: Optional[Union[tk.Widget, ctk.CTkWidget]] = None,
+        widget: Optional[Any] = None,
     ) -> None:
         """Add an action to the undo stack."""
         # Create action object
@@ -196,7 +196,7 @@ class UndoRedoManager:
 
     def track_parameter_change(
         self,
-        widget: Union[tk.Widget, ctk.CTkWidget],
+        widget,
         param_name: str,
         old_value: Any,
         new_value: Any,
@@ -212,9 +212,7 @@ class UndoRedoManager:
         description = f"Changed {param_name} from {old_value} to {new_value}"
         self.add_action("parameter_change", description, data, widget)
 
-    def track_text_edit(
-        self, widget: Union[tk.Widget, ctk.CTkWidget], old_text: str, new_text: str
-    ) -> None:
+    def track_text_edit(self, widget, old_text: str, new_text: str) -> None:
         """Track a text edit."""
         data = {
             "widget_id": str(id(widget)),
@@ -225,9 +223,7 @@ class UndoRedoManager:
         description = f"Text edit in {widget.winfo_class()}"
         self.add_action("text_edit", description, data, widget)
 
-    def track_widget_state(
-        self, widget: Union[tk.Widget, ctk.CTkWidget], state_changes: Dict[str, Any]
-    ) -> None:
+    def track_widget_state(self, widget, state_changes: Dict[str, Any]) -> None:
         """Track widget state changes."""
         data = {"widget_id": str(id(widget)), "state_changes": state_changes}
 
@@ -312,9 +308,7 @@ class UndoRedoManager:
         elif "redo_handler" in data and not is_undo:
             data["redo_handler"]()
 
-    def _find_widget_by_id(
-        self, widget_id: str
-    ) -> Optional[Union[tk.Widget, ctk.CTkWidget]]:
+    def _find_widget_by_id(self, widget_id: str) -> Optional[Any]:
         """Find widget by ID (simplified implementation)."""
         # This is a simplified approach - in practice, you'd want to maintain
         # a registry of tracked widgets
@@ -356,9 +350,7 @@ class WidgetTracker:
         self.tracked_widgets = {}
         self.original_values = {}
 
-    def track_widget(
-        self, widget: Union[tk.Widget, ctk.CTkWidget], widget_type: str = "parameter"
-    ) -> None:
+    def track_widget(self, widget, widget_type: str = "parameter") -> None:
         """Start tracking a widget for changes."""
         widget_id = str(id(widget))
         self.tracked_widgets[widget_id] = {"widget": widget, "type": widget_type}
@@ -378,7 +370,7 @@ class WidgetTracker:
         elif isinstance(widget, (tk.Text, ctk.CTkTextbox)):
             widget.bind("<FocusOut>", lambda e: self._on_text_change(widget))
 
-    def _on_parameter_change(self, widget: Union[tk.Widget, ctk.CTkWidget]) -> None:
+    def _on_parameter_change(self, widget) -> None:
         """Handle parameter change event."""
         widget_id = str(id(widget))
 
@@ -401,7 +393,7 @@ class WidgetTracker:
                 )
                 self.original_values[widget_id] = new_value
 
-    def _on_text_change(self, widget: Union[tk.Widget, ctk.CTkWidget]) -> None:
+    def _on_text_change(self, widget) -> None:
         """Handle text change event."""
         widget_id = str(id(widget))
 

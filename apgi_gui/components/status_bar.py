@@ -13,6 +13,7 @@ from pathlib import Path
 # Import font manager for cross-platform compatibility
 try:
     from apgi_framework.utils.font_manager import get_ui_font
+    from apgi_framework.config.constants import GUIConstants, TimingConstants
 except ImportError:
     # Fallback for direct execution
     import sys
@@ -21,31 +22,15 @@ except ImportError:
     project_root = Path(__file__).parent.parent.parent.parent
     sys.path.insert(0, str(project_root))
     from apgi_framework.utils.font_manager import get_ui_font
+    from apgi_framework.config.constants import GUIConstants, TimingConstants
 
 
-def _emoji_supported() -> bool:
-    """Check if emoji are supported on the current platform."""
-    # Windows older than Windows 10 version 1903 has limited emoji support
-    if platform.system() == "Windows":
-        try:
-            # Check Windows version
-            import winver
-
-            return winver.get_winver_from_getversion() >= (10, 0, 18362)
-        except (ImportError, AttributeError):
-            # Fallback: assume limited emoji support on Windows
-            return False
-
-    # macOS and Linux generally have good emoji support
-    return True
-
-
-# Cross-platform status indicators
+# Cross-platform status indicators - using text-based icons for consistency
 STATUS_INDICATORS = {
-    "success": "✅ " if _emoji_supported() else "[OK] ",
-    "warning": "⚠️ " if _emoji_supported() else "[WARN] ",
-    "error": "❌ " if _emoji_supported() else "[ERR] ",
-    "info": "ℹ️ " if _emoji_supported() else "[INFO] ",
+    "success": "[OK] ",
+    "warning": "[WARN] ",
+    "error": "[ERR] ",
+    "info": "[INFO] ",
 }
 
 
@@ -82,25 +67,34 @@ class StatusBar(ctk.CTkFrame):
         self.logger.debug("Setting up status bar UI")
 
         # Configure frame
-        self.configure(height=40)
+        self.configure(height=GUIConstants.DEFAULT_PADDING * 4)  # 40px
         # Configure grid columns for proper layout
         self.grid_columnconfigure(1, weight=1)
         self.grid_propagate(False)
 
         # Status message label
         try:
-            ui_font = get_ui_font(12)
+            ui_font = get_ui_font(GUIConstants.DEFAULT_FONT_SIZE)
             self.status_label = ctk.CTkLabel(
                 self, text="Ready", anchor="w", font=ui_font
             )
         except Exception:
             # Fallback to default font
             self.status_label = ctk.CTkLabel(
-                self, text="Ready", anchor="w", font=ctk.CTkFont(size=12)
+                self,
+                text="Ready",
+                anchor="w",
+                font=ctk.CTkFont(size=GUIConstants.DEFAULT_FONT_SIZE),
             )
         # Store font reference to prevent AttributeError on destroy
         self.status_label._font = None
-        self.status_label.grid(row=0, column=0, padx=10, pady=5, sticky="w")
+        self.status_label.grid(
+            row=0,
+            column=0,
+            padx=GUIConstants.DEFAULT_PADDING,
+            pady=GUIConstants.SMALL_PADDING,
+            sticky="w",
+        )
 
         # Progress bar (hidden by default)
         self.progress_bar = ctk.CTkProgressBar(self)
@@ -109,44 +103,71 @@ class StatusBar(ctk.CTkFrame):
 
         # Current file label
         try:
-            ui_font = get_ui_font(12)
+            ui_font = get_ui_font(GUIConstants.DEFAULT_FONT_SIZE)
             self.file_label = ctk.CTkLabel(
                 self, text="No file loaded", anchor="e", font=ui_font
             )
         except Exception:
             # Fallback to default font
             self.file_label = ctk.CTkLabel(
-                self, text="No file loaded", anchor="e", font=ctk.CTkFont(size=12)
+                self,
+                text="No file loaded",
+                anchor="e",
+                font=ctk.CTkFont(size=GUIConstants.DEFAULT_FONT_SIZE),
             )
         # Store font reference to prevent AttributeError on destroy
         self.file_label._font = None
-        self.file_label.grid(row=0, column=2, padx=10, pady=5, sticky="e")
+        self.file_label.grid(
+            row=0,
+            column=2,
+            padx=GUIConstants.DEFAULT_PADDING,
+            pady=GUIConstants.SMALL_PADDING,
+            sticky="e",
+        )
 
         # Time label
         try:
-            ui_font = get_ui_font(12)
+            ui_font = get_ui_font(GUIConstants.DEFAULT_FONT_SIZE)
             self.time_label = ctk.CTkLabel(self, text="", anchor="e", font=ui_font)
         except Exception:
             # Fallback to default font
             self.time_label = ctk.CTkLabel(
-                self, text="", anchor="e", font=ctk.CTkFont(size=12)
+                self,
+                text="",
+                anchor="e",
+                font=ctk.CTkFont(size=GUIConstants.DEFAULT_FONT_SIZE),
             )
         # Store font reference to prevent AttributeError on destroy
         self.time_label._font = None
-        self.time_label.grid(row=0, column=3, padx=10, pady=5, sticky="e")
+        self.time_label.grid(
+            row=0,
+            column=3,
+            padx=GUIConstants.DEFAULT_PADDING,
+            pady=GUIConstants.SMALL_PADDING,
+            sticky="e",
+        )
 
         # Zoom level label
         try:
-            ui_font = get_ui_font(12)
+            ui_font = get_ui_font(GUIConstants.DEFAULT_FONT_SIZE)
             self.zoom_label = ctk.CTkLabel(self, text="100%", anchor="e", font=ui_font)
         except Exception:
             # Fallback to default font
             self.zoom_label = ctk.CTkLabel(
-                self, text="100%", anchor="e", font=ctk.CTkFont(size=12)
+                self,
+                text="100%",
+                anchor="e",
+                font=ctk.CTkFont(size=GUIConstants.DEFAULT_FONT_SIZE),
             )
         # Store font reference to prevent AttributeError on destroy
         self.zoom_label._font = None
-        self.zoom_label.grid(row=0, column=4, padx=10, pady=5, sticky="e")
+        self.zoom_label.grid(
+            row=0,
+            column=4,
+            padx=GUIConstants.DEFAULT_PADDING,
+            pady=GUIConstants.SMALL_PADDING,
+            sticky="e",
+        )
 
         # Start time updates
         self.update_time()
@@ -159,9 +180,9 @@ class StatusBar(ctk.CTkFrame):
         """Set the status message with optional level indicator.
 
         Args:
-            message: Status message to display
-            level: Message level (info, warning, error, success)
-            color: Optional explicit color override
+            message: Status message to display.
+            level: Message level (info, warning, error, success).
+            color: Optional explicit color override.
         """
         self.logger.debug(f"Setting status: {message} (level: {level})")
 
@@ -229,7 +250,7 @@ class StatusBar(ctk.CTkFrame):
         """Update the current file display.
 
         Args:
-            file_path: Path to current file, or None if no file
+            file_path: Path to current file, or None if no file.
         """
         if file_path:
             self.logger.debug(f"Setting file display: {file_path}")
@@ -247,7 +268,7 @@ class StatusBar(ctk.CTkFrame):
             else:
                 display_name = str(path_obj)
 
-            self.file_label.configure(text=f"📄 {display_name}")
+            self.file_label.configure(text=f"File: {display_name}")
         else:
             self.logger.debug("Clearing file display")
             self.file_label.configure(text="No file loaded")
@@ -256,7 +277,7 @@ class StatusBar(ctk.CTkFrame):
         """Show and update the progress bar.
 
         Args:
-            value: Progress value between 0.0 and 1.0
+            value: Progress value between 0.0 and 1.0.
         """
         self.logger.debug(f"Showing progress: {value}")
         self.progress_bar.grid()
@@ -270,16 +291,16 @@ class StatusBar(ctk.CTkFrame):
     def update_time(self) -> None:
         """Update the time display."""
         current_time = datetime.now().strftime("%H:%M:%S")
-        self.time_label.configure(text=f"🕐 {current_time}")
+        self.time_label.configure(text=f"Time: {current_time}")
 
         # Schedule next update
-        self.after(1000, self.update_time)
+        self.after(TimingConstants.STATUS_UPDATE_INTERVAL, self.update_time)
 
     def set_zoom_level(self, zoom_percent: int) -> None:
         """Update the zoom level display.
 
         Args:
-            zoom_percent: Zoom level as percentage (e.g., 100, 150, 200)
+            zoom_percent: Zoom level as percentage (e.g., 100, 150, 200).
         """
         self.logger.debug(f"Setting zoom level display: {zoom_percent}%")
         self.zoom_label.configure(text=f"{zoom_percent}%")

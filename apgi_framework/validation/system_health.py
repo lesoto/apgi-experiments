@@ -50,9 +50,7 @@ class HealthCheckResult:
             lines.append("Component Status:")
             for component, status in self.component_status.items():
                 status_icon = (
-                    "✓"
-                    if status == "healthy"
-                    else "⚠️" if status == "warning" else "❌"
+                    "✓" if status == "healthy" else "⚠️" if status == "warning" else "❌"
                 )
                 lines.append(f"  {status_icon} {component}: {status}")
             lines.append("")

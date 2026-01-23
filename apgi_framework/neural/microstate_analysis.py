@@ -14,6 +14,8 @@ from scipy.spatial.distance import cdist
 from sklearn.cluster import KMeans
 from collections import Counter
 
+from apgi_framework.utils.progress_monitor import ProgressMonitor
+
 
 @dataclass
 class MicrostateSequence:
@@ -159,8 +161,11 @@ class MicrostateAnalysis:
         best_templates = None
         best_inertia = np.inf
 
-        # Multiple random initializations
-        for _ in range(10):
+        # Multiple random initializations with progress tracking
+        progress = ProgressMonitor(10, "K-means clustering initializations")
+        progress.start()
+
+        for init_idx in range(10):
             kmeans = KMeans(
                 n_clusters=self.n_states,
                 max_iter=max_iterations,
@@ -173,14 +178,24 @@ class MicrostateAnalysis:
                 best_inertia = kmeans.inertia_
                 best_templates = kmeans.cluster_centers_
 
+            progress.update(message=f"Initialization {init_idx + 1}/10")
+
+        progress.complete()
+
         # Transpose back (n_states x channels)
         self.templates = best_templates.T
 
-        # Normalize templates
+        # Normalize templates with progress tracking
+        norm_progress = ProgressMonitor(self.n_states, "Normalizing templates")
+        norm_progress.start()
+
         for i in range(self.n_states):
             self.templates[:, i] = self.templates[:, i] / np.linalg.norm(
                 self.templates[:, i]
             )
+            norm_progress.update(message=f"Template {i + 1}/{self.n_states}")
+
+        norm_progress.complete()
 
         return self.templates
 
@@ -216,6 +231,12 @@ class MicrostateAnalysis:
 
         correlations = np.zeros((n_states, n_timepoints))
 
+        # Progress tracking for correlation computation
+        total_computations = n_states * n_timepoints
+        progress = ProgressMonitor(total_computations, "Computing spatial correlations")
+        progress.start()
+
+        computation_count = 0
         for i in range(n_states):
             template = templates[:, i]
 
@@ -223,10 +244,19 @@ class MicrostateAnalysis:
             for t in range(n_timepoints):
                 corr = np.corrcoef(template, normalized_data[:, t])[0, 1]
 
+                computation_count += 1
+                if computation_count % 1000 == 0:  # Update every 1000 computations
+                    progress.set_step(
+                        computation_count,
+                        f"State {i+1}/{n_states}, Time {t+1}/{n_timepoints}",
+                    )
+
                 if polarity_invariant:
                     corr = np.abs(corr)
 
                 correlations[i, t] = corr
+
+        progress.complete()
 
         # Assign label with maximum correlation
         labels = np.argmax(correlations, axis=0)

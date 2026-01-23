@@ -505,7 +505,8 @@ dashboard.start_dashboard()
                 status["dashboard"] = (
                     "running" if response.status_code == 200 else "error"
                 )
-            except:
+            except (requests.RequestException, requests.Timeout, ConnectionError) as e:
+                self.logger.warning(f"Dashboard health check failed: {e}")
                 status["dashboard"] = "stopped"
 
         if self.config.enable_api:

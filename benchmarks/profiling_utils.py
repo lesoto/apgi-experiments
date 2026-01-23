@@ -424,7 +424,7 @@ class BenchmarkRunner:
             report_lines.append(f"### {row['benchmark']}\n")
 
             if row["success"]:
-                report_lines.append(f"- Status: ✅ Success\n")
+                report_lines.append(f"- Status: [OK] Success\n")
                 if "duration" in row:
                     report_lines.append(f"- Duration: {row['duration']:.4f}s\n")
                 if "avg_cpu" in row:
@@ -432,7 +432,7 @@ class BenchmarkRunner:
                 if "max_memory" in row:
                     report_lines.append(f"- Max Memory: {row['max_memory']:.2f}MB\n")
             else:
-                report_lines.append(f"- Status: ❌ Failed\n")
+                report_lines.append(f"- Status: [ERROR] Failed\n")
                 if "error" in row:
                     report_lines.append(f"- Error: {row['error']}\n")
 

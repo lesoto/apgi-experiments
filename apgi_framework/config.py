@@ -5,7 +5,7 @@ This module provides centralized configuration management for the APGI Framework
 including parameter validation, default values, and experimental settings.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, Any, Optional
 import json
 from pathlib import Path

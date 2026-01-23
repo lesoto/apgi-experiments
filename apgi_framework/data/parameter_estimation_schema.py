@@ -47,7 +47,8 @@ class ParameterEstimationSchema:
                 conn.execute("PRAGMA foreign_keys = ON")
 
                 # Create sessions table
-                conn.execute("""
+                conn.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS parameter_estimation_sessions (
                         session_id TEXT PRIMARY KEY,
                         participant_id TEXT NOT NULL,
@@ -64,10 +65,12 @@ class ParameterEstimationSchema:
                         CHECK (completion_status IN ('in_progress', 'completed', 'aborted')),
                         CHECK (session_quality_score >= 0.0 AND session_quality_score <= 1.0)
                     )
-                """)
+                """
+                )
 
                 # Create trials table
-                conn.execute("""
+                conn.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS parameter_estimation_trials (
                         trial_id TEXT PRIMARY KEY,
                         session_id TEXT NOT NULL,
@@ -106,10 +109,12 @@ class ParameterEstimationSchema:
                         CHECK (cardiac_signal_quality >= 0.0 AND cardiac_signal_quality <= 1.0),
                         CHECK (overall_quality_score >= 0.0 AND overall_quality_score <= 1.0)
                     )
-                """)
+                """
+                )
 
                 # Create detection trials specific table
-                conn.execute("""
+                conn.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS detection_trials (
                         trial_id TEXT PRIMARY KEY,
                         gabor_orientation REAL,
@@ -123,10 +128,12 @@ class ParameterEstimationSchema:
                         FOREIGN KEY (trial_id) REFERENCES parameter_estimation_trials(trial_id),
                         CHECK (contrast_level >= 0.0 AND contrast_level <= 1.0)
                     )
-                """)
+                """
+                )
 
                 # Create heartbeat trials specific table
-                conn.execute("""
+                conn.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS heartbeat_trials (
                         trial_id TEXT PRIMARY KEY,
                         is_synchronous BOOLEAN NOT NULL,
@@ -143,10 +150,12 @@ class ParameterEstimationSchema:
                         FOREIGN KEY (trial_id) REFERENCES parameter_estimation_trials(trial_id),
                         CHECK (heart_rate >= 0.0 AND heart_rate <= 200.0)
                     )
-                """)
+                """
+                )
 
                 # Create oddball trials specific table
-                conn.execute("""
+                conn.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS oddball_trials (
                         trial_id TEXT PRIMARY KEY,
                         is_deviant BOOLEAN NOT NULL,
@@ -165,10 +174,12 @@ class ParameterEstimationSchema:
                         FOREIGN KEY (trial_id) REFERENCES parameter_estimation_trials(trial_id),
                         CHECK (deviant_type IS NULL OR deviant_type IN ('interoceptive', 'exteroceptive'))
                     )
-                """)
+                """
+                )
 
                 # Create parameter estimates table
-                conn.execute("""
+                conn.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS parameter_estimates (
                         estimate_id TEXT PRIMARY KEY,
                         session_id TEXT NOT NULL,
@@ -242,10 +253,12 @@ class ParameterEstimationSchema:
                         CHECK (overall_data_quality >= 0.0 AND overall_data_quality <= 1.0),
                         CHECK (detection_accuracy IS NULL OR (detection_accuracy >= 0.0 AND detection_accuracy <= 1.0))
                     )
-                """)
+                """
+                )
 
                 # Create quality metrics table for detailed tracking
-                conn.execute("""
+                conn.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS trial_quality_metrics (
                         trial_id TEXT PRIMARY KEY,
                         electrode_impedances TEXT, -- JSON: electrode -> impedance
@@ -261,20 +274,23 @@ class ParameterEstimationSchema:
                         CHECK (r_peak_detection_confidence >= 0.0 AND r_peak_detection_confidence <= 1.0),
                         CHECK (heart_rate_variability >= 0.0)
                     )
-                """)
+                """
+                )
 
                 # Create indices for performance
                 self._create_indices(conn)
 
                 # Create schema version tracking
-                conn.execute("""
+                conn.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS schema_versions (
                         component TEXT PRIMARY KEY,
                         version TEXT NOT NULL,
                         applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
                         description TEXT
                     )
-                """)
+                """
+                )
 
                 # Record schema version
                 conn.execute(
@@ -353,10 +369,12 @@ class ParameterEstimationSchema:
         """Get current schema version for parameter estimation component."""
         try:
             with sqlite3.connect(self.db_path) as conn:
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT version FROM schema_versions 
                     WHERE component = 'parameter_estimation'
-                """)
+                """
+                )
                 result = cursor.fetchone()
                 return result[0] if result else None
 
@@ -381,10 +399,12 @@ class ParameterEstimationSchema:
 
         try:
             with sqlite3.connect(self.db_path) as conn:
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT name FROM sqlite_master 
                     WHERE type='table' AND name NOT LIKE 'sqlite_%'
-                """)
+                """
+                )
                 existing_tables = {row[0] for row in cursor.fetchall()}
 
                 missing_tables = set(required_tables) - existing_tables
@@ -418,10 +438,12 @@ class ParameterEstimationSchema:
                     conn.execute(f"DROP TABLE IF EXISTS {table}")
 
                 # Remove schema version record
-                conn.execute("""
+                conn.execute(
+                    """
                     DELETE FROM schema_versions 
                     WHERE component = 'parameter_estimation'
-                """)
+                """
+                )
 
                 conn.execute("PRAGMA foreign_keys = ON")
                 conn.commit()

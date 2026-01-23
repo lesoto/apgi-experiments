@@ -1007,7 +1007,12 @@ class ResultsProcessor:
                     result = self.load_processed_result(result_id)
                     if result.experiment_type == experiment_type:
                         filtered_ids.append(result_id)
-                except:
+                except (
+                    FileNotFoundError,
+                    PermissionError,
+                    pickle.UnpicklingError,
+                ) as e:
+                    self.logger.warning(f"Failed to load result {result_id}: {e}")
                     continue
             return filtered_ids
 

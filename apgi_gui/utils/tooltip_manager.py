@@ -178,9 +178,7 @@ class TooltipManager:
 
         return "\n".join(tooltip_lines)
 
-    def create_tooltip(
-        self, widget: Union[tk.Widget, ctk.CTkWidget], param_name: str, delay: int = 500
-    ) -> None:
+    def create_tooltip(self, widget, param_name: str, delay: int = 500) -> None:
         """Create a tooltip for a widget."""
 
         def on_enter(event):
@@ -202,9 +200,7 @@ class TooltipManager:
             "widget": widget,
         }
 
-    def _show_tooltip(
-        self, widget: Union[tk.Widget, ctk.CTkWidget], event, tooltip_text: str
-    ) -> None:
+    def _show_tooltip(self, widget, event, tooltip_text: str) -> None:
         """Show tooltip window."""
         # Hide any existing tooltip for this widget
         self._hide_tooltip(widget)
@@ -229,7 +225,7 @@ class TooltipManager:
         # Store reference
         self.tooltip_windows[id(widget)] = tooltip_window
 
-    def _hide_tooltip(self, widget: Union[tk.Widget, ctk.CTkWidget]) -> None:
+    def _hide_tooltip(self, widget) -> None:
         """Hide tooltip window."""
         widget_id = id(widget)
         if widget_id in self.tooltip_windows:
@@ -239,7 +235,7 @@ class TooltipManager:
     def add_parameter_tooltips(
         self,
         parent_widget: tk.Widget,
-        parameter_widgets: Dict[str, Union[tk.Widget, ctk.CTkWidget]],
+        parameter_widgets: Dict[str, Any],
     ) -> None:
         """Add tooltips to multiple parameter widgets at once."""
         for param_name, widget in parameter_widgets.items():
@@ -281,14 +277,14 @@ def get_tooltip_manager() -> TooltipManager:
     return _tooltip_manager
 
 
-def add_tooltip(widget: Union[tk.Widget, ctk.CTkWidget], param_name: str) -> None:
+def add_tooltip(widget, param_name: str) -> None:
     """Convenience function to add a tooltip to a widget."""
     manager = get_tooltip_manager()
     manager.create_tooltip(widget, param_name)
 
 
 def add_parameter_tooltips(
-    parameter_widgets: Dict[str, Union[tk.Widget, ctk.CTkWidget]],
+    parameter_widgets: Dict[str, Any],
 ) -> None:
     """Convenience function to add tooltips to multiple parameter widgets."""
     manager = get_tooltip_manager()

@@ -2,6 +2,8 @@
 
 This guide explains how to configure and customize logging in the APGI Framework.
 
+> **Note**: For a comprehensive logging configuration guide with detailed examples, see [Logging Configuration Guide](logging-configuration-guide.md).
+
 ## Overview
 
 The APGI Framework uses a comprehensive logging system with structured logging across 61+ modules. The logging system is designed to be flexible, configurable, and production-ready.
@@ -419,3 +421,32 @@ except Exception as e:
 ```
 
 This logging configuration guide provides comprehensive coverage for all APGI Framework logging needs, from basic setup to advanced production configurations.
+
+## Quick Reference
+
+### Environment Variables
+
+```bash
+export APGI_LOG_LEVEL=DEBUG          # Set global log level
+export APGI_GUI_LOG_LEVEL=INFO       # Set GUI-specific log level
+export APGI_LOG_FILE=logs/apgi.log   # Set log file path
+```
+
+### Common Logger Usage
+
+```python
+from apgi_framework.logging.standardized_logging import get_logger
+
+logger = get_logger(__name__)
+logger.info("Information message")
+logger.warning("Warning message")
+logger.error("Error message", exc_info=True)  # Include traceback
+```
+
+### Configuration Files
+
+- Main logging config: `apgi_framework/logging/`
+- User config: Create `logging.conf` in project root
+- Environment-specific: Use `.env` files
+
+For detailed configuration examples and advanced usage, see the [comprehensive logging guide](logging-configuration-guide.md).

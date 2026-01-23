@@ -694,7 +694,8 @@ For updates and documentation: https://apgi-framework.org/docs
         guide_path = self.output_dir / "Quick_Start_Guide.md"
 
         with open(guide_path, "w", encoding="utf-8") as f:
-            f.write("""# APGI Framework Quick Start Guide
+            f.write(
+                """# APGI Framework Quick Start Guide
 
 ## 5-Minute Setup
 
@@ -742,7 +743,8 @@ Total: ~30 minutes + setup
 - Full Manual: `APGI_Parameter_Estimation_User_Manual.md`
 - Troubleshooting: `Troubleshooting_Guide.md`
 - Support: support@apgi-framework.org
-""")
+"""
+            )
 
         self.logger.info(f"Quick start guide generated: {guide_path}")
         return guide_path

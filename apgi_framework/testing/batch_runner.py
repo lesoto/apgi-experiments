@@ -25,6 +25,16 @@ import logging
 import pytest
 from ..config import ConfigManager
 from ..logging.standardized_logging import get_logger
+from .activity_logger import (
+    get_activity_logger,
+    log_test_execution_start,
+    log_test_execution_end,
+    log_test_case_start,
+    log_test_case_end,
+    ActivityType,
+    ActivityLevel,
+    activity_span,
+)
 
 logger = get_logger(__name__)
 
@@ -148,11 +158,22 @@ class BatchTestRunner:
         """Run batch tests with specified parameters."""
 
         start_time = datetime.now()
+        execution_id = f"batch_{start_time.strftime('%Y%m%d_%H%M%S')}_{os.getpid()}"
+
+        # Set up activity logging context
+        activity_logger = get_activity_logger()
+        activity_logger.set_context(
+            execution_id=execution_id,
+            test_suite="batch_execution",
+            component="batch_runner",
+        )
+
         self.logger.info(f"Starting batch test execution at {start_time}")
 
         # Discover tests if not explicitly provided
         if test_selection is None:
-            test_files = self.discover_tests(test_paths, markers, keywords)
+            with activity_span(ActivityType.TEST_DISCOVERY, "Discovering tests"):
+                test_files = self.discover_tests(test_paths, markers, keywords)
         else:
             test_files = test_selection
 
@@ -175,35 +196,12 @@ class BatchTestRunner:
         max_workers = max_workers or min(32, (os.cpu_count() or 1) + 4)
         timeout = timeout or 300  # 5 minutes default per test
 
-        self.logger.info(
-            f"Executing {len(test_files)} tests with {max_workers} workers"
-        )
-
-        # Execute tests
-        test_results = []
-
-        if parallel and len(test_files) > 1:
-            test_results = self._run_tests_parallel(
-                test_files, max_workers, timeout, failfast
-            )
-        else:
-            test_results = self._run_tests_sequential(test_files, timeout, failfast)
-
-        # Generate summary
-        end_time = datetime.now()
-        total_duration = (end_time - start_time).total_seconds()
-
-        summary = BatchExecutionSummary(
-            total_tests=len(test_results),
-            passed=sum(1 for r in test_results if r.status == "passed"),
-            failed=sum(1 for r in test_results if r.status == "failed"),
-            skipped=sum(1 for r in test_results if r.status == "skipped"),
-            errors=sum(1 for r in test_results if r.status == "error"),
-            total_duration=total_duration,
-            start_time=start_time,
-            end_time=end_time,
-            test_results=test_results,
-            execution_metadata={
+        # Log test execution start
+        log_test_execution_start(
+            execution_id=execution_id,
+            test_suite="batch_execution",
+            total_tests=len(test_files),
+            configuration={
                 "parallel": parallel,
                 "max_workers": max_workers,
                 "timeout": timeout,
@@ -215,12 +213,76 @@ class BatchTestRunner:
         )
 
         self.logger.info(
-            f"Batch execution completed in {total_duration:.2f}s: "
-            f"{summary.passed} passed, {summary.failed} failed, "
-            f"{summary.skipped} skipped, {summary.errors} errors"
+            f"Executing {len(test_files)} tests with {max_workers} workers"
         )
 
-        return summary
+        # Execute tests
+        test_results = []
+
+        try:
+            if parallel and len(test_files) > 1:
+                test_results = self._run_tests_parallel(
+                    test_files, max_workers, timeout, failfast
+                )
+            else:
+                test_results = self._run_tests_sequential(test_files, timeout, failfast)
+
+            # Generate summary
+            end_time = datetime.now()
+            total_duration = (end_time - start_time).total_seconds()
+
+            summary = BatchExecutionSummary(
+                total_tests=len(test_results),
+                passed=sum(1 for r in test_results if r.status == "passed"),
+                failed=sum(1 for r in test_results if r.status == "failed"),
+                skipped=sum(1 for r in test_results if r.status == "skipped"),
+                errors=sum(1 for r in test_results if r.status == "error"),
+                total_duration=total_duration,
+                start_time=start_time,
+                end_time=end_time,
+                test_results=test_results,
+                execution_metadata={
+                    "execution_id": execution_id,
+                    "parallel": parallel,
+                    "max_workers": max_workers,
+                    "timeout": timeout,
+                    "failfast": failfast,
+                    "test_paths": test_paths,
+                    "markers": markers,
+                    "keywords": keywords,
+                },
+            )
+
+            # Log test execution end
+            log_test_execution_end(
+                execution_id=execution_id,
+                test_suite="batch_execution",
+                results={
+                    "total_tests": summary.total_tests,
+                    "passed": summary.passed,
+                    "failed": summary.failed,
+                    "skipped": summary.skipped,
+                    "errors": summary.errors,
+                },
+                duration_ms=total_duration * 1000,
+            )
+
+            self.logger.info(
+                f"Batch execution completed in {total_duration:.2f}s: "
+                f"{summary.passed} passed, {summary.failed} failed, "
+                f"{summary.skipped} skipped, {summary.errors} errors"
+            )
+
+            return summary
+
+        except Exception as e:
+            # Log execution error
+            activity_logger.log_error(
+                "batch_runner",
+                e,
+                {"execution_id": execution_id, "test_files_count": len(test_files)},
+            )
+            raise
 
     def _run_tests_parallel(
         self, test_files: List[str], max_workers: int, timeout: int, failfast: bool
@@ -307,6 +369,9 @@ class BatchTestRunner:
         """Run a single test file and capture results."""
         start_time = datetime.now()
 
+        # Log test case start
+        log_test_case_start(test_file, test_file)
+
         try:
             # Prepare pytest command
             pytest_cmd = [
@@ -336,11 +401,31 @@ class BatchTestRunner:
                 test_file, result, start_time, end_time, duration
             )
 
+            # Log test case end
+            log_test_case_end(
+                test_name=test_file,
+                test_file=test_file,
+                status=test_result.status,
+                duration_ms=duration * 1000,
+                error_message=test_result.error_message,
+            )
+
             return test_result
 
         except subprocess.TimeoutExpired:
             end_time = datetime.now()
             duration = (end_time - start_time).total_seconds()
+
+            error_msg = f"Test timed out after {timeout} seconds"
+
+            # Log test case end with timeout
+            log_test_case_end(
+                test_name=test_file,
+                test_file=test_file,
+                status="error",
+                duration_ms=duration * 1000,
+                error_message=error_msg,
+            )
 
             return TestResult(
                 test_name=test_file,
@@ -348,7 +433,7 @@ class BatchTestRunner:
                 status="error",
                 duration=duration,
                 output="",
-                error_message=f"Test timed out after {timeout} seconds",
+                error_message=error_msg,
                 start_time=start_time,
                 end_time=end_time,
             )
@@ -357,13 +442,24 @@ class BatchTestRunner:
             end_time = datetime.now()
             duration = (end_time - start_time).total_seconds()
 
+            error_msg = str(e)
+
+            # Log test case end with error
+            log_test_case_end(
+                test_name=test_file,
+                test_file=test_file,
+                status="error",
+                duration_ms=duration * 1000,
+                error_message=error_msg,
+            )
+
             return TestResult(
                 test_name=test_file,
                 test_file=test_file,
                 status="error",
                 duration=duration,
                 output="",
-                error_message=str(e),
+                error_message=error_msg,
                 start_time=start_time,
                 end_time=end_time,
             )

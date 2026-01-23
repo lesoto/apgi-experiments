@@ -6,15 +6,17 @@ Handles special cases like anesthesia awareness, blindsight, dreams, and locked-
 that may not fit standard falsification criteria.
 """
 
-from typing import Dict, List, Optional, Tuple, Any, Union
+from typing import Dict, List, Optional, Tuple, Any, Union, TYPE_CHECKING
 from dataclasses import dataclass
 from enum import Enum
 import numpy as np
 from datetime import datetime
 
 from ..simulators.signature_validator import CombinedSignature, ConsciousnessLevel
-from .consciousness_assessment import ConsciousnessAssessment
 from ..exceptions import ValidationError
+
+if TYPE_CHECKING:
+    from . import ConsciousnessAssessment
 
 
 class EdgeCaseType(Enum):
@@ -94,7 +96,7 @@ class EdgeCaseAnalysisResult:
 
     # Input data
     neural_signatures: CombinedSignature
-    consciousness_assessment: ConsciousnessAssessment
+    consciousness_assessment: "ConsciousnessAssessment"
 
     # Classification results
     primary_classification: EdgeCaseClassification
@@ -278,7 +280,7 @@ class EdgeCaseInterpreter:
     def classify_edge_case(
         self,
         neural_signatures: CombinedSignature,
-        consciousness_assessment: ConsciousnessAssessment,
+        consciousness_assessment: "ConsciousnessAssessment",
         analysis_id: Optional[str] = None,
     ) -> EdgeCaseAnalysisResult:
         """
@@ -369,7 +371,7 @@ class EdgeCaseInterpreter:
     def _calculate_classification_score(
         self,
         neural_signatures: CombinedSignature,
-        consciousness_assessment: ConsciousnessAssessment,
+        consciousness_assessment: "ConsciousnessAssessment",
         profile: EdgeCaseProfile,
     ) -> float:
         """Calculate how well the data matches an edge case profile"""
@@ -464,7 +466,7 @@ class EdgeCaseInterpreter:
         case_type: EdgeCaseType,
         confidence: float,
         neural_signatures: CombinedSignature,
-        consciousness_assessment: ConsciousnessAssessment,
+        consciousness_assessment: "ConsciousnessAssessment",
     ) -> EdgeCaseClassification:
         """Create a classification result for a specific edge case type"""
         profile = self.edge_case_profiles[case_type]
@@ -600,7 +602,7 @@ class EdgeCaseInterpreter:
 
     def _calculate_consciousness_consistency(
         self,
-        consciousness_assessment: ConsciousnessAssessment,
+        consciousness_assessment: "ConsciousnessAssessment",
         profile: EdgeCaseProfile,
     ) -> float:
         """Calculate consistency of consciousness measures with profile expectations"""
@@ -724,7 +726,7 @@ class EdgeCaseInterpreter:
         self,
         classification: EdgeCaseClassification,
         neural_signatures: CombinedSignature,
-        consciousness_assessment: ConsciousnessAssessment,
+        consciousness_assessment: "ConsciousnessAssessment",
     ) -> str:
         """Generate framework implications based on classification"""
         implications = []
@@ -791,7 +793,7 @@ class EdgeCaseInterpreter:
         self,
         classification: EdgeCaseClassification,
         neural_signatures: CombinedSignature,
-        consciousness_assessment: ConsciousnessAssessment,
+        consciousness_assessment: "ConsciousnessAssessment",
     ) -> str:
         """Assess relevance to falsification testing"""
         relevance_parts = []

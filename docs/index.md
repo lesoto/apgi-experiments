@@ -25,6 +25,8 @@ Welcome to the comprehensive documentation for the APGI (Active Inference and Pr
 - [Error Handling](developer/error-handling.md) - Error handling patterns
 - [GUI Integration](developer/gui-integration.md) - Integrating with GUI components
 - [Logging Configuration](developer/logging-configuration.md) - Setting up logging
+- [Logging Configuration Guide](developer/logging-configuration-guide.md) - Comprehensive logging guide
+- [Docstring Style Guide](developer/docstring-style-guide.md) - Documentation standards
 - [Validation Guide](developer/validation-guide.md) - Input validation
 
 ### 🔬 Research Documentation
@@ -71,16 +73,19 @@ Welcome to the comprehensive documentation for the APGI (Active Inference and Pr
 ## 🎯 Quick Navigation
 
 ### For New Users
+
 1. Start with [Quick Start Guide](user/quick_start_guide.md)
 2. Follow [Step by Step Tutorials](user/step_by_step_tutorials.md)
 3. Check [Examples](examples/index.md) for practical usage
 
 ### For Researchers
+
 1. Read [Research Overview](researcher/index.md)
 2. Explore [Research Domains](research/) relevant to your work
 3. Review [Experimental Features](experimental/) for cutting-edge capabilities
 
 ### For Developers
+
 1. Start with [Developer Guide](developer/index.md)
 2. Review [API Documentation](api/index.md)
 3. Check [Technical Documentation](technical/) for implementation details
@@ -109,6 +114,6 @@ When contributing to the documentation:
 
 ---
 
-**Last Updated**: 2026-01-16  
-**Version**: 1.0.0  
-**Framework**: APGI Framework
+__Last Updated__: 2026-01-16  
+__Version__: 1.0.0  
+__Framework__: APGI Framework

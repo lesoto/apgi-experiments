@@ -18,6 +18,7 @@ import logging
 from pathlib import Path
 
 from ..core.equation import APGIEquation
+from ..utils.progress_monitor import ProgressMonitor
 from ..exceptions import AnalysisError, ValidationError
 
 logger = logging.getLogger(__name__)

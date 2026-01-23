@@ -64,11 +64,11 @@ def check_dependencies() -> Dict[str, Dict[str, Tuple[bool, str]]]:
     """Check all dependencies and return results."""
     results = {"core": {}, "optional": {}}
 
-    print("🔍 Checking APGI Framework Dependencies")
+    print("Checking APGI Framework Dependencies")
     print("=" * 50)
 
     # Check core dependencies
-    print("\n📦 CORE DEPENDENCIES (Required)")
+    print("\nCORE DEPENDENCIES (Required)")
     print("-" * 30)
 
     core_failed = []
@@ -81,7 +81,7 @@ def check_dependencies() -> Dict[str, Dict[str, Tuple[bool, str]]]:
             core_failed.append(dep)
 
     # Check optional dependencies
-    print("\n📦 OPTIONAL DEPENDENCIES")
+    print("\nOPTIONAL DEPENDENCIES")
     print("-" * 30)
 
     optional_failed = []
@@ -112,7 +112,7 @@ def check_dependencies() -> Dict[str, Dict[str, Tuple[bool, str]]]:
             framework_success = False
 
     # Summary
-    print("\n📊 SUMMARY")
+    print("\nSUMMARY")
     print("=" * 50)
 
     total_core = len(CORE_DEPENDENCIES)
@@ -126,27 +126,27 @@ def check_dependencies() -> Dict[str, Dict[str, Tuple[bool, str]]]:
     print(f"APGI Framework:       {'✓' if framework_success else '✗'}")
 
     # Recommendations
-    print("\n💡 RECOMMENDATIONS")
+    print("\nRECOMMENDATIONS")
     print("-" * 30)
 
     if core_failed:
-        print("❌ CRITICAL: Missing core dependencies!")
+        print("[ERROR] CRITICAL: Missing core dependencies!")
         print("   Run: pip install -r requirements.txt")
         print(f"   Missing: {', '.join(core_failed)}")
         return False
 
     if not framework_success:
-        print("⚠️  WARNING: APGI Framework import issues")
+        print("[WARN] WARNING: APGI Framework import issues")
         print("   Run: pip install -e .")
         return False
 
     if optional_failed:
-        print(f"⚠️  WARNING: {len(optional_failed)} optional dependencies missing")
+        print(f"[WARN] WARNING: {len(optional_failed)} optional dependencies missing")
         print("   Some features may not work properly")
         print(f"   Missing: {', '.join(optional_failed)}")
 
-    print("✅ All critical dependencies are installed!")
-    print("🚀 APGI Framework is ready to use!")
+    print("[OK] All critical dependencies are installed!")
+    print("[READY] APGI Framework is ready to use!")
 
     return True
 
@@ -157,10 +157,10 @@ def main():
         success = check_dependencies()
         sys.exit(0 if success else 1)
     except KeyboardInterrupt:
-        print("\n\n⚠️  Dependency check interrupted")
+        print("\n\n[WARN] Dependency check interrupted")
         sys.exit(1)
     except Exception as e:
-        print(f"\n\n❌ Unexpected error: {e}")
+        print(f"\n\n[ERROR] Unexpected error: {e}")
         sys.exit(1)
 
 

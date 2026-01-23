@@ -1,0 +1,112 @@
+{
+  "metadata": {
+    "generated_at": "2026-01-22T17:28:09.159524",
+    "execution_id": "test_integration",
+    "timestamp": "2026-01-22T17:28:09.159524",
+    "report_version": "1.0"
+  },
+  "summary": {
+    "overall_coverage": 85.0,
+    "total_modules": 1,
+    "line_coverage": 85.0,
+    "branch_coverage": 75.0,
+    "function_coverage": 90.0
+  },
+  "modules": {
+    "test_module": {
+      "line_coverage": 85.0,
+      "branch_coverage": 75.0,
+      "function_coverage": 90.0,
+      "total_lines": 100,
+      "covered_lines": 85,
+      "total_branches": 20,
+      "covered_branches": 15,
+      "total_functions": 10,
+      "covered_functions": 9,
+      "uncovered_lines": [
+        86,
+        87,
+        88,
+        89,
+        90
+      ]
+    }
+  },
+  "files": {
+    "test_module.py": {
+      "line_coverage": 85.0,
+      "branch_coverage": 75.0,
+      "function_coverage": 90.0
+    }
+  },
+  "analysis": {
+    "coverage_gaps": [
+      {
+        "module_name": "test_module",
+        "file_path": "test_module.py",
+        "gap_type": "branch",
+        "priority_score": 30.0,
+        "uncovered_elements": [],
+        "suggested_tests": [
+          "Add tests for conditional branches and edge cases"
+        ]
+      },
+      {
+        "module_name": "test_module",
+        "file_path": "test_module.py",
+        "gap_type": "line",
+        "priority_score": 22.5,
+        "uncovered_elements": [
+          86,
+          87,
+          88,
+          89,
+          90
+        ],
+        "suggested_tests": [
+          "Add unit tests to cover lines: 86, 87, 88, 89, 90"
+        ]
+      },
+      {
+        "module_name": "test_module",
+        "file_path": "test_module.py",
+        "gap_type": "function",
+        "priority_score": 10.0,
+        "uncovered_elements": [],
+        "suggested_tests": []
+      }
+    ],
+    "threshold_violations": {
+      "overall": {
+        "actual": 85.0,
+        "threshold": 90.0,
+        "deficit": 5.0
+      },
+      "test_module": {
+        "line": {
+          "actual": 85.0,
+          "threshold": 95.0,
+          "deficit": 10.0
+        },
+        "branch": {
+          "actual": 75.0,
+          "threshold": 90.0,
+          "deficit": 15.0
+        },
+        "function": {
+          "actual": 90.0,
+          "threshold": 95.0,
+          "deficit": 5.0
+        }
+      }
+    },
+    "coverage_trends": {},
+    "coverage_deltas": {},
+    "recommendations": [
+      "Focus on line coverage: 1 modules need attention",
+      "Overall coverage is 5.0% below threshold - prioritize test creation",
+      "Focus testing efforts on 1 underperforming modules"
+    ],
+    "overall_health_score": 64.0
+  }
+}

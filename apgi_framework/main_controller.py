@@ -6,14 +6,13 @@ managing component integration, dependency injection, and system initialization.
 """
 
 import logging
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional
 from pathlib import Path
-import json
 from datetime import datetime
 import numpy as np
 
 from .config import ConfigManager, get_config_manager
-from .exceptions import APGIFrameworkError, ValidationError
+from .exceptions import APGIFrameworkError
 from .core import (
     APGIEquation,
     PrecisionCalculator,

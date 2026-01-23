@@ -28,6 +28,9 @@ DEFAULT_DIR_NAMES = {
     "coverage",
     "site",
     "MagickMock",
+    "session_state",
+    "session_data",
+    ".pytest_cache",
 }
 
 DEFAULT_DIR_PATTERNS = [

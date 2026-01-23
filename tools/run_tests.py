@@ -35,7 +35,7 @@ def run_pytest(args=None):
     """Run pytest with proper environment setup.
 
     Args:
-        args: List of pytest arguments (optional)
+        args: List of pytest arguments (optional).
     """
     env = setup_python_path()
 

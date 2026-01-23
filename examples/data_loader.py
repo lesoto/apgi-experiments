@@ -18,11 +18,10 @@ class ExampleDataLoader:
     """
 
     def __init__(self, data_dir: Optional[Union[str, Path]] = None):
-        """
-        Initialize the data loader.
+        """Initialize the data loader.
 
         Args:
-            data_dir: Path to the example data directory
+            data_dir: Path to the example data directory.
         """
         if data_dir is None:
             # Default to examples/data relative to this file
@@ -34,11 +33,10 @@ class ExampleDataLoader:
         self.available_subjects = ["subject_001", "subject_002", "subject_003"]
 
     def list_available_data(self) -> Dict[str, Dict[str, Any]]:
-        """
-        List all available example data.
+        """List all available example data.
 
         Returns:
-            Dictionary with available data information
+            Dictionary with available data information.
         """
         available = {}
 
@@ -62,15 +60,14 @@ class ExampleDataLoader:
     def load_data(
         self, modality: str, subject_id: str = "subject_001"
     ) -> Dict[str, Any]:
-        """
-        Load example data for a specific modality and subject.
+        """Load example data for a specific modality and subject.
 
         Args:
-            modality: Type of data to load ('eeg', 'pupillometry', 'cardiac', 'behavioral')
-            subject_id: Subject identifier
+            modality: Type of data to load ('eeg', 'pupillometry', 'cardiac', 'behavioral').
+            subject_id: Subject identifier.
 
         Returns:
-            Dictionary containing data and metadata
+            Dictionary containing data and metadata.
         """
         if modality not in self.available_modalities:
             raise ValueError(
@@ -109,14 +106,13 @@ class ExampleDataLoader:
         }
 
     def load_all_subjects(self, modality: str) -> Dict[str, Dict[str, Any]]:
-        """
-        Load data for all subjects in a modality.
+        """Load data for all subjects in a modality.
 
         Args:
-            modality: Type of data to load
+            modality: Type of data to load.
 
         Returns:
-            Dictionary with subject IDs as keys and data dictionaries as values
+            Dictionary with subject IDs as keys and data dictionaries as values.
         """
         all_data = {}
 

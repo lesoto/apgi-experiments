@@ -22,28 +22,28 @@ This comprehensive guide covers all aspects of deploying the APGI Framework, fro
 ## 🚀 Deployment Options
 
 ### Option 1: Quick Deploy (Recommended)
-- **Best for**: Beginners, testing, development
-- **Complexity**: Low
-- **Time**: 5-10 minutes
-- **Requirements**: Docker Desktop
+- __Best for__: Beginners, testing, development
+- __Complexity__: Low
+- __Time__: 5-10 minutes
+- __Requirements__: Docker Desktop
 
 ### Option 2: Manual Docker
-- **Best for**: Custom configurations, learning
-- **Complexity**: Medium
-- **Time**: 15-30 minutes
-- **Requirements**: Docker, command line comfort
+- __Best for__: Custom configurations, learning
+- __Complexity__: Medium
+- __Time__: 15-30 minutes
+- __Requirements__: Docker, command line comfort
 
 ### Option 3: Advanced Deployment
-- **Best for**: Production, multi-environment
-- **Complexity**: High
-- **Time**: 30-60 minutes
-- **Requirements**: Docker, networking knowledge
+- __Best for__: Production, multi-environment
+- __Complexity__: High
+- __Time__: 30-60 minutes
+- __Requirements__: Docker, networking knowledge
 
 ### Option 4: Cloud Deployment
-- **Best for**: Scalability, remote access
-- **Complexity**: High
-- **Time**: 1-2 hours
-- **Requirements**: Cloud account, DevOps knowledge
+- __Best for__: Scalability, remote access
+- __Complexity__: High
+- __Time__: 1-2 hours
+- __Requirements__: Cloud account, DevOps knowledge
 
 ---
 
@@ -64,24 +64,24 @@ python --version
 
 ### One-Click Deployment
 
-1. **Download the Framework**
+1. __Download the Framework__
    ```bash
    git clone https://github.com/your-org/apgi-experiments.git
    cd apgi-experiments
    ```
 
-2. **Run Quick Deploy**
+2. __Run Quick Deploy__
    ```bash
    python quick_deploy.py
    ```
 
-3. **Follow Interactive Setup**
+3. __Follow Interactive Setup__
    - Environment selection (Development/Production)
    - Port configuration
    - Data directory setup
    - Backup preferences
 
-4. **Access Your Framework**
+4. __Access Your Framework__
    - Web Interface: `http://localhost:8000`
    - Monitoring: `http://localhost:8000/monitoring`
 
@@ -110,18 +110,18 @@ python quick_deploy.py help
 
 ### Step 1: Environment Setup
 
-1. **Clone Repository**
+1. __Clone Repository__
    ```bash
    git clone https://github.com/your-org/apgi-experiments.git
    cd apgi-experiments
    ```
 
-2. **Create Environment File**
+2. __Create Environment File__
    ```bash
    cp .env.example .env
    ```
 
-3. **Edit Environment Variables**
+3. __Edit Environment Variables__
    ```bash
    nano .env
    ```
@@ -136,34 +136,34 @@ python quick_deploy.py help
 
 ### Step 2: Docker Configuration
 
-1. **Review Docker Compose**
+1. __Review Docker Compose__
    ```bash
    cat docker-compose.yml
    ```
 
-2. **Customize if Needed**
+2. __Customize if Needed__
    - Change ports
    - Add volumes
    - Modify environment variables
 
-3. **Build and Deploy**
+3. __Build and Deploy__
    ```bash
    docker-compose up -d --build
    ```
 
 ### Step 3: Verify Deployment
 
-1. **Check Container Status**
+1. __Check Container Status__
    ```bash
    docker-compose ps
    ```
 
-2. **View Logs**
+2. __View Logs__
    ```bash
    docker-compose logs -f
    ```
 
-3. **Access Application**
+3. __Access Application__
    - Navigate to configured port
    - Verify functionality
 
@@ -173,12 +173,12 @@ python quick_deploy.py help
 
 ### Multi-Environment Setup
 
-1. **Create Environment Configurations**
+1. __Create Environment Configurations__
    ```bash
    mkdir -p config/environments
    ```
 
-2. **Development Environment**
+2. __Development Environment__
    ```yaml
    # config/environments/development.yaml
    environment: development
@@ -191,7 +191,7 @@ python quick_deploy.py help
    monitoring_enabled: true
    ```
 
-3. **Production Environment**
+3. __Production Environment__
    ```yaml
    # config/environments/production.yaml
    environment: production
@@ -207,7 +207,7 @@ python quick_deploy.py help
 
 ### Automated Deployment Script
 
-1. **Create Deployment Script**
+1. __Create Deployment Script__
    ```bash
    #!/bin/bash
    # deploy.sh
@@ -227,19 +227,19 @@ python quick_deploy.py help
    python -m apgi_framework.deployment.cli health-check --wait 60
    ```
 
-2. **Make Executable**
+2. __Make Executable__
    ```bash
    chmod +x deploy.sh
    ```
 
-3. **Deploy**
+3. __Deploy__
    ```bash
    ./deploy.sh production
    ```
 
 ### Rolling Updates
 
-1. **Zero-Downtime Deployment**
+1. __Zero-Downtime Deployment__
    ```bash
    # Deploy new version alongside old
    docker-compose up -d --scale apgi-framework=2
@@ -251,7 +251,7 @@ python quick_deploy.py help
    docker-compose up -d --scale apgi-framework=1
    ```
 
-2. **Rollback if Needed**
+2. __Rollback if Needed__
    ```bash
    # Tag previous version
    docker tag apgi-framework:previous apgi-framework:rollback
@@ -266,7 +266,7 @@ python quick_deploy.py help
 
 ### Security Configuration
 
-1. **Generate Secure Keys**
+1. __Generate Secure Keys__
    ```bash
    # Generate secret key
    openssl rand -hex 32
@@ -275,7 +275,7 @@ python quick_deploy.py help
    openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365
    ```
 
-2. **Configure HTTPS**
+2. __Configure HTTPS__
    ```yaml
    # docker-compose.prod.yml
    services:
@@ -289,7 +289,7 @@ python quick_deploy.py help
          - ./nginx/ssl:/etc/nginx/ssl
    ```
 
-3. **Network Security**
+3. __Network Security__
    ```yaml
    networks:
      apgi-network:
@@ -302,7 +302,7 @@ python quick_deploy.py help
 
 ### Performance Optimization
 
-1. **Resource Limits**
+1. __Resource Limits__
    ```yaml
    services:
      apgi-framework:
@@ -316,14 +316,14 @@ python quick_deploy.py help
              memory: 2G
    ```
 
-2. **Caching Configuration**
+2. __Caching Configuration__
    ```yaml
    redis:
      image: redis:7-alpine
      command: redis-server --maxmemory 1gb --maxmemory-policy allkeys-lru
    ```
 
-3. **Database Optimization**
+3. __Database Optimization__
    ```yaml
    postgres:
      environment:
@@ -339,7 +339,7 @@ python quick_deploy.py help
 
 ### Backup Strategy
 
-1. **Automated Backups**
+1. __Automated Backups__
    ```bash
    #!/bin/bash
    # backup.sh
@@ -364,7 +364,7 @@ python quick_deploy.py help
    find backups -name "*.tar.gz" -mtime +7 -delete
    ```
 
-2. **Schedule Backups**
+2. __Schedule Backups__
    ```bash
    # Add to crontab
    0 2 * * * /path/to/backup.sh
@@ -387,7 +387,7 @@ python quick_deploy.py help
 
 ### Configuration Files
 
-1. **Main Configuration** (`config.yaml`)
+1. __Main Configuration__ (`config.yaml`)
    ```yaml
    apgi_framework:
      version: "1.0"
@@ -413,7 +413,7 @@ python quick_deploy.py help
      health_check_interval: 30
    ```
 
-2. **User Preferences** (`user_preferences.yaml`)
+2. __User Preferences__ (`user_preferences.yaml`)
    ```yaml
    gui:
      theme: dark
@@ -433,12 +433,12 @@ python quick_deploy.py help
 
 ### Validation
 
-1. **Validate Configuration**
+1. __Validate Configuration__
    ```bash
    python -m apgi_framework.deployment.cli validate-config
    ```
 
-2. **Test Configuration**
+2. __Test Configuration__
    ```bash
    python -m apgi_framework.deployment.cli test-config --environment production
    ```
@@ -449,7 +449,7 @@ python quick_deploy.py help
 
 ### Health Monitoring
 
-1. **Built-in Health Checks**
+1. __Built-in Health Checks__
    ```bash
    # Check application health
    python -m apgi_framework.deployment.cli health-check
@@ -458,7 +458,7 @@ python quick_deploy.py help
    python -m apgi_framework.deployment.cli health-check --detailed
    ```
 
-2. **Custom Health Checks**
+2. __Custom Health Checks__
    ```python
    # custom_health_check.py
    import requests
@@ -480,7 +480,7 @@ python quick_deploy.py help
 
 ### Performance Monitoring
 
-1. **Resource Usage**
+1. __Resource Usage__
    ```bash
    # Monitor container resources
    docker stats apgi-framework
@@ -490,7 +490,7 @@ python quick_deploy.py help
    iotop
    ```
 
-2. **Application Metrics**
+2. __Application Metrics__
    ```bash
    # Enable metrics collection
    export APGI_METRICS_ENABLED=true
@@ -501,7 +501,7 @@ python quick_deploy.py help
 
 ### Log Management
 
-1. **Log Rotation**
+1. __Log Rotation__
    ```yaml
    # docker-compose.yml
    services:
@@ -513,7 +513,7 @@ python quick_deploy.py help
            max-file: "3"
    ```
 
-2. **Centralized Logging**
+2. __Centralized Logging__
    ```yaml
    # docker-compose.logging.yml
    services:
@@ -533,11 +533,11 @@ python quick_deploy.py help
 
 #### Container Won't Start
 
-**Symptoms:**
+__Symptoms:__
 - `docker-compose up` fails
 - Container exits immediately
 
-**Solutions:**
+__Solutions:__
 ```bash
 # Check logs
 docker-compose logs apgi-framework
@@ -551,11 +551,11 @@ docker-compose build --no-cache
 
 #### Port Conflicts
 
-**Symptoms:**
+__Symptoms:__
 - "Port already allocated" error
 - Cannot access web interface
 
-**Solutions:**
+__Solutions:__
 ```bash
 # Find process using port
 lsof -i :8000
@@ -571,11 +571,11 @@ docker-compose up -d
 
 #### Memory Issues
 
-**Symptoms:**
+__Symptoms:__
 - Container restarts
 - Out of memory errors
 
-**Solutions:**
+__Solutions:__
 ```bash
 # Check memory usage
 docker stats
@@ -595,11 +595,11 @@ sudo swapon /swapfile
 
 #### Network Issues
 
-**Symptoms:**
+__Symptoms:__
 - Cannot connect to database
 - Service discovery failures
 
-**Solutions:**
+__Solutions:__
 ```bash
 # Check network
 docker network ls
@@ -615,13 +615,13 @@ echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
 
 ### Debug Mode
 
-1. **Enable Debug Logging**
+1. __Enable Debug Logging__
    ```bash
    export APGI_LOG_LEVEL=DEBUG
    docker-compose up -d
    ```
 
-2. **Interactive Debugging**
+2. __Interactive Debugging__
    ```bash
    # Enter container
    docker exec -it apgi-framework bash
@@ -630,7 +630,7 @@ echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
    python -c "import apgi_framework; print('OK')"
    ```
 
-3. **Performance Profiling**
+3. __Performance Profiling__
    ```bash
    # Enable profiling
    export APGI_PROFILE=true
@@ -641,7 +641,7 @@ echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
 
 ### Recovery Procedures
 
-1. **Complete Reset**
+1. __Complete Reset__
    ```bash
    # Stop all services
    docker-compose down
@@ -656,7 +656,7 @@ echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
    docker-compose up -d --build
    ```
 
-2. **Data Recovery**
+2. __Data Recovery__
    ```bash
    # Backup current data
    docker cp apgi-framework:/app/data ./backup_data
@@ -718,10 +718,10 @@ echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
 
 ---
 
-**Happy Deploying! 🚀**
+__Happy Deploying! 🚀__
 
 ---
 
-**Version**: 1.0  
-**Last Updated**: 2025-01-11  
-**See Also**: [Quick Start Guide](quick_start_guide.md), [Troubleshooting](troubleshooting.md)
+__Version__: 1.0  
+__Last Updated__: 2025-01-11  
+__See Also__: [Quick Start Guide](quick_start_guide.md), [Troubleshooting](troubleshooting.md)

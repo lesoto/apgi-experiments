@@ -11,6 +11,7 @@ import argparse
 import importlib
 import sys
 from pathlib import Path
+from typing import Dict
 
 # Add project root to Python path first
 project_root = Path(__file__).parent.parent
@@ -148,14 +149,13 @@ EXPERIMENTS = {
 
 
 def _is_safe_data_structure(data) -> bool:
-    """
-    Validate that nested data structures don't contain dangerous elements.
+    """Validate that nested data structures don't contain dangerous elements.
 
     Args:
-        data: Data structure to validate (list, dict, or tuple)
+        data: Data structure to validate (list, dict, or tuple).
 
     Returns:
-        True if safe, False if potentially dangerous
+        True if safe, False if potentially dangerous.
     """
     dangerous_patterns = [
         "__import__",

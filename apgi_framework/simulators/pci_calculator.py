@@ -446,8 +446,11 @@ class PCICalculator:
             else:
                 integration = 0.0
 
-        except:
+        except (ValueError, IndexError, ZeroDivisionError) as e:
             # Fallback: use mean connectivity
+            self.logger.warning(
+                f"Integration calculation failed: {e}. Using mean connectivity fallback."
+            )
             integration = np.mean(connectivity_matrix)
 
         return np.clip(integration, self.min_complexity, self.max_complexity)
@@ -509,7 +512,10 @@ class PCICalculator:
                     cross_corr = np.corrcoef(part1_mean, part2_mean)[0, 1]
                     if np.isnan(cross_corr) or np.isinf(cross_corr):
                         cross_corr = 0.0
-                except:
+                except (ValueError, IndexError, RuntimeWarning) as e:
+                    self.logger.warning(
+                        f"Cross-correlation calculation failed: {e}. Using fallback value."
+                    )
                     cross_corr = 0.0
         else:
             cross_corr = 0.0
