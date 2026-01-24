@@ -1,7 +1,7 @@
 """
-APGI Framework Falsification Testing System - GUI Application
+APGI Framework Testing System - GUI Application
 
-A comprehensive CustomTkinter-based GUI for the APGI Framework Falsification Testing System.
+A comprehensive CustomTkinter-based GUI for the APGI Framework Testing System.
 Provides tabbed interface for different falsification tests, parameter configuration,
 progress tracking, and results visualization.
 """
@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Dict, Any, Optional, List
 from datetime import datetime
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigureCanvasTk
 import numpy as np
 
 # Add project root to Python path for imports
@@ -86,10 +86,14 @@ class ParameterConfigPanel(ctk.CTkFrame):
         self.param_entries = {}  # Store entry widgets for validation feedback
         self.exp_entries = {}
 
-        # Import validator
-        from apgi_framework.validation import get_validator
+        # Import validator with error handling
+        try:
+            from apgi_framework.validation import get_validator
 
-        self.validator = get_validator()
+            self.validator = get_validator()
+        except ImportError:
+            self.validator = None
+            print("Warning: Validator not available, validation disabled")
 
         self._create_widgets()
         self._load_current_config()
@@ -374,6 +378,9 @@ class ParameterConfigPanel(ctk.CTkFrame):
     def _validate_apgi_parameter(self, param_name):
         """Validate a single APGI parameter in real-time."""
         try:
+            if not self.validator:
+                return  # Skip validation if validator not available
+
             value = self.param_vars[param_name].get()
             result = self.validator.validate_apgi_parameters(**{param_name: value})
 
@@ -396,6 +403,9 @@ class ParameterConfigPanel(ctk.CTkFrame):
     def _validate_exp_parameter(self, param_name):
         """Validate a single experimental parameter in real-time."""
         try:
+            if not self.validator:
+                return  # Skip validation if validator not available
+
             value = self.exp_vars[param_name].get()
 
             # Determine which validator to use
@@ -1533,12 +1543,12 @@ class LoggingPanel(ctk.CTkFrame):
 
 
 class APGIFalsificationGUI(ctk.CTk):
-    """Main GUI application for APGI Framework Falsification Testing System."""
+    """Main GUI application for APGI Framework Testing System."""
 
     def __init__(self):
         super().__init__()
 
-        self.title("APGI Framework Falsification Testing System")
+        self.title("APGI Framework Testing System")
         self.geometry("1200x800")
         self.minsize(800, 600)
 
@@ -1908,7 +1918,7 @@ class APGIFalsificationGUI(ctk.CTk):
     def _show_about(self):
         """Show about dialog."""
         about_text = """
-APGI Framework Falsification Testing System
+APGI Framework Testing System
 Version 0.1.0
 
 A comprehensive platform for implementing and validating 

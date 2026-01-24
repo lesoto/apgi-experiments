@@ -15,6 +15,7 @@ import warnings
 import logging
 
 from apgi_framework.exceptions import MathematicalError
+from apgi_framework.config.constants import ModelConstants
 
 if TYPE_CHECKING:
     from apgi_framework.core.precision import PrecisionCalculator
@@ -40,6 +41,7 @@ class APGIEquation:
         somatic_marker_engine: Optional["SomaticMarkerEngine"] = None,
         threshold_manager: Optional["ThresholdManager"] = None,
         numerical_stability: bool = True,
+        max_sigmoid_input: Optional[float] = None,
     ):
         """
         Initialize the APGI equation calculator with integrated components.
@@ -50,9 +52,14 @@ class APGIEquation:
             somatic_marker_engine: Engine for somatic marker gain (M_{c,a})
             threshold_manager: Manager for dynamic threshold (θₜ)
             numerical_stability: Whether to apply numerical stability measures
+            max_sigmoid_input: Maximum input value for sigmoid to prevent overflow
         """
         self.numerical_stability = numerical_stability
-        self._max_sigmoid_input = 500.0  # Prevent overflow in sigmoid
+        self._max_sigmoid_input = (
+            max_sigmoid_input
+            if max_sigmoid_input is not None
+            else ModelConstants.DEFAULT_MAX_SIGMOID_INPUT
+        )
 
         # Integrated components
         self.precision_calculator = precision_calculator
@@ -430,27 +437,218 @@ class APGIEquation:
 
     def validate_integrated_components(self) -> dict:
         """
-        Validate that all integrated components are properly configured.
+        Validate that all integrated components are properly configured and compatible.
 
         Returns:
-            Dictionary with validation results for each component
+            Dictionary with detailed validation results for each component
         """
         validation_results = {
-            "precision_calculator": self.precision_calculator is not None,
-            "prediction_error_processor": self.prediction_error_processor is not None,
-            "somatic_marker_engine": self.somatic_marker_engine is not None,
-            "threshold_manager": self.threshold_manager is not None,
-            "all_components_available": False,
+            "precision_calculator": {
+                "available": self.precision_calculator is not None,
+                "configured": False,
+                "compatible": False,
+                "errors": [],
+            },
+            "prediction_error_processor": {
+                "available": self.prediction_error_processor is not None,
+                "configured": False,
+                "compatible": False,
+                "errors": [],
+            },
+            "somatic_marker_engine": {
+                "available": self.somatic_marker_engine is not None,
+                "configured": False,
+                "compatible": False,
+                "errors": [],
+            },
+            "threshold_manager": {
+                "available": self.threshold_manager is not None,
+                "configured": False,
+                "compatible": False,
+                "errors": [],
+            },
+            "overall_valid": False,
+            "warnings": [],
+            "recommendations": [],
         }
 
-        validation_results["all_components_available"] = all(
-            [
-                validation_results["precision_calculator"],
-                validation_results["prediction_error_processor"],
-                validation_results["somatic_marker_engine"],
-                validation_results["threshold_manager"],
+        # Validate precision calculator
+        if self.precision_calculator is not None:
+            try:
+                # Check if precision calculator has required methods
+                required_methods = [
+                    "calculate_exteroceptive_precision",
+                    "calculate_interoceptive_precision",
+                ]
+                for method in required_methods:
+                    if not hasattr(self.precision_calculator, method):
+                        validation_results["precision_calculator"]["errors"].append(
+                            f"Missing required method: {method}"
+                        )
+                    else:
+                        validation_results["precision_calculator"]["configured"] = True
+
+                # Test basic functionality
+                test_precision = (
+                    self.precision_calculator.calculate_exteroceptive_precision(1.0)
+                )
+                if not isinstance(test_precision, (int, float)) or test_precision <= 0:
+                    validation_results["precision_calculator"]["errors"].append(
+                        "Invalid precision calculation result"
+                    )
+                else:
+                    validation_results["precision_calculator"]["compatible"] = True
+
+            except Exception as e:
+                validation_results["precision_calculator"]["errors"].append(
+                    f"Configuration test failed: {str(e)}"
+                )
+        else:
+            validation_results["warnings"].append(
+                "Precision calculator not available - using default values"
+            )
+            validation_results["recommendations"].append(
+                "Install precision calculator for accurate precision-weighted calculations"
+            )
+
+        # Validate prediction error processor
+        if self.prediction_error_processor is not None:
+            try:
+                required_methods = [
+                    "calculate_exteroceptive_error",
+                    "calculate_interoceptive_error",
+                ]
+                for method in required_methods:
+                    if not hasattr(self.prediction_error_processor, method):
+                        validation_results["prediction_error_processor"][
+                            "errors"
+                        ].append(f"Missing required method: {method}")
+                    else:
+                        validation_results["prediction_error_processor"][
+                            "configured"
+                        ] = True
+
+                # Test basic functionality
+                test_error = (
+                    self.prediction_error_processor.calculate_exteroceptive_error(
+                        1.0, 0.5
+                    )
+                )
+                if not isinstance(test_error, (int, float)):
+                    validation_results["prediction_error_processor"]["errors"].append(
+                        "Invalid error calculation result"
+                    )
+                else:
+                    validation_results["prediction_error_processor"][
+                        "compatible"
+                    ] = True
+
+            except Exception as e:
+                validation_results["prediction_error_processor"]["errors"].append(
+                    f"Configuration test failed: {str(e)}"
+                )
+        else:
+            validation_results["warnings"].append(
+                "Prediction error processor not available - using default calculations"
+            )
+
+        # Validate somatic marker engine
+        if self.somatic_marker_engine is not None:
+            try:
+                required_methods = ["calculate_somatic_gain"]
+                for method in required_methods:
+                    if not hasattr(self.somatic_marker_engine, method):
+                        validation_results["somatic_marker_engine"]["errors"].append(
+                            f"Missing required method: {method}"
+                        )
+                    else:
+                        validation_results["somatic_marker_engine"]["configured"] = True
+
+                # Test basic functionality
+                test_gain = self.somatic_marker_engine.calculate_somatic_gain(0.5)
+                if not isinstance(test_gain, (int, float)) or test_gain < 0:
+                    validation_results["somatic_marker_engine"]["errors"].append(
+                        "Invalid somatic gain calculation result"
+                    )
+                else:
+                    validation_results["somatic_marker_engine"]["compatible"] = True
+
+            except Exception as e:
+                validation_results["somatic_marker_engine"]["errors"].append(
+                    f"Configuration test failed: {str(e)}"
+                )
+        else:
+            validation_results["warnings"].append(
+                "Somatic marker engine not available - using default gain values"
+            )
+
+        # Validate threshold manager
+        if self.threshold_manager is not None:
+            try:
+                required_methods = ["get_current_threshold", "update_threshold"]
+                for method in required_methods:
+                    if not hasattr(self.threshold_manager, method):
+                        validation_results["threshold_manager"]["errors"].append(
+                            f"Missing required method: {method}"
+                        )
+                    else:
+                        validation_results["threshold_manager"]["configured"] = True
+
+                # Test basic functionality
+                test_threshold = self.threshold_manager.get_current_threshold()
+                if not isinstance(test_threshold, (int, float)) or test_threshold <= 0:
+                    validation_results["threshold_manager"]["errors"].append(
+                        "Invalid threshold value"
+                    )
+                else:
+                    validation_results["threshold_manager"]["compatible"] = True
+
+            except Exception as e:
+                validation_results["threshold_manager"]["errors"].append(
+                    f"Configuration test failed: {str(e)}"
+                )
+        else:
+            validation_results["warnings"].append(
+                "Threshold manager not available - using static threshold values"
+            )
+            validation_results["recommendations"].append(
+                "Install threshold manager for adaptive threshold functionality"
+            )
+
+        # Check overall compatibility
+        all_available = all(
+            validation_results[comp]["available"]
+            for comp in [
+                "precision_calculator",
+                "prediction_error_processor",
+                "somatic_marker_engine",
+                "threshold_manager",
             ]
         )
+
+        all_compatible = all(
+            validation_results[comp]["compatible"]
+            for comp in [
+                "precision_calculator",
+                "prediction_error_processor",
+                "somatic_marker_engine",
+                "threshold_manager",
+            ]
+            if validation_results[comp]["available"]
+        )
+
+        validation_results["overall_valid"] = all_available and all_compatible
+
+        # Add compatibility warnings
+        if not all_available:
+            validation_results["warnings"].append(
+                "Some components are not available - functionality will be limited"
+            )
+
+        if not all_compatible:
+            validation_results["warnings"].append(
+                "Some components have compatibility issues - calculations may be unreliable"
+            )
 
         return validation_results
 

@@ -45,16 +45,73 @@ class ThreadPoolManager:
         logger.debug(f"Submitted task {fn.__name__} to thread pool")
         return future
 
+    def submit_with_timeout(
+        self,
+        fn: Callable,
+        timeout: Optional[float] = None,
+        *args,
+        **kwargs,
+    ) -> concurrent.futures.Future:
+        """Submit a task with optional timeout."""
+        if self._shutdown:
+            raise RuntimeError("ThreadPoolManager is shutting down")
+
+        future = self._executor.submit(fn, *args, **kwargs)
+        self._active_futures.add(future)
+
+        # Add timeout wrapper if specified
+        if timeout:
+            future = self._wrap_future_with_timeout(future, timeout)
+
+        future.add_done_callback(self._active_futures.discard)
+
+        logger.debug(f"Submitted task {fn.__name__} with timeout {timeout}s")
+        return future
+
+    def _wrap_future_with_timeout(
+        self, future: concurrent.futures.Future, timeout: float
+    ) -> concurrent.futures.Future:
+        """Wrap a future with timeout functionality."""
+        import threading
+        import time
+
+        timeout_event = threading.Event()
+        timeout_future = concurrent.futures.Future()
+
+        def timeout_monitor():
+            if not timeout_event.wait(timeout):
+                if not future.done():
+                    future.cancel()
+                    timeout_future.set_exception(
+                        TimeoutError(f"Task timed out after {timeout}s")
+                    )
+
+        monitor_thread = threading.Thread(target=timeout_monitor, daemon=True)
+        monitor_thread.start()
+
+        def transfer_result(f):
+            timeout_event.set()
+            if f.cancelled():
+                timeout_future.cancel()
+            elif f.exception():
+                timeout_future.set_exception(f.exception())
+            else:
+                timeout_future.set_result(f.result())
+
+        future.add_done_callback(transfer_result)
+        return timeout_future
+
     def submit_with_callback(
         self,
         fn: Callable,
         callback: Optional[Callable] = None,
         error_callback: Optional[Callable] = None,
+        timeout: Optional[float] = None,
         *args,
         **kwargs,
     ) -> concurrent.futures.Future:
-        """Submit a task with optional success/error callbacks."""
-        future = self.submit(fn, *args, **kwargs)
+        """Submit a task with optional success/error callbacks and timeout."""
+        future = self.submit_with_timeout(fn, timeout, *args, **kwargs)
 
         if callback or error_callback:
 
@@ -132,12 +189,13 @@ def run_in_thread(
     fn: Callable,
     callback: Optional[Callable] = None,
     error_callback: Optional[Callable] = None,
+    timeout: Optional[float] = None,
     *args,
     **kwargs,
 ) -> concurrent.futures.Future:
     """Convenience function to run a function in a managed thread."""
     return thread_manager.submit_with_callback(
-        fn, callback, error_callback, *args, **kwargs
+        fn, callback, error_callback, timeout, *args, **kwargs
     )
 
 

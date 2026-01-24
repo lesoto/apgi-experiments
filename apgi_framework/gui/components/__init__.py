@@ -13,6 +13,7 @@ from .results_visualization_panel import (
 )
 from .logging_panel import LoggingPanel, create_logging_panel
 from .main_gui_controller import MainGUIController, create_main_gui_controller
+from .loading_indicator import LoadingIndicator, ProgressDialog
 
 __all__ = [
     # Main components
@@ -21,6 +22,8 @@ __all__ = [
     "ResultsVisualizationPanel",
     "LoggingPanel",
     "MainGUIController",
+    "LoadingIndicator",
+    "ProgressDialog",
     # Factory functions
     "create_parameter_config_panel",
     "create_test_execution_panel",

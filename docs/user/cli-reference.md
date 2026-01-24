@@ -1,6 +1,6 @@
 # APGI Framework CLI Reference
 
-Complete command-line interface reference for the APGI Framework Falsification Testing System.
+Complete command-line interface reference for the APGI Framework Testing System.
 
 ## Table of Contents
 
@@ -22,16 +22,13 @@ The APGI Framework CLI provides comprehensive command-line access to all falsifi
 python -m apgi_framework.cli [GLOBAL_OPTIONS] COMMAND [COMMAND_OPTIONS]
 ```
 
-### Getting Help
-
 ```bash
-
 # General help
 
 python -m apgi_framework.cli --help
 
 # Command-specific help
-
+```bash
 python -m apgi_framework.cli run-test --help
 python -m apgi_framework.cli run-batch --help
 ```

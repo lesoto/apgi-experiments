@@ -59,7 +59,12 @@ def test_installation_completeness_property(
     # Skip invalid paths
     assume(len(project_root.strip()) > 0)
     assume(not project_root.startswith("."))
+    assume(not project_root.startswith("/"))  # Skip absolute paths
     assume("\\" not in project_root)  # Avoid Windows path issues in tests
+    assume(not project_root.startswith("-"))  # Skip flags
+    assume(
+        all(c not in project_root for c in ";|&`$(){}[]<>")
+    )  # Skip shell special chars
 
     with tempfile.TemporaryDirectory() as temp_dir:
         test_project_root = Path(temp_dir) / project_root.strip()

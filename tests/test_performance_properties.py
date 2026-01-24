@@ -37,7 +37,7 @@ from apgi_framework.testing.batch_runner import TestResult, BatchExecutionSummar
 
 # Test data generators
 @st.composite
-def test_file_paths(draw):
+def file_paths_strategy(draw):
     """Generate realistic test file paths."""
     modules = ["core", "analysis", "clinical", "neural", "adaptive"]
     module = draw(st.sampled_from(modules))
@@ -52,9 +52,9 @@ def test_file_paths(draw):
 
 
 @st.composite
-def test_results(draw):
+def results_strategy(draw):
     """Generate test results."""
-    test_file = draw(test_file_paths())
+    test_file = draw(file_paths_strategy())
     status = draw(st.sampled_from(["passed", "failed", "skipped", "error"]))
     duration = draw(st.floats(min_value=0.1, max_value=300.0))
 
@@ -90,7 +90,7 @@ def memory_stats(draw):
 @st.composite
 def execution_profiles(draw):
     """Generate execution profiles."""
-    test_file = draw(test_file_paths())
+    test_file = draw(file_paths_strategy())
     avg_time = draw(st.floats(min_value=0.1, max_value=60.0))
     min_time = draw(st.floats(min_value=0.1, max_value=avg_time))
     max_time = draw(st.floats(min_value=avg_time, max_value=120.0))
@@ -112,7 +112,7 @@ class TestMemoryEfficiency:
 
     # Feature: comprehensive-test-enhancement, Property 29: Memory efficiency under load
     @given(
-        test_files=st.lists(test_file_paths(), min_size=1, max_size=50),
+        test_files=st.lists(file_paths_strategy(), min_size=1, max_size=50),
         memory_limit_mb=st.floats(min_value=100.0, max_value=2048.0),
         checkpoint_interval=st.integers(min_value=1, max_value=20),
     )
@@ -212,7 +212,7 @@ class TestMemoryEfficiency:
             assert 0 <= generation <= 2
 
     @given(
-        test_results_list=st.lists(test_results(), min_size=1, max_size=20),
+        test_results_list=st.lists(results_strategy(), min_size=1, max_size=20),
         checkpoint_interval=st.integers(min_value=1, max_value=10),
     )
     @settings(max_examples=20)
@@ -251,7 +251,7 @@ class TestExecutionTimeOptimization:
 
     # Feature: comprehensive-test-enhancement, Property 30: Execution time optimization
     @given(
-        test_files=st.lists(test_file_paths(), min_size=2, max_size=20),
+        test_files=st.lists(file_paths_strategy(), min_size=2, max_size=20),
         max_workers=st.integers(min_value=1, max_value=8),
     )
     @settings(max_examples=15, deadline=20000)
@@ -334,7 +334,7 @@ class TestExecutionTimeOptimization:
             assert updated_profile.complexity_score >= 0
 
     @given(
-        test_files=st.lists(test_file_paths(), min_size=1, max_size=15),
+        test_files=st.lists(file_paths_strategy(), min_size=1, max_size=15),
         cache_enabled=st.booleans(),
     )
     @settings(max_examples=15, deadline=15000)

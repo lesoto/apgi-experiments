@@ -1,5 +1,5 @@
 """
-Consciousness Assessment System for APGI Framework Falsification Testing
+Consciousness Assessment System for APGI Framework Testing
 
 This module implements the consciousness assessment system that evaluates conscious access
 through multiple converging measures including subjective reports, forced-choice tasks,

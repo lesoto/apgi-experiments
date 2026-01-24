@@ -126,9 +126,7 @@ except ImportError:
         return "light"
 
 
-# APGI Framework imports
 try:
-    # Core modules
     from apgi_framework.main_controller import MainApplicationController
     from apgi_framework.core.equation import APGIEquation
     from apgi_framework.core.precision import PrecisionCalculator
@@ -136,11 +134,9 @@ try:
     from apgi_framework.core.somatic_marker import SomaticMarkerEngine
     from apgi_framework.core.threshold import ThresholdManager
 
-    # Configuration and CLI
     from apgi_framework.config import ConfigManager, APGIParameters, ExperimentalConfig
     from apgi_framework.cli import APGIFrameworkCLI
 
-    # Data models and management
     from apgi_framework.core.data_models import (
         FalsificationResult,
         NeuralSignatures,
@@ -150,7 +146,6 @@ try:
     from apgi_framework.data.report_generator import ReportGenerator
     from apgi_framework.data.visualizer import APGIVisualizer
 
-    # Falsification tests - use available classes
     try:
         from apgi_framework.falsification.primary_falsification_test import (
             PrimaryFalsificationTest,
@@ -177,7 +172,6 @@ try:
     except ImportError:
         SomaBiasTest = None
 
-    # Analysis modules - use available classes
     try:
         from apgi_framework.analysis.bayesian_models import HierarchicalBayesianModel
 
@@ -632,7 +626,7 @@ class GUIErrorHandler:
 class APGIFrameworkGUI(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("APGI Framework GUI - Comprehensive Falsification Testing System")
+        self.title("APGI Framework GUI - Comprehensive Testing System")
 
         # Adaptive window sizing based on screen resolution
         screen_width = self.winfo_screenwidth()

@@ -1,12 +1,12 @@
 """
-APGI Framework Falsification Testing System
+APGI Framework Testing System
 
 A comprehensive platform for implementing and validating the Interoceptive Predictive
-Integration (APGI) Framework through systematic falsification testing.
+Integration (APGI) Framework through systematic testing.
 """
 
-__version__ = "0.1.0"
-__author__ = "APGI Research Team"
+__version__ = "1.0.0"
+__author__ = "APGI"
 
 from .core import APGIEquation, PrecisionCalculator, PredictionErrorProcessor
 from .engines import SomaticMarkerEngine, ThresholdManager

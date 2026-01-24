@@ -1,5 +1,5 @@
 """
-Refactored APGI Framework Falsification Testing System - GUI Application
+Refactored APGI Framework Testing System - GUI Application
 
 This is the refactored version that uses modular components instead of the
 monolithic architecture. The original 1,953-line file has been broken down into
@@ -68,7 +68,7 @@ if MODULAR_COMPONENTS_AVAILABLE:
 
 class APGIFalsificationGUI(ctk.CTk):
     """
-    Main GUI application for APGI Framework Falsification Testing System.
+    Main GUI application for APGI Framework Testing System.
 
     This refactored version uses modular components for better maintainability
     and follows the Model-View-Controller pattern.
@@ -77,7 +77,7 @@ class APGIFalsificationGUI(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("APGI Framework Falsification Testing System - Refactored")
+        self.title("APGI Framework Testing System - Refactored")
         self.geometry("1400x900")
         self.minsize(1000, 700)
 
@@ -632,7 +632,7 @@ class APGIFalsificationGUI(ctk.CTk):
 
     def _show_about(self):
         """Show about dialog."""
-        about_text = """APGI Framework Falsification Testing System
+        about_text = """APGI Framework Testing System
 Version 2.0 (Refactored)
 
 This refactored version uses modular components for better maintainability:

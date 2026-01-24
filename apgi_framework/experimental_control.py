@@ -2,7 +2,7 @@
 Experimental Control and Validation System
 
 This module implements comprehensive experimental control mechanisms and validation
-systems for the APGI Framework falsification testing. It ensures proper experimental
+systems for the APGI Framework testing. It ensures proper experimental
 conditions, validates participant responses, and maintains experimental integrity.
 """
 
@@ -1981,7 +1981,7 @@ class ExperimentalIntegrityChecker:
     Comprehensive experimental integrity checker and validator.
 
     This class orchestrates all experimental control and validation mechanisms
-    to ensure experimental integrity and validity of falsification testing.
+    to ensure experimental integrity and validity of testing.
     """
 
     def __init__(self, config: Optional[Dict[str, Any]] = None):

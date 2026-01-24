@@ -1,5 +1,5 @@
 """
-Pharmacological Simulator for APGI Framework Falsification Testing
+Pharmacological Simulator for APGI Framework Testing
 
 This module implements the PharmacologicalSimulator class that models drug effects
 on ignition threshold modulation and physiological control measures for testing

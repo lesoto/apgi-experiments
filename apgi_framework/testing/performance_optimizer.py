@@ -17,7 +17,7 @@ from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 import multiprocessing
-import pickle
+from ..security.secure_pickle import safe_pickle_load, safe_pickle_dump
 import sqlite3
 from contextlib import contextmanager
 
@@ -87,8 +87,7 @@ class TestResultCache:
     def _init_database(self):
         """Initialize cache database."""
         with sqlite3.connect(self.db_path) as conn:
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS cache_entries (
                     test_file TEXT PRIMARY KEY,
                     test_hash TEXT NOT NULL,
@@ -97,20 +96,15 @@ class TestResultCache:
                     cached_at TIMESTAMP NOT NULL,
                     cache_hits INTEGER DEFAULT 0
                 )
-            """
-            )
+            """)
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE INDEX IF NOT EXISTS idx_cached_at ON cache_entries(cached_at)
-            """
-            )
+            """)
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE INDEX IF NOT EXISTS idx_test_hash ON cache_entries(test_hash)
-            """
-            )
+            """)
 
     def _calculate_file_hash(self, file_path: str) -> str:
         """Calculate hash of a file."""
@@ -347,12 +341,10 @@ class TestResultCache:
             cursor = conn.execute("SELECT COUNT(*), SUM(cache_hits) FROM cache_entries")
             total_entries, total_hits = cursor.fetchone()
 
-            cursor = conn.execute(
-                """
+            cursor = conn.execute("""
                 SELECT COUNT(*) FROM cache_entries 
                 WHERE cached_at > datetime('now', '-24 hours')
-            """
-            )
+            """)
             recent_entries = cursor.fetchone()[0]
 
         return {

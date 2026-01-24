@@ -31,6 +31,7 @@ DEFAULT_DIR_NAMES = {
     "session_state",
     "session_data",
     ".pytest_cache",
+    "apgi_outputs",
 }
 
 DEFAULT_DIR_PATTERNS = [

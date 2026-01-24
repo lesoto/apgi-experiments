@@ -1,15 +1,10 @@
 import pytest
 import numpy as np
-from pathlib import Path
-import sys
-
-# Add the project root to the Python path
-sys.path.append(str(Path(__file__).parent.parent))
 
 # Import the Phase Transition model
 try:
-    from apgi_framework.core.somatic_marker import SomaticMarker
-    from apgi_framework.core.threshold import Threshold
+    from apgi_framework.core.somatic_marker import SomaticMarkerEngine
+    from apgi_framework.core.threshold import ThresholdManager
 
     # Create a mock SomaticAgent class for testing
     class SomaticAgent:

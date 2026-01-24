@@ -338,10 +338,30 @@ class MainArea(ctk.CTkFrame):
             self.app.update_status(f"Switched to {current_tab} tab")
 
         except (AttributeError, KeyError, IndexError) as e:
-            # Log specific error and fallback to configuration
+            # Log specific error and notify user
             self.logger.error(f"Tab change error: {e}")
+
+            # Show user-friendly error notification
+            try:
+                from ...framework.validation.error_dialog_manager import show_warning
+
+                show_warning(
+                    message=f"Failed to switch to '{current_tab}' tab. Showing configuration tab instead.",
+                    title="Tab Change Error",
+                    parent=self.app,
+                )
+            except Exception as dialog_error:
+                # Fallback to status message if dialog fails
+                self.logger.warning(f"Failed to show error dialog: {dialog_error}")
+                self.app.update_status(
+                    "Tab change failed, showing configuration", "warning"
+                )
+
+            # Fallback to configuration tab
             self.create_configuration_content()
-            self.app.update_status("Tab change failed, showing configuration")
+            self.app.update_status(
+                "Tab change failed, showing configuration", "warning"
+            )
 
     def create_analysis_content(self):
         """Create the analysis tab content."""
@@ -957,7 +977,7 @@ class MainArea(ctk.CTkFrame):
         try:
             import pandas as pd
             import json
-            import pickle
+            from apgi_framework.security.secure_pickle import safe_pickle_load
 
             file_path = Path(file_path)
 
@@ -968,8 +988,7 @@ class MainArea(ctk.CTkFrame):
                     data = json.load(f)
                 self.current_analysis_data = pd.DataFrame(data)
             elif file_path.suffix == ".pkl":
-                with open(file_path, "rb") as f:
-                    self.current_analysis_data = pickle.load(f)
+                self.current_analysis_data = safe_pickle_load(file_path)
                 if not isinstance(self.current_analysis_data, pd.DataFrame):
                     self.current_analysis_data = pd.DataFrame(
                         self.current_analysis_data

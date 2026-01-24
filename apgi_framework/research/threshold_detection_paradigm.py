@@ -15,8 +15,8 @@ import logging
 from datetime import datetime
 import json
 
-from ...exceptions import ValidationError, SimulationError
-from ...logging.standardized_logging import get_logger
+from apgi_framework.exceptions import ValidationError, SimulationError
+from apgi_framework.logging.standardized_logging import get_logger
 
 logger = get_logger("threshold_detection")
 
@@ -121,6 +121,7 @@ class ThresholdEstimate:
     method: ThresholdMethod
     threshold_value: float
     confidence_interval: Tuple[float, float]
+    n_trials: int
 
     # Psychometric function parameters
     alpha: float  # Threshold
@@ -139,7 +140,6 @@ class ThresholdEstimate:
     neural_threshold: Optional[float] = None
 
     # Metadata
-    n_trials: int
     date_estimated: datetime = field(default_factory=datetime.now)
 
 

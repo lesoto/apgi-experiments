@@ -10,7 +10,7 @@ from typing import Dict, Any, Optional
 import json
 from pathlib import Path
 
-from .exceptions import ConfigurationError
+from apgi_framework.exceptions import ConfigurationError
 from apgi_framework.utils.path_utils import get_path_manager
 
 
@@ -30,7 +30,7 @@ class APGIParameters:
         """Validate parameter ranges."""
         # Import here to avoid circular dependency
         try:
-            from .validation.parameter_validator import get_validator
+            from apgi_framework.validation.parameter_validator import get_validator
 
             validator = get_validator()
             result = validator.validate_apgi_parameters(
@@ -161,7 +161,7 @@ class ExperimentalConfig:
         """Validate experimental configuration."""
         # Import here to avoid circular dependency
         try:
-            from .validation.parameter_validator import get_validator
+            from apgi_framework.validation.parameter_validator import get_validator
 
             validator = get_validator()
             result = validator.validate_experimental_config(
@@ -333,7 +333,7 @@ class ConfigManager:
 
         # Import validator for detailed validation
         try:
-            from .validation.parameter_validator import get_validator
+            from apgi_framework.validation.parameter_validator import get_validator
 
             validator = get_validator()
 
@@ -581,7 +581,7 @@ class ConfigManager:
         """
         try:
             # Import here to avoid circular dependency
-            from .validation.parameter_validator import get_validator
+            from apgi_framework.validation.parameter_validator import get_validator
 
             validator = get_validator()
 

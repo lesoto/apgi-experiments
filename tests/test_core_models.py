@@ -6,28 +6,13 @@ import pytest
 import numpy as np
 from unittest.mock import Mock, patch
 import sys
-import sys
 from pathlib import Path
 
-# Add core models to path
-sys.path.append(str(Path(__file__).parent.parent / "core" / "models"))
+# Add the framework to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-
-# Mock the missing modules since they don't exist
-class SomaticAgent:
-    def __init__(self, n_states=4, n_actions=3, n_contexts=2, precision=1.0):
-        self.n_states = n_states
-        self.n_actions = n_actions
-        self.n_contexts = n_contexts
-        self.somatic_markers = np.zeros((n_contexts, n_actions))
-        self.precision = precision
-
-
-class PredictiveIgnitionNetwork:
-    def __init__(self, n_layers=3, n_neurons=100):
-        self.n_layers = n_layers
-        self.n_neurons = n_neurons
-        self.weights = [np.random.randn(n_neurons, n_neurons) for _ in range(n_layers)]
+# Import the real implementations
+from apgi_framework.core.models import SomaticAgent, PredictiveIgnitionNetwork
 
 
 class TestSomaticAgent:

@@ -14,7 +14,7 @@ from ..config import get_config_manager
 from ..logging.standardized_logging import get_logger
 
 
-def run_health_check(args):
+def run_health_check(args: argparse.Namespace) -> None:
     """Run system health check"""
     logger = get_logger(__name__)
 
@@ -42,7 +42,7 @@ def run_health_check(args):
         sys.exit(0)
 
 
-def run_diagnostics(args):
+def run_diagnostics(args: argparse.Namespace) -> None:
     """Run diagnostic information gathering"""
     print("\n" + "=" * 60)
     print("APGI FRAMEWORK DIAGNOSTIC INFORMATION")
@@ -74,7 +74,7 @@ def run_diagnostics(args):
         print(f"  Error loading configuration: {str(e)}")
 
 
-def validate_parameters(args):
+def validate_parameters(args: argparse.Namespace) -> None:
     """Validate parameters from command line"""
     print("\n" + "=" * 60)
     print("PARAMETER VALIDATION")
@@ -107,7 +107,7 @@ def validate_parameters(args):
         sys.exit(1)
 
 
-def get_parameter_info(args):
+def get_parameter_info(args: argparse.Namespace) -> None:
     """Get information about a parameter"""
     validator = get_validator()
 
@@ -119,7 +119,7 @@ def get_parameter_info(args):
     print(f"\n{info}\n")
 
 
-def main():
+def main() -> None:
     """Main CLI entry point"""
     parser = argparse.ArgumentParser(
         description="APGI Framework Diagnostics and Validation Tool",

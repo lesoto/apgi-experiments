@@ -178,7 +178,7 @@ def logging_configuration_generator(draw):
 
 
 @st.composite
-def test_execution_data_generator(draw):
+def execution_data_generator_strategy(draw):
     """Generate test execution data for logging."""
     return {
         "execution_id": draw(st.uuids()).hex,
@@ -434,7 +434,7 @@ class TestActivityLoggingProperties:
             logger.shutdown()
 
     @given(
-        test_data=test_execution_data_generator(),
+        test_data=execution_data_generator_strategy(),
         config=logging_configuration_generator(),
     )
     @settings(max_examples=5, deadline=8000)
@@ -911,7 +911,7 @@ class ActivityLoggerStateMachine(RuleBasedStateMachine):
     @rule()
     def get_statistics_rule(self):
         """Rule for getting statistics."""
-        stats = self.logger.get_statistics()
+        stats = self.logger.get_activity_statistics()
         assert isinstance(stats, dict)
         assert "session_id" in stats
         assert "buffer_size" in stats

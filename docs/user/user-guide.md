@@ -1,4 +1,4 @@
-# APGI Framework Falsification Testing System - User Guide
+# APGI Framework Testing System - User Guide
 
 ## Table of Contents
 
@@ -13,7 +13,7 @@
 
 ## Introduction
 
-The APGI (Interoceptive Predictive Integration) Framework Falsification Testing System is a comprehensive platform for testing the predictions of the APGI Framework through systematic falsification testing. This guide will help you:
+The APGI (Interoceptive Predictive Integration) Framework Testing System is a comprehensive platform for testing the predictions of the APGI Framework through systematic falsification testing. This guide will help you:
 
 - Run falsification tests using the GUI or CLI
 - Configure experimental parameters
@@ -27,7 +27,7 @@ The APGI (Interoceptive Predictive Integration) Framework Falsification Testing 
 **Using the GUI?** See the [GUI Visual Guide](gui-guide.md) for a visual walkthrough with diagrams.
 **Need help?** Check the [Troubleshooting Guide](troubleshooting.md) for common issues and solutions.
 
-### What is Falsification Testing?
+### What is Testing?
 
 Falsification testing is a scientific methodology where we attempt to disprove a theory by identifying conditions under which its predictions fail. For the APGI Framework, we test four primary falsification criteria:
 

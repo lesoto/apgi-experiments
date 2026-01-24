@@ -804,7 +804,9 @@ class APGIScreenshotDocumentation:
 
             # Fallback: if no parameter controls detected, use estimated positions
             if not self.parameter_controls and self.gui_window:
-                print("    ⚠️ No parameter controls detected, using estimated positions")
+                print(
+                    "    ⚠️ No parameter controls detected, using estimated positions"
+                )
                 start_x = 150
                 start_y = 200
                 param_width = 150

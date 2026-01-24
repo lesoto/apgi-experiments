@@ -9,9 +9,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import argparse
 import importlib
+import logging
 import sys
 from pathlib import Path
 from typing import Dict
+
+# Set up logger
+logger = logging.getLogger(__name__)
 
 # Add project root to Python path first
 project_root = Path(__file__).parent.parent
@@ -112,8 +116,12 @@ from apgi_framework.logging.standardized_logging import get_logger
 plt.style.use("ggplot")
 plt.rcParams["figure.facecolor"] = "white"
 
-# Initialize logger
-logger = get_logger("run_experiments")
+# Initialize logger with standardized logging if available, otherwise use basic logging
+try:
+    logger = get_logger("run_experiments")
+except ImportError:
+    # Fallback to the logger defined at line 18 if standardized logging not available
+    pass
 
 EXPERIMENTS = {
     "interoceptive_gating": "examples.01_run_primary_falsification_test",

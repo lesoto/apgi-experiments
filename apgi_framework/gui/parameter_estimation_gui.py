@@ -34,18 +34,60 @@ except ImportError as e:
     # Fallback placeholder classes
     class DetectionTask:
         def __init__(self, *args, **kwargs):
-            logger.warning("Using placeholder DetectionTask class")
-            pass
+            logger.warning(
+                "Using placeholder DetectionTask class - functionality limited"
+            )
+            self.task_id = kwargs.get("task_id", "placeholder")
+            self.n_trials = kwargs.get("n_trials", 0)
+
+        def run(self):
+            logger.warning(
+                "Placeholder DetectionTask.run() called - no actual execution"
+            )
+            return False
+
+        def stop(self):
+            logger.warning(
+                "Placeholder DetectionTask.stop() called - no actual stopping"
+            )
 
     class HeartbeatDetectionTask:
         def __init__(self, *args, **kwargs):
-            logger.warning("Using placeholder HeartbeatDetectionTask class")
-            pass
+            logger.warning(
+                "Using placeholder HeartbeatDetectionTask class - functionality limited"
+            )
+            self.task_id = kwargs.get("task_id", "placeholder")
+            self.n_trials = kwargs.get("n_trials", 0)
+
+        def run(self):
+            logger.warning(
+                "Placeholder HeartbeatDetectionTask.run() called - no actual execution"
+            )
+            return False
+
+        def stop(self):
+            logger.warning(
+                "Placeholder HeartbeatDetectionTask.stop() called - no actual stopping"
+            )
 
     class DualModalityOddballTask:
         def __init__(self, *args, **kwargs):
-            logger.warning("Using placeholder DualModalityOddballTask class")
-            pass
+            logger.warning(
+                "Using placeholder DualModalityOddballTask class - functionality limited"
+            )
+            self.task_id = kwargs.get("task_id", "placeholder")
+            self.n_trials = kwargs.get("n_trials", 0)
+
+        def run(self):
+            logger.warning(
+                "Placeholder DualModalityOddballTask.run() called - no actual execution"
+            )
+            return False
+
+        def stop(self):
+            logger.warning(
+                "Placeholder DualModalityOddballTask.stop() called - no actual stopping"
+            )
 
 
 try:
@@ -53,7 +95,23 @@ try:
 except ImportError:
 
     class ParameterEstimationDAO:
-        def __init__(self):
+        def __init__(self, db_path):
+            self.db_path = db_path
+
+        def list_sessions(self, limit=None):
+            """Return empty list for fallback implementation"""
+            return []
+
+        def get_session(self, session_id):
+            """Return None for fallback implementation"""
+            return None
+
+        def update_session(self, session_data):
+            """No-op for fallback implementation"""
+            pass
+
+        def save_session(self, session_data):
+            """No-op for fallback implementation"""
             pass
 
 
@@ -75,12 +133,12 @@ try:
 except ImportError:
 
     class SessionSetupManager:
-        def __init__(self):
-            pass
+        def __init__(self, dao):
+            self.dao = dao
 
     class ParticipantManager:
-        def __init__(self):
-            pass
+        def __init__(self, dao):
+            self.dao = dao
 
 
 try:
@@ -90,9 +148,6 @@ except ImportError:
     class TaskParameterConfigurator:
         def __init__(self):
             pass
-
-
-logger = logging.getLogger(__name__)
 
 
 class ParameterEstimationGUI:
@@ -112,19 +167,19 @@ class ParameterEstimationGUI:
             title: Window title
         """
         self.db_path = db_path
-        # self.dao = ParameterEstimationDAO(db_path)  # Commented out - missing module
+        self.dao = ParameterEstimationDAO(db_path)  # Using fallback DAO implementation
 
         # Create main window
         self.root = tk.Tk()
         self.root.title(title)
         self.root.geometry("1400x900")
 
-        # Session management - commented out due to missing dependencies
-        # self.session_manager = SessionSetupManager(self.dao)
-        # self.participant_manager = ParticipantManager(self.dao)
+        # Session management with fallback implementations
+        self.session_manager = SessionSetupManager(self.dao)
+        self.participant_manager = ParticipantManager(self.dao)
 
-        # Task configuration - commented out due to missing dependencies
-        # self.task_configurator = TaskParameterConfigurator()
+        # Task configuration with fallback implementation
+        self.task_configurator = TaskParameterConfigurator()
 
         # Progress monitoring
         self.progress_monitor = RealTimeProgressMonitor()

@@ -2,7 +2,7 @@
 
 ## Task 2: Enhance GUI Functionality and User Experience
 
-This document summarizes the implementation of Task 2 from the APGI Falsification Testing specification, which connects the GUI to actual falsification test controllers and enhances the user experience.
+This document summarizes the implementation of Task 2 from the APGI Testing specification, which connects the GUI to actual falsification test controllers and enhances the user experience.
 
 ## Completed Subtasks
 

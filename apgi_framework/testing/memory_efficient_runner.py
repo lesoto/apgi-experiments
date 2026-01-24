@@ -14,7 +14,7 @@ import sys
 import json
 import time
 import psutil
-import pickle
+from ..security.secure_pickle import safe_pickle_load, safe_pickle_dump
 import threading
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple, Callable

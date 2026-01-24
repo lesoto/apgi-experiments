@@ -46,6 +46,7 @@ class ExperimentGUI(tk.Tk):
         self.experiments = get_available_experiments()
         self.param_widgets: Dict[str, Any] = {}
         self.log_queue: queue.Queue[str] = queue.Queue()
+        self._worker = None  # Initialize worker thread attribute
         self._orig_stdout = sys.stdout
         self._orig_stderr = sys.stderr
         sys.stdout = StreamRedirector(sys.stdout, self.log_queue)

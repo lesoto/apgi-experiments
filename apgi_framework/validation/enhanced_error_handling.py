@@ -17,6 +17,7 @@ import datetime
 from contextlib import contextmanager
 
 from ..logging.standardized_logging import get_logger
+from .error_dialog_manager import show_error_dialog, ErrorDialogType
 
 
 class ErrorSeverity(Enum):
@@ -481,7 +482,40 @@ for i in range(0, len(data), chunk_size):
         # Attempt recovery
         self._attempt_recovery(apgi_error, **context)
 
+        # Show user-friendly dialog if severity is high enough
+        if severity in [ErrorSeverity.HIGH, ErrorSeverity.CRITICAL]:
+            self._show_error_dialog(apgi_error)
+
         return apgi_error
+
+    def _show_error_dialog(self, apgi_error):
+        """Show a user-friendly error dialog using the error dialog manager."""
+        try:
+            # Determine dialog type based on severity
+            if apgi_error.severity == ErrorSeverity.CRITICAL:
+                dialog_type = ErrorDialogType.ERROR
+            elif apgi_error.severity == ErrorSeverity.HIGH:
+                dialog_type = ErrorDialogType.WARNING
+            else:
+                dialog_type = ErrorDialogType.INFO
+
+            # Create user-friendly title
+            title = f"APGI {apgi_error.severity.value.upper()}"
+
+            # Use user message if available, otherwise use technical message
+            message = apgi_error.user_message or apgi_error.message
+
+            # Show dialog using the error dialog manager
+            show_error_dialog(
+                message=message,
+                title=title,
+                dialog_type=dialog_type,
+                details=apgi_error.message if apgi_error.user_message else None,
+            )
+
+        except Exception as e:
+            # Fallback to logging if dialog fails
+            self.logger.error(f"Failed to show error dialog: {e}")
 
     def _generate_user_message(
         self, exception: Exception, category: ErrorCategory

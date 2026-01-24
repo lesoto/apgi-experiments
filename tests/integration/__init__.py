@@ -19,19 +19,5 @@ Requirements Coverage:
 __version__ = "1.0.0"
 __author__ = "APGI Framework Test Enhancement Team"
 
-# Import key classes for easy access
-from .test_apgi_framework_compatibility import (
-    SyntheticDataGenerator,
-    SyntheticEEGData,
-    SyntheticPupillometryData,
-    SyntheticPhysiologicalData,
-    APGITestFixtureManager,
-)
-
-__all__ = [
-    "SyntheticDataGenerator",
-    "SyntheticEEGData",
-    "SyntheticPupillometryData",
-    "SyntheticPhysiologicalData",
-    "APGITestFixtureManager",
-]
+# Note: Do not import from test modules in __init__.py to avoid circular import issues
+# during pytest collection. Test classes are available through direct imports.

@@ -27,8 +27,7 @@ def create_sample_module():
     sample_file = os.path.join(temp_dir, "sample_module.py")
 
     with open(sample_file, "w") as f:
-        f.write(
-            """
+        f.write("""
 def calculate_area(length, width):
     '''Calculate the area of a rectangle.'''
     if length <= 0 or width <= 0:
@@ -53,8 +52,7 @@ class Rectangle:
     
     def perimeter(self):
         return calculate_perimeter(self.length, self.width)
-"""
-        )
+""")
 
     return temp_dir, sample_file
 

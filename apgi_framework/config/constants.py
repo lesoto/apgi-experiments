@@ -113,6 +113,7 @@ class ModelConstants:
     DEFAULT_INTEROCEPTIVE_GAIN = 1.0
     DEFAULT_SOMATIC_BIAS = 0.0
     DEFAULT_IGNITION_THRESHOLD = 2.0
+    DEFAULT_MAX_SIGMOID_INPUT = 500.0  # Prevent overflow in sigmoid calculations
 
     # Parameter ranges
     LEARNING_RATE_RANGE = (0.0001, 1.0)
@@ -121,6 +122,10 @@ class ModelConstants:
     INTEROCEPTIVE_GAIN_RANGE = (0.1, 5.0)
     SOMATIC_BIAS_RANGE = (-2.0, 2.0)
     IGNITION_THRESHOLD_RANGE = (0.5, 5.0)
+    MAX_SIGMOID_INPUT_RANGE = (
+        100.0,
+        1000.0,
+    )  # Reasonable range for numerical stability
 
 
 # File and Path Constants

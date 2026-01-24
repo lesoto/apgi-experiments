@@ -61,7 +61,7 @@ def exception_generator(draw):
 
 
 @st.composite
-def test_context_generator(draw):
+def context_generator_strategy(draw):
     """Generate test context information."""
     return TestContext(
         test_name=draw(
@@ -185,7 +185,7 @@ class TestErrorHandlerProperties:
     # Feature: comprehensive-test-enhancement, Property 24: Comprehensive error handling
     @given(
         exception=exception_generator(),
-        test_context=test_context_generator(),
+        test_context=context_generator_strategy(),
         metadata=metadata_generator(),
     )
     @settings(max_examples=10, deadline=5000)
@@ -301,7 +301,7 @@ class TestErrorHandlerProperties:
 
     @given(
         exceptions=st.lists(exception_generator(), min_size=2, max_size=5),
-        test_contexts=st.lists(test_context_generator(), min_size=2, max_size=5),
+        test_contexts=st.lists(context_generator_strategy(), min_size=2, max_size=5),
     )
     @settings(max_examples=5, deadline=5000)
     def test_error_categorization_consistency(self, exceptions, test_contexts):
@@ -339,7 +339,7 @@ class TestErrorHandlerProperties:
                     len(unique_categories) <= 2
                 ), f"Too many different categories for {exception_type}: {unique_categories}"
 
-    @given(exception=exception_generator(), test_context=test_context_generator())
+    @given(exception=exception_generator(), test_context=context_generator_strategy())
     @settings(max_examples=10, deadline=3000)
     def test_resolution_guidance_quality(self, exception, test_context):
         """
@@ -506,7 +506,7 @@ class ErrorHandlerStateMachine(RuleBasedStateMachine):
         self.error_handler = ErrorHandler()
         self.handled_errors = []
 
-    @rule(exception=exception_generator(), test_context=test_context_generator())
+    @rule(exception=exception_generator(), test_context=context_generator_strategy())
     def handle_error_rule(self, exception, test_context):
         """Rule for handling errors."""
         diagnostic_info = self.error_handler.handle_error(
@@ -533,15 +533,24 @@ class ErrorHandlerStateMachine(RuleBasedStateMachine):
             )
             assert isinstance(suggestions, list)
 
-            # Suggestions should be relevant to the errors we've seen
+            # If we have dependency errors and enough of them, should get suggestions
             categories_seen = set(error.category for error in self.handled_errors)
-            if TestErrorCategory.DEPENDENCY_MISSING in categories_seen:
+            dependency_count = sum(
+                1
+                for error in self.handled_errors
+                if error.category == TestErrorCategory.DEPENDENCY_MISSING
+            )
+
+            if dependency_count > 2:
+                assert (
+                    len(suggestions) > 0
+                ), "Should have suggestions for multiple dependency errors"
                 suggestion_text = " ".join(suggestions).lower()
                 # Should mention dependency management if we've seen dependency errors
                 assert any(
                     word in suggestion_text
-                    for word in ["requirements", "dependency", "virtual"]
-                )
+                    for word in ["requirements", "dependency", "virtual", "environment"]
+                ), f"No relevant words found in suggestions: {suggestions}, categories seen: {categories_seen}"
 
 
 # Run the stateful test

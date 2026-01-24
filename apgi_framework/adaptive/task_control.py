@@ -279,6 +279,7 @@ class ResponseCollector:
         # Input handling
         self.input_thread: Optional[threading.Thread] = None
         self.stop_collection = threading.Event()
+        self._lock = threading.Lock()  # Thread-safe access to shared data
 
         logger.info(f"Initialized ResponseCollector {collector_id}")
 
@@ -627,6 +628,7 @@ class SessionManager:
         self.session_data: Dict[str, Any] = {}
         self.data_backup_thread: Optional[threading.Thread] = None
         self.stop_backup = threading.Event()
+        self._data_lock = threading.Lock()  # Thread-safe access to session data
 
         logger.info(f"Initialized SessionManager {manager_id}")
 
@@ -761,10 +763,13 @@ class SessionManager:
 
         task_name = self.current_session.tasks_to_run[self.current_task_index]
 
-        # Record task completion
-        self.session_data["tasks"][task_name]["end_time"] = datetime.now().isoformat()
-        self.completed_tasks.append(task_name)
-        self.current_task_index += 1
+        # Record task completion with thread-safe access
+        with self._data_lock:
+            self.session_data["tasks"][task_name][
+                "end_time"
+            ] = datetime.now().isoformat()
+            self.completed_tasks.append(task_name)
+            self.current_task_index += 1
 
         # Add inter-task interval if more tasks remain
         if self.current_task_index < len(self.current_session.tasks_to_run):

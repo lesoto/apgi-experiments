@@ -1,5 +1,5 @@
 """
-Exception classes for the APGI Framework Falsification Testing System.
+Exception classes for the APGI Framework.
 
 This module defines the hierarchy of exceptions used throughout the framework
 to handle various error conditions in mathematical calculations, simulations,

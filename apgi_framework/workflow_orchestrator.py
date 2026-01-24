@@ -1,5 +1,5 @@
 """
-End-to-End Workflow Orchestration for APGI Framework Falsification Testing.
+End-to-End Workflow Orchestration for APGI Framework Testing.
 
 This module provides comprehensive workflow orchestration for running complete
 falsification testing pipelines, automated experiment execution, and result
@@ -14,6 +14,7 @@ from pathlib import Path
 import json
 from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
+import threading
 
 from .main_controller import MainApplicationController
 from .exceptions import APGIFrameworkError, ValidationError
@@ -144,6 +145,10 @@ class WorkflowOrchestrator:
         self.executor = None
         self.cancelled = False
 
+        # Thread safety
+        self._workflow_lock = threading.RLock()
+        self._callback_lock = threading.Lock()
+
     def register_stage_callback(self, stage: WorkflowStage, callback: Callable) -> None:
         """
         Register a callback function for a specific workflow stage.
@@ -152,33 +157,40 @@ class WorkflowOrchestrator:
             stage: Workflow stage to register callback for.
             callback: Function to call when stage completes.
         """
-        if stage not in self.stage_callbacks:
-            self.stage_callbacks[stage] = []
-        self.stage_callbacks[stage].append(callback)
+        with self._callback_lock:
+            if stage not in self.stage_callbacks:
+                self.stage_callbacks[stage] = []
+            self.stage_callbacks[stage].append(callback)
 
     def run_complete_workflow(
         self, workflow_id: Optional[str] = None
     ) -> WorkflowResult:
         """
-        Run the complete falsification testing workflow.
+        Run the complete testing workflow.
 
         Args:
             workflow_id: Optional workflow identifier. If None, generates one.
 
         Returns:
-            Complete workflow result.
+            Complete workflow result with all stage results.
         """
-        if workflow_id is None:
-            workflow_id = f"workflow_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        with self._workflow_lock:
+            if (
+                self.current_workflow
+                and self.current_workflow.overall_status == WorkflowStatus.RUNNING
+            ):
+                raise APGIFrameworkError("Workflow already running")
 
-        self.logger.info(f"Starting complete workflow: {workflow_id}")
+            # Generate workflow ID if not provided
+            if workflow_id is None:
+                workflow_id = f"workflow_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
-        # Initialize workflow result
-        self.current_workflow = WorkflowResult(
-            workflow_id=workflow_id,
-            start_time=datetime.now(),
-            overall_status=WorkflowStatus.RUNNING,
-        )
+            # Initialize workflow result
+            self.current_workflow = WorkflowResult(
+                workflow_id=workflow_id,
+                start_time=datetime.now(),
+                overall_status=WorkflowStatus.RUNNING,
+            )
 
         try:
             # Execute workflow stages in sequence
@@ -340,16 +352,18 @@ class WorkflowOrchestrator:
             raise
 
         finally:
-            # Store stage result
-            self.current_workflow.stage_results[stage] = stage_result
+            # Store stage result with thread safety
+            with self._workflow_lock:
+                self.current_workflow.stage_results[stage] = stage_result
 
-            # Call registered callbacks
-            if stage in self.stage_callbacks:
-                for callback in self.stage_callbacks[stage]:
-                    try:
-                        callback(stage_result)
-                    except Exception as e:
-                        self.logger.warning(f"Stage callback failed: {e}")
+            # Call registered callbacks with thread safety
+            with self._callback_lock:
+                if stage in self.stage_callbacks:
+                    for callback in self.stage_callbacks[stage]:
+                        try:
+                            callback(stage_result)
+                        except Exception as e:
+                            self.logger.warning(f"Stage callback failed: {e}")
 
     def _run_parallel_falsification_tests(self) -> None:
         """Run falsification tests in parallel."""
@@ -620,7 +634,7 @@ class WorkflowOrchestrator:
     def _save_summary_report(self, file_path: Path) -> None:
         """Save human-readable summary report."""
         with open(file_path, "w") as f:
-            f.write("APGI Framework Falsification Testing - Workflow Summary\n")
+            f.write("APGI Framework Testing - Workflow Summary\n")
             f.write("=" * 60 + "\n\n")
 
             f.write(f"Workflow ID: {self.current_workflow.workflow_id}\n")

@@ -1,5 +1,5 @@
 """
-Report Generation System for APGI Framework Falsification Testing
+Report Generation System for APGI Framework Testing
 
 This module provides comprehensive report generation capabilities for falsification test results,
 statistical summaries, and automated interpretation and conclusion generation.
@@ -433,7 +433,7 @@ class ReportGenerator:
         if len(test_types) == 1:
             return list(test_types)[0]
         else:
-            return "Comprehensive Falsification Testing"
+            return "Comprehensive Testing"
 
     def save_report(self, report: FalsificationReport, format: str = "json") -> str:
         """

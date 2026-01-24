@@ -1,6 +1,6 @@
 # APGI Framework Documentation
 
-Welcome to the APGI Framework Falsification Testing System documentation.
+Welcome to the APGI Framework Testing System documentation.
 
 ## 📚 Documentation Overview
 
@@ -35,9 +35,9 @@ This directory contains comprehensive documentation for using, understanding, an
 | Document                    | Description                              | When to Use                         |
 |----------------------------|------------------------------------------|-------------------------------------|
 | [Quick Start Guide](QUICK_START_GUIDE.md) | 5-minute introduction                   | First time using the system          |
-| [User Guide](USER_GUIDE.md) | Complete user manual                     | Comprehensive reference              |
+| [User Guide](USER_GUIDE.md)              | Complete user manual                     | Comprehensive reference              |
 | [GUI Visual Guide](GUI_VISUAL_GUIDE.md) | Visual GUI walkthrough                   | Learning the GUI interface           |
-| [CLI Reference](CLI_REFERENCE.md) | Command-line documentation              | Using CLI or automation              |
+| [CLI Reference](CLI_REFERENCE.md)         | Command-line documentation              | Using CLI or automation              |
 
 ### Understanding Results
 

@@ -6,16 +6,16 @@ import pytest
 import numpy as np
 from unittest.mock import patch, MagicMock
 
-from tests.falsification.primary_falsification_test import (
+from tests.falsification.primary_falsification import (
     PrimaryFalsificationTest,
 )
-from apgi_framework.falsification.consciousness_without_ignition_test import (
+from tests.falsification.consciousness_without_ignition import (
     ConsciousnessWithoutIgnitionTest,
 )
-from apgi_framework.falsification.threshold_insensitivity_test import (
+from tests.falsification.threshold_insensitivity import (
     ThresholdInsensitivityTest,
 )
-from apgi_framework.falsification.soma_bias_test import SomaBiasTest
+from tests.falsification.soma_bias import SomaBiasTest
 
 
 class TestPrimaryFalsificationTest:
@@ -67,7 +67,7 @@ class TestConsciousnessWithoutIgnitionTest:
         test = ConsciousnessWithoutIgnitionTest()
 
         assert test is not None
-        assert hasattr(test, "run_falsification_test")
+        assert hasattr(test, "run_consciousness_without_ignition_test")
 
     def test_cwi_test_basic_functionality(self):
         """Test basic functionality of CWI test."""
@@ -82,7 +82,7 @@ class TestConsciousnessWithoutIgnitionTest:
             "beta": 1.2,
         }
 
-        with patch.object(test, "run_falsification_test") as mock_run:
+        with patch.object(test, "run_consciousness_without_ignition_test") as mock_run:
             mock_run.return_value = {
                 "falsified": False,
                 "p_value": 0.12,
@@ -90,11 +90,14 @@ class TestConsciousnessWithoutIgnitionTest:
                 "confidence": 0.95,
             }
 
-            result = test.run_falsification_test(n_trials=100, n_participants=20)
+            result = test.run_consciousness_without_ignition_test(
+                n_trials=100, n_participants=20
+            )
 
             assert result["falsified"] is False
-            assert "p_value" in result
+            assert result["p_value"] == 0.12
             assert "effect_size" in result
+            assert "confidence" in result
 
 
 class TestThresholdInsensitivityTest:
@@ -105,7 +108,7 @@ class TestThresholdInsensitivityTest:
         test = ThresholdInsensitivityTest()
 
         assert test is not None
-        assert hasattr(test, "run_falsification_test")
+        assert hasattr(test, "run_threshold_insensitivity_test")
 
     def test_threshold_test_basic_functionality(self):
         """Test basic functionality of threshold insensitivity test."""
@@ -120,7 +123,7 @@ class TestThresholdInsensitivityTest:
             "beta": 1.2,
         }
 
-        with patch.object(test, "run_falsification_test") as mock_run:
+        with patch.object(test, "run_threshold_insensitivity_test") as mock_run:
             mock_run.return_value = {
                 "falsified": False,
                 "p_value": 0.08,
@@ -128,7 +131,9 @@ class TestThresholdInsensitivityTest:
                 "confidence": 0.95,
             }
 
-            result = test.run_falsification_test(n_trials=100, n_participants=20)
+            result = test.run_threshold_insensitivity_test(
+                n_trials=100, n_participants=20
+            )
 
             assert result["falsified"] is False
             assert "p_value" in result
@@ -143,7 +148,7 @@ class TestSomaBiasTest:
         test = SomaBiasTest()
 
         assert test is not None
-        assert hasattr(test, "run_falsification_test")
+        assert hasattr(test, "run_soma_bias_test")
 
     def test_soma_test_basic_functionality(self):
         """Test basic functionality of soma bias test."""
@@ -158,7 +163,7 @@ class TestSomaBiasTest:
             "beta": 1.2,
         }
 
-        with patch.object(test, "run_falsification_test") as mock_run:
+        with patch.object(test, "run_soma_bias_test") as mock_run:
             mock_run.return_value = {
                 "falsified": False,
                 "p_value": 0.20,
@@ -166,7 +171,7 @@ class TestSomaBiasTest:
                 "confidence": 0.95,
             }
 
-            result = test.run_falsification_test(n_trials=100, n_participants=20)
+            result = test.run_soma_bias_test(n_trials=100, n_participants=20)
 
             assert result["falsified"] is False
             assert "p_value" in result

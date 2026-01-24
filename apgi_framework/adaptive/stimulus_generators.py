@@ -733,6 +733,7 @@ class HeartbeatSynchronizer:
         # Threading for real-time monitoring
         self.monitoring_thread: Optional[threading.Thread] = None
         self.stop_monitoring = threading.Event()
+        self._lock = threading.Lock()  # Thread-safe access to shared data
 
         logger.info(f"Initialized HeartbeatSynchronizer {synchronizer_id}")
 
@@ -785,12 +786,13 @@ class HeartbeatSynchronizer:
                     >= self.refractory_period_ms
                 ):
 
-                    self.last_r_peak = current_time
-                    self.r_peak_history.append(current_time)
+                    with self._lock:
+                        self.last_r_peak = current_time
+                        self.r_peak_history.append(current_time)
 
-                    # Keep only recent history (last 100 beats)
-                    if len(self.r_peak_history) > 100:
-                        self.r_peak_history.pop(0)
+                        # Keep only recent history (last 100 beats)
+                        if len(self.r_peak_history) > 100:
+                            self.r_peak_history.pop(0)
 
                     logger.debug(f"R-peak detected at {current_time.isoformat()}")
 
@@ -815,14 +817,14 @@ class HeartbeatSynchronizer:
             return None
 
         start_time = datetime.now()
-        last_known_r_peak = self.last_r_peak
 
         while (datetime.now() - start_time).total_seconds() * 1000 < timeout_ms:
-            if self.last_r_peak != last_known_r_peak:
-                logger.debug(
-                    f"R-peak detected for synchronization: {self.last_r_peak.isoformat()}"
-                )
-                return self.last_r_peak
+            with self._lock:
+                if self.last_r_peak is not None:
+                    logger.debug(
+                        f"R-peak detected for synchronization: {self.last_r_peak.isoformat()}"
+                    )
+                    return self.last_r_peak
 
             time.sleep(0.001)  # 1ms polling interval
 

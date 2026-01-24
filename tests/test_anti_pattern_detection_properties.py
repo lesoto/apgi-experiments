@@ -36,7 +36,7 @@ def valid_python_identifier(draw):
 
 
 @st.composite
-def test_function_with_no_assertions(draw):
+def function_with_no_assertions_strategy(draw):
     """Generate test functions without assertions."""
     func_name = draw(valid_python_identifier())
     if not func_name.startswith("test_"):
@@ -61,7 +61,7 @@ def {func_name}():
 
 
 @st.composite
-def test_function_with_many_assertions(draw):
+def function_with_many_assertions_strategy(draw):
     """Generate test functions with too many assertions."""
     func_name = draw(valid_python_identifier())
     if not func_name.startswith("test_"):
@@ -81,7 +81,7 @@ def {func_name}():
 
 
 @st.composite
-def test_function_with_sleep(draw):
+def function_with_sleep_strategy(draw):
     """Generate test functions with sleep calls."""
     func_name = draw(valid_python_identifier())
     if not func_name.startswith("test_"):
@@ -99,7 +99,7 @@ def {func_name}():
 
 
 @st.composite
-def test_function_with_print_debugging(draw):
+def function_with_print_debugging_strategy(draw):
     """Generate test functions with print statements."""
     func_name = draw(valid_python_identifier())
     if not func_name.startswith("test_"):
@@ -121,7 +121,7 @@ def {func_name}():
 
 
 @st.composite
-def test_function_with_magic_numbers(draw):
+def function_with_magic_numbers_strategy(draw):
     """Generate test functions with magic numbers."""
     func_name = draw(valid_python_identifier())
     if not func_name.startswith("test_"):
@@ -142,7 +142,7 @@ def calculate_something():
 
 
 @st.composite
-def test_class_with_shared_state(draw):
+def class_with_shared_state_strategy(draw):
     """Generate test classes with shared state issues."""
     class_name = draw(valid_python_identifier())
     if not class_name.startswith("Test"):
@@ -161,7 +161,7 @@ class {class_name}:
 
 
 @st.composite
-def test_function_with_broad_exceptions(draw):
+def function_with_broad_exceptions_strategy(draw):
     """Generate test functions with broad exception handling."""
     func_name = draw(valid_python_identifier())
     if not func_name.startswith("test_"):
@@ -188,7 +188,7 @@ class TestAntiPatternDetectionProperties:
         self.detector = AntiPatternDetector()
 
     # Feature: comprehensive-test-enhancement, Property 25: Anti-pattern detection accuracy
-    @given(test_code=test_function_with_no_assertions())
+    @given(test_code=function_with_no_assertions_strategy())
     @settings(max_examples=10, deadline=3000)
     def test_no_assertions_detection_property(self, test_code):
         """
@@ -224,7 +224,7 @@ class TestAntiPatternDetectionProperties:
             assert suggestion.effort_level in ["low", "medium", "high"]
             assert suggestion.impact in ["low", "medium", "high"]
 
-    @given(test_code=test_function_with_many_assertions())
+    @given(test_code=function_with_many_assertions_strategy())
     @settings(max_examples=10, deadline=3000)
     def test_too_many_assertions_detection_property(self, test_code):
         """
@@ -258,7 +258,7 @@ class TestAntiPatternDetectionProperties:
         suggestion_texts = [s.description.lower() for s in pattern.suggestions]
         assert any("split" in text or "break" in text for text in suggestion_texts)
 
-    @given(test_code=test_function_with_sleep())
+    @given(test_code=function_with_sleep_strategy())
     @settings(max_examples=10, deadline=3000)
     def test_sleep_in_tests_detection_property(self, test_code):
         """
@@ -290,7 +290,7 @@ class TestAntiPatternDetectionProperties:
             "synchronization" in text or "wait" in text for text in suggestion_texts
         )
 
-    @given(test_code=test_function_with_print_debugging())
+    @given(test_code=function_with_print_debugging_strategy())
     @settings(max_examples=10, deadline=3000)
     def test_print_debugging_detection_property(self, test_code):
         """
@@ -322,7 +322,7 @@ class TestAntiPatternDetectionProperties:
         suggestion_texts = [s.description.lower() for s in pattern.suggestions]
         assert any("log" in text for text in suggestion_texts)
 
-    @given(test_code=test_function_with_magic_numbers())
+    @given(test_code=function_with_magic_numbers_strategy())
     @settings(max_examples=10, deadline=3000)
     def test_magic_numbers_detection_property(self, test_code):
         """
@@ -352,7 +352,7 @@ class TestAntiPatternDetectionProperties:
         suggestion_texts = [s.description.lower() for s in pattern.suggestions]
         assert any("constant" in text or "named" in text for text in suggestion_texts)
 
-    @given(test_code=test_class_with_shared_state())
+    @given(test_code=class_with_shared_state_strategy())
     @settings(max_examples=10, deadline=3000)
     def test_shared_state_detection_property(self, test_code):
         """
@@ -384,7 +384,7 @@ class TestAntiPatternDetectionProperties:
         suggestion_texts = [s.description.lower() for s in pattern.suggestions]
         assert any("fixture" in text for text in suggestion_texts)
 
-    @given(test_code=test_function_with_broad_exceptions())
+    @given(test_code=function_with_broad_exceptions_strategy())
     @settings(max_examples=10, deadline=3000)
     def test_broad_exception_handling_detection_property(self, test_code):
         """
@@ -421,9 +421,9 @@ class TestAntiPatternDetectionProperties:
     @given(
         test_codes=st.lists(
             st.one_of(
-                test_function_with_no_assertions(),
-                test_function_with_print_debugging(),
-                test_function_with_magic_numbers(),
+                function_with_no_assertions_strategy(),
+                function_with_print_debugging_strategy(),
+                function_with_magic_numbers_strategy(),
             ),
             min_size=2,
             max_size=5,

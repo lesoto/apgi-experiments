@@ -1,6 +1,6 @@
 # APGI Framework - Quick Start Guide
 
-Get up and running with the APGI Framework Falsification Testing System in 5 minutes.
+Get up and running with the APGI Framework Testing System in 5 minutes.
 
 ## Installation (2 minutes)
 
@@ -228,6 +228,7 @@ python validation_and_error_handling_example.py
 ### Problem: "System not initialized" error
 
 **Solution:**
+
 ```python
 controller = MainApplicationController()
 controller.initialize_system()  # Don't forget this!
@@ -266,7 +267,7 @@ See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for comprehensive troubleshooting g
 
 ### Common Commands
 
-```
+```bash
 # Validate system
 python -m apgi_framework.cli validate-system
 
@@ -341,7 +342,7 @@ python launch_gui.py
 
 ---
 
-**Congratulations!** You're now ready to use the APGI Framework Falsification Testing System.
+**Congratulations!** You're now ready to use the APGI Framework Testing System.
 
 For detailed information, see the [Full Documentation Index](DOCUMENTATION_INDEX.md).
 

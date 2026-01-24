@@ -43,10 +43,17 @@ class Sidebar(ctk.CTkFrame):
 
         # File monitoring
         self.file_monitor_active = False
-        self.file_monitor_thread = None
-        self.monitor_interval = 2.0  # Check every 2 seconds
+        self.file_monitor_future = None
+        self.monitor_interval = (
+            self.app.config.file_monitor_interval
+        )  # Use configurable interval
         self.file_timestamps = {}  # Store file timestamps for change detection
         self.file_lock = threading.Lock()  # Thread-safe access to file_timestamps
+
+        # Import thread manager
+        from ...framework.utils.thread_manager import thread_manager
+
+        self.thread_manager = thread_manager
 
         self.setup_ui()
         self.start_file_monitoring()
@@ -209,23 +216,61 @@ class Sidebar(ctk.CTkFrame):
         self.logger.debug(f"Updated {len(self.recent_file_buttons)} recent files")
 
     def _create_tooltip(self, widget, text):
-        """Create a simple tooltip for a widget.
+        """Create a proper tooltip widget for a widget.
 
         Args:
             widget: Widget to attach tooltip to
             text: Tooltip text
         """
+        # Create tooltip label
+        tooltip = ctk.CTkLabel(
+            widget,
+            text=text,
+            fg_color=("gray90", "gray20"),
+            text_color=("black", "white"),
+            corner_radius=5,
+            padx=8,
+            pady=4,
+        )
 
+        # Position tooltip above the widget
+        def show_tooltip(event):
+            try:
+                # Get widget position
+                x = widget.winfo_rootx() + widget.winfo_width() // 2
+                y = widget.winfo_rooty() - 30
+
+                # Calculate position to center tooltip
+                tooltip.update_idletasks()
+                tooltip_width = tooltip.winfo_reqwidth()
+                x -= tooltip_width // 2
+
+                # Place tooltip
+                tooltip.place(x=x - widget.winfo_rootx(), y=-30)
+                tooltip.lift()  # Bring to front
+
+            except Exception as e:
+                self.logger.debug(f"Error showing tooltip: {e}")
+
+        def hide_tooltip(event):
+            try:
+                tooltip.place_forget()
+            except:
+                pass
+
+        # Bind events
+        widget.bind("<Enter>", show_tooltip)
+        widget.bind("<Leave>", hide_tooltip)
+
+        # Also update status bar for additional feedback
         def on_enter(event):
-            # Update status bar with full path
             self.app.update_status(f"File: {text}")
 
         def on_leave(event):
-            # Clear status
             self.app.update_status("Ready")
 
-        widget.bind("<Enter>", on_enter)
-        widget.bind("<Leave>", on_leave)
+        widget.bind("<Enter>", on_enter, add="+")
+        widget.bind("<Leave>", on_leave, add="+")
 
     def _open_recent_file(self, file_path):
         """Open a recent file.
@@ -256,32 +301,41 @@ class Sidebar(ctk.CTkFrame):
         """Start monitoring recent files for external changes."""
         if not self.file_monitor_active:
             self.file_monitor_active = True
-            self.file_monitor_thread = threading.Thread(
-                target=self._monitor_files, daemon=True
+            self.file_monitor_future = self.thread_manager.submit_with_callback(
+                fn=self._monitor_files, error_callback=self._handle_monitor_error
             )
-            self.file_monitor_thread.start()
 
     def stop_file_monitoring(self):
         """Stop file monitoring."""
         self.file_monitor_active = False
-        if self.file_monitor_thread:
-            self.file_monitor_thread.join(timeout=1.0)
+        if self.file_monitor_future and not self.file_monitor_future.done():
+            self.file_monitor_future.cancel()
+
+    def _handle_monitor_error(self, error):
+        """Handle file monitoring errors."""
+        self.logger.error(f"File monitoring error: {error}")
 
     def _monitor_files(self):
-        """Monitor files for external changes in a separate thread."""
+        """Monitor files for external changes using thread manager."""
         while self.file_monitor_active:
             try:
                 self._check_file_changes()
+                import time
+
                 time.sleep(self.monitor_interval)
             except (OSError, PermissionError, RuntimeError) as e:
                 # Log specific errors but continue monitoring
                 self.logger.warning(f"File monitoring error: {e}")
+                import time
+
                 time.sleep(self.monitor_interval)
             except Exception as e:
                 # Log unexpected errors with full traceback
                 self.logger.warning(
                     f"Unexpected file monitoring error: {e}", exc_info=True
                 )
+                import time
+
                 time.sleep(self.monitor_interval)
 
     def _check_file_changes(self):

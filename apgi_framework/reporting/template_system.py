@@ -170,30 +170,30 @@ class TemplateManager:
     def _setup_custom_filters(self):
         """Setup custom Jinja2 filters for APGI-specific formatting."""
 
-        def format_parameter(value, precision=3):
+        def format_parameter(value: Any, precision: int = 3) -> str:
             """Format parameter values with appropriate precision."""
             if isinstance(value, (int, float)):
                 return f"{value:.{precision}f}"
             return str(value)
 
-        def format_pvalue(value):
+        def format_pvalue(value: Any) -> str:
             """Format p-values with appropriate precision."""
             if isinstance(value, (int, float)):
                 if value < 0.001:
-                    return "< 0.001"
+                    return "p < 0.001"
                 elif value < 0.01:
                     return f"{value:.3f}"
                 else:
                     return f"{value:.2f}"
             return str(value)
 
-        def format_percentage(value):
+        def format_percentage(value: Any) -> str:
             """Format values as percentages."""
             if isinstance(value, (int, float)):
                 return f"{value * 100:.1f}%"
             return str(value)
 
-        def format_ci(lower, upper, precision=3):
+        def format_ci(lower: float, upper: float, precision: int = 3) -> str:
             """Format confidence intervals."""
             return f"[{lower:.{precision}f}, {upper:.{precision}f}]"
 
@@ -340,8 +340,7 @@ class TemplateManager:
                     order=4,
                 ),
             ],
-            styles={
-                "css": """
+            styles={"css": """
                 body { font-family: Arial, sans-serif; margin: 40px; }
                 h1 { color: #2c3e50; border-bottom: 2px solid #3498db; }
                 h2 { color: #34495e; margin-top: 30px; }
@@ -350,8 +349,7 @@ class TemplateManager:
                 th { background-color: #3498db; color: white; padding: 10px; }
                 td { padding: 8px; }
                 tr:nth-child(even) { background-color: #f2f2f2; }
-                """
-            },
+                """},
         )
 
         self.save_template(apgi_template)

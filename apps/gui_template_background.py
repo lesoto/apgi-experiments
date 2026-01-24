@@ -395,7 +395,7 @@ class GUIErrorHandler:
 class APGIFrameworkGUI(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("APGI Framework GUI - Comprehensive Falsification Testing System")
+        self.title("APGI Framework GUI - Comprehensive Testing System")
         self.geometry("2000x1200+50+50")
         self.minsize(1600, 1000)
         ctk.set_appearance_mode("light")

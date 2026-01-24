@@ -1,8 +1,8 @@
-# APGI Framework Falsification Testing System - GUI Application
+# APGI Framework Testing System - GUI Application
 
 ## Overview
 
-The APGI Framework Falsification Testing System GUI provides a comprehensive graphical interface for conducting falsification tests on the Interoceptive Predictive Integration (APGI) Framework. The application features a tabbed interface for different test types, parameter configuration, real-time progress tracking, and results visualization.
+The APGI Framework Testing System GUI provides a comprehensive graphical interface for conducting falsification tests on the Interoceptive Predictive Integration (APGI) Framework. The application features a tabbed interface for different test types, parameter configuration, real-time progress tracking, and results visualization.
 
 ## Features
 
@@ -176,7 +176,7 @@ Configuration files are saved in JSON format with the following structure:
 
    ```bash
    pip install -r requirements.txt
-```
+   ```
 
 2. **System Initialization Fails**: Check the System Logs tab for detailed error messages
 
@@ -230,7 +230,3 @@ For extending the GUI, follow the established patterns:
 - Implement proper error handling and user feedback
 - Maintain thread safety for background operations
 - Follow the tabbed interface design for new features
-
-## Support
-
-For issues, questions, or contributions, please refer to the main project documentation and development team.

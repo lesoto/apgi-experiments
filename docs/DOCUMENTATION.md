@@ -1,6 +1,6 @@
 # APGI Framework Documentation Index
 
-Complete documentation for the APGI Framework Falsification Testing System.
+Complete documentation for the APGI Framework Testing System.
 
 ## Quick Start
 

@@ -8,6 +8,7 @@ compatibility across all GUI applications.
 import tkinter as tk
 from tkinter import ttk, messagebox
 import sys
+from abc import ABC, abstractmethod
 import os
 from pathlib import Path
 from typing import Optional, Dict, Any, Callable
@@ -92,7 +93,7 @@ class GUIStyleManager:
             ctk.set_default_color_theme("blue")
 
 
-class StandardWindow:
+class StandardWindow(ABC):
     """Base class for standardized GUI windows."""
 
     def __init__(self, title: str, size: str = None, use_customtkinter: bool = False):
@@ -267,25 +268,30 @@ class StandardMenuBar:
         self.root.bind("<Control-plus>", lambda e: self.zoom_in())
         self.root.bind("<Control-minus>", lambda e: self.zoom_out())
 
+    @abstractmethod
     def new_file(self) -> None:
-        """Create new file (to be overridden)."""
-        messagebox.showinfo("New File", "New file functionality not implemented")
+        """Create new file (to be implemented by subclasses)."""
+        pass
 
+    @abstractmethod
     def open_file(self) -> None:
-        """Open file (to be overridden)."""
-        messagebox.showinfo("Open File", "Open file functionality not implemented")
+        """Open file (to be implemented by subclasses)."""
+        pass
 
+    @abstractmethod
     def save_file(self) -> None:
-        """Save file (to be overridden)."""
-        messagebox.showinfo("Save File", "Save file functionality not implemented")
+        """Save file (to be implemented by subclasses)."""
+        pass
 
+    @abstractmethod
     def undo(self) -> None:
-        """Undo action (to be overridden)."""
-        messagebox.showinfo("Undo", "Undo functionality not implemented")
+        """Undo action (to be implemented by subclasses)."""
+        pass
 
+    @abstractmethod
     def redo(self) -> None:
-        """Redo action (to be overridden)."""
-        messagebox.showinfo("Redo", "Redo functionality not implemented")
+        """Redo action (to be implemented by subclasses)."""
+        pass
 
     def preferences(self) -> None:
         """Show preferences dialog (to be overridden)."""

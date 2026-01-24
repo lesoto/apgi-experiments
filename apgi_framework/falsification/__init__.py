@@ -1,5 +1,5 @@
 """
-APGI Framework Falsification Testing Module
+APGI Framework Testing Module
 
 This module implements the primary falsification testing framework for the APGI
 (Interoceptive Predictive Integration) Framework, including consciousness assessment,
@@ -7,10 +7,11 @@ neural signature validation, and experimental control mechanisms.
 """
 
 from datetime import datetime
+import logging
 
 # Import from tests directory for primary falsification test
 try:
-    from tests.falsification.primary_falsification_test import PrimaryFalsificationTest
+    from tests.falsification.primary_falsification import PrimaryFalsificationTest
 except ImportError:
     # Fallback if tests module is not available
     PrimaryFalsificationTest = None
@@ -89,6 +90,7 @@ class ConsciousnessWithoutIgnitionTest:
 
     def __init__(self):
         """Initialize the test with default parameters."""
+        self.logger = logging.getLogger(__name__)
         self.signature_thresholds = {
             "p3b_amplitude": 5.0,  # μV
             "gamma_plv": 0.3,  # Phase locking value
@@ -200,8 +202,12 @@ class ConsciousnessWithoutIgnitionTest:
         try:
             chi2_stat, p_value, _, _ = stats.chi2_contingency(contingency_table)
         except (ValueError, RuntimeError) as e:
-            self.logger.warning(f"Chi-square test failed: {e}. Using fallback p-value.")
-            p_value = 1.0
+            self.logger.warning(
+                f"Chi-square test failed: {e}. Using conservative fallback p-value."
+            )
+            p_value = (
+                0.5  # Conservative fallback that won't falsely indicate significance
+            )
 
         # Determine if framework is falsified
         falsified = consciousness_without_ignition_rate > 0.1 and p_value < 0.05
@@ -250,6 +256,7 @@ class ThresholdInsensitivityTest:
 
     def __init__(self):
         """Initialize the test with default parameters."""
+        self.logger = logging.getLogger(__name__)
         self.base_thresholds = {
             "p3b_amplitude": 5.0,
             "gamma_plv": 0.3,
@@ -402,6 +409,7 @@ class SomaBiasTest:
 
     def __init__(self):
         """Initialize the test with default parameters."""
+        self.logger = logging.getLogger(__name__)
         self.soma_bias_levels = [-0.5, -0.2, 0.0, 0.2, 0.5]  # Negative to positive bias
         self.neutral_baseline = 0.0
 

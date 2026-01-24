@@ -8,8 +8,11 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
     <!-- Plotly.js -->
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     
     <!-- Socket.IO -->
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
@@ -244,8 +247,38 @@
         let experiments = {};
         let currentExperimentId = null;
         
+        // Loading state management
+        let loadingStates = {
+            experiments: false,
+            config: false,
+            experimentDetails: false
+        };
+
+        function showLoading(elementId, message = 'Loading...') {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.innerHTML = `
+                    <div class="d-flex justify-content-center align-items-center">
+                        <div class="spinner-border text-primary me-2" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <span>${message}</span>
+                    </div>
+                `;
+            }
+        }
+
+        function hideLoading(elementId, content) {
+            const element = document.getElementById(elementId);
+            if (element && content) {
+                element.innerHTML = content;
+            }
+        }
+
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
+            showLoading('experiments-list', 'Loading experiments...');
+            showLoading('configuration-display', 'Loading configuration...');
             initializeSocket();
             loadInitialData();
         });
@@ -285,31 +318,54 @@
         
         // Load initial data
         function loadInitialData() {
+            loadingStates.experiments = true;
+            loadingStates.config = true;
+            
             fetch('/api/experiments')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
+                    loadingStates.experiments = false;
                     if (data.success) {
-                        experiments = data.data;
-                        updateDashboard(data);
+                        updateDashboard(data.data);
                     } else {
-                        showAlert('Failed to load experiments: ' + data.error, 'danger');
+                        showAlert('Failed to load experiments: ' + (data.error || 'Unknown error'), 'danger');
+                        hideLoading('experiments-list', '<div class="text-center text-muted">Failed to load experiments</div>');
                     }
                 })
                 .catch(error => {
+                    loadingStates.experiments = false;
                     console.error('Error loading initial data:', error);
-                    showAlert('Failed to load initial data', 'danger');
+                    showAlert('Failed to load initial data: ' + error.message, 'danger');
+                    hideLoading('experiments-list', '<div class="text-center text-muted">Failed to load experiments</div>');
                 });
             
             // Load configuration
             fetch('/api/config')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
+                    loadingStates.config = false;
                     if (data.success) {
                         updateConfiguration(data.data);
+                    } else {
+                        console.warn('Configuration load failed:', data.error || 'Unknown error');
+                        hideLoading('configuration-display', '<div class="text-center text-muted">Failed to load configuration</div>');
                     }
                 })
                 .catch(error => {
+                    loadingStates.config = false;
                     console.error('Error loading configuration:', error);
+                    showAlert('Failed to load configuration: ' + error.message, 'warning');
+                    hideLoading('configuration-display', '<div class="text-center text-muted">Failed to load configuration</div>');
                 });
         }
         
@@ -512,20 +568,36 @@
         function showExperimentDetails(experimentId) {
             currentExperimentId = experimentId;
             
+            if (loadingStates.experimentDetails) {
+                return; // Prevent multiple simultaneous requests
+            }
+            
+            loadingStates.experimentDetails = true;
+            showLoading('experiment-details', 'Loading experiment details...');
+            
             fetch(`/api/experiment/${experimentId}`)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
+                    loadingStates.experimentDetails = false;
                     if (data.success) {
                         displayExperimentDetails(data.data, data.visualizations);
                         const modal = new bootstrap.Modal(document.getElementById('experimentModal'));
                         modal.show();
                     } else {
-                        showAlert('Failed to load experiment details: ' + data.error, 'danger');
+                        showAlert('Failed to load experiment details: ' + (data.error || 'Unknown error'), 'danger');
+                        hideLoading('experiment-details', '<div class="text-center text-muted">Failed to load experiment details</div>');
                     }
                 })
                 .catch(error => {
+                    loadingStates.experimentDetails = false;
                     console.error('Error loading experiment details:', error);
-                    showAlert('Failed to load experiment details', 'danger');
+                    showAlert('Failed to load experiment details: ' + error.message, 'danger');
+                    hideLoading('experiment-details', '<div class="text-center text-muted">Failed to load experiment details</div>');
                 });
         }
         

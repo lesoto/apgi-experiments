@@ -1,7 +1,7 @@
 """
-Command-Line Interface for APGI Framework Falsification Testing System.
+Command-Line Interface for APGI Framework Testing System.
 
-This module provides a comprehensive CLI for running individual falsification tests,
+This module provides a comprehensive CLI for running individual tests,
 batch experiment execution, and configuration management.
 """
 
@@ -12,6 +12,156 @@ import logging
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 from datetime import datetime
+
+
+def validate_trials_range(value):
+    """Validate trials argument is within documented range (100-10000)."""
+    try:
+        ivalue = int(value)
+        if not 100 <= ivalue <= 10000:
+            raise argparse.ArgumentTypeError(
+                f"Number of trials must be between 100 and 10000, got {ivalue}"
+            )
+        return ivalue
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"Invalid integer value for trials: {value}")
+
+
+def validate_participants_range(value):
+    """Validate participants argument is within documented range (10-1000)."""
+    try:
+        ivalue = int(value)
+        if not 10 <= ivalue <= 1000:
+            raise argparse.ArgumentTypeError(
+                f"Number of participants must be between 10 and 1000, got {ivalue}"
+            )
+        return ivalue
+    except ValueError:
+        raise argparse.ArgumentTypeError(
+            f"Invalid integer value for participants: {value}"
+        )
+
+
+def validate_threshold_range(value):
+    """Validate threshold argument is within documented range (0.5-10.0)."""
+    try:
+        fvalue = float(value)
+        if not 0.5 <= fvalue <= 10.0:
+            raise argparse.ArgumentTypeError(
+                f"Threshold must be between 0.5 and 10.0, got {fvalue}"
+            )
+        return fvalue
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"Invalid float value for threshold: {value}")
+
+
+def validate_positive_int(value):
+    """Validate positive integer argument."""
+    try:
+        ivalue = int(value)
+        if ivalue <= 0:
+            raise argparse.ArgumentTypeError(
+                f"Value must be a positive integer, got {ivalue}"
+            )
+        return ivalue
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"Invalid integer value: {value}")
+
+
+def validate_workers_range(value):
+    """Validate max-workers argument is within reasonable range (1-64)."""
+    try:
+        ivalue = int(value)
+        if not 1 <= ivalue <= 64:
+            raise argparse.ArgumentTypeError(
+                f"Max workers must be between 1 and 64, got {ivalue}"
+            )
+        return ivalue
+    except ValueError:
+        raise argparse.ArgumentTypeError(
+            f"Invalid integer value for max-workers: {value}"
+        )
+
+
+def validate_timeout_range(value):
+    """Validate timeout argument is within reasonable range (1-3600 seconds)."""
+    try:
+        ivalue = int(value)
+        if not 1 <= ivalue <= 3600:
+            raise argparse.ArgumentTypeError(
+                f"Timeout must be between 1 and 3600 seconds, got {ivalue}"
+            )
+        return ivalue
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"Invalid integer value for timeout: {value}")
+
+
+def validate_days_range(value):
+    """Validate days argument is within reasonable range (1-365)."""
+    try:
+        ivalue = int(value)
+        if not 1 <= ivalue <= 365:
+            raise argparse.ArgumentTypeError(
+                f"Days must be between 1 and 365, got {ivalue}"
+            )
+        return ivalue
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"Invalid integer value for days: {value}")
+
+
+def validate_coverage_threshold_range(value):
+    """Validate coverage threshold argument is within range (0-100)."""
+    try:
+        fvalue = float(value)
+        if not 0 <= fvalue <= 100:
+            raise argparse.ArgumentTypeError(
+                f"Coverage threshold must be between 0 and 100, got {fvalue}"
+            )
+        return fvalue
+    except ValueError:
+        raise argparse.ArgumentTypeError(
+            f"Invalid float value for coverage threshold: {value}"
+        )
+
+
+def validate_precision_range(value):
+    """Validate precision argument is within reasonable range (0.001-1000)."""
+    try:
+        fvalue = float(value)
+        if not 0.001 <= fvalue <= 1000:
+            raise argparse.ArgumentTypeError(
+                f"Precision must be between 0.001 and 1000, got {fvalue}"
+            )
+        return fvalue
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"Invalid float value for precision: {value}")
+
+
+def validate_steepness_range(value):
+    """Validate steepness argument is within reasonable range (0.1-50.0)."""
+    try:
+        fvalue = float(value)
+        if not 0.1 <= fvalue <= 50.0:
+            raise argparse.ArgumentTypeError(
+                f"Steepness must be between 0.1 and 50.0, got {fvalue}"
+            )
+        return fvalue
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"Invalid float value for steepness: {value}")
+
+
+def validate_gain_range(value):
+    """Validate gain argument is within reasonable range (-10.0 to 10.0)."""
+    try:
+        fvalue = float(value)
+        if not -10.0 <= fvalue <= 10.0:
+            raise argparse.ArgumentTypeError(
+                f"Gain must be between -10.0 and 10.0, got {fvalue}"
+            )
+        return fvalue
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"Invalid float value for gain: {value}")
+
 
 from .main_controller import MainApplicationController
 from .config import ConfigManager, APGIParameters, ExperimentalConfig
@@ -27,7 +177,7 @@ from .testing.test_generator import (
 
 
 class APGIFrameworkCLI:
-    """Command-line interface for the APGI Framework Falsification Testing System."""
+    """Command-line interface for the APGI Framework Testing System."""
 
     def __init__(self):
         """Initialize the CLI."""
@@ -51,7 +201,7 @@ class APGIFrameworkCLI:
     def create_parser(self) -> argparse.ArgumentParser:
         """Create and configure the argument parser."""
         parser = argparse.ArgumentParser(
-            description="APGI Framework Falsification Testing System",
+            description="APGI Framework Testing System",
             formatter_class=argparse.RawDescriptionHelpFormatter,
             epilog="""
 Examples:
@@ -71,7 +221,10 @@ Examples:
 
         # Global options
         parser.add_argument(
-            "--config", "-c", type=str, help="Path to configuration file"
+            "--config",
+            "-c",
+            type=str,
+            help="Path to JSON configuration file with APGI parameters",
         )
 
         parser.add_argument(
@@ -83,16 +236,17 @@ Examples:
         )
 
         parser.add_argument(
-            "--output-dir", "-o", type=str, help="Output directory for results"
+            "--output-dir",
+            "-o",
+            type=str,
+            help="Output directory for results and reports",
         )
 
         # Subcommands
         subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
         # Run individual test command
-        test_parser = subparsers.add_parser(
-            "run-test", help="Run individual falsification test"
-        )
+        test_parser = subparsers.add_parser("run-test", help="Run individual test")
         test_parser.add_argument(
             "test_type",
             choices=[
@@ -101,33 +255,34 @@ Examples:
                 "threshold-insensitivity",
                 "soma-bias",
             ],
-            help="Type of falsification test to run",
+            help="Type of test to run",
         )
         test_parser.add_argument(
             "--trials",
             "-n",
-            type=int,
+            type=validate_trials_range,
             default=1000,
-            help="Number of trials to run (default: 1000)",
+            help="Number of trials to run (range: 100-10000, default: 1000)",
         )
         test_parser.add_argument(
             "--participants",
             "-p",
-            type=int,
+            type=validate_participants_range,
             default=100,
-            help="Number of participants to simulate (default: 100)",
+            help="Number of participants to simulate (range: 10-1000, default: 100)",
         )
         test_parser.add_argument(
-            "--seed", type=int, help="Random seed for reproducibility"
+            "--seed",
+            type=validate_positive_int,
+            help="Random seed for reproducible results",
         )
         test_parser.add_argument(
             "--config", "-c", type=str, help="Path to configuration file"
         )
 
-        # Run batch experiments command
         batch_parser = subparsers.add_parser("run-batch", help="Run batch experiments")
         batch_parser.add_argument(
-            "--all-tests", action="store_true", help="Run all falsification tests"
+            "--all-tests", action="store_true", help="Run all tests"
         )
         batch_parser.add_argument(
             "--tests",
@@ -146,12 +301,13 @@ Examples:
             help="Run tests in parallel (experimental)",
         )
 
-        # Advanced batch testing commands
         batch_test_parser = subparsers.add_parser(
             "batch-test", help="Advanced batch test execution"
         )
         batch_test_parser.add_argument(
-            "--test-paths", nargs="+", help="Specific test paths to run"
+            "--test-paths",
+            nargs="+",
+            help="Specific test file paths to run (e.g., tests/test_core.py)",
         )
         batch_test_parser.add_argument(
             "--markers",
@@ -168,7 +324,9 @@ Examples:
             help="Run tests with specific markers",
         )
         batch_test_parser.add_argument(
-            "--keywords", type=str, help="Run tests matching keywords"
+            "--keywords",
+            type=str,
+            help="Run tests matching keyword patterns in test names",
         )
         batch_test_parser.add_argument(
             "--parallel",
@@ -180,13 +338,15 @@ Examples:
             "--sequential", action="store_true", help="Run tests sequentially"
         )
         batch_test_parser.add_argument(
-            "--max-workers", type=int, help="Maximum number of parallel workers"
+            "--max-workers",
+            type=validate_workers_range,
+            help="Maximum number of parallel workers (range: 1-64)",
         )
         batch_test_parser.add_argument(
             "--timeout",
-            type=int,
+            type=validate_timeout_range,
             default=300,
-            help="Timeout per test in seconds (default: 300)",
+            help="Timeout per test in seconds (range: 1-3600, default: 300)",
         )
         batch_test_parser.add_argument(
             "--failfast", action="store_true", help="Stop on first failure"
@@ -195,7 +355,6 @@ Examples:
             "--report", type=str, help="Output path for HTML report"
         )
 
-        # Test result management commands
         result_parser = subparsers.add_parser(
             "test-results", help="Manage test results"
         )
@@ -203,13 +362,19 @@ Examples:
             "--list", action="store_true", help="List recent test results"
         )
         result_parser.add_argument(
-            "--show", type=str, help="Show specific test result file"
+            "--show",
+            type=str,
+            help="Display detailed results from specific test result file",
         )
         result_parser.add_argument(
-            "--rerun-failed", type=str, help="Re-run failed tests from result file"
+            "--rerun-failed",
+            type=str,
+            help="Re-run only failed tests from specified result file",
         )
         result_parser.add_argument(
-            "--clean", action="store_true", help="Clean old test results"
+            "--clean",
+            action="store_true",
+            help="Remove old test result files and temporary data",
         )
 
         # Test analysis and reporting commands
@@ -223,9 +388,9 @@ Examples:
         )
         analysis_parser.add_argument(
             "--days",
-            type=int,
+            type=validate_days_range,
             default=30,
-            help="Number of days to analyze (default: 30)",
+            help="Number of days to analyze (range: 1-365, default: 30)",
         )
         analysis_parser.add_argument(
             "--trends", action="store_true", help="Show performance trends"
@@ -278,9 +443,9 @@ Examples:
         )
         coverage_parser.add_argument(
             "--threshold",
-            type=float,
+            type=validate_coverage_threshold_range,
             default=90.0,
-            help="Coverage threshold percentage (default: 90.0)",
+            help="Coverage threshold percentage (range: 0-100, default: 90.0)",
         )
         coverage_parser.add_argument(
             "--format",
@@ -333,13 +498,15 @@ Examples:
             "--sequential", action="store_true", help="Run tests sequentially"
         )
         test_exec_parser.add_argument(
-            "--max-workers", type=int, help="Maximum number of parallel workers"
+            "--max-workers",
+            type=validate_workers_range,
+            help="Maximum number of parallel workers (range: 1-64)",
         )
         test_exec_parser.add_argument(
             "--timeout",
-            type=int,
+            type=validate_timeout_range,
             default=300,
-            help="Timeout per test in seconds (default: 300)",
+            help="Timeout per test in seconds (range: 1-3600, default: 300)",
         )
         test_exec_parser.add_argument(
             "--verbose", "-v", action="store_true", help="Verbose output"
@@ -441,15 +608,29 @@ Examples:
         # Parameter override commands
         param_parser = subparsers.add_parser("set-params", help="Set APGI parameters")
         param_parser.add_argument(
-            "--extero-precision", type=float, help="Exteroceptive precision"
+            "--extero-precision",
+            type=validate_precision_range,
+            help="Exteroceptive precision (range: 0.001-1000)",
         )
         param_parser.add_argument(
-            "--intero-precision", type=float, help="Interoceptive precision"
+            "--intero-precision",
+            type=validate_precision_range,
+            help="Interoceptive precision (range: 0.001-1000)",
         )
-        param_parser.add_argument("--threshold", type=float, help="Ignition threshold")
-        param_parser.add_argument("--steepness", type=float, help="Sigmoid steepness")
         param_parser.add_argument(
-            "--somatic-gain", type=float, help="Somatic marker gain"
+            "--threshold",
+            type=validate_threshold_range,
+            help="Ignition threshold (range: 0.5-10.0)",
+        )
+        param_parser.add_argument(
+            "--steepness",
+            type=validate_steepness_range,
+            help="Sigmoid steepness (range: 0.1-50.0)",
+        )
+        param_parser.add_argument(
+            "--somatic-gain",
+            type=validate_gain_range,
+            help="Somatic marker gain (range: -10.0 to 10.0)",
         )
 
         return parser
@@ -534,7 +715,11 @@ Examples:
                 test_types = args.tests
             else:
                 self.logger.error("Must specify either --all-tests or --tests")
-                sys.exit(1)
+                self.logger.error("Example: run-batch --all-tests")
+                self.logger.error(
+                    "Example: run-batch --tests primary,consciousness-without-ignition"
+                )
+                sys.exit(2)
 
             results = {}
             tests = self.controller.get_falsification_tests()
@@ -720,7 +905,9 @@ Examples:
                 self.logger.error(
                     "Must specify one of: --list, --show, --rerun-failed, --clean"
                 )
-                sys.exit(1)
+                self.logger.error("Example: manage-results --list")
+                self.logger.error("Example: manage-results --show session_123")
+                sys.exit(2)
 
         except Exception as e:
             self.logger.error(f"Test results management failed: {e}")
@@ -807,7 +994,9 @@ Examples:
                 self.logger.error(
                     "Must specify one of: --performance-report, --trends, --failures, --export"
                 )
-                sys.exit(1)
+                self.logger.error("Example: analyze-results --performance-report")
+                self.logger.error("Example: analyze-results --export results.json")
+                sys.exit(2)
 
         except Exception as e:
             self.logger.error(f"Test analysis failed: {e}")
@@ -826,6 +1015,9 @@ Examples:
             test_utils = TestUtilities(
                 args.root_path if hasattr(args, "root_path") else None
             )
+        except ImportError as e:
+            self.logger.error(f"Failed to import test utilities: {e}")
+            sys.exit(1)
 
             # Discover tests based on criteria
             test_suites = []
@@ -936,6 +1128,9 @@ Examples:
             from .utils.test_utils import TestUtilities
 
             test_utils = TestUtilities(args.root_path)
+        except ImportError as e:
+            self.logger.error(f"Failed to import test utilities: {e}")
+            sys.exit(1)
 
             if args.discover:
                 self.logger.info("Discovering all tests...")
@@ -1031,7 +1226,7 @@ Examples:
                 self.logger.error(
                     "Must specify one of: --discover, --list-categories, --list-modules, --list-tags, --export-tree"
                 )
-                sys.exit(1)
+                sys.exit(2)
 
         except Exception as e:
             self.logger.error(f"Test organization failed: {e}")
@@ -1135,7 +1330,7 @@ Examples:
                 self.logger.error(
                     "Must specify one of: --analyze, --generate, --report"
                 )
-                sys.exit(1)
+                sys.exit(2)
 
         except Exception as e:
             self.logger.error(f"Enhanced coverage management failed: {e}")
@@ -1214,7 +1409,7 @@ Examples:
                 self.logger.error(
                     "Must specify one of: --analyze, --generate, --report"
                 )
-                sys.exit(1)
+                sys.exit(2)
 
         except Exception as e:
             self.logger.error(f"Test coverage management failed: {e}")
@@ -1425,7 +1620,7 @@ Examples:
     def _display_test_result(self, result: Any, test_type: str) -> None:
         """Display individual test result."""
         print(f"\n{'='*60}")
-        print(f"APGI Framework Falsification Test Results: {test_type.upper()}")
+        print(f"APGI Framework Test Results: {test_type.upper()}")
         print(f"{'='*60}")
 
         if hasattr(result, "is_falsified"):
@@ -1943,22 +2138,6 @@ Examples:
         """Manage test coverage analysis and generation (legacy method for compatibility)."""
         # Redirect to enhanced coverage management
         self.manage_enhanced_coverage(args)
-        """Create comprehensive configuration with all options."""
-        config = self._create_default_config()
-
-        # Add additional comprehensive options
-        config["experimental_config"].update(
-            {
-                "detailed_logging": True,
-                "save_raw_data": True,
-                "generate_plots": True,
-                "statistical_corrections": ["fdr", "bonferroni"],
-                "bootstrap_iterations": 10000,
-                "confidence_interval": 0.95,
-            }
-        )
-
-        return config
 
     def run(self, args: List[str] = None) -> None:
         """Main entry point for the CLI."""
@@ -2020,7 +2199,7 @@ Examples:
                 self.set_parameters(parsed_args)
             else:
                 self.logger.error(f"Unknown command: {parsed_args.command}")
-                sys.exit(1)
+                sys.exit(2)
 
         except KeyboardInterrupt:
             self.logger.info("Operation cancelled by user")

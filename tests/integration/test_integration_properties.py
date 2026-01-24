@@ -53,7 +53,7 @@ from tests.integration.test_apgi_framework_compatibility import (
 
 # Hypothesis strategies for test data generation
 @st.composite
-def test_project_structure(draw):
+def project_structure_strategy(draw):
     """Generate a test project structure."""
     num_source_files = draw(st.integers(min_value=1, max_value=5))
     num_test_files = draw(st.integers(min_value=1, max_value=8))
@@ -124,7 +124,7 @@ def neural_data_parameters(draw):
 
 
 @st.composite
-def test_execution_parameters(draw):
+def execution_parameters_strategy(draw):
     """Generate test execution parameters."""
     return {
         "parallel": draw(st.booleans()),
@@ -174,20 +174,18 @@ class TestEndToEndWorkflowProperties:
             (tests_dir / filename).write_text(content)
 
         # Create basic configuration files
-        (project_dir / "pytest.ini").write_text(
-            """
+        (project_dir / "pytest.ini").write_text("""
 [tool:pytest]
 testpaths = tests
 python_files = test_*.py
-"""
-        )
+""")
 
         return project_dir
 
     # Feature: comprehensive-test-enhancement, Property 27: End-to-end workflow correctness
     @given(
-        project_structure=test_project_structure(),
-        execution_params=test_execution_parameters(),
+        project_structure=project_structure_strategy(),
+        execution_params=execution_parameters_strategy(),
     )
     @settings(max_examples=10, deadline=30000)  # Longer deadline for integration tests
     def test_end_to_end_workflow_correctness(self, project_structure, execution_params):
@@ -293,7 +291,7 @@ python_files = test_*.py
 
     # Feature: comprehensive-test-enhancement, Property 27: End-to-end workflow correctness
     @given(
-        project_structure=test_project_structure(),
+        project_structure=project_structure_strategy(),
         ci_config=ci_configuration_strategy(),
     )
     @settings(max_examples=8, deadline=45000)
@@ -385,8 +383,8 @@ python_files = test_*.py
 
     # Feature: comprehensive-test-enhancement, Property 27: End-to-end workflow correctness
     @given(
-        project_structure=test_project_structure(),
-        execution_params=test_execution_parameters(),
+        project_structure=project_structure_strategy(),
+        execution_params=execution_parameters_strategy(),
     )
     @settings(max_examples=6, deadline=30000)
     def test_error_handling_workflow_correctness(
@@ -819,7 +817,8 @@ class TestAPGIFrameworkCompatibilityProperties:
 
     # Feature: comprehensive-test-enhancement, Property 28: APGI framework compatibility
     @given(
-        test_structure=test_project_structure(), neural_params=neural_data_parameters()
+        test_structure=project_structure_strategy(),
+        neural_params=neural_data_parameters(),
     )
     @settings(max_examples=6, deadline=40000)
     def test_apgi_test_fixture_compatibility(self, test_structure, neural_params):
@@ -936,15 +935,13 @@ def test_apgi_equation_with_fixtures(eeg_data, pupil_data):
             (tests_dir / filename).write_text(content)
 
         # Create pytest configuration
-        (project_dir / "pytest.ini").write_text(
-            """
+        (project_dir / "pytest.ini").write_text("""
 [tool:pytest]
 testpaths = tests
 python_files = test_*.py
 python_classes = Test*
 python_functions = test_*
-"""
-        )
+""")
 
         # Execute tests with fixtures
         batch_runner = BatchTestRunner()

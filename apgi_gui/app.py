@@ -43,11 +43,21 @@ class APGIFrameworkApp(ctk.CTk):
         # Initialize application state
         self.title("APGI Framework GUI")
 
+        # Initialize logging
+        self.logger = logging.getLogger(__name__)
+
+        # Widget tracking for theme and zoom updates
+        self._tracked_widgets = set()
+        self._text_widgets = set()
+
         # Zoom functionality
         self.zoom_level = 1.0  # 100% zoom level
         self.min_zoom = 0.5  # 50% minimum
         self.max_zoom = 2.0  # 200% maximum
         self.zoom_step = 0.1  # 10% step
+
+        # Initialize configuration
+        self.config = AppConfig()
 
         # Adaptive window sizing based on screen resolution
         screen_width = self.winfo_screenwidth()
@@ -75,10 +85,20 @@ class APGIFrameworkApp(ctk.CTk):
 
         # Initialize application data
         self.current_file: Optional[Path] = None
-        MAX_UNDO_SIZE = 100  # Limit undo history to prevent memory leaks
+        MAX_UNDO_SIZE = self.config.max_undo_size  # Use configurable limit
         self.undo_stack: deque = deque(maxlen=MAX_UNDO_SIZE)
         self.redo_stack: deque = deque(maxlen=MAX_UNDO_SIZE)
         self.recent_files: List[Path] = []
+
+        # Memory monitoring for undo/redo
+        self._undo_memory_usage = 0  # Track memory usage in bytes
+        self._undo_memory_limit = (
+            self.config.undo_memory_limit_mb * 1024 * 1024
+        )  # Convert MB to bytes
+
+        # Widget tracking for theme and zoom updates
+        self._tracked_widgets = set()
+        self._text_widgets = set()
 
         # Setup logging
         self.logger = setup_logging("apgi_gui", self.config.log_dir)
@@ -251,6 +271,10 @@ class APGIFrameworkApp(ctk.CTk):
             self.recent_files = self.recent_files[:10]  # Keep only 10 most recent
             self._save_recent_files()
 
+            # Update sidebar recent files display
+            if hasattr(self, "sidebar"):
+                self.sidebar.update_recent_files()
+
             self.update_status(f"Opened {file_path.name}")
 
         except (OSError, PermissionError, RuntimeError) as e:
@@ -304,26 +328,108 @@ class APGIFrameworkApp(ctk.CTk):
             self.recent_files = self.recent_files[:10]  # Keep only 10 most recent
             self._save_recent_files()
 
+            # Update sidebar recent files display
+            if hasattr(self, "sidebar"):
+                self.sidebar.update_recent_files()
+
         except Exception as e:
             self.update_status(f"Error saving file: {e}", "error")
 
+    def save_file_as(self) -> None:
+        """Save the current file with a new name."""
+        file_path = tk.filedialog.asksaveasfilename(
+            title="Save APGI Configuration",
+            defaultextension=".json",
+            filetypes=[("JSON Files", "*.json"), ("All Files", "*.*")],
+            initialdir=self.config.data_dir,
+        )
+
+        if not file_path:
+            return
+
+        file_path = Path(file_path)
+        self._save_to_file(file_path)
+        self.current_file = file_path
+
+    def _get_object_size(self, obj) -> int:
+        """Get approximate memory size of an object."""
+        try:
+            import sys
+
+            return sys.getsizeof(obj)
+        except:
+            return 1024  # Fallback estimate
+
+    def _add_to_undo_stack(self, data):
+        """Add data to undo stack with memory monitoring."""
+        data_size = self._get_object_size(data)
+
+        # Check if adding this would exceed memory limit
+        if self._undo_memory_usage + data_size > self._undo_memory_limit:
+            # Remove oldest items until we have enough space
+            while (
+                self.undo_stack
+                and self._undo_memory_usage + data_size > self._undo_memory_limit
+            ):
+                oldest = self.undo_stack.popleft()
+                self._undo_memory_usage -= self._get_object_size(oldest)
+                self.logger.debug("Removed old undo entry due to memory limit")
+
+        # Add new item
+        self.undo_stack.append(data)
+        self._undo_memory_usage += data_size
+
+        # Clear redo stack when new action is performed
+        self.redo_stack.clear()
+        self._undo_memory_usage = 0  # Reset memory tracking for redo stack
+
     def undo(self) -> None:
-        """Undo the last action."""
+        """Undo the last action with memory monitoring."""
         if self.undo_stack:
-            self.redo_stack.append(self.main_area.get_data())
-            self.main_area.load_data(self.undo_stack.pop())
+            current_data = self.main_area.get_data()
+            current_size = self._get_object_size(current_data)
+
+            # Add current state to redo stack
+            if self._undo_memory_usage + current_size <= self._undo_memory_limit:
+                self.redo_stack.append(current_data)
+                self._undo_memory_usage += current_size
+
+            # Get and remove from undo stack
+            undo_data = self.undo_stack.pop()
+            undo_size = self._get_object_size(undo_data)
+            self._undo_memory_usage -= undo_size
+
+            # Apply undo
+            self.main_area.load_data(undo_data)
             self.update_status("Undo successful")
         else:
             self.update_status("Nothing to undo", "warning")
 
     def redo(self) -> None:
-        """Redo the last undone action."""
+        """Redo the last undone action with memory monitoring."""
         if self.redo_stack:
-            self.undo_stack.append(self.main_area.get_data())
-            self.main_area.load_data(self.redo_stack.pop())
+            current_data = self.main_area.get_data()
+            current_size = self._get_object_size(current_data)
+
+            # Add current state back to undo stack
+            if self._undo_memory_usage + current_size <= self._undo_memory_limit:
+                self.undo_stack.append(current_data)
+                self._undo_memory_usage += current_size
+
+            # Get and remove from redo stack
+            redo_data = self.redo_stack.pop()
+            redo_size = self._get_object_size(redo_data)
+            self._undo_memory_usage -= redo_size
+
+            # Apply redo
+            self.main_area.load_data(redo_data)
             self.update_status("Redo successful")
         else:
             self.update_status("Nothing to redo", "warning")
+
+    def get_undo_memory_usage_mb(self) -> float:
+        """Get current undo stack memory usage in MB."""
+        return self._undo_memory_usage / (1024 * 1024)
 
     def toggle_theme(self) -> None:
         """Toggle between light and dark themes."""
@@ -343,37 +449,87 @@ class APGIFrameworkApp(ctk.CTk):
         self._propagate_theme_to_components()
 
     def _propagate_theme_to_components(self) -> None:
-        """Propagate current theme to all UI components."""
+        """Propagate current theme to all UI components with comprehensive tracking."""
         try:
+            # Force theme update on CustomTkinter level
+            ctk.set_appearance_mode(self.config.theme)
+
+            # Update all tracked widgets
+            self._update_all_tracked_widgets()
+
             # Update main area components
             if hasattr(self, "main_area"):
-                self._update_widget_theme(self.main_area)
+                self._update_widget_theme_recursive(self.main_area)
 
             # Update sidebar components
             if hasattr(self, "sidebar"):
-                self._update_widget_theme(self.sidebar)
+                self._update_widget_theme_recursive(self.sidebar)
 
             # Update status bar
             if hasattr(self, "status_bar"):
-                self._update_widget_theme(self.status_bar)
+                self._update_widget_theme_recursive(self.status_bar)
+
+            # Force UI refresh
+            self.update_idletasks()
+            self.after(100, self._force_theme_refresh)
 
         except Exception as e:
             self.logger.error(f"Error propagating theme: {e}")
 
-    def _update_widget_theme(self, widget) -> None:
-        """Recursively update theme for a widget and its children."""
+    def _update_widget_theme_recursive(self, widget) -> None:
+        """Recursively update theme for a widget and all its children."""
         try:
-            # Update the widget itself if it has theme-related methods
+            # Track this widget for future updates
+            self._tracked_widgets.add(widget)
+
+            # Check if it's a text widget for zoom tracking
+            if hasattr(widget, "cget") and "font" in widget.keys():
+                self._text_widgets.add(widget)
+
+            # Update the widget itself
             if hasattr(widget, "configure"):
-                # For CustomTkinter widgets, theme is handled globally
-                pass
+                try:
+                    # Force widget to redraw with new theme
+                    widget.update()
+                except:
+                    pass  # Some widgets might not support certain operations
 
             # Recursively update all child widgets
             for child in widget.winfo_children():
-                self._update_widget_theme(child)
+                self._update_widget_theme_recursive(child)
 
         except Exception as e:
             self.logger.debug(f"Error updating widget theme: {e}")
+
+    def _update_all_tracked_widgets(self) -> None:
+        """Update all tracked widgets with current theme."""
+        for widget in list(self._tracked_widgets):
+            try:
+                if widget.winfo_exists():
+                    widget.update()
+                else:
+                    # Remove widgets that no longer exist
+                    self._tracked_widgets.discard(widget)
+                    self._text_widgets.discard(widget)
+            except:
+                # Remove widgets that cause errors
+                self._tracked_widgets.discard(widget)
+                self._text_widgets.discard(widget)
+
+    def _force_theme_refresh(self) -> None:
+        """Force a complete theme refresh after a delay."""
+        try:
+            self.update()
+            self.update_idletasks()
+        except Exception as e:
+            self.logger.debug(f"Error in force theme refresh: {e}")
+
+    def track_widget(self, widget) -> None:
+        """Add a widget to the tracking list for theme and zoom updates."""
+        if widget:
+            self._tracked_widgets.add(widget)
+            if hasattr(widget, "cget") and "font" in widget.keys():
+                self._text_widgets.add(widget)
 
     def show_help(self) -> None:
         """Show the help dialog."""
@@ -553,7 +709,7 @@ For more information, visit the project documentation."""
             )
 
     def _apply_zoom(self) -> None:
-        """Apply current zoom level to UI elements."""
+        """Apply current zoom level to all UI elements."""
         try:
             # Update font sizes
             zoom_factor = self.zoom_level
@@ -567,7 +723,10 @@ For more information, visit the project documentation."""
                 "large": 14,
             }
 
-            # Apply zoom to font sizes
+            # Apply zoom to all tracked text widgets
+            self._update_all_text_widgets(zoom_factor)
+
+            # Apply zoom to font sizes for specific element types
             for element, base_size in base_sizes.items():
                 zoomed_size = int(base_size * zoom_factor)
                 # Apply to CustomTkinter widgets
@@ -585,6 +744,36 @@ For more information, visit the project documentation."""
         except Exception as e:
             self.logger.error(f"Error applying zoom: {e}")
             self.update_status("Error applying zoom", "error")
+
+    def _update_all_text_widgets(self, zoom_factor: float) -> None:
+        """Update font sizes for all tracked text widgets."""
+        for widget in list(self._text_widgets):
+            try:
+                if widget.winfo_exists():
+                    if hasattr(widget, "cget") and "font" in widget.keys():
+                        current_font = widget.cget("font")
+                        if hasattr(current_font, "actual"):
+                            # Get current font properties
+                            current_size = current_font.actual()["size"] or 12
+                            new_size = int(current_size * zoom_factor)
+
+                            # Create new font with zoomed size
+                            if hasattr(current_font, "copy"):
+                                new_font = current_font.copy()
+                                new_font.configure(size=new_size)
+                            else:
+                                # Fallback for simple font objects
+                                new_font = ctk.CTkFont(size=new_size)
+
+                            widget.configure(font=new_font)
+                else:
+                    # Remove widgets that no longer exist
+                    self._text_widgets.discard(widget)
+                    self._tracked_widgets.discard(widget)
+            except Exception as e:
+                self.logger.debug(f"Error updating widget font: {e}")
+                # Remove problematic widgets
+                self._text_widgets.discard(widget)
 
     def _update_widget_fonts(self, element_type: str, size: int) -> None:
         """Update font sizes for specific widget types."""
@@ -690,110 +879,26 @@ For more information, visit the project documentation."""
         self.update_status("Debug mode toggled")
 
     def show_log(self) -> None:
-        """Show application log viewer."""
+        """Show application log viewer with pagination."""
         try:
-            # Create log viewer window
-            log_window = ctk.CTkToplevel(self)
-            log_window.title("Application Log Viewer")
-            log_window.geometry("900x600")
-            log_window.transient(self)
-            log_window.grab_set()
+            # Import the paginated log viewer
+            from .components.paginated_log_viewer import PaginatedLogViewer
 
-            # Configure grid
-            log_window.grid_columnconfigure(0, weight=1)
-            log_window.grid_rowconfigure(1, weight=1)
+            # Get log file path
+            log_file_path = self.config.log_dir / "apgi_gui.log"
 
-            # Title
-            title_label = ctk.CTkLabel(
-                log_window,
-                text="Application Logs",
-                font=ctk.CTkFont(size=16, weight="bold"),
-            )
-            title_label.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+            # Create and show paginated log viewer
+            log_viewer = PaginatedLogViewer(self, str(log_file_path))
+            log_viewer.show()
 
-            # Control frame
-            control_frame = ctk.CTkFrame(log_window)
-            control_frame.grid(row=1, column=0, padx=10, pady=5, sticky="ew")
-            control_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
-
-            # Log level filter
-            level_label = ctk.CTkLabel(control_frame, text="Log Level:")
-            level_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
-
-            log_level_var = tk.StringVar(value="ALL")
-            level_menu = ctk.CTkOptionMenu(
-                control_frame,
-                variable=log_level_var,
-                values=["ALL", "DEBUG", "INFO", "WARNING", "ERROR"],
-            )
-            level_menu.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
-
-            # Search box
-            search_label = ctk.CTkLabel(control_frame, text="Search:")
-            search_label.grid(row=0, column=2, padx=5, pady=5, sticky="w")
-
-            search_var = tk.StringVar()
-            search_entry = ctk.CTkEntry(control_frame, textvariable=search_var)
-            search_entry.grid(row=0, column=3, padx=5, pady=5, sticky="ew")
-
-            # Log display
-            log_text = ctk.CTkTextbox(log_window, wrap="word")
-            log_text.grid(row=2, column=0, padx=10, pady=5, sticky="nsew")
-
-            # Button frame
-            button_frame = ctk.CTkFrame(log_window)
-            button_frame.grid(row=3, column=0, padx=10, pady=5, sticky="ew")
-            button_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
-
-            # Buttons
-            refresh_btn = ctk.CTkButton(
-                button_frame,
-                text="Refresh",
-                command=lambda: self._refresh_log(
-                    log_text, log_level_var.get(), search_var.get()
-                ),
-            )
-            refresh_btn.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
-
-            clear_btn = ctk.CTkButton(
-                button_frame,
-                text="Clear",
-                command=lambda: log_text.delete("1.0", "end"),
-            )
-            clear_btn.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
-
-            export_btn = ctk.CTkButton(
-                button_frame, text="Export", command=lambda: self._export_log(log_text)
-            )
-            export_btn.grid(row=0, column=2, padx=5, pady=5, sticky="ew")
-
-            close_btn = ctk.CTkButton(
-                button_frame, text="Close", command=log_window.destroy
-            )
-            close_btn.grid(row=0, column=3, padx=5, pady=5, sticky="ew")
-
-            # Load initial log content
-            self._refresh_log(log_text, log_level_var.get(), search_var.get())
-
-            # Configure search and filter bindings
-            search_var.trace(
-                "w",
-                lambda *args: self._refresh_log(
-                    log_text, log_level_var.get(), search_var.get()
-                ),
-            )
-            log_level_var.trace(
-                "w",
-                lambda *args: self._refresh_log(
-                    log_text, log_level_var.get(), search_var.get()
-                ),
-            )
-
-            self.update_status("Log viewer opened")
+            self.update_status("Paginated log viewer opened")
 
         except Exception as e:
             self.logger.error(f"Error opening log viewer: {e}")
             self.update_status("Error opening log viewer", "error")
+
+            # Fallback to old log viewer if paginated viewer fails
+            self._show_fallback_log_viewer()
 
     def _refresh_log(self, log_text, level_filter: str, search_term: str = "") -> None:
         """Refresh log content with filtering and search."""

@@ -3,9 +3,9 @@
 
 [tool.pytest.ini_options]
 # Test discovery patterns
-testpaths = ["tests", "research/*/tests", "apgi_framework/tests"]
+testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
-python_classes = ["^Test"]
+python_classes = ["^Test(?![A-Z][a-z]*(?:Status|Category|Configuration|Collection|Result|Failure|Execution|Run|Metrics)$)[A-Z][a-zA-Z0-9]*$"]
 python_functions = ["test_*"]
 
 # Add project root to Python path
@@ -16,10 +16,7 @@ addopts = [
     "-v",
     "--tb=short", 
     "--strict-markers",
-    "--disable-warnings",
-    "--color=yes",
-    "--ignore=apgi_framework/utils/test_utils.py",
-    "--ignore=apgi_framework/testing/error_handler.py"
+    "--color=yes"
 ]
 
 # Test markers

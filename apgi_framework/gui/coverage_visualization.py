@@ -220,13 +220,11 @@ class CoverageProgressBar(QProgressBar):
             color = QColor(200, 0, 0)  # Red
 
         # Apply color styling
-        self.setStyleSheet(
-            f"""
+        self.setStyleSheet(f"""
             QProgressBar::chunk {{
                 background-color: {color.name()};
             }}
-        """
-        )
+        """)
 
 
 class CoverageTreeWidget(QTreeWidget):

@@ -19,6 +19,8 @@ class TooltipManager:
     def __init__(self):
         self.tooltips = {}
         self.tooltip_windows = {}
+        self.tooltip_timers = {}
+        self._active_tooltips = set()  # Track widgets with active tooltips
         self._load_parameter_descriptions()
 
     def _load_parameter_descriptions(self):
@@ -183,7 +185,7 @@ class TooltipManager:
 
         def on_enter(event):
             tooltip_text = self.get_tooltip_text(param_name)
-            self._show_tooltip(widget, event, tooltip_text)
+            self._schedule_tooltip(widget, event, tooltip_text)
 
         def on_leave(event):
             self._hide_tooltip(widget)
@@ -200,8 +202,28 @@ class TooltipManager:
             "widget": widget,
         }
 
+    def _schedule_tooltip(self, widget, event, tooltip_text: str) -> None:
+        """Schedule tooltip to show after a delay to prevent rapid creation."""
+        widget_id = id(widget)
+
+        # Cancel any existing timer for this widget
+        if widget_id in self.tooltip_timers:
+            widget.after_cancel(self.tooltip_timers[widget_id])
+            del self.tooltip_timers[widget_id]
+
+        # Schedule new tooltip
+        self.tooltip_timers[widget_id] = widget.after(
+            500, lambda: self._show_tooltip(widget, event, tooltip_text)
+        )
+
     def _show_tooltip(self, widget, event, tooltip_text: str) -> None:
         """Show tooltip window."""
+        widget_id = id(widget)
+
+        # Don't create tooltip if one is already active for this widget
+        if widget_id in self._active_tooltips:
+            return
+
         # Hide any existing tooltip for this widget
         self._hide_tooltip(widget)
 
@@ -222,15 +244,28 @@ class TooltipManager:
         )
         label.pack()
 
-        # Store reference
-        self.tooltip_windows[id(widget)] = tooltip_window
+        # Store reference and mark as active
+        self.tooltip_windows[widget_id] = tooltip_window
+        self._active_tooltips.add(widget_id)
 
     def _hide_tooltip(self, widget) -> None:
         """Hide tooltip window."""
         widget_id = id(widget)
+
+        # Cancel any pending timer
+        if widget_id in self.tooltip_timers:
+            widget.after_cancel(self.tooltip_timers[widget_id])
+            del self.tooltip_timers[widget_id]
+
+        # Destroy existing tooltip window
         if widget_id in self.tooltip_windows:
-            self.tooltip_windows[widget_id].destroy()
-            del self.tooltip_windows[widget_id]
+            try:
+                self.tooltip_windows[widget_id].destroy()
+            except:
+                pass  # Window might already be destroyed
+            finally:
+                del self.tooltip_windows[widget_id]
+                self._active_tooltips.discard(widget_id)
 
     def add_parameter_tooltips(
         self,
@@ -242,12 +277,27 @@ class TooltipManager:
             self.create_tooltip(widget, param_name)
 
     def clear_all_tooltips(self) -> None:
-        """Clear all active tooltips."""
+        """Clear all active tooltips and timers."""
+        # Clear all timers
+        for widget_id, timer in self.tooltip_timers.items():
+            try:
+                # Find the widget and cancel its timer
+                for tooltip_info in self.tooltips.values():
+                    if id(tooltip_info["widget"]) == widget_id:
+                        tooltip_info["widget"].after_cancel(timer)
+                        break
+            except:
+                pass
+
+        self.tooltip_timers.clear()
+
+        # Clear all tooltip windows
         for tooltip_window in self.tooltip_windows.values():
             try:
                 tooltip_window.destroy()
             except:
                 pass
+
         self.tooltip_windows.clear()
 
     def save_descriptions_to_file(self, filepath: str) -> None:

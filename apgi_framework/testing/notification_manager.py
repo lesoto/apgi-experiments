@@ -82,8 +82,7 @@ class TestHistoryTracker:
         """Initialize the test history database."""
         try:
             with sqlite3.connect(self.db_path) as conn:
-                conn.execute(
-                    """
+                conn.execute("""
                     CREATE TABLE IF NOT EXISTS test_executions (
                         execution_id TEXT PRIMARY KEY,
                         timestamp TEXT NOT NULL,
@@ -95,11 +94,9 @@ class TestHistoryTracker:
                         execution_time_seconds REAL NOT NULL,
                         pipeline_context TEXT NOT NULL
                     )
-                """
-                )
+                """)
 
-                conn.execute(
-                    """
+                conn.execute("""
                     CREATE TABLE IF NOT EXISTS test_failures (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         execution_id TEXT NOT NULL,
@@ -108,20 +105,15 @@ class TestHistoryTracker:
                         duration REAL NOT NULL,
                         FOREIGN KEY (execution_id) REFERENCES test_executions (execution_id)
                     )
-                """
-                )
+                """)
 
-                conn.execute(
-                    """
+                conn.execute("""
                     CREATE INDEX IF NOT EXISTS idx_timestamp ON test_executions (timestamp)
-                """
-                )
+                """)
 
-                conn.execute(
-                    """
+                conn.execute("""
                     CREATE INDEX IF NOT EXISTS idx_execution_id ON test_failures (execution_id)
-                """
-                )
+                """)
 
         except Exception as e:
             self.logger.error(f"Failed to initialize test history database: {e}")
@@ -710,7 +702,9 @@ class NotificationManager:
         if result.failed_tests == 0:
             return f"✅ APGI Framework Tests Passed - {result.execution_id}"
         else:
-            status = "🔥 CRITICAL" if notification.critical_failures > 0 else "⚠️ FAILED"
+            status = (
+                "🔥 CRITICAL" if notification.critical_failures > 0 else "⚠️ FAILED"
+            )
             return f"{status} APGI Framework Tests - {result.failed_tests} failures - {result.execution_id}"
 
     def _generate_email_body(

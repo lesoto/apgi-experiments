@@ -76,8 +76,7 @@ class PersistenceLayer:
         self.db_path = self.metadata_path / "experiments.db"
 
         with sqlite3.connect(self.db_path) as conn:
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS experiments (
                     experiment_id TEXT PRIMARY KEY,
                     experiment_name TEXT,
@@ -100,11 +99,9 @@ class PersistenceLayer:
                     completeness_percentage REAL,
                     validation_status TEXT
                 )
-            """
-            )
+            """)
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS versions (
                     version_id TEXT PRIMARY KEY,
                     experiment_id TEXT,
@@ -117,11 +114,9 @@ class PersistenceLayer:
                     size_bytes INTEGER,
                     FOREIGN KEY (experiment_id) REFERENCES experiments (experiment_id)
                 )
-            """
-            )
+            """)
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS backups (
                     backup_id TEXT PRIMARY KEY,
                     experiment_id TEXT,
@@ -135,8 +130,7 @@ class PersistenceLayer:
                     status TEXT,
                     FOREIGN KEY (experiment_id) REFERENCES experiments (experiment_id)
                 )
-            """
-            )
+            """)
 
             conn.commit()
 

@@ -56,7 +56,7 @@ class ComprehensiveTestRunner:
         }
 
         # Build pytest command
-        cmd = ["python", "-m", "pytest", "-v"]
+        cmd = ["python", "-m", "pytest", "-v", "tests"]
 
         if verbose:
             cmd.append("-vv")

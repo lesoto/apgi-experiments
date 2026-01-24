@@ -2,7 +2,7 @@
 
 This directory contains example scripts demonstrating various features of the APGI Framework, including falsification testing, batch processing, custom analysis, and framework extension.
 
-## Falsification Testing Examples
+## Testing Examples
 
 ### 01_run_primary_falsification_test.py
 

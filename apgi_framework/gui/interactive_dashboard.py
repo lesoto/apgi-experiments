@@ -13,6 +13,7 @@ except ImportError:
     Flask = None
     SocketIO = None
     emit = None
+import sys
 import json
 import threading
 import time
@@ -20,7 +21,6 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 import numpy as np
-
 import sys
 import os
 
@@ -63,11 +63,22 @@ class InteractiveWebDashboard:
         self.host = host
 
         # Flask app setup
-        self.app = Flask(__name__)
-        self.app.config["SECRET_KEY"] = "apgi-dashboard-secret-key"
+        template_dir = Path(__file__).parent / "templates"
+        static_dir = Path(__file__).parent / "static"
+        self.app = Flask(
+            __name__,
+            template_folder=str(template_dir),
+            static_folder=str(static_dir) if static_dir.exists() else None,
+        )
+        self.app.config["SECRET_KEY"] = os.getenv(
+            "FLASK_SECRET_KEY", os.urandom(24).hex()
+        )
 
         # WebSocket setup
-        self.socketio = SocketIO(self.app, cors_allowed_origins="*")
+        self.socketio = SocketIO(
+            self.app,
+            cors_allowed_origins=["http://localhost:5000", "http://127.0.0.1:5000"],
+        )
 
         # Core components
         self.experiment_monitor = ExperimentMonitor()
@@ -105,6 +116,23 @@ class InteractiveWebDashboard:
             """Get all experiments data."""
             try:
                 experiments = self.experiment_monitor.get_all_experiments()
+
+                # Validate experiments data structure
+                if experiments:
+                    for exp in experiments:
+                        if not isinstance(exp, dict):
+                            self.logger.warning(
+                                f"Invalid experiment data type: {type(exp)}"
+                            )
+                            continue
+                        required_fields = ["id", "name", "status", "timestamp"]
+                        missing_fields = [
+                            field for field in required_fields if field not in exp
+                        ]
+                        if missing_fields:
+                            self.logger.warning(
+                                f"Experiment {exp.get('id', 'unknown')} missing fields: {missing_fields}"
+                            )
 
                 # If no experiments, provide sample data for demonstration
                 if not experiments:
@@ -312,8 +340,11 @@ class InteractiveWebDashboard:
         @self.socketio.on("disconnect")
         def handle_disconnect():
             """Handle client disconnection."""
-            self.connected_clients.discard(request.sid)
-            self.logger.info(f"Client disconnected: {request.sid}")
+            try:
+                self.connected_clients.discard(request.sid)
+                self.logger.info(f"Client disconnected: {request.sid}")
+            except Exception as e:
+                self.logger.error(f"Error handling client disconnection: {e}")
 
         @self.socketio.on("request_update")
         def handle_update_request():
@@ -395,24 +426,28 @@ class InteractiveWebDashboard:
         """Background thread for real-time updates."""
         while self.is_running and not self.stop_event.is_set():
             try:
-                # Check for updates
-                current_experiments = self.experiment_monitor.get_all_experiments()
+                # Only check for updates if there are connected clients
+                if self.connected_clients:
+                    # Check for updates
+                    current_experiments = self.experiment_monitor.get_all_experiments()
 
-                # Compare with cached data
-                if current_experiments != self.dashboard_cache.get("experiments"):
-                    self.dashboard_cache["experiments"] = current_experiments
-                    self.last_update = datetime.now()
+                    # Compare with cached data
+                    if current_experiments != self.dashboard_cache.get("experiments"):
+                        self.dashboard_cache["experiments"] = current_experiments
+                        self.last_update = datetime.now()
 
-                    # Broadcast update to all connected clients
-                    if self.connected_clients:
+                        # Broadcast update to all connected clients
                         update_data = {
                             "experiments": current_experiments,
                             "timestamp": self.last_update.isoformat(),
                         }
                         self.socketio.emit("update", update_data)
 
-                # Sleep for 1 second before next update
-                time.sleep(1.0)
+                    # Sleep for 1 second when clients are connected
+                    time.sleep(1.0)
+                else:
+                    # Sleep longer when no clients are connected to reduce CPU usage
+                    time.sleep(5.0)
 
             except Exception as e:
                 self.logger.error(f"Error in update loop: {e}")

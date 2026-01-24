@@ -5,11 +5,6 @@ Extended tests for Threshold Detection Paradigm component.
 import pytest
 import numpy as np
 from datetime import datetime
-from pathlib import Path
-import sys
-
-# Add project root to path
-sys.path.append(str(Path(__file__).parent.parent))
 
 # Import threshold detection components
 try:

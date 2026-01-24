@@ -116,6 +116,9 @@ class AppConfig:
             "max_recent_files": 10,
             "auto_save": True,
             "backup_count": 5,
+            "file_monitor_interval": 2.0,  # File monitoring interval in seconds
+            "max_undo_size": 100,  # Maximum undo/redo stack size
+            "undo_memory_limit_mb": 50,  # Memory limit for undo stack in MB
         }
 
         # Load or create config file
@@ -298,6 +301,34 @@ class AppConfig:
         """Get the log directory path."""
         return self._config["log_dir"]
 
+    @log_dir.setter
+    def log_dir(self, value: str) -> None:
+        """Set the log directory path.
+
+        Args:
+            value: Path to the log directory
+        """
+        self._config["log_dir"] = str(Path(value).expanduser().resolve())
+
+    @property
+    def file_monitor_interval(self) -> float:
+        """Get the file monitoring interval in seconds."""
+        return float(self._config["file_monitor_interval"])
+
+    @file_monitor_interval.setter
+    def file_monitor_interval(self, value: float) -> None:
+        """Set the file monitoring interval in seconds.
+
+        Args:
+            value: Interval in seconds (must be between 0.1 and 60.0)
+        """
+        if 0.1 <= value <= 60.0:
+            self._config["file_monitor_interval"] = float(value)
+        else:
+            raise ValueError(
+                "File monitor interval must be between 0.1 and 60.0 seconds"
+            )
+
     @property
     def recent_files_path(self) -> Path:
         """Get the path to the recent files list."""
@@ -307,6 +338,32 @@ class AppConfig:
     def max_recent_files(self) -> int:
         """Get the maximum number of recent files to remember."""
         return self._config["max_recent_files"]
+
+    @property
+    def max_undo_size(self) -> int:
+        """Get the maximum undo/redo stack size."""
+        return self._config["max_undo_size"]
+
+    @max_undo_size.setter
+    def max_undo_size(self, value: int) -> None:
+        """Set the maximum undo/redo stack size."""
+        if 10 <= value <= 1000:
+            self._config["max_undo_size"] = value
+        else:
+            raise ValueError("Max undo size must be between 10 and 1000")
+
+    @property
+    def undo_memory_limit_mb(self) -> int:
+        """Get the undo stack memory limit in MB."""
+        return self._config["undo_memory_limit_mb"]
+
+    @undo_memory_limit_mb.setter
+    def undo_memory_limit_mb(self, value: int) -> None:
+        """Set the undo stack memory limit in MB."""
+        if 10 <= value <= 500:
+            self._config["undo_memory_limit_mb"] = value
+        else:
+            raise ValueError("Undo memory limit must be between 10 and 500 MB")
 
     @property
     def window_size(self) -> Tuple[int, int]:

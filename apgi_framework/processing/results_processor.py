@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 import json
 import logging
 from pathlib import Path
-import pickle
+from ..security.secure_pickle import safe_pickle_load, safe_pickle_dump
 from collections import defaultdict
 
 from ..analysis.analysis_engine import AnalysisResult
@@ -181,7 +181,10 @@ class ResultsProcessor:
                         logger.info(f"Processed {i + 1}/{len(results_list)} results")
 
                 except Exception as e:
-                    logger.warning(f"Failed to process result {i}: {e}")
+                    logger.error(
+                        f"Failed to process result {i} (type: {type(result).__name__}): {e}"
+                    )
+                    logger.debug(f"Result data that failed: {result}")
                     continue
 
             # Create batch summary
@@ -492,14 +495,14 @@ class ResultsProcessor:
         def count_values(obj):
             nonlocal total_values, missing_values
             if isinstance(obj, dict):
-                for value in obj.values():
-                    count_values(value)
+                for val in obj.values():
+                    count_values(val)
             elif isinstance(obj, (list, np.ndarray)):
-                for value in obj:
-                    count_values(value)
-            elif isinstance(value, (int, float)):
+                for val in obj:
+                    count_values(val)
+            elif isinstance(val, (int, float)):
                 total_values += 1
-                if pd.isna(value) or value is None:
+                if pd.isna(val) or val is None:
                     missing_values += 1
 
         count_values(data)
@@ -869,6 +872,14 @@ class ResultsProcessor:
         include_metadata: bool,
     ) -> List[str]:
         """Export results to Excel format."""
+        try:
+            import openpyxl
+        except ImportError:
+            raise ImportError(
+                "openpyxl is required for Excel export. "
+                "Please install it with: pip install openpyxl"
+            )
+
         export_paths = []
 
         for result in processed_results:
@@ -1012,7 +1023,7 @@ class ResultsProcessor:
                     PermissionError,
                     pickle.UnpicklingError,
                 ) as e:
-                    self.logger.warning(f"Failed to load result {result_id}: {e}")
+                    logger.warning(f"Failed to load result {result_id}: {e}")
                     continue
             return filtered_ids
 

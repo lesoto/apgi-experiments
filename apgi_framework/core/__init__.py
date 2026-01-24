@@ -11,6 +11,7 @@ from .precision import PrecisionCalculator
 from .prediction_error import PredictionErrorProcessor
 from .somatic_marker import SomaticMarkerEngine, ContextType
 from .threshold import ThresholdManager, ThresholdAdaptationType
+from .models import SomaticAgent, PredictiveIgnitionNetwork
 from .data_models import (
     APGIParameters,
     NeuralSignatures,
@@ -29,6 +30,8 @@ __all__ = [
     "ContextType",
     "ThresholdManager",
     "ThresholdAdaptationType",
+    "SomaticAgent",
+    "PredictiveIgnitionNetwork",
     "APGIParameters",
     "NeuralSignatures",
     "ConsciousnessAssessment",

@@ -321,7 +321,7 @@ class StandardKeyboardShortcuts:
         ttk.Label(frame, text="APGI Framework GUI", font=("Arial", 14, "bold")).pack(
             pady=(0, 10)
         )
-        ttk.Label(frame, text="Comprehensive Falsification Testing System").pack()
+        ttk.Label(frame, text="Comprehensive Testing System").pack()
         ttk.Label(frame, text="").pack()
         ttk.Label(frame, text="Press Ctrl+H for keyboard shortcuts").pack()
         ttk.Label(frame, text="").pack()

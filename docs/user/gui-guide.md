@@ -1,6 +1,6 @@
 # APGI Framework GUI - Visual Guide
 
-A visual walkthrough of the APGI Framework Falsification Testing System GUI.
+A visual walkthrough of the APGI Framework Testing System GUI.
 
 ## Table of Contents
 
@@ -10,7 +10,6 @@ A visual walkthrough of the APGI Framework Falsification Testing System GUI.
 4. [Running Tests](#running-tests)
 5. [Viewing Results](#viewing-results)
 6. [Menu Bar Functions](#menu-bar-functions)
-7. [Workflow Examples](#workflow-examples)
 
 ## Main Window Layout
 
@@ -90,6 +89,7 @@ The left panel contains buttons for each falsification test type.
 ### Button States
 
 **Normal State:**
+
 ```python
 ┌────────────────┐
 │   Primary      │

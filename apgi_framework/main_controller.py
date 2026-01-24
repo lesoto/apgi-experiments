@@ -1,5 +1,5 @@
 """
-Main Application Controller for APGI Framework Falsification Testing System.
+Main Application Controller for APGI Framework Testing System.
 
 This module provides the central orchestration point for the entire system,
 managing component integration, dependency injection, and system initialization.
@@ -38,7 +38,7 @@ from .data import StorageManager, DataValidator
 
 class MainApplicationController:
     """
-    Central controller for the APGI Framework Falsification Testing System.
+    Central controller for the APGI Framework Testing System.
 
     Manages system initialization, component integration, and orchestrates
     the execution of falsification tests with proper dependency injection.
