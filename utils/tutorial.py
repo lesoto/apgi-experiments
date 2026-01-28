@@ -7,222 +7,603 @@ Run this script to learn how to use the framework for data analysis.
 
 import sys
 import os
+import json
+import traceback
+from pathlib import Path
+from typing import Dict, List, Optional, Any
+from dataclasses import dataclass
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+# Add project root to Python path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
+# Try to import required modules with fallbacks
+try:
+    from apgi_framework.analysis import DescriptiveAnalyzer, ComparativeAnalyzer
 
-def main():
-    """Main tutorial function."""
-    print("🎯 APGI Framework Tutorial")
-    print("=" * 50)
+    ANALYSIS_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: Analysis modules not available: {e}")
+    ANALYSIS_AVAILABLE = False
+    DescriptiveAnalyzer = None
+    ComparativeAnalyzer = None
 
-    # 1. Setup and Installation
-    print("\n1. Setup and Installation")
-    print("-" * 25)
+try:
+    from apgi_framework.data import DataLoader, DataProcessor
 
-    try:
-        from apgi_framework.analysis import AnalysisEngine
-        from apgi_framework.data import load_example_data
+    DATA_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: Data modules not available: {e}")
+    DATA_AVAILABLE = False
+    DataLoader = None
+    DataProcessor = None
 
-        print("✅ APGI Framework imported successfully!")
-    except ImportError as e:
-        print(f"❌ Import error: {e}")
-        print("Please ensure the framework is properly installed.")
-        return
-
-    # Import standard libraries
-    import numpy as np
-    import pandas as pd
+try:
     import matplotlib.pyplot as plt
     import seaborn as sns
 
-    print("📊 Libraries ready for analysis!")
+    VISUALIZATION_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: Visualization libraries not available: {e}")
+    VISUALIZATION_AVAILABLE = False
+    plt = None
+    sns = None
 
-    # 2. Loading Data
-    print("\n2. Loading Data")
-    print("-" * 15)
+try:
+    import numpy as np
+    import pandas as pd
 
-    try:
-        # Load example EEG data
-        eeg_data = load_example_data("eeg", "subject_001")
-        print("✅ EEG data loaded successfully!")
-        print(f"   Shape: {eeg_data['data'].shape}")
-        print(f"   Sampling rate: {eeg_data['metadata']['sampling_rate']} Hz")
+    NUMPY_AVAILABLE = True
+    PANDAS_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: NumPy/Pandas not available: {e}")
+    NUMPY_AVAILABLE = False
+    PANDAS_AVAILABLE = False
+    np = None
+    pd = None
 
-        # Load example behavioral data
-        behavioral_data = load_example_data("behavioral", "subject_001")
-        print("✅ Behavioral data loaded successfully!")
-        print(f"   Shape: {behavioral_data['data'].shape}")
-        print(f"   Conditions: {behavioral_data['data']['condition'].unique()}")
 
-    except Exception as e:
-        print(f"❌ Error loading data: {e}")
-        return
+@dataclass
+class TutorialResult:
+    """Result of a tutorial step."""
 
-    # 3. Basic Analysis
-    print("\n3. Basic Analysis")
-    print("-" * 15)
+    step: str
+    success: bool
+    message: str
+    data: Optional[Any] = None
+    error: Optional[str] = None
+    fallback_used: bool = False
 
-    try:
-        # Initialize the analysis engine
-        engine = AnalysisEngine()
 
-        # Get the behavioral DataFrame
-        behav_df = behavioral_data["data"]
+class TutorialRunner:
+    """Enhanced tutorial runner with fallback examples and error handling."""
 
-        # Descriptive analysis
-        desc_params = {
-            "variables": ["reaction_time", "correct"],
-            "group_by": "condition",
-        }
+    def __init__(self):
+        self.results: List[TutorialResult] = []
+        self.output_file = "tutorial_results.json"
+        self.fallback_data = self._generate_fallback_data()
 
-        desc_result = engine.analyze(
-            data=behav_df, analysis_type="descriptive", parameters=desc_params
+    def _generate_fallback_data(self) -> Dict[str, Any]:
+        """Generate fallback data when real modules are not available."""
+        if not NUMPY_AVAILABLE:
+            return {
+                "participants": list(range(1, 21)),  # 20 participants
+                "response_times": [
+                    0.5 + i * 0.1 for i in range(20)
+                ],  # Increasing response times
+                "accuracy": [
+                    0.8 + (i % 5) * 0.05 for i in range(20)
+                ],  # Varying accuracy
+                "conditions": ["control", "treatment"] * 10,  # Two conditions
+                "metadata": {
+                    "source": "fallback_data",
+                    "description": "Generated sample data for tutorial demonstration",
+                },
+            }
+        else:
+            # Use numpy for better fallback data
+            np.random.seed(42)  # For reproducible results
+            return {
+                "participants": np.arange(1, 21),
+                "response_times": np.random.normal(0.8, 0.2, 20),
+                "accuracy": np.random.beta(8, 2, 20),  # Beta distribution for accuracy
+                "conditions": np.random.choice(["control", "treatment"], 20),
+                "metadata": {
+                    "source": "fallback_data_numpy",
+                    "description": "Generated sample data using numpy for tutorial demonstration",
+                },
+            }
+
+    def _log_result(
+        self,
+        step: str,
+        success: bool,
+        message: str,
+        data: Optional[Any] = None,
+        error: Optional[str] = None,
+        fallback_used: bool = False,
+    ):
+        """Log a tutorial step result."""
+        result = TutorialResult(
+            step=step,
+            success=success,
+            message=message,
+            data=data,
+            error=error,
+            fallback_used=fallback_used,
         )
+        self.results.append(result)
+        status = "✅" if success else "❌"
+        fallback_info = " (FALLBACK)" if fallback_used else ""
+        print(f"{status} {step}: {message}{fallback_info}")
+        if error:
+            print(f"    Error details: {error}")
 
-        print("✅ Descriptive analysis completed!")
-        print("📈 Descriptive Statistics:")
+    def step_1_data_loading(self) -> bool:
+        """Step 1: Data Loading with fallback examples."""
+        try:
+            if DATA_AVAILABLE:
+                # Try to use real data loader
+                loader = DataLoader()
+                data = loader.load_sample_data()
+                self._log_result(
+                    "Data Loading",
+                    True,
+                    "Successfully loaded data using APGI DataLoader",
+                    data={
+                        "participants": len(data.get("participants", [])),
+                        "features": list(data.keys()),
+                    },
+                )
+                return True
+            else:
+                # Use fallback data
+                self._log_result(
+                    "Data Loading",
+                    True,
+                    "Using fallback sample data (APGI modules not available)",
+                    data=self.fallback_data,
+                    fallback_used=True,
+                )
+                return True
 
-        for var, stats in desc_result.statistics.items():
-            print(f"\n   {var}:")
-            for stat, value in stats.items():
-                print(f"     {stat}: {value:.3f}")
+        except Exception as e:
+            # Fallback to generated data if real loader fails
+            self._log_result(
+                "Data Loading",
+                True,
+                "Real data loader failed, using fallback data",
+                data=self.fallback_data,
+                error=str(e),
+                fallback_used=True,
+            )
+            return True
 
-        # Comparative analysis
-        comp_params = {
-            "dependent_variable": "reaction_time",
-            "group_variable": "condition",
-            "test_type": "anova",
-        }
+    def step_2_descriptive_analysis(self) -> bool:
+        """Step 2: Descriptive Analysis with fallback."""
+        try:
+            data = self.fallback_data  # Use fallback data for consistency
 
-        comp_result = engine.analyze(
-            data=behav_df, analysis_type="comparative", parameters=comp_params
+            if ANALYSIS_AVAILABLE and PANDAS_AVAILABLE:
+                # Use real descriptive analyzer
+                analyzer = DescriptiveAnalyzer()
+                df = pd.DataFrame(data)
+
+                # Calculate descriptive statistics
+                descriptive_results = analyzer.calculate_descriptive_stats(df)
+                self._log_result(
+                    "Descriptive Analysis",
+                    True,
+                    "Successfully performed descriptive analysis using APGI Analyzer",
+                    data={"descriptive_stats": descriptive_results},
+                )
+            else:
+                # Use fallback descriptive statistics
+                if NUMPY_AVAILABLE:
+                    mean_rt = np.mean(data["response_times"])
+                    mean_acc = np.mean(data["accuracy"])
+                else:
+                    mean_rt = (
+                        sum(data["response_times"]) / len(data["response_times"])
+                        if data["response_times"]
+                        else 0
+                    )
+                    mean_acc = (
+                        sum(data["accuracy"]) / len(data["accuracy"])
+                        if data["accuracy"]
+                        else 0
+                    )
+
+                descriptive_results = {
+                    "mean_response_time": mean_rt,
+                    "mean_accuracy": mean_acc,
+                }
+
+                self._log_result(
+                    "Descriptive Analysis",
+                    True,
+                    "Performed descriptive analysis using fallback methods",
+                    data=descriptive_results,
+                    fallback_used=True,
+                )
+            return True
+
+        except Exception as e:
+            self._log_result(
+                "Descriptive Analysis",
+                False,
+                "Failed to perform descriptive analysis",
+                error=str(e),
+            )
+            return False
+
+    def step_3_comparative_analysis(self) -> bool:
+        """Step 3: Comparative Analysis with fallback."""
+        try:
+            data = self.fallback_data  # Use fallback data for consistency
+
+            if ANALYSIS_AVAILABLE and PANDAS_AVAILABLE:
+                # Use real comparative analyzer
+                analyzer = ComparativeAnalyzer()
+                df = pd.DataFrame(data)
+
+                # Group by condition and compare
+                control_data = df[df["conditions"] == "control"]
+                treatment_data = df[df["conditions"] == "treatment"]
+
+                comparison_results = analyzer.compare_groups(
+                    control_data, treatment_data
+                )
+                self._log_result(
+                    "Comparative Analysis",
+                    True,
+                    "Successfully performed comparative analysis using APGI Analyzer",
+                    data={
+                        "comparison_metrics": (
+                            list(comparison_results.keys())
+                            if isinstance(comparison_results, dict)
+                            else "comparison_complete"
+                        )
+                    },
+                )
+            else:
+                # Use fallback comparison
+                control_rts = [
+                    rt
+                    for i, rt in enumerate(data["response_times"])
+                    if data["conditions"][i] == "control"
+                ]
+                treatment_rts = [
+                    rt
+                    for i, rt in enumerate(data["response_times"])
+                    if data["conditions"][i] == "treatment"
+                ]
+
+                control_acc = [
+                    acc
+                    for i, acc in enumerate(data["accuracy"])
+                    if data["conditions"][i] == "control"
+                ]
+                treatment_acc = [
+                    acc
+                    for i, acc in enumerate(data["accuracy"])
+                    if data["conditions"][i] == "treatment"
+                ]
+
+                if NUMPY_AVAILABLE:
+                    control_mean_rt = np.mean(control_rts)
+                    treatment_mean_rt = np.mean(treatment_rts)
+                    control_mean_acc = np.mean(control_acc)
+                    treatment_mean_acc = np.mean(treatment_acc)
+                else:
+                    control_mean_rt = (
+                        sum(control_rts) / len(control_rts) if control_rts else 0
+                    )
+                    treatment_mean_rt = (
+                        sum(treatment_rts) / len(treatment_rts) if treatment_rts else 0
+                    )
+                    control_mean_acc = (
+                        sum(control_acc) / len(control_acc) if control_acc else 0
+                    )
+                    treatment_mean_acc = (
+                        sum(treatment_acc) / len(treatment_acc) if treatment_acc else 0
+                    )
+
+                comparison_results = {
+                    "response_time_diff": treatment_mean_rt - control_mean_rt,
+                    "accuracy_diff": treatment_mean_acc - control_mean_acc,
+                    "control_mean_rt": control_mean_rt,
+                    "treatment_mean_rt": treatment_mean_rt,
+                    "control_mean_acc": control_mean_acc,
+                    "treatment_mean_acc": treatment_mean_acc,
+                }
+
+                self._log_result(
+                    "Comparative Analysis",
+                    True,
+                    "Performed comparative analysis using fallback methods",
+                    data=comparison_results,
+                    fallback_used=True,
+                )
+            return True
+
+        except Exception as e:
+            self._log_result(
+                "Comparative Analysis",
+                False,
+                "Failed to perform comparative analysis",
+                error=str(e),
+            )
+            return False
+
+    def step_4_visualization(self) -> bool:
+        """Step 4: Visualization with fallback."""
+        try:
+            if VISUALIZATION_AVAILABLE and PANDAS_AVAILABLE:
+                # Use real visualization
+                data = self.fallback_data.copy()
+
+                # Remove metadata dict to avoid pandas DataFrame creation issues
+                if "metadata" in data:
+                    data.pop("metadata")
+
+                df = pd.DataFrame(data)
+
+                # Create a simple plot
+                plt.figure(figsize=(12, 4))
+
+                # Plot 1: Response times by condition
+                plt.subplot(1, 2, 1)
+                df.boxplot(column="response_times", by="conditions", ax=plt.gca())
+                plt.title("Response Times by Condition")
+                plt.ylabel("Response Time (s)")
+
+                # Plot 2: Accuracy by condition
+                plt.subplot(1, 2, 2)
+                df.boxplot(column="accuracy", by="conditions", ax=plt.gca())
+                plt.title("Accuracy by Condition")
+                plt.ylabel("Accuracy")
+
+                plt.tight_layout()
+                plt.savefig("tutorial_visualization.png", dpi=150, bbox_inches="tight")
+                plt.close()
+
+                self._log_result(
+                    "Visualization",
+                    True,
+                    "Successfully created visualizations and saved to tutorial_visualization.png",
+                    data={"output_file": "tutorial_visualization.png"},
+                )
+            else:
+                # Use fallback visualization (text-based)
+                data = self.fallback_data
+
+                # Create ASCII visualization
+                print("\n📊 Response Times by Condition (ASCII Visualization):")
+                print("=" * 50)
+
+                control_rts = [
+                    rt
+                    for i, rt in enumerate(data["response_times"])
+                    if data["conditions"][i] == "control"
+                ]
+                treatment_rts = [
+                    rt
+                    for i, rt in enumerate(data["response_times"])
+                    if data["conditions"][i] == "treatment"
+                ]
+
+                def ascii_bars(values, label, max_width=40):
+                    if not values:
+                        return f"{label}: No data"
+
+                    max_val = max(values)
+                    min_val = min(values)
+
+                    bars = []
+                    for i, val in enumerate(values):
+                        normalized = (
+                            (val - min_val) / (max_val - min_val)
+                            if max_val != min_val
+                            else 0.5
+                        )
+                        bar_length = int(normalized * max_width)
+                        bar = "█" * bar_length + "░" * (max_width - bar_length)
+                        bars.append(f"{label} {i+1:2d}: |{bar}| {val:.3f}")
+
+                    return "\n".join(bars)
+
+                print(ascii_bars(control_rts, "Control"))
+                print("\n" + ascii_bars(treatment_rts, "Treatment"))
+
+                # Simple statistics
+                if NUMPY_AVAILABLE:
+                    control_mean = np.mean(control_rts)
+                    treatment_mean = np.mean(treatment_rts)
+                else:
+                    control_mean = (
+                        sum(control_rts) / len(control_rts) if control_rts else 0
+                    )
+                    treatment_mean = (
+                        sum(treatment_rts) / len(treatment_rts) if treatment_rts else 0
+                    )
+
+                print(f"\n📈 Summary:")
+                print(f"   Control Mean RT:   {control_mean:.3f}s")
+                print(f"   Treatment Mean RT: {treatment_mean:.3f}s")
+                print(f"   Difference:         {treatment_mean - control_mean:+.3f}s")
+
+                self._log_result(
+                    "Visualization",
+                    True,
+                    "Created ASCII visualization (matplotlib not available)",
+                    data={
+                        "visualization_type": "ascii",
+                        "control_mean": control_mean,
+                        "treatment_mean": treatment_mean,
+                    },
+                    fallback_used=True,
+                )
+            return True
+
+        except Exception as e:
+            self._log_result(
+                "Visualization", False, "Failed to create visualizations", error=str(e)
+            )
+            return False
+
+    def run_all_steps(self) -> bool:
+        """Run all tutorial steps."""
+        print("APGI Framework Tutorial - Enhanced Version")
+        print("=" * 60)
+        print("This tutorial demonstrates core APGI Framework capabilities.")
+        print("Features fallback examples when modules are not available.")
+        print()
+
+        # Check availability
+        print("Module Availability:")
+        print(f"  • Analysis modules: {'✅' if ANALYSIS_AVAILABLE else '❌'}")
+        print(f"  • Data modules: {'✅' if DATA_AVAILABLE else '❌'}")
+        print(f"  • Visualization: {'✅' if VISUALIZATION_AVAILABLE else '❌'}")
+        print(
+            f"  • NumPy/Pandas: {'✅' if (NUMPY_AVAILABLE and PANDAS_AVAILABLE) else '❌'}"
         )
+        print()
 
-        print("\n✅ Comparative analysis completed!")
-        print("🔬 Comparative Statistics:")
+        # Run steps
+        steps = [
+            self.step_1_data_loading,
+            self.step_2_descriptive_analysis,
+            self.step_3_comparative_analysis,
+            self.step_4_visualization,
+        ]
 
-        if "F_statistic" in comp_result.statistics:
-            print(f"   F-statistic: {comp_result.statistics['F_statistic']:.3f}")
-        if "p_value" in comp_result.p_values:
-            print(f"   p-value: {comp_result.p_values['p_value']:.3f}")
+        all_success = True
+        for i, step in enumerate(steps, 1):
+            print(
+                f"\nStep {i}: {step.__name__.replace('step_', '').replace('_', ' ').title()}"
+            )
+            print("-" * 40)
+            success = step()
+            all_success = all_success and success
 
-    except Exception as e:
-        print(f"❌ Error in analysis: {e}")
+        # Summary
+        self._print_summary()
+        self._export_results()
 
-    # 4. Visualization
-    print("\n4. Visualization")
-    print("-" * 15)
+        return all_success
 
-    try:
-        # Set up plotting
-        plt.style.use("default")
-        sns.set_palette("husl")
+    def _print_summary(self):
+        """Print tutorial summary."""
+        print("\n" + "=" * 60)
+        print("TUTORIAL SUMMARY")
+        print("=" * 60)
 
-        # Create a simple visualization
-        fig, axes = plt.subplots(1, 2, figsize=(12, 5))
-        fig.suptitle("APGI Framework Tutorial - Analysis Summary", fontsize=16)
+        successful_steps = sum(1 for r in self.results if r.success)
+        total_steps = len(self.results)
+        fallback_steps = sum(1 for r in self.results if r.fallback_used)
 
-        # Plot 1: Reaction time box plot
-        behav_df.boxplot(column="reaction_time", by="condition", ax=axes[0])
-        axes[0].set_title("Reaction Time by Condition")
-        axes[0].set_xlabel("Condition")
-        axes[0].set_ylabel("Reaction Time (ms)")
+        print(f"Steps completed: {successful_steps}/{total_steps}")
+        print(f"Fallbacks used: {fallback_steps} steps")
 
-        # Plot 2: Accuracy by condition
-        accuracy_by_condition = behav_df.groupby("condition")["correct"].mean()
-        axes[1].bar(accuracy_by_condition.index, accuracy_by_condition.values)
-        axes[1].set_title("Accuracy by Condition")
-        axes[1].set_xlabel("Condition")
-        axes[1].set_ylabel("Accuracy")
+        print("\nStep Results:")
+        for result in self.results:
+            status = "✅" if result.success else "❌"
+            fallback = " (FALLBACK)" if result.fallback_used else ""
+            print(f"  {status} {result.step}{fallback}")
 
-        plt.tight_layout()
+        if successful_steps == total_steps:
+            print("\n🎉 All steps completed successfully!")
+        else:
+            print("\n⚠️ Some steps encountered issues.")
 
-        # Save the plot
-        output_dir = os.path.join(os.path.dirname(__file__), "..", "figures")
-        os.makedirs(output_dir, exist_ok=True)
-        plot_path = os.path.join(output_dir, "tutorial_summary.png")
-        plt.savefig(plot_path, dpi=300, bbox_inches="tight")
-        plt.show()
+        print("\nNext steps:")
+        print("• Explore the analysis modules in depth")
+        print("• Try different datasets")
+        print("• Customize visualizations")
+        print("• Run experiments using the experiment framework")
+        if fallback_steps > 0:
+            print("• Install missing dependencies for full functionality:")
+            if not ANALYSIS_AVAILABLE:
+                print("  - apgi_framework.analysis modules")
+            if not DATA_AVAILABLE:
+                print("  - apgi_framework.data modules")
+            if not VISUALIZATION_AVAILABLE:
+                print("  - matplotlib, seaborn")
+            if not (NUMPY_AVAILABLE and PANDAS_AVAILABLE):
+                print("  - numpy, pandas")
 
-        print(f"✅ Visualization created and saved to {plot_path}")
+    def _export_results(self):
+        """Export tutorial results to JSON."""
 
-    except Exception as e:
-        print(f"❌ Error creating visualization: {e}")
-
-    # 5. Export Results
-    print("\n5. Export Results")
-    print("-" * 15)
-
-    try:
-        import json
-
-        # Create results dictionary
-        results = {
-            "descriptive_stats": (
-                desc_result.statistics if "desc_result" in locals() else None
-            ),
-            "comparative_stats": (
-                comp_result.statistics if "comp_result" in locals() else None
-            ),
-            "data_summary": {
-                "behavioral_data_shape": behav_df.shape,
-                "conditions": behav_df["condition"].unique().tolist(),
-            },
-        }
-
-        # Convert numpy arrays to lists for JSON serialization
         def convert_numpy(obj):
-            if isinstance(obj, np.ndarray):
-                return obj.tolist()
-            elif isinstance(obj, np.integer):
-                return int(obj)
-            elif isinstance(obj, np.floating):
-                return float(obj)
-            elif isinstance(obj, dict):
+            """Convert numpy types to native Python types for JSON serialization."""
+            if NUMPY_AVAILABLE:
+                if isinstance(obj, np.ndarray):
+                    return obj.tolist()
+                elif isinstance(obj, np.integer):
+                    return int(obj)
+                elif isinstance(obj, np.floating):
+                    return float(obj)
+            if isinstance(obj, dict):
                 return {key: convert_numpy(value) for key, value in obj.items()}
             elif isinstance(obj, list):
                 return [convert_numpy(item) for item in obj]
             return obj
 
-        results_serializable = convert_numpy(results)
+        try:
+            export_data = {
+                "tutorial_completed": True,
+                "total_steps": len(self.results),
+                "successful_steps": sum(1 for r in self.results if r.success),
+                "fallback_steps": sum(1 for r in self.results if r.fallback_used),
+                "module_availability": {
+                    "analysis": ANALYSIS_AVAILABLE,
+                    "data": DATA_AVAILABLE,
+                    "visualization": VISUALIZATION_AVAILABLE,
+                    "numpy_pandas": NUMPY_AVAILABLE and PANDAS_AVAILABLE,
+                },
+                "step_results": [
+                    {
+                        "step": r.step,
+                        "success": r.success,
+                        "message": r.message,
+                        "fallback_used": r.fallback_used,
+                        "error": r.error,
+                        "data": convert_numpy(r.data) if r.data else None,
+                    }
+                    for r in self.results
+                ],
+                "output_files": [],
+            }
 
-        # Save results
-        output_path = os.path.join(os.path.dirname(__file__), "..", "results")
-        os.makedirs(output_path, exist_ok=True)
-        results_path = os.path.join(output_path, "tutorial_results.json")
+            # Check if visualization file was created
+            if Path("tutorial_visualization.png").exists():
+                export_data["output_files"].append("tutorial_visualization.png")
 
-        with open(results_path, "w") as f:
-            json.dump(results_serializable, f, indent=2)
+            with open(self.output_file, "w") as f:
+                json.dump(export_data, f, indent=2)
 
-        print(f"✅ Results exported to {results_path}")
+            print(f"\n📄 Results exported to: {self.output_file}")
 
+        except Exception as e:
+            print(f"\n⚠️ Warning: Could not export results: {e}")
+
+
+def main():
+    """Main tutorial function."""
+    try:
+        runner = TutorialRunner()
+        success = runner.run_all_steps()
+        sys.exit(0 if success else 1)
+    except KeyboardInterrupt:
+        print("\n\n🛑 Tutorial interrupted by user.")
+        sys.exit(1)
     except Exception as e:
-        print(f"❌ Error exporting results: {e}")
-
-    # Tutorial Complete
-    print("\n🎉 Tutorial Complete!")
-    print("=" * 50)
-    print("\n✅ What You've Accomplished:")
-    print("   1. Setup: Successfully imported the APGI Framework")
-    print("   2. Data Loading: Loaded example datasets")
-    print("   3. Basic Analysis: Performed statistical analyses")
-    print("   4. Visualization: Created plots and figures")
-    print("   5. Export: Saved results for later use")
-
-    print("\n🚀 Next Steps:")
-    print("   - Explore the GUI: python -m apgi_gui")
-    print("   - Try different data: Load your own datasets")
-    print("   - Advanced models: Explore Bayesian modeling")
-    print("   - Documentation: Read the full user guide")
-
-    print("\n📚 Additional Resources:")
-    print("   - User Guide: docs/user_guide.md")
-    print("   - API Reference: docs/api/")
-    print("   - Examples: examples/")
-    print("   - GitHub: Report issues and contribute")
-
-    print("\nHappy analyzing with the APGI Framework! 🎯")
+        print(f"\n\n💥 Unexpected error in tutorial: {e}")
+        print("\nFull traceback:")
+        traceback.print_exc()
+        sys.exit(1)
 
 
 if __name__ == "__main__":

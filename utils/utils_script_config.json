@@ -1,0 +1,31 @@
+{
+  "script_categories": {
+    "testing": {
+      "description": "Testing and validation scripts",
+      "scripts": ["run_tests.py", "check_dependencies.py"],
+      "timeout": 600
+    },
+    "maintenance": {
+      "description": "System maintenance scripts", 
+      "scripts": ["delete_pycache.py", "replace_print_with_logging.py"],
+      "timeout": 300
+    },
+    "deployment": {
+      "description": "Deployment and setup scripts",
+      "scripts": ["quick_deploy.py", "setup.sh"],
+      "timeout": 900
+    },
+    "utilities": {
+      "description": "General utility scripts",
+      "scripts": [],
+      "timeout": 300
+    }
+  },
+  "default_settings": {
+    "timeout": 300,
+    "max_retries": 2,
+    "retry_delay": 1,
+    "enable_execution_time": true,
+    "log_level": "INFO"
+  }
+}

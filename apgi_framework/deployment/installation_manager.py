@@ -102,7 +102,7 @@ class InstallationManager:
             name="numpy",
             description="Numerical computing library",
             required=True,
-            install_command="pip install numpy>=1.20.0",
+            install_command="python -m pip install numpy>=1.20.0",
             check_command='python -c "import numpy; print(numpy.__version__)"',
         )
 
@@ -110,7 +110,7 @@ class InstallationManager:
             name="scipy",
             description="Scientific computing library",
             required=True,
-            install_command="pip install scipy>=1.7.0",
+            install_command="python -m pip install scipy>=1.7.0",
             check_command='python -c "import scipy; print(scipy.__version__)"',
         )
 
@@ -118,7 +118,7 @@ class InstallationManager:
             name="pandas",
             description="Data manipulation library",
             required=True,
-            install_command="pip install pandas>=1.3.0",
+            install_command="python -m pip install pandas>=1.3.0",
             check_command='python -c "import pandas; print(pandas.__version__)"',
         )
 
@@ -127,7 +127,7 @@ class InstallationManager:
             name="pystan",
             description="Python interface to Stan for Bayesian modeling",
             required=True,
-            install_command="pip install pystan>=3.0.0",
+            install_command="python -m pip install pystan>=3.0.0",
             check_command='python -c "import stan; print(stan.__version__)"',
         )
 
@@ -135,7 +135,7 @@ class InstallationManager:
             name="arviz",
             description="Bayesian model diagnostics and visualization",
             required=True,
-            install_command="pip install arviz>=0.11.0",
+            install_command="python -m pip install arviz>=0.11.0",
             check_command='python -c "import arviz; print(arviz.__version__)"',
         )
 
@@ -144,7 +144,7 @@ class InstallationManager:
             name="pylsl",
             description="Lab Streaming Layer for real-time data streaming",
             required=True,
-            install_command="pip install pylsl>=1.16.0",
+            install_command="python -m pip install pylsl>=1.16.0",
             check_command='python -c "import pylsl; print(pylsl.__version__)"',
         )
 
@@ -153,7 +153,7 @@ class InstallationManager:
             name="mne",
             description="EEG/MEG analysis library",
             required=True,
-            install_command="pip install mne>=1.0.0",
+            install_command="python -m pip install mne>=1.0.0",
             check_command='python -c "import mne; print(mne.__version__)"',
         )
 
@@ -162,7 +162,7 @@ class InstallationManager:
             name="tobii_research",
             description="Tobii eye tracker SDK",
             required=False,
-            install_command="pip install tobii-research",
+            install_command="python -m pip install tobii-research",
             check_command='python -c "import tobii_research; print(tobii_research.__version__)"',
         )
 
@@ -171,7 +171,7 @@ class InstallationManager:
             name="matplotlib",
             description="Plotting library",
             required=True,
-            install_command="pip install matplotlib>=3.4.0",
+            install_command="python -m pip install matplotlib>=3.4.0",
             check_command='python -c "import matplotlib; print(matplotlib.__version__)"',
         )
 
@@ -179,7 +179,7 @@ class InstallationManager:
             name="seaborn",
             description="Statistical visualization",
             required=True,
-            install_command="pip install seaborn>=0.11.0",
+            install_command="python -m pip install seaborn>=0.11.0",
             check_command='python -c "import seaborn; print(seaborn.__version__)"',
         )
 
@@ -188,7 +188,7 @@ class InstallationManager:
             name="pyqt5",
             description="GUI framework",
             required=True,
-            install_command="pip install PyQt5>=5.15.0",
+            install_command="python -m pip install PyQt5>=5.15.0",
             check_command='python -c "import PyQt5.QtCore; print(PyQt5.QtCore.PYQT_VERSION_STR)"',
         )
 

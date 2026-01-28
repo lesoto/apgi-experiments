@@ -1,0 +1,164 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+        .header { text-align: center; border-bottom: 3px solid #3498db; padding-bottom: 20px; margin-bottom: 30px; }
+        .section { margin: 30px 0; }
+        .metric-card { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .metric-value { font-size: 24px; font-weight: bold; color: #2c3e50; }
+        .metric-label { color: #7f8c8d; font-size: 14px; }
+        .success { color: #27ae60; }
+        .warning { color: #f39c12; }
+        .error { color: #e74c3c; }
+        .table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .table th, .table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .table th { background-color: #f8f9fa; }
+        .chart-container { text-align: center; margin: 20px 0; }
+        .footer { margin-top: 50px; text-align: center; color: #7f8c8d; font-size: 12px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .alert { padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .alert-high { background-color: #fdf2f2; border-left: 4px solid #e74c3c; }
+        .alert-medium { background-color: #fef9e7; border-left: 4px solid #f39c12; }
+        .alert-low { background-color: #f0f9ff; border-left: 4px solid #3498db; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ title }}</h1>
+        <p>Generated on {{ generation_date }}</p>
+        <p>APGI Framework Validation Report</p>
+    </div>
+
+    {% if summary %}
+    <div class="section">
+        <h2>Executive Summary</h2>
+        <div class="grid">
+            <div class="metric-card">
+                <div class="metric-value">{{ summary.total_protocols }}</div>
+                <div class="metric-label">Total Protocols</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value {{ 'success' if summary.passed_protocols > summary.failed_protocols else 'error' }}">
+                    {{ summary.passed_protocols }}/{{ summary.total_protocols }}
+                </div>
+                <div class="metric-label">Protocols Passed</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value {{ 'warning' if summary.avg_performance > 5 else 'success' }}">
+                    {{ "%.2f"|format(summary.avg_performance) }}s
+                </div>
+                <div class="metric-label">Average Performance</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value {{ 'success' if summary.error_rate < 0.1 else 'error' }}">
+                    {{ "%.1f"|format(summary.error_rate * 100) }}%
+                </div>
+                <div class="metric-label">Error Rate</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if validation_results %}
+    <div class="section">
+        <h2>Validation Results</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Protocol</th>
+                    <th>Status</th>
+                    <th>Duration</th>
+                    <th>Key Metrics</th>
+                    <th>Issues</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in validation_results %}
+                <tr>
+                    <td>{{ result.name }}</td>
+                    <td class="{{ 'success' if result.passed else 'error' }}">
+                        {{ 'PASSED' if result.passed else 'FAILED' }}
+                    </td>
+                    <td>{{ "%.3f"|format(result.duration) }}s</td>
+                    <td>{{ result.key_metrics | join(', ') }}</td>
+                    <td>{{ result.issues | length }} issues</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {% if performance_metrics %}
+    <div class="section">
+        <h2>Performance Analysis</h2>
+        <div class="grid">
+            {% for metric in performance_metrics %}
+            <div class="metric-card">
+                <div class="metric-value">{{ "%.3f"|format(metric.value) }} {{ metric.unit }}</div>
+                <div class="metric-label">{{ metric.name }}</div>
+                <div class="{{ 'success' if metric.status == 'good' else 'warning' if metric.status == 'warning' else 'error' }}">
+                    {{ metric.status.upper() }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if bottlenecks %}
+    <div class="section">
+        <h2>Performance Bottlenecks</h2>
+        {% for bottleneck in bottlenecks %}
+        <div class="alert alert-{{ bottleneck.severity }}">
+            <strong>{{ bottleneck.type | title }}:</strong> {{ bottleneck.name }}
+            <br>{{ bottleneck.description }}
+            {% if bottleneck.recommendations %}
+            <br><strong>Recommendations:</strong>
+            <ul>
+                {% for rec in bottleneck.recommendations %}
+                <li>{{ rec }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if charts %}
+    <div class="section">
+        <h2>Visualizations</h2>
+        {% for chart in charts %}
+        <div class="chart-container">
+            <h3>{{ chart.title }}</h3>
+            <img src="data:image/png;base64,{{ chart.data }}" alt="{{ chart.title }}" style="max-width: 100%; height: auto;">
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if recommendations %}
+    <div class="section">
+        <h2>Recommendations</h2>
+        {% for rec in recommendations %}
+        <div class="alert alert-{{ rec.priority }}">
+            <strong>{{ rec.type | title }}:</strong> {{ rec.message }}
+            <br><em>Priority: {{ rec.priority | title }}</em>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="footer">
+        <p>Generated by APGI Framework Automated Report Generator</p>
+        <p>Report ID: {{ report_id }}</p>
+    </div>
+</body>
+</html>
+        

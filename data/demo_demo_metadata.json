@@ -1,0 +1,13 @@
+{
+    "subject_id": "demo",
+    "session_id": "demo",
+    "sampling_rate": 250,
+    "duration": 30,
+    "n_samples": 7500,
+    "p300_events": [
+        10.0,
+        24.796755950515355
+    ],
+    "creation_time": "2026-01-28T10:57:54.363878",
+    "data_quality": "good"
+}

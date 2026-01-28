@@ -89,6 +89,11 @@ from .predictive_validity import (
     ComparativeValidityResult,
 )
 
+from .analysis_engine import (
+    AnalysisEngine,
+    AnalysisResult,
+)
+
 __all__ = [
     # Statistical Testing
     "StatisticalTester",
@@ -156,4 +161,7 @@ __all__ = [
     "TaskPerformance",
     "ValidityResult",
     "ComparativeValidityResult",
+    # Analysis Engine
+    "AnalysisEngine",
+    "AnalysisResult",
 ]

@@ -53,6 +53,13 @@ from .dashboard import (
 )
 from .data_manager import IntegratedDataManager, create_data_manager
 
+# Import example data loading functionality
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "examples"))
+from data_loader import load_example_data, list_example_data
+
 __all__ = [
     # Core data management
     "StorageManager",
@@ -99,4 +106,7 @@ __all__ = [
     # Integrated management
     "IntegratedDataManager",
     "create_data_manager",
+    # Example data loading
+    "load_example_data",
+    "list_example_data",
 ]

@@ -1,0 +1,77 @@
+{
+  "data": [
+    {
+      "timestamp": "2026-01-28 10:54:10",
+      "time_seconds": -0.2027441406419418,
+      "eeg_fz": 0.02794093425348373,
+      "eeg_pz": 0.026562159161399757,
+      "pupil_diameter": 0.0006577055956863327,
+      "eda": 0.0701655223406085,
+      "heart_rate": 0.017284644463199158,
+      "event_marker": NaN,
+      "eda_tonic": NaN,
+      "eda_phasic": 0.07016552234062161,
+      "subject_id": NaN,
+      "session_id": NaN,
+      "pupil_diameter_blink": NaN
+    },
+    {
+      "timestamp": "2026-01-28 10:58:20",
+      "time_seconds": 1.6335888758158568,
+      "eeg_fz": -0.22513104068939985,
+      "eeg_pz": -0.2140217102517754,
+      "pupil_diameter": -0.005299391347504247,
+      "eda": -0.5653510695723597,
+      "heart_rate": -0.13926914399652565,
+      "event_marker": NaN,
+      "eda_tonic": NaN,
+      "eda_phasic": -0.5653510695723465,
+      "subject_id": "demo",
+      "session_id": "demo",
+      "pupil_diameter_blink": false
+    }
+  ],
+  "preprocessing_steps": [
+    "Missing data cleaned using interpolate strategy",
+    "Removed 2292 outliers using iqr method",
+    "Normalized Index(['time_seconds', 'eeg_fz', 'eeg_pz', 'pupil_diameter', 'eda',\n       'heart_rate', 'event_marker', 'eda_tonic', 'eda_phasic'],\n      dtype='object') using zscore method",
+    "Resampled data to 250.0 Hz"
+  ],
+  "processing_timestamp": "2026-01-28T11:04:07.768397",
+  "metadata": {
+    "shape": [
+      2,
+      13
+    ],
+    "columns": [
+      "timestamp",
+      "time_seconds",
+      "eeg_fz",
+      "eeg_pz",
+      "pupil_diameter",
+      "eda",
+      "heart_rate",
+      "event_marker",
+      "eda_tonic",
+      "eda_phasic",
+      "subject_id",
+      "session_id",
+      "pupil_diameter_blink"
+    ],
+    "dtypes": {
+      "timestamp": "datetime64[ns]",
+      "time_seconds": "float64",
+      "eeg_fz": "float64",
+      "eeg_pz": "float64",
+      "pupil_diameter": "float64",
+      "eda": "float64",
+      "heart_rate": "float64",
+      "event_marker": "float64",
+      "eda_tonic": "float64",
+      "eda_phasic": "float64",
+      "subject_id": "object",
+      "session_id": "object",
+      "pupil_diameter_blink": "object"
+    }
+  }
+}

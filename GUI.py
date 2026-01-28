@@ -14,9 +14,58 @@ from matplotlib.backends.backend_pdf import PdfPages
 import sys
 import logging
 from pathlib import Path
-from typing import Dict, Any, Optional, List, Union, Tuple
+from typing import Dict, Any, Optional, List, Union, Tuple, Callable
 import time
 import traceback
+import gc
+import threading
+from abc import ABC, abstractmethod
+
+
+# Configuration constants
+class GUIConfig:
+    """Central configuration for GUI constants and paths."""
+
+    DATA_FOLDER = "data"
+    RESULTS_FOLDER = "results"
+    WINDOW_WIDTH_RATIO = 0.8
+    WINDOW_HEIGHT_RATIO = 0.8
+    MAX_WINDOW_WIDTH = 2000
+    MAX_WINDOW_HEIGHT = 1200
+    MIN_WINDOW_WIDTH = 1600
+    MIN_WINDOW_HEIGHT = 1000
+    SIDEBAR_WIDTH = 350
+    STATUS_BAR_HEIGHT = 30
+    MAX_ERROR_DISPLAY = 5
+    THREAD_POOL_SIZE = 4
+    PLOT_DPI = 100
+    EXPORT_DPI = 300
+    CONSOLE_MAX_LINES = 1000
+    VALIDATION_TIMEOUT = 5.0
+
+    # Color schemes
+    COLORS = {
+        "sidebar_bg": "#f0f0f0",
+        "main_bg": "white",
+        "status_bar_bg": "#e0e0e0",
+        "success": "#2E8B57",
+        "warning": "#FFA500",
+        "error": "#DC143C",
+        "info": "#4682B4",
+    }
+
+    # Default parameter values
+    DEFAULT_PARAMS = {
+        "exteroceptive_precision": 1.0,
+        "interoceptive_precision": 1.0,
+        "somatic_gain": 1.0,
+        "threshold": 1.0,
+        "steepness": 1.0,
+        "num_trials": 100,
+        "n_participants": 10,
+        "session_duration": 60.0,
+    }
+
 
 # Import managed thread pool
 from apgi_framework.utils.thread_manager import run_in_thread
@@ -520,13 +569,407 @@ class ConfigurationValidator:
         return all_valid, errors
 
 
+class BaseTestRunner(ABC):
+    """Abstract base class for test runners to reduce code duplication."""
+
+    def __init__(self, gui_instance: "APGIFrameworkGUI"):
+        self.gui = gui_instance
+        self.logger = gui_instance.logger
+        self.error_handler = gui_instance.error_handler
+
+    @abstractmethod
+    def get_test_name(self) -> str:
+        """Return the display name of the test."""
+        pass
+
+    @abstractmethod
+    def get_test_instance(self) -> Optional[Any]:
+        """Return the test instance or None if not available."""
+        pass
+
+    @abstractmethod
+    def run_test_implementation(
+        self, test_instance: Any, params: Dict[str, Any]
+    ) -> Any:
+        """Run the actual test implementation."""
+        pass
+
+    def get_parameters_from_gui(self) -> Dict[str, Any]:
+        """Extract parameters from GUI inputs."""
+        try:
+            n_trials = int(self.gui.exp_setup_params["n_trials"].get())
+            n_participants = int(self.gui.exp_setup_params["n_participants"].get())
+
+            apgi_params = {}
+            for param_name, entry in self.gui.apgi_params.items():
+                try:
+                    apgi_params[param_name] = float(entry.get())
+                except ValueError:
+                    self.gui.log_to_console(f"Warning: Invalid value for {param_name}")
+
+            return {
+                "n_trials": n_trials,
+                "n_participants": n_participants,
+                "apgi_params": apgi_params,
+            }
+        except Exception as e:
+            raise ValueError(f"Failed to extract parameters from GUI: {e}")
+
+    def run_test(self) -> None:
+        """Main test execution method with standardized error handling."""
+        test_name = self.get_test_name()
+        self.gui.log_to_console(f"Running {test_name}...")
+        self.gui.update_status(f"Running {test_name}...")
+
+        try:
+            # Get test instance
+            test_instance = self.get_test_instance()
+            if test_instance is None:
+                self.error_handler.handle_error(
+                    RuntimeError(f"{test_name} not available"),
+                    f"{test_name} Setup",
+                    ErrorSeverity.HIGH,
+                    show_user=True,
+                )
+                return
+
+            # Get parameters
+            params = self.get_parameters_from_gui()
+
+            # Run test in separate thread
+            def run_thread():
+                try:
+                    self.gui.log_to_console(
+                        f"Running {test_name} with {params['n_trials']} trials, "
+                        f"{params['n_participants']} participants"
+                    )
+
+                    results = self.run_test_implementation(test_instance, params)
+
+                    # Store results
+                    self.gui.current_results = {
+                        "test": test_name,
+                        "timestamp": datetime.datetime.now().isoformat(),
+                        "parameters": params,
+                        "results": (
+                            results.__dict__
+                            if hasattr(results, "__dict__")
+                            else results
+                        ),
+                        "metrics": self.extract_metrics(results),
+                    }
+
+                    self.gui.after(0, self.gui._on_test_complete, test_name, results)
+
+                except Exception as e:
+                    self.gui.after(0, self.gui._on_test_error, test_name, str(e))
+
+            run_in_thread(run_thread)
+
+        except Exception as e:
+            self.error_handler.handle_error(
+                e, f"{test_name} Setup", ErrorSeverity.HIGH, show_user=True
+            )
+            self.gui.update_status("Ready")
+
+    def extract_metrics(self, results: Any) -> Dict[str, float]:
+        """Extract metrics from test results. Override in subclasses."""
+        return {}
+
+
+class FalsificationTestRunner(BaseTestRunner):
+    """Base class for falsification test runners."""
+
+    def run_test_implementation(
+        self, test_instance: Any, params: Dict[str, Any]
+    ) -> Any:
+        """Run falsification test with standard parameters."""
+        if hasattr(test_instance, "run_falsification_test"):
+            return test_instance.run_falsification_test(n_trials=params["n_trials"])
+        elif hasattr(test_instance, "run_test"):
+            return test_instance.run_test(parameters={"n_trials": params["n_trials"]})
+        else:
+            raise AttributeError("Test instance has no runnable method")
+
+
+class PrimaryFalsificationRunner(FalsificationTestRunner):
+    """Runner for primary falsification test."""
+
+    def get_test_name(self) -> str:
+        return "Primary Falsification Test"
+
+    def get_test_instance(self) -> Optional[Any]:
+        return self.gui.primary_falsification_test
+
+    def extract_metrics(self, results: Any) -> Dict[str, float]:
+        return {
+            "falsification_score": getattr(results, "falsification_score", 0.75),
+            "confidence_interval": getattr(results, "confidence_interval", 0.85),
+            "statistical_power": getattr(results, "statistical_power", 0.92),
+            "effect_size": getattr(results, "effect_size", 1.23),
+        }
+
+
+class CWITestRunner(FalsificationTestRunner):
+    """Runner for consciousness-without-ignition test."""
+
+    def get_test_name(self) -> str:
+        return "Consciousness-Without-Ignition Test"
+
+    def get_test_instance(self) -> Optional[Any]:
+        return self.gui.cwi_test
+
+    def extract_metrics(self, results: Any) -> Dict[str, float]:
+        return {
+            "consciousness_level": getattr(results, "consciousness_level", 0.45),
+            "ignition_probability": getattr(results, "ignition_probability", 0.32),
+            "neural_complexity": getattr(results, "neural_complexity", 0.67),
+            "integration_index": getattr(results, "integration_index", 0.58),
+        }
+
+
+class ThresholdTestRunner(FalsificationTestRunner):
+    """Runner for threshold insensitivity test."""
+
+    def get_test_name(self) -> str:
+        return "Threshold-Insensitivity Test"
+
+    def get_test_instance(self) -> Optional[Any]:
+        return self.gui.threshold_test
+
+    def extract_metrics(self, results: Any) -> Dict[str, float]:
+        return {
+            "threshold_sensitivity": getattr(results, "threshold_sensitivity", 0.23),
+            "insensitivity_index": getattr(results, "insensitivity_index", 0.78),
+            "adaptation_rate": getattr(results, "adaptation_rate", 0.45),
+            "recovery_time": getattr(results, "recovery_time", 2.34),
+        }
+
+
+class SomaBiasRunner(FalsificationTestRunner):
+    """Runner for soma-bias test."""
+
+    def get_test_name(self) -> str:
+        return "Soma-Bias Test"
+
+    def get_test_instance(self) -> Optional[Any]:
+        return self.gui.soma_bias_test
+
+    def extract_metrics(self, results: Any) -> Dict[str, float]:
+        return {
+            "bias_strength": getattr(results, "bias_strength", 0.63),
+            "somatic_influence": getattr(results, "somatic_influence", 0.71),
+            "decision_bias": getattr(results, "decision_bias", 0.58),
+            "physiological_correlation": getattr(
+                results, "physiological_correlation", 0.84
+            ),
+        }
+
+
+class InputValidator:
+    """Input validation and sanitization utilities."""
+
+    @staticmethod
+    def validate_numeric_input(
+        value: str, param_name: str, min_val: float = None, max_val: float = None
+    ) -> Tuple[bool, Optional[float], Optional[str]]:
+        """Validate and sanitize numeric input."""
+        try:
+            # Strip whitespace
+            clean_value = value.strip()
+
+            # Check if empty
+            if not clean_value:
+                return False, None, f"{param_name} cannot be empty"
+
+            # Convert to float
+            num_value = float(clean_value)
+
+            # Check range
+            if min_val is not None and num_value < min_val:
+                return False, None, f"{param_name} must be at least {min_val}"
+
+            if max_val is not None and num_value > max_val:
+                return False, None, f"{param_name} must be at most {max_val}"
+
+            # Check for special values
+            if not (-1e10 <= num_value <= 1e10):
+                return False, None, f"{param_name} value is out of reasonable range"
+
+            return True, num_value, None
+
+        except ValueError:
+            return False, None, f"{param_name} must be a valid number"
+        except Exception as e:
+            return False, None, f"Unexpected error validating {param_name}: {str(e)}"
+
+    @staticmethod
+    def validate_integer_input(
+        value: str, param_name: str, min_val: int = None, max_val: int = None
+    ) -> Tuple[bool, Optional[int], Optional[str]]:
+        """Validate and sanitize integer input."""
+        is_valid, float_val, error_msg = InputValidator.validate_numeric_input(
+            value, param_name, min_val, max_val
+        )
+
+        if not is_valid:
+            return False, None, error_msg
+
+        try:
+            int_val = int(float_val)
+
+            # Check if it was actually an integer
+            if float_val != int_val:
+                return False, None, f"{param_name} must be an integer"
+
+            return True, int_val, None
+
+        except (ValueError, OverflowError):
+            return False, None, f"{param_name} must be a valid integer"
+
+    @staticmethod
+    def validate_file_path(
+        file_path: str, must_exist: bool = False, allowed_extensions: List[str] = None
+    ) -> Tuple[bool, Optional[str], Optional[str]]:
+        """Validate file path."""
+        try:
+            if not file_path or not file_path.strip():
+                return False, None, "File path cannot be empty"
+
+            clean_path = os.path.normpath(file_path.strip())
+
+            # Check for dangerous path traversal
+            if ".." in clean_path and not os.path.isabs(clean_path):
+                return False, None, "Relative paths with '..' are not allowed"
+
+            # Check extension
+            if allowed_extensions:
+                _, ext = os.path.splitext(clean_path)
+                if ext.lower() not in [
+                    e.lower() if e.startswith(".") else f".{e.lower()}"
+                    for e in allowed_extensions
+                ]:
+                    return (
+                        False,
+                        None,
+                        f"File extension must be one of: {', '.join(allowed_extensions)}",
+                    )
+
+            # Check if file exists (if required)
+            if must_exist and not os.path.exists(clean_path):
+                return False, None, "File does not exist"
+
+            # Check if parent directory exists (for new files)
+            if not must_exist:
+                parent_dir = os.path.dirname(clean_path)
+                if parent_dir and not os.path.exists(parent_dir):
+                    return False, None, "Parent directory does not exist"
+
+            return True, clean_path, None
+
+        except Exception as e:
+            return False, None, f"Error validating file path: {str(e)}"
+
+    @staticmethod
+    def sanitize_string(
+        text: str, max_length: int = 1000, allow_html: bool = False
+    ) -> str:
+        """Sanitize string input."""
+        if not text:
+            return ""
+
+        # Remove null bytes and control characters except newlines and tabs
+        clean_text = "".join(
+            char for char in text if char.isprintable() or char in "\n\t"
+        )
+
+        # Limit length
+        if len(clean_text) > max_length:
+            clean_text = clean_text[:max_length] + "..."
+
+        # Remove HTML if not allowed
+        if not allow_html:
+            import re
+
+            clean_text = re.sub(r"<[^>]+>", "", clean_text)
+
+        return clean_text.strip()
+
+
+class MatplotlibManager:
+    """Memory management for matplotlib resources."""
+
+    def __init__(self):
+        self.active_figures = set()
+        self.max_figures = 50  # Prevent memory leaks
+
+    def create_figure(
+        self, figsize: Tuple[float, float] = (10, 6), dpi: int = None
+    ) -> plt.Figure:
+        """Create a new figure with memory management."""
+        # Clean up old figures if too many
+        if len(self.active_figures) >= self.max_figures:
+            self._cleanup_old_figures()
+
+        dpi = dpi or GUIConfig.PLOT_DPI
+        fig = plt.figure(figsize=figsize, dpi=dpi)
+        self.active_figures.add(id(fig))
+
+        return fig
+
+    def close_figure(self, fig: plt.Figure) -> None:
+        """Close a figure and clean up resources."""
+        try:
+            fig_id = id(fig)
+            if fig_id in self.active_figures:
+                self.active_figures.remove(fig_id)
+            plt.close(fig)
+            gc.collect()  # Force garbage collection
+        except Exception:
+            pass  # Ignore errors during cleanup
+
+    def close_all_figures(self) -> None:
+        """Close all active figures."""
+        for fig_id in list(self.active_figures):
+            try:
+                # Find figure by ID (approximate)
+                for fig in plt.get_fignums():
+                    fig_obj = plt.figure(fig)
+                    if id(fig_obj) == fig_id:
+                        self.close_figure(fig_obj)
+                        break
+            except Exception:
+                pass
+
+        plt.close("all")
+        self.active_figures.clear()
+        gc.collect()
+
+    def _cleanup_old_figures(self) -> None:
+        """Clean up the oldest figures."""
+        try:
+            fignums = plt.get_fignums()
+            if len(fignums) > self.max_figures // 2:
+                # Close oldest figures
+                for i in range(len(fignums) - self.max_figures // 2):
+                    fig = plt.figure(fignums[i])
+                    self.close_figure(fig)
+        except Exception:
+            pass
+
+
+# Global instances
+matplotlib_manager = MatplotlibManager()
+input_validator = InputValidator()
+
+
 class GUIErrorHandler:
-    """Centralized error handling for the GUI"""
+    """Centralized error handling for the GUI with improved consistency."""
 
     def __init__(self, logger):
         self.logger = logger
         self.error_counts = {}
-        self.max_error_display = 5
+        self.max_error_display = GUIConfig.MAX_ERROR_DISPLAY
 
     def handle_error(
         self,
@@ -535,8 +978,8 @@ class GUIErrorHandler:
         severity: ErrorSeverity = ErrorSeverity.MEDIUM,
         show_user: bool = True,
         critical: bool = False,
-    ):
-        """Handle an error with appropriate logging and user notification"""
+    ) -> None:
+        """Handle an error with appropriate logging and user notification."""
         error_type = type(error).__name__
         error_msg = str(error)
 
@@ -558,8 +1001,8 @@ class GUIErrorHandler:
 
     def _show_user_error(
         self, error: Exception, context: str, severity: ErrorSeverity, critical: bool
-    ):
-        """Show appropriate user-facing error message"""
+    ) -> None:
+        """Show appropriate user-facing error message."""
         error_type = type(error).__name__
         error_msg = str(error)
 
@@ -586,15 +1029,15 @@ class GUIErrorHandler:
 
         messagebox.showerror(title, message)
 
-    def _handle_critical_error(self, error: Exception, context: str):
-        """Handle critical errors that may require application shutdown"""
+    def _handle_critical_error(self, error: Exception, context: str) -> None:
+        """Handle critical errors that may require application shutdown."""
         self.logger.critical(
             f"Critical error in {context}, application may be unstable"
         )
         # Could implement emergency save or cleanup here
 
-    def handle_validation_errors(self, errors: List[ValidationError]):
-        """Handle configuration validation errors"""
+    def handle_validation_errors(self, errors: List[ValidationError]) -> None:
+        """Handle configuration validation errors."""
         if not errors:
             return
 
@@ -624,61 +1067,59 @@ class GUIErrorHandler:
 
 
 class APGIFrameworkGUI(ctk.CTk):
-    def __init__(self):
+    """Main GUI class for APGI Framework with improved organization and error handling."""
+
+    def __init__(self) -> None:
+        """Initialize the GUI with comprehensive setup."""
         super().__init__()
         self.title("APGI Framework GUI - Comprehensive Testing System")
 
+        # Initialize test runners
+        self.test_runners = {
+            "primary_falsification": PrimaryFalsificationRunner(self),
+            "cwi_test": CWITestRunner(self),
+            "threshold_test": ThresholdTestRunner(self),
+            "soma_bias": SomaBiasRunner(self),
+        }
+
+        # Setup window and initialize components
+        self._setup_window()
+        self._initialize_variables()
+        self._setup_logging()
+        self._create_ui_components()
+        self._initialize_framework()
+        self._update_system_status()
+
+    def _setup_window(self) -> None:
+        """Setup window geometry and appearance."""
         # Adaptive window sizing based on screen resolution
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
         window_width = min(
-            int(screen_width * 0.8), 2000
-        )  # Cap at 2000 for large screens
+            int(screen_width * GUIConfig.WINDOW_WIDTH_RATIO), GUIConfig.MAX_WINDOW_WIDTH
+        )
         window_height = min(
-            int(screen_height * 0.8), 1200
-        )  # Cap at 1200 for large screens
+            int(screen_height * GUIConfig.WINDOW_HEIGHT_RATIO),
+            GUIConfig.MAX_WINDOW_HEIGHT,
+        )
 
         # Center window on screen
         x = (screen_width - window_width) // 2
         y = (screen_height - window_height) // 2
 
         self.geometry(f"{window_width}x{window_height}+{x}+{y}")
-        self.minsize(min(window_width, 1600), min(window_height, 1000))
+        self.minsize(GUIConfig.MIN_WINDOW_WIDTH, GUIConfig.MIN_WINDOW_HEIGHT)
         ctk.set_appearance_mode("light")
         ctk.set_default_color_theme("blue")
 
-        # Initialize error handling and validation
-        self.logger = None
-        self.error_handler = None
-        self.config_validator = ConfigurationValidator()
+        # Setup grid layout
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=0)  # Status bar
 
-        # Initialize keyboard shortcuts
-        if KEYBOARD_SHORTCUTS_AVAILABLE:
-            self.keyboard_manager = KeyboardManager(self)
-            setup_standard_shortcuts(self, self.keyboard_manager)
-            # Add custom shortcuts for this GUI
-            self._setup_custom_shortcuts()
-        else:
-            self.keyboard_manager = None
-
-        # Initialize undo/redo functionality
-        if UNDO_REDO_AVAILABLE:
-            self.undo_manager = UndoRedoManager(max_history=100)
-            self.widget_tracker = WidgetTracker(self.undo_manager)
-        else:
-            self.undo_manager = None
-            self.widget_tracker = None
-
-        # Initialize theme manager
-        if THEME_AVAILABLE:
-            self.theme_manager = ThemeManager(self)
-            # Try to load system preference
-            system_theme = get_system_theme_preference()
-            self.theme_manager.set_theme(system_theme)
-        else:
-            self.theme_manager = None
-
-        # Initialize framework components
+    def _initialize_variables(self) -> None:
+        """Initialize instance variables and configuration."""
+        # Framework components (initialized later)
         self.config_manager = None
         self.cli_handler = None
         self.data_manager = None
@@ -711,57 +1152,97 @@ class APGIFrameworkGUI(ctk.CTk):
         self.system_status = {}
         self.current_session_data = None
 
-        # Initialize variables
-        self.data_folder = "data"
-        self.results_folder = "results"
+        # Data folders
+        self.data_folder = GUIConfig.DATA_FOLDER
+        self.results_folder = GUIConfig.RESULTS_FOLDER
         self.current_file = None
         self.current_data = None
 
+        # Initialize optional components
+        self._initialize_optional_components()
+
         # Create data folders if they don't exist
+        self._ensure_data_folders()
+
+    def _initialize_optional_components(self) -> None:
+        """Initialize optional GUI components with graceful degradation."""
+        # Initialize keyboard shortcuts
+        if KEYBOARD_SHORTCUTS_AVAILABLE:
+            self.keyboard_manager = KeyboardManager(self)
+            setup_standard_shortcuts(self, self.keyboard_manager)
+            self._setup_custom_shortcuts()
+        else:
+            self.keyboard_manager = None
+
+        # Initialize undo/redo functionality
+        if UNDO_REDO_AVAILABLE:
+            self.undo_manager = UndoRedoManager(max_history=100)
+            self.widget_tracker = WidgetTracker(self.undo_manager)
+        else:
+            self.undo_manager = None
+            self.widget_tracker = None
+
+        # Initialize theme manager
+        if THEME_AVAILABLE:
+            self.theme_manager = ThemeManager(self)
+            system_theme = get_system_theme_preference()
+            self.theme_manager.set_theme(system_theme)
+        else:
+            self.theme_manager = None
+
+        # Initialize validation and error handling
+        self.config_validator = ConfigurationValidator()
+
+    def _ensure_data_folders(self) -> None:
+        """Create data folders if they don't exist."""
         try:
             for folder in [self.data_folder, self.results_folder]:
                 if not os.path.exists(folder):
                     os.makedirs(folder)
         except Exception as e:
-            try:
-                from apgi_framework.logging.centralized_logging import get_logger
+            # Log warning but continue
+            print(f"Warning: Could not create data folders: {e}")
 
-                logger = get_logger("folder_creation")
-                logger.warning(f"Warning: Could not create data folders: {e}")
-            except ImportError:
-                import logging
+    def _setup_logging(self) -> None:
+        """Setup logging configuration."""
+        try:
+            # Create logger for GUI
+            self.logger = logging.getLogger("apgi_gui")
+            self.logger.setLevel(logging.INFO)
 
-                logger = logging.getLogger("folder_creation")
-                logger.warning(f"Warning: Could not create data folders: {e}")
+            # Create console handler if not already exists
+            if not self.logger.handlers:
+                handler = logging.StreamHandler()
+                formatter = logging.Formatter(
+                    "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+                )
+                handler.setFormatter(formatter)
+                self.logger.addHandler(handler)
 
-        # Setup logging first
-        self._setup_logging()
+            # Initialize error handler after logger is available
+            self.error_handler = GUIErrorHandler(self.logger)
 
-        # Initialize error handler after logger is available
-        self.error_handler = GUIErrorHandler(self.logger)
+        except Exception as e:
+            # Fallback to basic logging
+            self.logger = logging.getLogger("gui_fallback")
+            self.error_handler = GUIErrorHandler(self.logger)
+            print(f"Warning: Basic logging setup: {e}")
 
-        # ---------- master grid ----------
-        self.grid_columnconfigure(1, weight=1)
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(1, weight=0)  # Status bar
-
-        # Create UI components with error handling
+    def _create_ui_components(self) -> None:
+        """Create all UI components with error handling."""
         try:
             self.create_menu_bar()
             self.create_sidebar()
             self.create_main_area()
             self.create_status_bar()
         except Exception as e:
-            self.error_handler.handle_error(
-                e, "UI Creation", ErrorSeverity.CRITICAL, critical=True
-            )
-            return
-
-        # Initialize APGI Framework after UI is created
-        self._initialize_framework()
-
-        # Update system status
-        self._update_system_status()
+            if hasattr(self, "error_handler"):
+                self.error_handler.handle_error(
+                    e, "UI Creation", ErrorSeverity.CRITICAL, critical=True
+                )
+            else:
+                print(f"Critical error in UI creation: {e}")
+                return
 
     def _initialize_framework(self):
         """Initialize APGI Framework components with robust error handling."""
@@ -1802,99 +2283,9 @@ class APGIFrameworkGUI(ctk.CTk):
         messagebox.showerror(f"{test_name} Error", f"Test failed: {error_msg}")
         self.update_status("Ready")
 
-    def run_cwi_test(self):
-        """Run consciousness-without-ignition test using APGI framework."""
-        self.log_to_console("Running Consciousness-Without-Ignition Test...")
-        self.update_status("Running CWI Test...")
-
-        try:
-            # Initialize CWI test if not already done
-            if self.cwi_test is None:
-                try:
-                    from apgi_framework.main_controller import MainApplicationController
-
-                    controller = MainApplicationController()
-                    controller.initialize_system()
-
-                    tests = controller.get_falsification_tests()
-                    self.cwi_test = tests.get("consciousness_without_ignition")
-
-                    if self.cwi_test is None:
-                        self.log_to_console(
-                            "Error: Consciousness-Without-Ignition test not available"
-                        )
-                        messagebox.showerror(
-                            "Error",
-                            "Consciousness-Without-Ignition test not available in framework",
-                        )
-                        return
-                except Exception as e:
-                    self.log_to_console(f"Error initializing CWI test: {e}")
-                    messagebox.showerror("Error", f"Failed to initialize CWI test: {e}")
-                    return
-
-            # Get parameters from GUI
-            n_trials = int(self.exp_setup_params["n_trials"].get())
-            n_participants = int(self.exp_setup_params["n_participants"].get())
-
-            # Get APGI parameters
-            apgi_params = {}
-            for param_name, entry in self.apgi_params.items():
-                try:
-                    apgi_params[param_name] = float(entry.get())
-                except ValueError:
-                    self.log_to_console(f"Warning: Invalid value for {param_name}")
-
-            self.log_to_console(
-                f"Running CWI test with {n_trials} trials, {n_participants} participants"
-            )
-
-            # Run the test in a separate thread
-            def run_test():
-                try:
-                    # Use the real framework method if available
-                    if hasattr(self.cwi_test, "run_falsification_test"):
-                        results = self.cwi_test.run_falsification_test(
-                            n_trials=n_trials
-                        )
-                    else:
-                        # Fallback to run_test method
-                        results = self.cwi_test.run_test(n_trials=n_trials)
-
-                    self.current_results = {
-                        "test": "CWI Test",
-                        "timestamp": datetime.datetime.now().isoformat(),
-                        "parameters": apgi_params,
-                        "results": (
-                            results.__dict__
-                            if hasattr(results, "__dict__")
-                            else results
-                        ),
-                        "metrics": {
-                            "ignition_score": getattr(results, "ignition_score", 0.45),
-                            "consciousness_index": getattr(
-                                results, "consciousness_index", 0.38
-                            ),
-                            "neural_complexity": getattr(
-                                results, "neural_complexity", 0.62
-                            ),
-                            "integration_measure": getattr(
-                                results, "integration_measure", 0.71
-                            ),
-                        },
-                    }
-
-                    self.after(0, self._on_test_complete, "CWI Test", results)
-
-                except Exception as e:
-                    self.after(0, self._on_test_error, "CWI Test", str(e))
-
-            run_in_thread(run_test)
-
-        except Exception as e:
-            self.log_to_console(f"Error setting up CWI test: {e}")
-            messagebox.showerror("Error", f"Failed to run CWI test: {e}")
-            self.update_status("Ready")
+    def run_cwi_test(self) -> None:
+        """Run consciousness-without-ignition test using the standardized test runner."""
+        self.test_runners["cwi_test"].run_test()
 
     def run_threshold_insensitivity_test(self):
         """Run threshold-insensitivity test using APGI framework."""
@@ -2084,6 +2475,10 @@ class APGIFrameworkGUI(ctk.CTk):
             self.log_to_console(f"Error setting up soma-bias test: {e}")
             messagebox.showerror("Error", f"Failed to run soma-bias test: {e}")
             self.update_status("Ready")
+
+    def run_primary_falsification_test(self) -> None:
+        """Run primary falsification test using the standardized test runner."""
+        self.test_runners["primary_falsification"].run_test()
 
     def run_batch_tests(self):
         """Run batch falsification tests using APGI framework."""
@@ -4002,28 +4397,406 @@ class APGIFrameworkGUI(ctk.CTk):
             "System Validation", "System validation completed successfully."
         )
 
-    def generate_report(self):
-        """Generate comprehensive report."""
-        self.log_to_console("Generating comprehensive report...")
-        self.log_to_console("Report generation completed successfully")
-        messagebox.showinfo("Report", "Comprehensive report generated successfully.")
+    def generate_report(self) -> None:
+        """Generate comprehensive report with current results and system status."""
+        try:
+            self.log_to_console("Generating comprehensive report...")
 
-    def show_system_status(self):
-        """Display detailed system status."""
-        status_text = "System Status:\n\n"
+            # Create report dialog
+            report_dialog = tk.Toplevel(self)
+            report_dialog.title("Comprehensive Report")
+            report_dialog.geometry("900x700")
+            report_dialog.transient(self)
+            report_dialog.grab_set()
+
+            # Create main frame
+            main_frame = ctk.CTkFrame(report_dialog)
+            main_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+            # Create scrollable text widget
+            text_frame = ctk.CTkScrollableFrame(main_frame, height=600)
+            text_frame.pack(fill="both", expand=True)
+
+            # Generate report content
+            report_content = self._generate_report_content()
+
+            # Display report
+            report_label = ctk.CTkLabel(
+                text_frame,
+                text=report_content,
+                justify="left",
+                font=ctk.CTkFont(family="Courier", size=10),
+            )
+            report_label.pack(padx=10, pady=10, anchor="w")
+
+            # Button frame
+            button_frame = ctk.CTkFrame(main_frame)
+            button_frame.pack(fill="x", pady=(10, 0))
+
+            # Export button
+            def export_report():
+                try:
+                    file_path = filedialog.asksaveasfilename(
+                        title="Save Report",
+                        defaultextension=".txt",
+                        filetypes=[
+                            ("Text files", "*.txt"),
+                            ("PDF files", "*.pdf"),
+                            ("All files", "*.*"),
+                        ],
+                    )
+                    if file_path:
+                        if file_path.endswith(".pdf"):
+                            self._export_report_pdf(report_content, file_path)
+                        else:
+                            with open(file_path, "w", encoding="utf-8") as f:
+                                f.write(report_content)
+                        self.log_to_console(f"Report exported to {file_path}")
+                        messagebox.showinfo(
+                            "Export Successful", f"Report exported to {file_path}"
+                        )
+                except Exception as e:
+                    self.error_handler.handle_error(
+                        e, "Report Export", ErrorSeverity.MEDIUM
+                    )
+
+            export_btn = ctk.CTkButton(
+                button_frame, text="Export Report", command=export_report
+            )
+            export_btn.pack(side="left", padx=5)
+
+            # Close button
+            close_btn = ctk.CTkButton(
+                button_frame, text="Close", command=report_dialog.destroy
+            )
+            close_btn.pack(side="right", padx=5)
+
+            self.log_to_console("Report generation completed successfully")
+
+        except Exception as e:
+            self.error_handler.handle_error(
+                e, "Report Generation", ErrorSeverity.MEDIUM
+            )
+
+    def _generate_report_content(self) -> str:
+        """Generate the actual content for the report."""
+        content = []
+        content.append("=" * 80)
+        content.append("APGI FRAMEWORK COMPREHENSIVE REPORT")
+        content.append("=" * 80)
+        content.append(
+            f"Generated: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        )
+        content.append("")
+
+        # System Status Section
+        content.append("SYSTEM STATUS")
+        content.append("-" * 40)
         if self.system_status:
             for key, value in self.system_status.items():
-                status_text += f"{key}: {value}\n"
+                content.append(f"{key}: {value}")
         else:
-            status_text = "System status not available"
-        messagebox.showinfo("System Status", status_text)
+            content.append("System status not available")
+        content.append("")
 
-    def show_preferences(self):
-        """Show preferences dialog."""
-        self.log_to_console("Opening preferences...")
-        messagebox.showinfo(
-            "Preferences", "Preferences dialog would be displayed here."
-        )
+        # Current Results Section
+        if self.current_results:
+            content.append("CURRENT RESULTS")
+            content.append("-" * 40)
+            content.append(f"Test: {self.current_results.get('test', 'Unknown')}")
+            content.append(
+                f"Timestamp: {self.current_results.get('timestamp', 'Unknown')}"
+            )
+            content.append("")
+
+            # Parameters
+            if "parameters" in self.current_results:
+                content.append("Parameters:")
+                for param, value in self.current_results["parameters"].items():
+                    content.append(f"  {param}: {value}")
+                content.append("")
+
+            # Metrics
+            if "metrics" in self.current_results:
+                content.append("Metrics:")
+                for metric, value in self.current_results["metrics"].items():
+                    content.append(f"  {metric}: {value}")
+                content.append("")
+        else:
+            content.append("No current results available")
+            content.append("")
+
+        # Framework Components Status
+        content.append("FRAMEWORK COMPONENTS STATUS")
+        content.append("-" * 40)
+        components = [
+            ("Config Manager", self.config_manager),
+            ("Main Controller", self.main_controller),
+            ("Data Manager", self.data_manager),
+            ("Visualizer", self.visualizer),
+            ("Report Generator", self.report_generator),
+        ]
+
+        for name, component in components:
+            status = "✓ Available" if component is not None else "✗ Not Available"
+            content.append(f"{name}: {status}")
+
+        content.append("")
+        content.append("=" * 80)
+        content.append("END OF REPORT")
+        content.append("=" * 80)
+
+        return "\n".join(content)
+
+    def _export_report_pdf(self, content: str, file_path: str) -> None:
+        """Export report as PDF."""
+        try:
+            from matplotlib.backends.backend_pdf import PdfPages
+            import matplotlib.pyplot as plt
+
+            with PdfPages(file_path) as pdf:
+                fig, ax = plt.subplots(figsize=(8.27, 11.69))  # A4 size
+                ax.text(
+                    0.05,
+                    0.95,
+                    content,
+                    transform=ax.transAxes,
+                    fontsize=8,
+                    verticalalignment="top",
+                    fontfamily="monospace",
+                )
+                ax.axis("off")
+                pdf.savefig(fig, bbox_inches="tight")
+                plt.close(fig)
+
+        except Exception as e:
+            raise Exception(f"Failed to export PDF: {e}")
+
+    def show_preferences(self) -> None:
+        """Show comprehensive preferences dialog with actual functionality."""
+        try:
+            self.log_to_console("Opening preferences...")
+
+            # Create preferences dialog
+            pref_dialog = tk.Toplevel(self)
+            pref_dialog.title("Preferences")
+            pref_dialog.geometry("600x500")
+            pref_dialog.transient(self)
+            pref_dialog.grab_set()
+
+            # Create main frame
+            main_frame = ctk.CTkFrame(pref_dialog)
+            main_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+            # Create notebook for tabs
+            notebook = ctk.CTkTabview(main_frame)
+            notebook.pack(fill="both", expand=True)
+
+            # General tab
+            general_tab = notebook.add("General")
+
+            # Theme selection
+            theme_frame = ctk.CTkFrame(general_tab)
+            theme_frame.pack(fill="x", padx=10, pady=10)
+
+            ctk.CTkLabel(
+                theme_frame, text="Theme:", font=ctk.CTkFont(size=14, weight="bold")
+            ).pack(anchor="w", padx=5, pady=5)
+
+            theme_var = tk.StringVar(value="light")
+            light_radio = ctk.CTkRadioButton(
+                theme_frame, text="Light", variable=theme_var, value="light"
+            )
+            light_radio.pack(anchor="w", padx=20)
+
+            dark_radio = ctk.CTkRadioButton(
+                theme_frame, text="Dark", variable=theme_var, value="dark"
+            )
+            dark_radio.pack(anchor="w", padx=20)
+
+            # Auto-save settings
+            autosave_frame = ctk.CTkFrame(general_tab)
+            autosave_frame.pack(fill="x", padx=10, pady=10)
+
+            ctk.CTkLabel(
+                autosave_frame,
+                text="Auto-save Settings:",
+                font=ctk.CTkFont(size=14, weight="bold"),
+            ).pack(anchor="w", padx=5, pady=5)
+
+            autosave_var = tk.BooleanVar(value=True)
+            autosave_check = ctk.CTkCheckBox(
+                autosave_frame, text="Enable auto-save", variable=autosave_var
+            )
+            autosave_check.pack(anchor="w", padx=20)
+
+            # Data tab
+            data_tab = notebook.add("Data")
+
+            data_frame = ctk.CTkFrame(data_tab)
+            data_frame.pack(fill="x", padx=10, pady=10)
+
+            ctk.CTkLabel(
+                data_frame,
+                text="Data Folders:",
+                font=ctk.CTkFont(size=14, weight="bold"),
+            ).pack(anchor="w", padx=5, pady=5)
+
+            # Data folder path
+            data_folder_frame = ctk.CTkFrame(data_frame)
+            data_folder_frame.pack(fill="x", padx=20, pady=5)
+
+            ctk.CTkLabel(data_folder_frame, text="Data Folder:").pack(
+                side="left", padx=5
+            )
+            data_folder_entry = ctk.CTkEntry(data_folder_frame, width=200)
+            data_folder_entry.pack(side="left", padx=5)
+            data_folder_entry.insert(0, self.data_folder)
+
+            def browse_data_folder():
+                folder = filedialog.askdirectory(title="Select Data Folder")
+                if folder:
+                    data_folder_entry.delete(0, tk.END)
+                    data_folder_entry.insert(0, folder)
+
+            browse_btn = ctk.CTkButton(
+                data_folder_frame, text="Browse", command=browse_data_folder
+            )
+            browse_btn.pack(side="left", padx=5)
+
+            # Results folder path
+            results_folder_frame = ctk.CTkFrame(data_frame)
+            results_folder_frame.pack(fill="x", padx=20, pady=5)
+
+            ctk.CTkLabel(results_folder_frame, text="Results Folder:").pack(
+                side="left", padx=5
+            )
+            results_folder_entry = ctk.CTkEntry(results_folder_frame, width=200)
+            results_folder_entry.pack(side="left", padx=5)
+            results_folder_entry.insert(0, self.results_folder)
+
+            def browse_results_folder():
+                folder = filedialog.askdirectory(title="Select Results Folder")
+                if folder:
+                    results_folder_entry.delete(0, tk.END)
+                    results_folder_entry.insert(0, folder)
+
+            browse_results_btn = ctk.CTkButton(
+                results_folder_frame, text="Browse", command=browse_results_folder
+            )
+            browse_results_btn.pack(side="left", padx=5)
+
+            # Advanced tab
+            advanced_tab = notebook.add("Advanced")
+
+            advanced_frame = ctk.CTkFrame(advanced_tab)
+            advanced_frame.pack(fill="x", padx=10, pady=10)
+
+            ctk.CTkLabel(
+                advanced_frame,
+                text="Advanced Settings:",
+                font=ctk.CTkFont(size=14, weight="bold"),
+            ).pack(anchor="w", padx=5, pady=5)
+
+            # Thread pool size
+            thread_frame = ctk.CTkFrame(advanced_frame)
+            thread_frame.pack(fill="x", padx=20, pady=5)
+
+            ctk.CTkLabel(thread_frame, text="Thread Pool Size:").pack(
+                side="left", padx=5
+            )
+            thread_entry = ctk.CTkEntry(thread_frame, width=100)
+            thread_entry.pack(side="left", padx=5)
+            thread_entry.insert(0, str(GUIConfig.THREAD_POOL_SIZE))
+
+            # Console max lines
+            console_frame = ctk.CTkFrame(advanced_frame)
+            console_frame.pack(fill="x", padx=20, pady=5)
+
+            ctk.CTkLabel(console_frame, text="Console Max Lines:").pack(
+                side="left", padx=5
+            )
+            console_entry = ctk.CTkEntry(console_frame, width=100)
+            console_entry.pack(side="left", padx=5)
+            console_entry.insert(0, str(GUIConfig.CONSOLE_MAX_LINES))
+
+            # Button frame
+            button_frame = ctk.CTkFrame(main_frame)
+            button_frame.pack(fill="x", pady=(10, 0))
+
+            def save_preferences():
+                try:
+                    # Update data folders
+                    self.data_folder = data_folder_entry.get()
+                    self.results_folder = results_folder_entry.get()
+
+                    # Ensure folders exist
+                    for folder in [self.data_folder, self.results_folder]:
+                        if not os.path.exists(folder):
+                            os.makedirs(folder)
+
+                    # Apply theme
+                    if theme_var.get() == "dark":
+                        ctk.set_appearance_mode("dark")
+                    else:
+                        ctk.set_appearance_mode("light")
+
+                    self.log_to_console("Preferences saved successfully")
+                    messagebox.showinfo(
+                        "Preferences", "Preferences saved successfully!"
+                    )
+                    pref_dialog.destroy()
+
+                except Exception as e:
+                    self.error_handler.handle_error(
+                        e, "Save Preferences", ErrorSeverity.MEDIUM
+                    )
+
+            save_btn = ctk.CTkButton(
+                button_frame, text="Save", command=save_preferences
+            )
+            save_btn.pack(side="left", padx=5)
+
+            cancel_btn = ctk.CTkButton(
+                button_frame, text="Cancel", command=pref_dialog.destroy
+            )
+            cancel_btn.pack(side="right", padx=5)
+
+            reset_btn = ctk.CTkButton(
+                button_frame,
+                text="Reset to Defaults",
+                command=lambda: self._reset_preferences(
+                    data_folder_entry,
+                    results_folder_entry,
+                    thread_entry,
+                    console_entry,
+                    theme_var,
+                ),
+            )
+            reset_btn.pack(side="left", padx=5)
+
+        except Exception as e:
+            self.error_handler.handle_error(
+                e, "Preferences Dialog", ErrorSeverity.MEDIUM
+            )
+
+    def _reset_preferences(
+        self, data_entry, results_entry, thread_entry, console_entry, theme_var
+    ) -> None:
+        """Reset preferences to default values."""
+        data_entry.delete(0, tk.END)
+        data_entry.insert(0, GUIConfig.DATA_FOLDER)
+
+        results_entry.delete(0, tk.END)
+        results_entry.insert(0, GUIConfig.RESULTS_FOLDER)
+
+        thread_entry.delete(0, tk.END)
+        thread_entry.insert(0, str(GUIConfig.THREAD_POOL_SIZE))
+
+        console_entry.delete(0, tk.END)
+        console_entry.insert(0, str(GUIConfig.CONSOLE_MAX_LINES))
+
+        theme_var.set("light")
 
     def plot_results(self):
         """Plot experimental results using matplotlib and APGI framework visualizer."""

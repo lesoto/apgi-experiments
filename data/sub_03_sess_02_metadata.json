@@ -1,0 +1,15 @@
+{
+    "subject_id": "sub_03",
+    "session_id": "sess_02",
+    "sampling_rate": 1000,
+    "duration": 60,
+    "n_samples": 60000,
+    "p300_events": [
+        10.0,
+        21.037091357052574,
+        33.50764430978282,
+        45.16883189836432
+    ],
+    "creation_time": "2026-01-28T10:57:52.897244",
+    "data_quality": "good"
+}
