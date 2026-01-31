@@ -28,10 +28,43 @@ try:
     import numpy as np
 
     SCREENSHOT_AVAILABLE = True
-except ImportError:
-    print("Error: Required packages not installed. Run:")
-    print("  pip install pyautogui pygetwindow pillow opencv-python")
-    sys.exit(1)
+    print("✅ All screenshot dependencies available")
+except ImportError as e:
+    print(f"⚠️ Some screenshot dependencies not available: {e}")
+    print("💡 To install missing dependencies, run:")
+    print("   pip install pyautogui pygetwindow pillow opencv-python")
+    print("🔄 Running in simulation mode...")
+
+    # Create fallback modules for simulation
+    SCREENSHOT_AVAILABLE = False
+
+    class MockModule:
+        def __getattr__(self, name):
+            def mock_func(*args, **kwargs):
+                raise NotImplementedError(
+                    f"Screenshot functionality not available: {name}"
+                )
+
+            return mock_func
+
+    pyautogui = MockModule()
+    gw = MockModule()
+    cv2 = MockModule()
+    np = MockModule()
+
+    # Mock PIL classes
+    class MockImage:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def save(self, *args, **kwargs):
+            print(f"[SIMULATION] Would save image to {args[0] if args else 'unknown'}")
+
+    Image = MockModule()
+    Image.Image = MockImage
+    Image.new = MockImage
+    ImageDraw = MockModule()
+    ImageFont = MockModule()
 
 
 class APGIScreenshotDocumentation:
@@ -92,14 +125,25 @@ class APGIScreenshotDocumentation:
         print("Starting APGI System Desktop App Documentation")
         print("=" * 60)
 
-        print("\nIMPORTANT SETUP INSTRUCTIONS:")
-        print("   1. Make sure APGI GUI application is visible on screen")
-        print("   2. Close any other applications that might interfere")
-        print("   3. Click on the APGI application window to ensure it's active")
-        print(
-            "   4. If automatic detection fails, you'll be prompted to select window manually"
-        )
-        print("   5. Press Enter to continue or Ctrl+C to cancel...")
+        if not SCREENSHOT_AVAILABLE:
+            print("\n🔄 RUNNING IN SIMULATION MODE")
+            print("   - No actual screenshots will be captured")
+            print("   - GUI interactions will be simulated")
+            print("   - Documentation structure will be created")
+            print("\n💡 To enable full functionality, install dependencies:")
+            print("   pip install pyautogui pygetwindow pillow opencv-python")
+            print(
+                "\n⏭️  Press Enter to continue in simulation mode or Ctrl+C to cancel..."
+            )
+        else:
+            print("\nIMPORTANT SETUP INSTRUCTIONS:")
+            print("   1. Make sure APGI GUI application is visible on screen")
+            print("   2. Close any other applications that might interfere")
+            print("   3. Click on the APGI application window to ensure it's active")
+            print(
+                "   4. If automatic detection fails, you'll be prompted to select window manually"
+            )
+            print("   5. Press Enter to continue or Ctrl+C to cancel...")
 
         try:
             input()  # Wait for user confirmation
@@ -108,14 +152,25 @@ class APGIScreenshotDocumentation:
             return
 
         try:
-            # 1. Start GUI application
-            self._start_gui_app()
+            # 1. Start GUI application (in simulation mode, just skip)
+            if SCREENSHOT_AVAILABLE:
+                self._start_gui_app()
+            else:
+                print("[SIMULATION] Skipping GUI application startup")
 
-            # 2. Discover GUI elements
-            self._discover_gui_elements()
+            # 2. Discover GUI elements (in simulation mode, use mock data)
+            if SCREENSHOT_AVAILABLE:
+                self._discover_gui_elements()
+            else:
+                print("[SIMULATION] Using mock GUI element discovery")
+                self._use_simulation_discovery()
 
             # 3. Document all screens and interactions
-            self._document_all_screens()
+            if SCREENSHOT_AVAILABLE:
+                self._document_all_screens()
+            else:
+                print("[SIMULATION] Creating mock documentation")
+                self._create_mock_documentation()
 
             # 4. Generate comprehensive report
             self._generate_documentation_report()
@@ -132,6 +187,149 @@ class APGIScreenshotDocumentation:
 
         finally:
             self._cleanup_processes()
+
+    def _use_simulation_discovery(self):
+        """Use simulation mode for GUI element discovery."""
+        print("  🔄 Using simulation discovery mode...")
+
+        # Create mock GUI element locations
+        self.button_locations = {
+            "start": {"x": 100, "y": 100, "rect": (80, 85, 40, 30)},
+            "pause": {"x": 200, "y": 100, "rect": (180, 85, 40, 30)},
+            "stop": {"x": 300, "y": 100, "rect": (280, 85, 40, 30)},
+            "reset": {"x": 400, "y": 100, "rect": (380, 85, 40, 30)},
+        }
+
+        self.section_locations = {
+            "APGI Parameters": {"x": 50, "y": 200, "rect": (50, 200, 120, 30)},
+            "Experimental Setup": {"x": 50, "y": 240, "rect": (50, 240, 120, 30)},
+            "Falsification Tests": {"x": 50, "y": 280, "rect": (50, 280, 120, 30)},
+        }
+
+        self.parameter_controls = {
+            "exteroceptive_precision": {
+                "x": 200,
+                "y": 200,
+                "rect": (200, 200, 150, 20),
+            },
+            "interoceptive_precision": {
+                "x": 200,
+                "y": 240,
+                "rect": (200, 240, 150, 20),
+            },
+            "somatic_gain": {"x": 200, "y": 280, "rect": (200, 280, 150, 20)},
+        }
+
+        print(
+            f"✅ Simulation mode: Created {len(self.button_locations)} buttons, {len(self.section_locations)} sections, {len(self.parameter_controls)} parameter controls"
+        )
+
+    def _create_mock_documentation(self):
+        """Create mock documentation without actual screenshots."""
+        print("  📝 Creating mock documentation...")
+
+        # Create mock screenshot entries
+        mock_screenshots = [
+            {
+                "filename": "00_gui_startup_sim.png",
+                "description": "GUI Application Startup (Simulated)",
+                "timestamp": datetime.now().isoformat(),
+                "interactions": ["Application started", "Main window loaded"],
+            },
+            {
+                "filename": "01_parameter_panel_sim.png",
+                "description": "Parameter Configuration Panel (Simulated)",
+                "timestamp": datetime.now().isoformat(),
+                "interactions": ["Parameters configured", "Validation completed"],
+            },
+            {
+                "filename": "02_test_execution_sim.png",
+                "description": "Test Execution in Progress (Simulated)",
+                "timestamp": datetime.now().isoformat(),
+                "interactions": ["Test started", "Progress tracking active"],
+            },
+        ]
+
+        # Add to documentation structure
+        self.doc_structure["screenshots"] = mock_screenshots
+        self.doc_structure["gui_elements"] = {
+            "buttons": self.button_locations,
+            "sections": self.section_locations,
+            "parameters": self.parameter_controls,
+        }
+
+        # Create mock HTML report
+        mock_html = self._generate_mock_html_report()
+        report_path = self.reports_dir / "mock_documentation_report.html"
+        with open(report_path, "w", encoding="utf-8") as f:
+            f.write(mock_html)
+
+        print(f"✅ Mock documentation created: {report_path}")
+
+    def _generate_mock_html_report(self) -> str:
+        """Generate a mock HTML documentation report."""
+        return f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APGI GUI Documentation (Simulation Mode)</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }}
+        .header {{ background: #2c3e50; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }}
+        .card {{ background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
+        .screenshot {{ border: 2px dashed #ccc; padding: 20px; text-align: center; margin: 10px 0; }}
+        .warning {{ background: #fff3cd; color: #856404; padding: 15px; border-radius: 5px; margin: 10px 0; }}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧠 APGI GUI Documentation</h1>
+        <p>Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} (Simulation Mode)</p>
+    </div>
+
+    <div class="warning">
+        <strong>⚠️ Simulation Mode:</strong> This documentation was generated without actual screenshots.
+        Install the required dependencies to capture real GUI interactions.
+    </div>
+
+    <div class="card">
+        <h2>📸 Mock Screenshots</h2>
+        <div class="screenshot">
+            <h3>GUI Application Startup</h3>
+            <p>[Mock screenshot would be here]</p>
+            <p><em>Main application window with parameter panels</em></p>
+        </div>
+        <div class="screenshot">
+            <h3>Parameter Configuration</h3>
+            <p>[Mock screenshot would be here]</p>
+            <p><em>Parameter input controls and validation</em></p>
+        </div>
+        <div class="screenshot">
+            <h3>Test Execution</h3>
+            <p>[Mock screenshot would be here]</p>
+            <p><em>Test running with progress tracking</em></p>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🎛️ GUI Elements Discovered</h2>
+        <ul>
+            <li><strong>Buttons:</strong> {len(self.button_locations)} control buttons</li>
+            <li><strong>Sections:</strong> {len(self.section_locations)} main sections</li>
+            <li><strong>Parameters:</strong> {len(self.parameter_controls)} parameter controls</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>💡 Installation Instructions</h2>
+        <p>To capture real screenshots and GUI interactions, install the following dependencies:</p>
+        <pre><code>pip install pyautogui pygetwindow pillow opencv-python</code></pre>
+    </div>
+</body>
+</html>
+        """
 
     def _start_gui_app(self):
         """Start the GUI application."""

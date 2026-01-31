@@ -911,3 +911,7 @@ def create_test_execution_panel(
     return ExecutionPanel(
         parent, test_name, controller, progress_callback, log_callback, results_callback
     )
+
+
+# Alias for backward compatibility
+TestExecutionPanel = ExecutionPanel
