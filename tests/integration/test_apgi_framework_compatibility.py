@@ -80,7 +80,7 @@ class SyntheticDataGenerator:
 
     def __init__(self, seed: int = 42):
         """Initialize generator with random seed for reproducibility."""
-        np.random.seed(seed)
+        self.random_state = np.random.RandomState(seed)
         self.seed = seed
 
     def generate_eeg_data(
@@ -129,27 +129,27 @@ class SyntheticDataGenerator:
 
         for ch_idx in range(num_channels):
             # Alpha waves (8-12 Hz) - dominant in relaxed state
-            alpha_freq = 8 + np.random.uniform(0, 4)
-            alpha_amplitude = 10 + np.random.uniform(-5, 5)  # microvolts
+            alpha_freq = 8 + self.random_state.uniform(0, 4)
+            alpha_amplitude = 10 + self.random_state.uniform(-5, 5)  # microvolts
             alpha_component = alpha_amplitude * np.sin(
                 2 * np.pi * alpha_freq * timestamps
             )
 
             # Beta waves (13-30 Hz) - active thinking
-            beta_freq = 13 + np.random.uniform(0, 17)
-            beta_amplitude = 5 + np.random.uniform(-2, 2)
+            beta_freq = 13 + self.random_state.uniform(0, 17)
+            beta_amplitude = 5 + self.random_state.uniform(-2, 2)
             beta_component = beta_amplitude * np.sin(2 * np.pi * beta_freq * timestamps)
 
             # Theta waves (4-7 Hz) - drowsiness/meditation
-            theta_freq = 4 + np.random.uniform(0, 3)
-            theta_amplitude = 8 + np.random.uniform(-3, 3)
+            theta_freq = 4 + self.random_state.uniform(0, 3)
+            theta_amplitude = 8 + self.random_state.uniform(-3, 3)
             theta_component = theta_amplitude * np.sin(
                 2 * np.pi * theta_freq * timestamps
             )
 
             # Gamma waves (30-100 Hz) - high-level cognitive processing
-            gamma_freq = 30 + np.random.uniform(0, 70)
-            gamma_amplitude = 2 + np.random.uniform(-1, 1)
+            gamma_freq = 30 + self.random_state.uniform(0, 70)
+            gamma_amplitude = 2 + self.random_state.uniform(-1, 1)
             gamma_component = gamma_amplitude * np.sin(
                 2 * np.pi * gamma_freq * timestamps
             )
@@ -160,14 +160,14 @@ class SyntheticDataGenerator:
             )
 
             # Add realistic noise
-            noise = np.random.normal(0, 2, num_samples)  # 2 microvolt noise
+            noise = self.random_state.normal(0, 2, num_samples)  # 2 microvolt noise
             signal += noise
 
             # Add artifacts if requested
             if include_artifacts:
                 # Eye blink artifacts (more prominent in frontal channels)
                 if "Fp" in channels[ch_idx] or "F" in channels[ch_idx]:
-                    blink_times = np.random.uniform(
+                    blink_times = self.random_state.uniform(
                         0, duration_seconds, size=int(duration_seconds / 3)
                     )
                     for blink_time in blink_times:
@@ -187,9 +187,9 @@ class SyntheticDataGenerator:
                             signal[blink_idx : blink_idx + 50] += artifact
 
                 # Muscle artifacts (random high-frequency bursts)
-                if np.random.random() < 0.3:  # 30% chance of muscle artifact
-                    artifact_start = np.random.randint(0, num_samples - 100)
-                    muscle_artifact = np.random.normal(0, 10, 100)
+                if self.random_state.random() < 0.3:  # 30% chance of muscle artifact
+                    artifact_start = self.random_state.randint(0, num_samples - 100)
+                    muscle_artifact = self.random_state.normal(0, 10, 100)
                     signal[artifact_start : artifact_start + 100] += muscle_artifact
 
             data[ch_idx] = signal
@@ -197,14 +197,20 @@ class SyntheticDataGenerator:
         # Generate events (stimulus presentations, responses, etc.)
         events = []
         num_events = int(duration_seconds / 2)  # Event every 2 seconds on average
-        event_times = np.sort(np.random.uniform(0, duration_seconds, num_events))
+        event_times = np.sort(
+            self.random_state.uniform(0, duration_seconds, num_events)
+        )
 
         for i, event_time in enumerate(event_times):
             events.append(
                 {
                     "time": event_time,
-                    "type": np.random.choice(["stimulus", "response", "marker"]),
-                    "value": np.random.choice(["target", "non_target", "button_press"]),
+                    "type": self.random_state.choice(
+                        ["stimulus", "response", "marker"]
+                    ),
+                    "value": self.random_state.choice(
+                        ["target", "non_target", "button_press"]
+                    ),
                     "sample": int(event_time * sampling_rate),
                 }
             )
@@ -240,7 +246,7 @@ class SyntheticDataGenerator:
         timestamps = np.linspace(0, duration_seconds, num_samples)
 
         # Base pupil diameter (3-8 mm typical range)
-        base_diameter = 4.5 + np.random.uniform(-0.5, 0.5)
+        base_diameter = 4.5 + self.random_state.uniform(-0.5, 0.5)
 
         # Pupil diameter variations
         # 1. Slow drift due to arousal/fatigue
@@ -249,13 +255,13 @@ class SyntheticDataGenerator:
         drift = drift_amplitude * np.sin(2 * np.pi * drift_freq * timestamps)
 
         # 2. Pupillary light reflex simulation
-        light_changes = np.random.uniform(0, duration_seconds, size=5)
+        light_changes = self.random_state.uniform(0, duration_seconds, size=5)
         light_response = np.zeros(num_samples)
         for change_time in light_changes:
             change_idx = int(change_time * sampling_rate)
             if change_idx < num_samples - 120:  # 2-second response
                 # Pupil constriction/dilation response
-                response_amplitude = np.random.uniform(-0.8, 0.8)
+                response_amplitude = self.random_state.uniform(-0.8, 0.8)
                 response_duration = 120  # 2 seconds at 60 Hz
                 response_curve = response_amplitude * np.exp(
                     -np.arange(response_duration) / 30
@@ -275,19 +281,19 @@ class SyntheticDataGenerator:
         pupil_diameter = base_diameter + drift + light_response + cognitive_load
 
         # Add noise
-        noise = np.random.normal(0, 0.05, num_samples)
+        noise = self.random_state.normal(0, 0.05, num_samples)
         pupil_diameter += noise
 
         # Add blinks if requested
         if include_blinks:
-            blink_times = np.random.uniform(
+            blink_times = self.random_state.uniform(
                 0, duration_seconds, size=int(duration_seconds / 4)
             )  # Blink every 4 seconds
             for blink_time in blink_times:
                 blink_idx = int(blink_time * sampling_rate)
                 if blink_idx < num_samples - 10:
                     # Blink: brief drop to near zero
-                    blink_duration = np.random.randint(3, 8)  # 50-130ms at 60Hz
+                    blink_duration = self.random_state.randint(3, 8)  # 50-130ms at 60Hz
                     pupil_diameter[blink_idx : blink_idx + blink_duration] = 0.1
 
         # Generate gaze position (assuming screen coordinates)
@@ -301,15 +307,15 @@ class SyntheticDataGenerator:
         current_x, current_y = center_x, center_y
         for i in range(num_samples):
             # Smooth pursuit with occasional saccades
-            if np.random.random() < 0.01:  # 1% chance of saccade per sample
+            if self.random_state.random() < 0.01:  # 1% chance of saccade per sample
                 # Saccade to new position
-                target_x = np.random.uniform(200, screen_width - 200)
-                target_y = np.random.uniform(200, screen_height - 200)
+                target_x = self.random_state.uniform(200, screen_width - 200)
+                target_y = self.random_state.uniform(200, screen_height - 200)
                 current_x, current_y = target_x, target_y
 
             # Add small random movements (microsaccades, drift)
-            current_x += np.random.normal(0, 5)
-            current_y += np.random.normal(0, 5)
+            current_x += self.random_state.normal(0, 5)
+            current_y += self.random_state.normal(0, 5)
 
             # Keep within screen bounds
             current_x = np.clip(current_x, 0, screen_width)
@@ -360,7 +366,7 @@ class SyntheticDataGenerator:
         timestamps = np.linspace(0, duration_seconds, num_samples)
 
         # Heart rate (60-100 BPM typical resting range)
-        base_hr = 70 + np.random.uniform(-10, 10)
+        base_hr = 70 + self.random_state.uniform(-10, 10)
 
         # Heart rate variability
         hrv_freq1 = 0.1  # Respiratory sinus arrhythmia
@@ -373,7 +379,7 @@ class SyntheticDataGenerator:
         ) + hrv_amplitude2 * np.sin(2 * np.pi * hrv_freq2 * timestamps)
 
         # Add stress response simulation
-        stress_events = np.random.uniform(0, duration_seconds, size=2)
+        stress_events = self.random_state.uniform(0, duration_seconds, size=2)
         stress_response = np.zeros(num_samples)
         for stress_time in stress_events:
             stress_idx = int(stress_time * sampling_rate)
@@ -386,11 +392,11 @@ class SyntheticDataGenerator:
                 ] += stress_curve
 
         heart_rate = base_hr + hr_variation + stress_response
-        heart_rate += np.random.normal(0, 1, num_samples)  # Noise
+        heart_rate += self.random_state.normal(0, 1, num_samples)  # Noise
         heart_rate = np.clip(heart_rate, 50, 120)  # Physiological limits
 
         # Skin conductance (0.1-20 microsiemens typical range)
-        base_sc = 2 + np.random.uniform(-0.5, 0.5)
+        base_sc = 2 + self.random_state.uniform(-0.5, 0.5)
 
         # Tonic level (slow changes)
         tonic_freq = 0.005
@@ -398,7 +404,7 @@ class SyntheticDataGenerator:
         tonic_sc = tonic_amplitude * np.sin(2 * np.pi * tonic_freq * timestamps)
 
         # Phasic responses (event-related)
-        phasic_events = np.random.uniform(0, duration_seconds, size=8)
+        phasic_events = self.random_state.uniform(0, duration_seconds, size=8)
         phasic_response = np.zeros(num_samples)
         for event_time in phasic_events:
             event_idx = int(event_time * sampling_rate)
@@ -414,11 +420,11 @@ class SyntheticDataGenerator:
                 phasic_response[event_idx : event_idx + response_duration] += scr_curve
 
         skin_conductance = base_sc + tonic_sc + phasic_response
-        skin_conductance += np.random.normal(0, 0.05, num_samples)  # Noise
+        skin_conductance += self.random_state.normal(0, 0.05, num_samples)  # Noise
         skin_conductance = np.clip(skin_conductance, 0.1, 10)  # Physiological limits
 
         # Respiration rate (12-20 breaths per minute typical)
-        base_rr = 15 + np.random.uniform(-3, 3)
+        base_rr = 15 + self.random_state.uniform(-3, 3)
 
         # Respiratory variations
         rr_variation = 2 * np.sin(2 * np.pi * 0.02 * timestamps)  # Slow variation
@@ -432,7 +438,7 @@ class SyntheticDataGenerator:
                 rr_variation[stress_idx : stress_idx + response_duration] += rr_increase
 
         respiration_rate = base_rr + rr_variation
-        respiration_rate += np.random.normal(0, 0.5, num_samples)  # Noise
+        respiration_rate += self.random_state.normal(0, 0.5, num_samples)  # Noise
         respiration_rate = np.clip(respiration_rate, 8, 25)  # Physiological limits
 
         metadata = {
@@ -977,7 +983,7 @@ def test_eeg_preprocessing():
     
     # Simulate EEG with artifacts
     clean_signal = np.sin(2 * np.pi * 10 * np.linspace(0, duration, num_samples))  # 10 Hz
-    artifact = 50 * np.random.random(num_samples)  # High amplitude artifact
+    artifact = 50 * self.random_state.random(num_samples)  # High amplitude artifact
     noisy_signal = clean_signal + 0.1 * artifact
     
     # Mock preprocessing (simple high-pass filter simulation)

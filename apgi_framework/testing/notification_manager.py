@@ -301,9 +301,9 @@ class TestHistoryTracker:
 class NotificationManager:
     """Manages notifications for CI/CD test failures and results."""
 
-    def __init__(self, channels: List[NotificationChannel] = None):
+    def __init__(self, channels: List[NotificationChannel] = None, db_path: str = None):
         self.channels = channels or []
-        self.history_tracker = TestHistoryTracker()
+        self.history_tracker = TestHistoryTracker(db_path)
         self.logger = logging.getLogger(__name__)
 
     def add_channel(self, channel: NotificationChannel):

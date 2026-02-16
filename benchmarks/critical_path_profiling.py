@@ -7,14 +7,12 @@ import cProfile
 import pstats
 import io
 import time
-import functools
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from typing import Dict, List, Callable, Any, Optional
+from typing import Dict, List, Callable, Any
 import json
 import matplotlib.pyplot as plt
-import seaborn as sns
 
 
 class CriticalPathProfiler:
@@ -29,8 +27,8 @@ class CriticalPathProfiler:
         """
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
-        self.profiles = {}
-        self.baseline_profiles = {}
+        self.profiles: Dict[str, Any] = {}
+        self.baseline_profiles: Dict[str, Any] = {}
 
     def profile_critical_function(
         self,
@@ -141,9 +139,14 @@ class CriticalPathProfiler:
         stats.sort_stats("cumulative")
         top_functions = []
 
-        for func_info in stats.stats.items():
+        for func_info in stats.stats.items():  # type: ignore
             func_name, filename, line = func_info[0]
-            call_count, total_time, cumulative_time, per_call_time = func_info[1]
+            (
+                call_count,
+                total_time,
+                cumulative_time,
+                per_call_time,
+            ) = func_info[1]
 
             top_functions.append(
                 {
@@ -194,12 +197,17 @@ class CriticalPathProfiler:
 
         for path_name, path_config in critical_paths.items():
             try:
-                result = self.profile_critical_function(
+                func = path_config["func"]
+                args = path_config.get("args", [])
+                iterations = path_config.get("iterations", 50)
+                kwargs = path_config.get("kwargs", {})
+
+                result = self.profile_critical_function(  # type: ignore
                     name=path_name,
-                    func=path_config["func"],
-                    *path_config.get("args", []),
-                    iterations=path_config.get("iterations", 50),
-                    **path_config.get("kwargs", {}),
+                    func=func,
+                    *args,
+                    iterations=iterations,
+                    **kwargs,
                 )
                 results[path_name] = result
             except Exception as e:
@@ -365,7 +373,7 @@ class CriticalPathProfiler:
         results["group2_means"] = np.mean(group2_data, axis=0)
 
         # T-tests (simplified)
-        from scipy import stats
+        from scipy import stats  # type: ignore
 
         t_stats = []
         p_values = []
@@ -411,8 +419,8 @@ class CriticalPathProfiler:
 
     def _simulate_ml_training(self, samples: int, features: int) -> Dict[str, float]:
         """Simulate machine learning training."""
-        from sklearn.ensemble import RandomForestClassifier
-        from sklearn.model_selection import cross_val_score
+        from sklearn.ensemble import RandomForestClassifier  # type: ignore
+        from sklearn.model_selection import cross_val_score  # type: ignore
 
         # Generate data
         X = np.random.randn(samples, features)
@@ -436,7 +444,7 @@ class CriticalPathProfiler:
     def _apply_filters(self, data: np.ndarray) -> np.ndarray:
         """Apply filters to data (simplified)."""
         # Simulate bandpass filter
-        from scipy import signal
+        from scipy import signal  # type: ignore
 
         b, a = signal.butter(4, [0.1, 40], btype="bandpass", fs=1000)
         filtered = signal.filtfilt(b, a, data, axis=0)
@@ -568,10 +576,12 @@ class CriticalPathProfiler:
         # Summary table
         report_lines.append("## Performance Summary\n")
         report_lines.append(
-            "| Function | Success Rate | Mean Time (s) | Std Time (s) | P95 Time (s) | Total Calls |\n"
+            "| Function | Success Rate | Mean Time (s) | Std Time (s) | "
+            "P95 Time (s) | Total Calls |\n"
         )
         report_lines.append(
-            "|----------|--------------|---------------|--------------|---------------|-------------|\n"
+            "|----------|--------------|---------------|--------------|"
+            "---------------|-------------|\n"
         )
 
         for _, row in summary_df.iterrows():
@@ -579,7 +589,8 @@ class CriticalPathProfiler:
                 report_lines.append(
                     f"| {row['function']} | {row['success_rate']:.2%} | "
                     f"{row['mean_time']:.4f} | {row['std_time']:.4f} | "
-                    f"{row.get('p95_time', 'N/A')} | {row.get('total_calls', 'N/A')} |\n"
+                    f"{row.get('p95_time', 'N/A')} | "
+                    f"{row.get('total_calls', 'N/A')} |\n"
                 )
             else:
                 report_lines.append(
@@ -594,7 +605,7 @@ class CriticalPathProfiler:
             report_lines.append(f"### {name}\n")
 
             if result["success_rate"] == 0:
-                report_lines.append(f"**Status:** FAILED\n")
+                report_lines.append("**Status:** FAILED\n")
                 report_lines.append(
                     f"**Error:** {result.get('error', 'Unknown error')}\n\n"
                 )
@@ -622,7 +633,8 @@ class CriticalPathProfiler:
                 for func in result["top_functions"][:10]:
                     report_lines.append(
                         f"| {func['function'][:50]} | {func['call_count']} | "
-                        f"{func['cumulative_time']:.4f} | {func['per_call_time']:.6f} |\n"
+                        f"{func['cumulative_time']:.4f} | "
+                        f"{func['per_call_time']:.6f} |\n"
                     )
 
             report_lines.append("\n")
@@ -648,7 +660,8 @@ def run_critical_path_profiling():
     for name, result in results.items():
         if result["success_rate"] > 0 and "time_stats" in result:
             print(
-                f"{name}: {result['time_stats']['mean']:.4f}s ± {result['time_stats']['std']:.4f}s "
+                f"{name}: {result['time_stats']['mean']:.4f}s ± "
+                f"{result['time_stats']['std']:.4f}s "
                 f"({result['success_rate']:.1%} success)"
             )
         else:

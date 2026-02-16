@@ -41,92 +41,376 @@ except ImportError:
     # Fallback for environments without PySide6
     PYSIDE6_AVAILABLE = False
 
-    class QMainWindow:
-        pass
+if not PYSIDE6_AVAILABLE:
 
-    class QWidget:
-        pass
+    class QMainWindow:  # noqa: F811
+        def __init__(self, parent=None):
+            pass
 
-    class QTreeWidget:
-        pass
+        def setWindowTitle(self, title):
+            pass
 
-    class QTreeWidgetItem:
-        pass
+        def setMinimumSize(self, width, height):
+            pass
 
-    class QPushButton:
-        pass
+        def setCentralWidget(self, widget):
+            pass
 
-    class QLineEdit:
-        pass
+        def show(self):
+            pass
 
-    class QComboBox:
-        pass
+    class QWidget:  # noqa: F811
+        def __init__(self, parent=None):
+            pass
 
-    class QCheckBox:
-        pass
+        def show(self):
+            pass
 
-    class QGroupBox:
-        pass
+    class Signal:  # noqa: F811
+        def __init__(self, *args):
+            self._connected_slots = []
 
-    class QSplitter:
-        pass
+        def connect(self, slot):
+            """Connect a slot to this signal."""
+            self._connected_slots.append(slot)
 
-    class QTabWidget:
-        pass
+        def emit(self, *args):
+            """Emit the signal with arguments."""
+            for slot in self._connected_slots:
+                slot(*args)
 
-    class QTextEdit:
-        pass
+    class QTreeWidget:  # noqa: F811
+        ExtendedSelection = 3
 
-    class QProgressBar:
-        pass
+        def __init__(self, parent=None):
+            self.itemChanged = Signal()
+            self._children = []
+            pass
 
-    class QLabel:
-        pass
+        def setHeaderLabels(self, labels):
+            pass
 
-    class QSpinBox:
-        pass
+        def setSelectionMode(self, mode):
+            pass
 
-    class QDoubleSpinBox:
-        pass
+        def clear(self):
+            pass
 
-    class QFrame:
-        pass
+        def expandAll(self):
+            pass
 
-    class QScrollArea:
-        pass
+        def collapseAll(self):
+            pass
 
-    class QVBoxLayout:
-        pass
+        def addChild(self, child):
+            self._children.append(child)
 
-    class QHBoxLayout:
-        pass
+    class QTreeWidgetItemIterator:
+        def __init__(self, tree):
+            self._tree = tree
+            self._index = 0
 
-    class Signal:
+        def value(self):
+            # Simplified implementation
+            return None
+
+        def __iadd__(self, other):
+            self._index += 1
+            return self
+
+    class QTreeWidgetItem:  # noqa: F811
+        def __init__(self, parent=None, strings=None):
+            self._parent = parent
+            self._strings = strings or []
+            self._children = []
+            self._check_state = 0
+            self._flags = 0
+            if parent:
+                parent.addChild(self)
+
+        def setFlags(self, flags):
+            self._flags = flags
+
+        def flags(self):
+            return self._flags
+
+        def setCheckState(self, column, state):
+            self._check_state = state
+
+        def checkState(self, column):
+            return self._check_state
+
+        def setData(self, column, role, data):
+            pass
+
+        def data(self, column, role):
+            return None
+
+        def text(self, column):
+            if column < len(self._strings):
+                return self._strings[column]
+            return ""
+
+        def setText(self, column, text):
+            if column < len(self._strings):
+                self._strings[column] = text
+            else:
+                self._strings.append(text)
+
+        def parent(self):
+            return self._parent
+
+        def childCount(self):
+            return len(self._children)
+
+        def child(self, index):
+            if 0 <= index < len(self._children):
+                return self._children[index]
+            return None
+
+        def addChild(self, child):
+            self._children.append(child)
+
+    class QPushButton:  # noqa: F811
+        def __init__(self, text=None, parent=None):
+            self.clicked = Signal()
+            pass
+
+        def setStyleSheet(self, style):
+            pass
+
+        def setEnabled(self, enabled):
+            pass
+
+    class QLineEdit:  # noqa: F811
+        def __init__(self, text=None, parent=None):
+            self.textChanged = Signal()
+            pass
+
+        def setPlaceholderText(self, text):
+            pass
+
+        def text(self):
+            return ""
+
+    class QComboBox:  # noqa: F811
+        def __init__(self, parent=None):
+            self.currentTextChanged = Signal()
+            pass
+
+        def addItem(self, item):
+            pass
+
+        def addItems(self, items):
+            pass
+
+        def currentText(self):
+            return ""
+
+        def findText(self, text):
+            return -1
+
+        def setCurrentIndex(self, index):
+            pass
+
+        def clear(self):
+            pass
+
+    class QCheckBox:  # noqa: F811
+        def __init__(self, text=None, parent=None):
+            self.stateChanged = Signal()
+            pass
+
+        def setChecked(self, checked):
+            pass
+
+        def isChecked(self):
+            return False
+
+        def setText(self, text):
+            pass
+
+    class QTextEdit:  # noqa: F811
+        def __init__(self, parent=None):
+            pass
+
+    class QProgressBar:  # noqa: F811
+        def __init__(self, parent=None):
+            pass
+
+        def setVisible(self, visible):
+            pass
+
+        def setRange(self, min_val, max_val):
+            pass
+
+        def setValue(self, value):
+            pass
+
+    class QLabel:  # noqa: F811
+        def __init__(self, text=None, parent=None):
+            pass
+
+        def setText(self, text):
+            pass
+
+    class QSpinBox:  # noqa: F811
+        def __init__(self, parent=None):
+            pass
+
+        def setRange(self, min_val, max_val):
+            pass
+
+        def setValue(self, value):
+            pass
+
+        def value(self):
+            return 0
+
+    class QDoubleSpinBox:  # noqa: F811
+        def __init__(self, parent=None):
+            pass
+
+        def setRange(self, min_val, max_val):
+            pass
+
+        def setValue(self, value):
+            pass
+
+        def setSuffix(self, suffix):
+            pass
+
+        def value(self):
+            return 0.0
+
+    class QFrame:  # noqa: F811
+        def __init__(self, parent=None):
+            pass
+
+    class QScrollArea:  # noqa: F811
+        def __init__(self, parent=None):
+            pass
+
+        def setWidget(self, widget):
+            pass
+
+        def setWidgetResizable(self, resizable):
+            pass
+
+        def setMaximumWidth(self, width):
+            pass
+
+    class QApplication:  # noqa: F811
         def __init__(self, *args):
             pass
 
-    class QTimer:
-        pass
+        def exec(self):
+            pass
 
-    class QThread:
-        pass
+    class QVBoxLayout:  # noqa: F811
+        def __init__(self, parent=None):
+            pass
 
-    class Qt:
+        def addWidget(self, widget):
+            pass
+
+        def addLayout(self, layout):
+            pass
+
+    class QHBoxLayout:  # noqa: F811
+        def __init__(self, parent=None):
+            pass
+
+        def addWidget(self, widget):
+            pass
+
+        def addLayout(self, layout):
+            pass
+
+        def addStretch(self):
+            pass
+
+    pyqtSignal = Signal  # type: ignore[no-redef]
+
+    class Qt:  # noqa: F811  # type: ignore[no-redef]
+        Horizontal = 1
+        Vertical = 2
+        ItemIsTristate = 8
+        ItemIsUserCheckable = 32
         Unchecked = 0
         Checked = 2
         PartiallyChecked = 1
-        UserRole = 256
-        Horizontal = 1
-        ExtendedSelection = 3
-        ItemIsTristate = 1
-        ItemIsUserCheckable = 16
+        UserRole = 32
 
-    pyqtSignal = Signal
+    class QSplitter:  # noqa: F811  # type: ignore[no-redef]
+        def __init__(self, orientation=None, parent=None):
+            pass
+
+        def addWidget(self, widget):
+            pass
+
+        def setSizes(self, sizes):
+            pass
+
+    class QGroupBox:  # noqa: F811  # type: ignore[no-redef]
+        def __init__(self, title=None, parent=None):
+            pass
+
+    class QTabWidget:  # noqa: F811  # type: ignore[no-redef]
+        def __init__(self, parent=None):
+            pass
+
+        def addTab(self, widget, title):
+            pass
+
+    class QTimer:  # noqa: F811  # type: ignore[no-redef]
+        def __init__(self, parent=None):
+            self.timeout = Signal()
+            pass
+
+        def setSingleShot(self, single):
+            pass
+
+        def start(self, msec):
+            pass
+
+        def stop(self):
+            pass
+
+    class QThread:  # noqa: F811  # type: ignore
+        def __init__(self, parent=None):
+            pass
+
+        def start(self):
+            pass
+
+        def wait(self):
+            pass
+
+    class QIcon:  # noqa: F811  # type: ignore
+        def __init__(self, filename=None):
+            pass
+
+    class QFont:  # noqa: F811  # type: ignore
+        def __init__(self, family=None, pointSize=-1):
+            pass
+
+        @staticmethod
+        def setFamily(family):
+            pass
+
+        @staticmethod
+        def setPointSize(size):
+            pass
+
+    class QPixmap:  # noqa: F811  # type: ignore
+        def __init__(self, filename=None):
+            pass
+
 
 from apgi_framework.utils.test_utils import (
     TestDefinition,
     TestRunCategory,
-    TestRunExecution,
     TestConfiguration,
     TestResults,
 )
@@ -185,10 +469,10 @@ class TestTreeWidget(QTreeWidget):
                             test.name,
                             test.category.value,
                             test.module,
-                            test.status.value if hasattr(test, "status") else "Not Run",
+                            "Not Run",
                             (
-                                f"{test.execution_time:.3f}s"
-                                if test.execution_time > 0
+                                f"{test.estimated_duration:.3f}s"
+                                if test.estimated_duration > 0
                                 else ""
                             ),
                         ],
@@ -451,30 +735,20 @@ class TestConfigurationWidget(QWidget):
     def get_configuration(self) -> TestConfiguration:
         """Get the current test configuration."""
         return TestConfiguration(
-            parallel_execution=self.parallel_checkbox.isChecked(),
+            parallel=self.parallel_checkbox.isChecked(),
             max_workers=self.max_workers_spin.value(),
-            timeout_seconds=self.timeout_spin.value(),
-            coverage_thresholds={
-                "line": self.line_threshold_spin.value(),
-                "branch": self.branch_threshold_spin.value(),
-            },
-            property_test_iterations=self.iterations_spin.value(),
-            collect_coverage=self.collect_coverage_checkbox.isChecked(),
-            verbose_output=self.verbose_checkbox.isChecked(),
+            timeout=self.timeout_spin.value(),
+            verbose=self.verbose_checkbox.isChecked(),
+            coverage=self.collect_coverage_checkbox.isChecked(),
         )
 
     def set_configuration(self, config: TestConfiguration):
         """Set the configuration values."""
-        self.parallel_checkbox.setChecked(config.parallel_execution)
+        self.parallel_checkbox.setChecked(config.parallel)
         self.max_workers_spin.setValue(config.max_workers)
-        self.timeout_spin.setValue(config.timeout_seconds)
-        self.line_threshold_spin.setValue(config.coverage_thresholds.get("line", 95.0))
-        self.branch_threshold_spin.setValue(
-            config.coverage_thresholds.get("branch", 90.0)
-        )
-        self.iterations_spin.setValue(config.property_test_iterations)
-        self.collect_coverage_checkbox.setChecked(config.collect_coverage)
-        self.verbose_checkbox.setChecked(config.verbose_output)
+        self.timeout_spin.setValue(config.timeout or 300)
+        self.verbose_checkbox.setChecked(config.verbose)
+        self.collect_coverage_checkbox.setChecked(config.coverage)
 
 
 class MainTestWindow(QMainWindow):
@@ -794,21 +1068,33 @@ def main():
     sample_tests = [
         TestDefinition(
             name="test_core_analysis",
+            file_path=Path("tests/test_core_analysis.py"),
             module="core.analysis",
+            class_name=None,
+            method_name="test_core_analysis",
             category=TestRunCategory.UNIT,
-            file_path="tests/test_core_analysis.py",
+            line_number=10,
+            docstring="Test core analysis functionality",
         ),
         TestDefinition(
             name="test_clinical_integration",
+            file_path=Path("tests/test_clinical.py"),
             module="clinical",
+            class_name=None,
+            method_name="test_clinical_integration",
             category=TestRunCategory.INTEGRATION,
-            file_path="tests/test_clinical.py",
+            line_number=20,
+            docstring="Test clinical integration",
         ),
         TestDefinition(
             name="test_neural_processing",
+            file_path=Path("tests/test_neural.py"),
             module="neural",
+            class_name=None,
+            method_name="test_neural_processing",
             category=TestRunCategory.MODULE_SPECIFIC,
-            file_path="tests/test_neural.py",
+            line_number=30,
+            docstring="Test neural processing",
         ),
     ]
 

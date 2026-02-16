@@ -6,24 +6,22 @@ experiment control, data visualization, and collaborative features.
 """
 
 import json
-import asyncio
-import websockets
 import threading
 import time
 from typing import Dict, List, Optional, Any, Callable
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 import logging
-import base64
-import io
 
 # Check for optional dependencies
 FLASK_AVAILABLE = False
 SOCKETIO_AVAILABLE = False
 
+logger = logging.getLogger(__name__)
+
 try:
-    from flask import Flask, render_template, request, jsonify, send_from_directory
+    from flask import Flask, request, jsonify
     from flask_cors import CORS
 
     FLASK_AVAILABLE = True
@@ -36,10 +34,8 @@ try:
     SOCKETIO_AVAILABLE = True
 except ImportError:
     logger.warning(
-        "Flask-SocketIO not available - install with: pip install flask-socketio"
+        "Flask-SocketIO not available - install with: " "pip install flask-socketio"
     )
-
-logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -55,10 +51,10 @@ class WebInterfaceConfig:
     enable_websockets: bool = True
     enable_file_upload: bool = True
     max_file_size: int = 100 * 1024 * 1024  # 100MB
-    allowed_extensions: List[str] = None
+    allowed_extensions: List[str] = field(default_factory=list)
 
     def __post_init__(self):
-        if self.allowed_extensions is None:
+        if not self.allowed_extensions:
             self.allowed_extensions = [
                 "json",
                 "csv",
@@ -616,7 +612,8 @@ class WebInterface:
             for ext in self.config.allowed_extensions
         ):
             raise ValueError(
-                f"File type not allowed. Allowed types: {self.config.allowed_extensions}"
+                f"File type not allowed. Allowed types: "
+                f"{self.config.allowed_extensions}"
             )
 
         # Save file

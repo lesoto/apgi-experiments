@@ -7,8 +7,7 @@ keyboard shortcuts, and consistent zoom behavior across all widgets.
 
 import tkinter as tk
 from tkinter import ttk
-import math
-from typing import Dict, List, Optional, Any, Callable, Tuple
+from typing import Dict, List, Optional, Any, Callable
 from dataclasses import dataclass
 import logging
 from enum import Enum
@@ -454,7 +453,7 @@ class WidgetZoomManager:
 
     def create_zoom_controls(
         self, parent: tk.Widget, widget_id: Optional[str] = None
-    ) -> tk.Frame:
+    ) -> tk.Widget:
         """
         Create zoom control widgets.
 

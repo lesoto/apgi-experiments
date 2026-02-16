@@ -51,7 +51,7 @@ class Sidebar(ctk.CTkFrame):
         self.file_lock = threading.Lock()  # Thread-safe access to file_timestamps
 
         # Import thread manager
-        from ...framework.utils.thread_manager import thread_manager
+        from apgi_framework.utils.thread_manager import thread_manager
 
         self.thread_manager = thread_manager
 

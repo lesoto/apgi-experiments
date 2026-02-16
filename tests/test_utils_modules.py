@@ -27,11 +27,27 @@ try:
     from utils.config_manager import ConfigManager
     from utils.error_handler import ErrorHandler
     from utils.performance_profiler import PerformanceProfiler
-    from utils.dependency_checker import DependencyChecker
-    from utils.parameter_validator import ParameterValidator
+    from utils.parameter_validator import APGIParameterValidator
     from utils.data_validation import DataValidator
 except ImportError as e:
-    pytest.skip(f"Utility modules not available: {e}", allow_module_level=True)
+    # Try alternative import path if utils is not in Python path
+    try:
+        import sys
+        from pathlib import Path
+
+        project_root = Path(__file__).parent.parent
+        if str(project_root) not in sys.path:
+            sys.path.insert(0, str(project_root))
+
+        from utils.backup_manager import BackupManager
+        from utils.cache_manager import CacheManager
+        from utils.config_manager import ConfigManager
+        from utils.error_handler import ErrorHandler
+        from utils.performance_profiler import PerformanceProfiler
+        from utils.parameter_validator import APGIParameterValidator
+        from utils.data_validation import DataValidator
+    except ImportError:
+        pytest.skip(f"Utility modules not available: {e}", allow_module_level=True)
 
 
 class TestBackupManager:

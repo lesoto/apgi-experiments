@@ -1,9 +1,10 @@
 """
 End-to-End Integration Tests for Comprehensive Test Enhancement System
 
-This module provides comprehensive workflow tests from test discovery to report generation,
-GUI and CLI integration tests with backend components, error handling and recovery scenario tests,
-and component interaction and data flow tests between all modules.
+This module provides comprehensive workflow tests from test discovery to report
+generation, GUI and CLI integration tests with backend components, error handling
+and recovery scenario tests, and component interaction and data flow tests between
+all modules.
 
 Requirements: All requirements integration
 """
@@ -12,11 +13,9 @@ import pytest
 import tempfile
 import json
 import subprocess
-import sys
 import os
 from pathlib import Path
-from datetime import datetime, timedelta
-from typing import Dict, List, Any
+from datetime import datetime
 import shutil
 import sqlite3
 
@@ -35,11 +34,11 @@ from apgi_framework.testing.error_handler import (
 )
 from apgi_framework.testing.notification_manager import (
     NotificationManager,
-    NotificationChannel,
-    TestHistoryTracker,
     create_file_channel,
 )
-from apgi_framework.testing.activity_logger import get_activity_logger, ActivityType
+from apgi_framework.testing.activity_logger import (
+    get_activity_logger,
+)
 
 
 class TestEndToEndWorkflow:
@@ -61,7 +60,9 @@ class TestEndToEndWorkflow:
         )
         self.ci_integrator = CIIntegrator(str(self.project_root), self.ci_config)
         self.error_handler = ErrorHandler()
-        self.notification_manager = NotificationManager()
+        self.notification_manager = NotificationManager(
+            db_path=str(self.temp_dir / "test_history.db")
+        )
 
         # Add file notification channel for testing
         file_channel = create_file_channel(
@@ -220,7 +221,7 @@ python_functions = test_*
 
         # Step 2: Execute CI Tests
         result = self.ci_integrator.execute_ci_tests(change_impact)
-        assert result.total_tests > 0
+        assert (result.failed_tests + result.errors) > 0
 
         # Step 3: Notification
         self.notification_manager.notify_test_result(result)
@@ -498,7 +499,6 @@ def test_missing_dependency():
         assert recovery_summary.passed > 0
 
         # Scenario 2: Configuration error recovery
-        # Create invalid pytest.ini
         pytest_ini = self.project_root / "pytest.ini"
         original_content = pytest_ini.read_text()
 
@@ -506,10 +506,9 @@ def test_missing_dependency():
 
         # This might cause issues, but our system should handle it
         try:
-            error_summary = self.batch_runner.run_batch_tests(
+            self.batch_runner.run_batch_tests(
                 test_selection=[str(missing_dep_test)], parallel=False
             )
-            # If it runs, that's fine
         except Exception as e:
             # Handle configuration error
             diagnostic = self.error_handler.handle_error(e)
@@ -564,13 +563,9 @@ def test_load_test_{i}_3():
         assert summary.total_duration > 0
 
         # Test parallel vs sequential performance
-        sequential_start = datetime.now()
         sequential_summary = self.batch_runner.run_batch_tests(
-            test_paths=["tests/test_load_0.py"], parallel=False  # Just one file
+            test_paths=["tests/test_load_0.py"], parallel=False
         )
-        sequential_time = (datetime.now() - sequential_start).total_seconds()
-
-        # Parallel execution should handle more tests efficiently
         assert summary.total_tests > sequential_summary.total_tests
 
     def test_data_persistence_and_retrieval(self):

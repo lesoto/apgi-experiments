@@ -6,22 +6,20 @@ These tests ensure the GUI components function correctly and handle edge cases.
 """
 
 import unittest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock
 import tkinter as tk
 import sys
 import os
-import logging
 from pathlib import Path
 
 # Add the project root to the path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 try:
-    import customtkinter as ctk
+    import customtkinter as ctk  # type: ignore
     from apgi_gui.components.sidebar import Sidebar
     from apgi_gui.components.main_area import MainArea
     from apgi_gui.components.status_bar import StatusBar
-    from apgi_gui.utils.config import AppConfig
     from apgi_gui.config import DefaultParameters, ParameterConfig
 
     GUI_AVAILABLE = True
@@ -46,6 +44,10 @@ class TestSidebar(unittest.TestCase):
         self.mock_app.toggle_theme = Mock()
         self.mock_app.show_help = Mock()
         self.mock_app.recent_files = []
+
+        # Add config with file_monitor_interval to prevent TypeError
+        self.mock_app.config = Mock()
+        self.mock_app.config.file_monitor_interval = 1.0  # Default 1 second
 
         # Create the root window and sidebar
         self.root = ctk.CTk()
@@ -202,9 +204,15 @@ class TestMainArea(unittest.TestCase):
     def test_load_data_sets_values(self):
         """Test that load_data properly sets values."""
         test_data = {
-            "apgi_parameters": {"learning_rate": 0.05, "precision_weight": 2.0},
-            "neural_signatures": {"p3b": True, "gamma": False},
-            "experimental_settings": {"sample_rate": 1000, "num_trials": 50},
+            "apgi_parameters": {
+                "learning_rate": 0.05,
+                "precision_weight": 2.0,
+            },
+            "neural_signatures": {"p3b": True},
+            "experimental_settings": {
+                "sample_rate": 1000,
+                "num_trials": 50,
+            },
         }
 
         # Load data
@@ -370,6 +378,10 @@ class TestGUIIntegration(unittest.TestCase):
         self.mock_app.open_file = Mock()
         self.mock_app.save_file = Mock()
         self.mock_app.recent_files = []
+
+        # Add config with file_monitor_interval to prevent TypeError
+        self.mock_app.config = Mock()
+        self.mock_app.config.file_monitor_interval = 1.0  # Default 1 second
 
         # Create the root window
         self.root = ctk.CTk()
@@ -611,7 +623,6 @@ class TestMainAreaWithConfiguration(unittest.TestCase):
         self.main_area.param_entries["learning_rate"].insert(0, "5.0")  # Too high
 
         # Trigger focus out event
-        event = Mock()
         self.main_area._validate_parameter("learning_rate")
 
         # Check that status was updated with error
@@ -651,6 +662,10 @@ class TestSidebarWithCustomTkinter(unittest.TestCase):
         self.mock_app.show_help = Mock()
         self.mock_app.update_status = Mock()
         self.mock_app.recent_files = []
+
+        # Add config with file_monitor_interval to prevent TypeError
+        self.mock_app.config = Mock()
+        self.mock_app.config.file_monitor_interval = 1.0  # Default 1 second
 
         # Create the root window and sidebar
         self.root = ctk.CTk()
@@ -724,7 +739,6 @@ class TestSidebarWithCustomTkinter(unittest.TestCase):
             self.sidebar._create_tooltip(button, str(test_file))
 
             # Test tooltip events
-            event = Mock()
             self.sidebar._create_tooltip(button, str(test_file))
             # The tooltip should be bound to the button
 

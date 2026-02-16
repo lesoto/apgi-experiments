@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Tuple
-import numpy as np
+from typing import Dict
 import pandas as pd
 from apgi_framework.logging.standardized_logging import get_logger
 
@@ -13,7 +12,7 @@ class BaseExperiment(ABC):
     def __init__(self, n_participants: int = 20):
         self.n_participants = n_participants
         self.data = pd.DataFrame()
-        self.participant_data = {}
+        self.participant_data: Dict[int, Dict] = {}
 
     @abstractmethod
     def setup(self, **kwargs):

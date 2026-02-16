@@ -23,11 +23,21 @@ except ImportError:
     PYSIDE6_AVAILABLE = False
 
     class QObject:
-        pass
+        def __init__(self, parent=None):
+            pass
 
     class Signal:
         def __init__(self, *args):
-            pass
+            self._connected_slots = []
+
+        def connect(self, slot):
+            """Connect a slot to this signal."""
+            self._connected_slots.append(slot)
+
+        def emit(self, *args):
+            """Emit the signal with arguments."""
+            for slot in self._connected_slots:
+                slot(*args)
 
     class QTimer:
         def start(self, *args):
@@ -61,6 +71,7 @@ from apgi_framework.utils.test_utils import (
     FrameworkTestRunStatus,
     FrameworkTestFailure,
     FrameworkFailureCategory,
+    FrameworkTestRunCategory,
 )
 
 
@@ -525,24 +536,30 @@ if __name__ == "__main__":
 
     # Create sample test cases for testing
     sample_tests = [
-        TestCase(
+        FrameworkTestDefinition(
             name="test_example_1",
+            file_path=Path("tests/test_example.py"),
             module="example",
-            category=TestCategory.UNIT,
-            file_path="tests/test_example.py",
+            class_name=None,
+            method_name="test_example_1",
+            category=FrameworkTestRunCategory.UNIT,
+            line_number=10,
+            docstring="Example test 1",
         ),
-        TestCase(
+        FrameworkTestDefinition(
             name="test_example_2",
+            file_path=Path("tests/test_example.py"),
             module="example",
-            category=TestCategory.UNIT,
-            file_path="tests/test_example.py",
+            class_name=None,
+            method_name="test_example_2",
+            category=FrameworkTestRunCategory.UNIT,
+            line_number=20,
+            docstring="Example test 2",
         ),
     ]
 
     # Create configuration
-    config = TestConfiguration(
-        parallel_execution=False, max_workers=1, timeout_seconds=30
-    )
+    config = FrameworkTestConfiguration(parallel=False, max_workers=1, timeout=30)
 
     # Test the controller (basic functionality)
     controller = TestExecutionController()

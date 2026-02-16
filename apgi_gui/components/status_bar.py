@@ -1,13 +1,10 @@
 """Status bar component for the APGI Framework GUI."""
 
 import customtkinter as ctk
-import tkinter as tk
 from datetime import datetime
 from typing import Optional
 import logging
-import platform
 import sys
-import os
 from pathlib import Path
 
 # Import font manager for cross-platform compatibility
@@ -16,9 +13,6 @@ try:
     from apgi_framework.config.constants import GUIConstants, TimingConstants
 except ImportError:
     # Fallback for direct execution
-    import sys
-    from pathlib import Path
-
     project_root = Path(__file__).parent.parent.parent.parent
     sys.path.insert(0, str(project_root))
     from apgi_framework.utils.font_manager import get_ui_font
@@ -187,6 +181,7 @@ class StatusBar(ctk.CTkFrame):
         self.logger.debug(f"Setting status: {message} (level: {level})")
 
         # Add level indicator if specified
+        text_color: Optional[str] = None
         if level == "warning":
             prefix = STATUS_INDICATORS["warning"]
             text_color = color or "#FFA500"  # Orange
@@ -310,3 +305,14 @@ class StatusBar(ctk.CTkFrame):
         self.logger.debug("Clearing status message")
         self.status_label.configure(text="Ready")
         self.reset_status_color()
+
+    def show_temporary_message(self, message: str, level: str = "info") -> None:
+        """Show a temporary status message that clears after a delay.
+
+        Args:
+            message: Message to display
+            level: Message level (info, warning, error, success)
+        """
+        self.set_status(message, level)
+        # Schedule to clear the message after 5 seconds
+        self.after(5000, lambda: self.clear_status())

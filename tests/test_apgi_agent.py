@@ -13,8 +13,8 @@ sys.path.append(str(Path(__file__).parent.parent))
 # Import the APGI Agent - using available modules
 try:
     from apgi_framework.core.equation import APGIEquation
-    from apgi_framework.core.somatic_marker import SomaticMarker
-    from apgi_framework.core.threshold import Threshold
+    from apgi_framework.core.somatic_marker import SomaticMarkerEngine
+    from apgi_framework.core.threshold import ThresholdManager
 
     # Create a mock APGIAgent class for testing
     class APGIAgent:

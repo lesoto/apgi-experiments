@@ -9,9 +9,8 @@ import io
 import time
 import functools
 import psutil
-import os
 from pathlib import Path
-from typing import Callable, Any, Dict, List
+from typing import Callable, Any, Dict, List, Optional
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -22,9 +21,9 @@ class Profiler:
     def __init__(self, output_dir: str = "benchmark_results"):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
-        self.profiles = {}
+        self.profiles: Dict[str, Any] = {}
 
-    def profile_function(self, name: str = None):
+    def profile_function(self, name: Optional[str] = None):
         """Decorator to profile a function."""
 
         def decorator(func: Callable) -> Callable:
@@ -66,7 +65,7 @@ class Profiler:
 
         return decorator
 
-    def profile_method(self, cls_name: str = None):
+    def profile_method(self, cls_name: Optional[str] = None):
         """Decorator to profile all methods of a class."""
 
         def decorator(cls):
@@ -149,9 +148,9 @@ class MemoryProfiler:
     def __init__(self, output_dir: str = "benchmark_results"):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
-        self.snapshots = []
+        self.snapshots: List[Dict[str, Any]] = []
 
-    def take_snapshot(self, name: str = None):
+    def take_snapshot(self, name: Optional[str] = None):
         """Take a memory snapshot."""
         import tracemalloc
 
@@ -176,7 +175,8 @@ class MemoryProfiler:
 
         # Generate comparison report
         report_lines = [
-            f"Memory comparison: {self.snapshots[after_idx]['name']} - {self.snapshots[before_idx]['name']}\n"
+            f"Memory comparison: {self.snapshots[after_idx]['name']} - "
+            f"{self.snapshots[before_idx]['name']}\n"
         ]
 
         for stat in stats[:10]:  # Top 10 memory consumers
@@ -244,7 +244,7 @@ class SystemMonitor:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
         self.monitoring = False
-        self.data = []
+        self.data: List[Dict[str, Any]] = []
 
     def start_monitoring(self, interval: float = 0.1):
         """Start monitoring system resources."""
@@ -396,7 +396,7 @@ class BenchmarkRunner:
         report_lines = ["# Benchmark Suite Results\n"]
 
         # Summary statistics
-        successful = df[df["success"] == True]
+        successful = df[df["success"]]
 
         if not successful.empty:
             report_lines.append("## Summary\n")
@@ -405,17 +405,14 @@ class BenchmarkRunner:
             report_lines.append(f"- Failed: {len(df) - len(successful)}\n")
 
             if "duration" in successful.columns:
-                report_lines.append(
-                    f"- Average duration: {successful['duration'].mean():.4f}s\n"
-                )
-                report_lines.append(
-                    f"- Total duration: {successful['duration'].sum():.4f}s\n"
-                )
+                avg_duration = successful["duration"].mean()
+                total_duration = successful["duration"].sum()
+                report_lines.append(f"- Average duration: {avg_duration:.4f}s\n")
+                report_lines.append(f"- Total duration: {total_duration:.4f}s\n")
 
             if "max_memory" in successful.columns:
-                report_lines.append(
-                    f"- Max memory usage: {successful['max_memory'].max():.2f}MB\n"
-                )
+                max_mem = successful["max_memory"].max()
+                report_lines.append(f"- Max memory usage: {max_mem:.2f}MB\n")
 
         # Individual results
         report_lines.append("\n## Individual Results\n")
@@ -424,7 +421,7 @@ class BenchmarkRunner:
             report_lines.append(f"### {row['benchmark']}\n")
 
             if row["success"]:
-                report_lines.append(f"- Status: [OK] Success\n")
+                report_lines.append("- Status: [OK] Success\n")
                 if "duration" in row:
                     report_lines.append(f"- Duration: {row['duration']:.4f}s\n")
                 if "avg_cpu" in row:
@@ -432,7 +429,7 @@ class BenchmarkRunner:
                 if "max_memory" in row:
                     report_lines.append(f"- Max Memory: {row['max_memory']:.2f}MB\n")
             else:
-                report_lines.append(f"- Status: [ERROR] Failed\n")
+                report_lines.append("- Status: [ERROR] Failed\n")
                 if "error" in row:
                     report_lines.append(f"- Error: {row['error']}\n")
 
@@ -487,7 +484,7 @@ if __name__ == "__main__":
     def pandas_benchmark():
         import pandas as pd
 
-        df = pd.DataFrame(np.random.rand(10000, 100))
+        df = pd.DataFrame(np.random.rand(10000, 100))  # type: ignore
         return df.describe()
 
     benchmarks = {

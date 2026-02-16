@@ -1,6 +1,9 @@
 import numpy as np
+from scipy.special import expit  # type: ignore
+import matplotlib
+
+matplotlib.use("Agg")  # Use non-interactive backend
 import matplotlib.pyplot as plt
-from scipy.special import expit
 
 
 def ignition_probability(S_t, theta_t, alpha):
