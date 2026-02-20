@@ -345,7 +345,6 @@ class TestActivityLoggingProperties:
                             parsed_entry.get("activity_type") == activity_type.value
                             and parsed_entry.get("message") == message
                         ):
-
                             user_activity_found = True
 
                             # Verify required fields are present

@@ -12,7 +12,7 @@ def test_imports():
     print("Testing imports...")
     try:
         import numpy  # noqa: F401
-        import scipy  # noqa: F401
+        import scipy  # noqa: F401 # type: ignore
         import matplotlib  # noqa: F401
         import yaml  # noqa: F401
         import tkinter  # noqa: F401
@@ -28,8 +28,8 @@ def test_apgi_system():
     """Test APGI system initialization."""
     print("\nTesting APGI System...")
     try:
-        from apgi_system.system import APGISystem
-        from apgi_system.platform_utils import get_resource_path
+        from apgi_system.system import APGISystem  # type: ignore
+        from apgi_system.platform_utils import get_resource_path  # type: ignore
 
         APGISystem(config_path=str(get_resource_path("config/default.yaml")))
         print("✓ APGI System initialized successfully")
@@ -45,8 +45,8 @@ def test_system_step():
     print("\nTesting system step...")
     try:
         import numpy as np
-        from apgi_system.system import APGISystem
-        from apgi_system.platform_utils import get_resource_path
+        from apgi_system.system import APGISystem  # type: ignore
+        from apgi_system.platform_utils import get_resource_path  # type: ignore
 
         system = APGISystem(config_path=str(get_resource_path("config/default.yaml")))
         extero_input = np.random.randn(256)
@@ -71,8 +71,10 @@ def test_system_step():
 
         print("✓ System step executed successfully")
         print(f"  - Time: {state['time']:.2f} ms")
-        print(f"  - Ignition occurred: {state['ignition']['ignition_occurred']}")
-        print(f"  - Workspace broadcasting: {state['workspace']['is_broadcasting']}")
+        print(f"  - Ignition occurred: " f"{state['ignition']['ignition_occurred']}")
+        print(
+            f"  - Workspace broadcasting: " f"{state['workspace']['is_broadcasting']}"
+        )
         return True
     except Exception as e:
         print(f"✗ System step error: {e}")
@@ -139,7 +141,7 @@ def test_experimental_tasks():
     """Test experimental task imports."""
     print("\nTesting experimental tasks...")
     try:
-        from apgi_system.experiments.tasks import (  # noqa: F401
+        from apgi_system.experiments.tasks import (  # noqa: F401 # type: ignore
             AttentionalBlinkTask,
             ChangeBlindnessTask,
             BinocularRivalryTask,

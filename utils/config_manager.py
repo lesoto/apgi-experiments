@@ -13,14 +13,13 @@ Comprehensive configuration system with:
 - Configuration versioning and rollback
 """
 
-import difflib
 import hashlib
 import json
 import os
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
 import jsonschema
 import yaml
@@ -1356,7 +1355,7 @@ def set_parameter(section: str, parameter: str, value: Any):
     try:
         config_manager.set_parameter(section, parameter, value)
         return True
-    except (ValueError, KeyError, AttributeError, TypeError) as e:
+    except (ValueError, KeyError, AttributeError, TypeError):
         return False
 
 

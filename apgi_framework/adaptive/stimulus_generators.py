@@ -785,7 +785,6 @@ class HeartbeatSynchronizer:
                     or (current_time - self.last_r_peak).total_seconds() * 1000
                     >= self.refractory_period_ms
                 ):
-
                     with self._lock:
                         self.last_r_peak = current_time
                         self.r_peak_history.append(current_time)

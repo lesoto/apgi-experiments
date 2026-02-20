@@ -8,8 +8,6 @@ Requirements: System deployment
 """
 
 import sys
-import os
-import subprocess
 import platform
 import importlib
 import json
@@ -430,7 +428,7 @@ class InstallationValidator:
         if config_template.exists():
             try:
                 with open(config_template, "r") as f:
-                    config_data = json.load(f)
+                    json.load(f)
 
                 self.results.append(
                     ValidationResult(
@@ -463,14 +461,9 @@ class InstallationValidator:
         """Validate basic framework functionality."""
         try:
             # Test basic imports and instantiation
-            from apgi_framework.testing.main import (
-                ApplicationConfig,
-                DependencyContainer,
-            )
+            from apgi_framework.testing.main import ApplicationConfig
 
-            config = ApplicationConfig(mode="cli", project_root=str(self.project_root))
-
-            container = DependencyContainer(config)
+            ApplicationConfig(mode="cli", project_root=str(self.project_root))
 
             self.results.append(
                 ValidationResult(
@@ -496,7 +489,7 @@ class InstallationValidator:
             # Try to run a simple test discovery
             from apgi_framework.testing.batch_runner import BatchTestRunner
 
-            batch_runner = BatchTestRunner(
+            BatchTestRunner(
                 project_root=str(self.project_root), parallel=False, max_workers=1
             )
 

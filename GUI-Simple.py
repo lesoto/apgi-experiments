@@ -16,7 +16,7 @@ import json
 import subprocess
 import threading
 import importlib
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 
 # Add project root to path for tooltip import
 project_root = Path(__file__).parent
@@ -178,7 +178,11 @@ sys.path.insert(0, str(project_root))
 
 # Import experiment runner
 try:
-    from tools.run_experiments import get_available_experiments, run_experiment
+    # type: ignore[attr-defined]
+    from tools.run_experiments import (  # noqa: F401
+        get_available_experiments,
+        run_experiment as run_tools_experiment,
+    )
 
     EXPERIMENTS_AVAILABLE = True
 except ImportError:
@@ -497,8 +501,8 @@ project_root = Path("{project_root}")
 sys.path.insert(0, str(project_root))
 
 try:
-    from tools.run_experiments import run_experiment
-    result = run_experiment("{experiment}", n_participants={int(threshold)}, n_trials_per_condition={simulations})
+    from tools.run_experiments import run_experiment as run_tools_experiment
+    result = run_tools_experiment("{experiment}", n_participants={int(threshold)}, n_trials_per_condition={simulations})
     print("SUCCESS: Experiment completed")
     print(f"RESULT: {{result}}")
 except Exception as e:
@@ -632,7 +636,7 @@ except Exception as e:
                     tk.END, f"Progress: {progress}% - Processing data...\n"
                 )
                 self.results_text.see(tk.END)
-                self.root.update_idletasks()
+                # Removed update_idletasks() to prevent GUI blocking
 
             # Continue progress
             self.root.after(
@@ -847,7 +851,7 @@ except Exception as e:
         lines = results_text.split("\n")
 
         # Extract experiment info
-        experiment_info = {}
+        experiment_info: Dict[str, Union[str, int]] = {}
         current_section = None
 
         for line in lines:

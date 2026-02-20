@@ -224,9 +224,11 @@ class SomaBiasTest:
         timestamp = datetime.now()
 
         # Generate matched precision values
-        extero_precision, intero_precision, match_quality = (
-            self._generate_matched_precision()
-        )
+        (
+            extero_precision,
+            intero_precision,
+            match_quality,
+        ) = self._generate_matched_precision()
 
         # Generate prediction errors
         extero_error, intero_error = self._generate_prediction_errors()

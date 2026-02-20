@@ -8,7 +8,16 @@ from tkinter import TclError, filedialog
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 from collections import deque
-import customtkinter as ctk
+
+# Import customtkinter for theme support (optional)
+try:
+    import customtkinter as ctk
+
+    CUSTOMTKINTER_AVAILABLE = True
+except ImportError:
+    CUSTOMTKINTER_AVAILABLE = False
+    ctk = None
+    print("Warning: CustomTkinter not available. Using basic tkinter fallback.")
 from datetime import datetime
 
 # Import custom components - handle both relative and absolute imports
@@ -33,11 +42,19 @@ except ImportError:
     from apgi_gui.utils.config import AppConfig
 
 
-class APGIFrameworkApp(ctk.CTk):
+class APGIFrameworkApp(ctk.CTk if CUSTOMTKINTER_AVAILABLE else tk.Tk):
     """Main application class for APGI Framework GUI."""
 
     def __init__(self):
         """Initialize the application."""
+        if not CUSTOMTKINTER_AVAILABLE:
+            tk.messagebox.showerror(
+                "Missing Dependency",
+                "CustomTkinter is required for this application.\n"
+                "Please install it with: pip install customtkinter",
+            )
+            sys.exit(1)
+
         super().__init__()
 
         # Initialize application state

@@ -1,10 +1,9 @@
 """
-Simplified tests for adaptive module components that focus on existing functionality.
+Simplified tests for adaptive module components that focus on existing
+functionality.
 """
 
 import pytest
-import numpy as np
-from unittest.mock import Mock, patch
 from datetime import datetime
 
 from apgi_framework.adaptive.quest_plus_staircase import (

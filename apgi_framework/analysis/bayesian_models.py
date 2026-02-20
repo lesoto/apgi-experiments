@@ -7,15 +7,10 @@ and β (somatic bias) using Stan/PyMC3.
 """
 
 import numpy as np
-import pandas as pd
-from scipy import stats
-from scipy.optimize import minimize
-from typing import Dict, List, Tuple, Optional, Any
+from typing import Dict, Tuple, Optional, Any, List, Union
 import os
-import matplotlib.pyplot as plt
-import seaborn as sns
 from pathlib import Path
-import warnings
+import hashlib
 from dataclasses import dataclass
 
 # Import standardized logging and security
@@ -23,7 +18,6 @@ from ..logging.standardized_logging import get_logger
 from ..security.secure_pickle import (
     safe_pickle_load,
     safe_pickle_dump,
-    SecurePickleError,
 )
 
 # Initialize logger
@@ -108,7 +102,7 @@ class SurpriseAccumulator:
         self.tau = tau
         self.dt = dt
         self.surprise = 0.0
-        self.history = []
+        self.history: List[float] = []
 
     def reset(self):
         """Reset surprise accumulator to initial state."""
@@ -225,7 +219,7 @@ class IgnitionProbabilityCalculator:
         self.alpha = alpha
 
     @staticmethod
-    def sigmoid(x: np.ndarray) -> np.ndarray:
+    def sigmoid(x: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         """Numerically stable sigmoid function."""
         return np.where(x >= 0, 1 / (1 + np.exp(-x)), np.exp(x) / (1 + np.exp(x)))
 
@@ -243,7 +237,7 @@ class IgnitionProbabilityCalculator:
         return float(self.sigmoid(self.alpha * (surprise - threshold)))
 
     def compute_probability_trace(
-        self, surprise_trace: np.ndarray, threshold: float
+        self, surprise_trace: np.ndarray, threshold: Union[float, np.ndarray]
     ) -> np.ndarray:
         """
         Compute ignition probability over time.
@@ -258,12 +252,12 @@ class IgnitionProbabilityCalculator:
         if isinstance(threshold, (int, float)):
             threshold = np.full_like(surprise_trace, threshold)
 
-        return self.sigmoid(self.alpha * (surprise_trace - threshold))
+        return np.asarray(self.sigmoid(self.alpha * (surprise_trace - threshold)))
 
     def find_ignition_time(
         self,
         surprise_trace: np.ndarray,
-        threshold: float,
+        threshold: Union[float, np.ndarray],
         probability_threshold: float = 0.5,
         dt: float = 0.001,
     ) -> Optional[float]:
@@ -303,7 +297,7 @@ class StanModelCompiler:
             cache_dir = os.path.join(Path.home(), ".apgi_framework", "stan_cache")
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
-        self._compiled_models = {}
+        self._compiled_models: Dict[str, Any] = {}
 
     def _get_model_hash(self, model_code: str) -> str:
         """Generate hash of model code for caching."""
@@ -334,8 +328,7 @@ class StanModelCompiler:
         # Check disk cache
         if cache_path.exists() and not force_recompile:
             try:
-                with open(cache_path, "rb") as f:
-                    model = safe_pickle_load(f)
+                model = safe_pickle_load(cache_path)
                 self._compiled_models[model_hash] = model
                 return model
             except Exception as e:
@@ -343,14 +336,13 @@ class StanModelCompiler:
 
         # Compile new model
         try:
-            import pystan
+            import pystan  # type: ignore
 
             model = pystan.StanModel(model_code=model_code)
 
             # Cache to disk
             try:
-                with open(cache_path, "wb") as f:
-                    safe_pickle_dump(model, f)
+                safe_pickle_dump(model, cache_path)
             except Exception as e:
                 logger.warning(f"Failed to cache model: {e}")
 
@@ -610,6 +602,8 @@ class HierarchicalBayesianModel:
         """
         if self.model is None:
             self.compile_model()
+
+        assert self.model is not None, "Model compilation failed"
 
         if warmup is None:
             warmup = iter // 2

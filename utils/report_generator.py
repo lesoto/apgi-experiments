@@ -425,13 +425,17 @@ class ReportGenerator:
                         status = (
                             "good"
                             if value < 70
-                            else "warning" if value < 90 else "critical"
+                            else "warning"
+                            if value < 90
+                            else "critical"
                         )
                     elif "memory" in key.lower():
                         status = (
                             "good"
                             if value < 70
-                            else "warning" if value < 90 else "critical"
+                            else "warning"
+                            if value < 90
+                            else "critical"
                         )
                     else:
                         status = "good"
@@ -477,7 +481,9 @@ class ReportGenerator:
                         "status": (
                             "good"
                             if avg_time < 1.0
-                            else "warning" if avg_time < 5.0 else "critical"
+                            else "warning"
+                            if avg_time < 5.0
+                            else "critical"
                         ),
                     },
                 ]
@@ -657,13 +663,15 @@ class ReportGenerator:
 
             # Generate PDF
             html_doc = HTML(string=html_content)
-            css = CSS(string="""
+            css = CSS(
+                string="""
                 @page { margin: 2cm; size: A4; }
                 body { font-size: 10pt; }
                 .metric-card { page-break-inside: avoid; }
                 .chart-container { page-break-inside: avoid; }
                 table { page-break-inside: avoid; }
-            """)
+            """
+            )
 
             html_doc.write_pdf(pdf_path, stylesheets=[css])
 

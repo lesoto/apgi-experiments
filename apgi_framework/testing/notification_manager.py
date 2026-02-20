@@ -2,8 +2,8 @@
 Notification Manager for CI/CD Test Failure Reporting
 
 This module provides comprehensive notification and reporting capabilities for CI/CD
-test failures, including actionable debugging information, test result history tracking,
-and automated report distribution.
+test failures, including actionable debugging information, test result history
+tracking, and automated report distribution.
 
 Requirements: 8.4, 8.5
 """
@@ -11,7 +11,7 @@ Requirements: 8.4, 8.5
 import json
 import smtplib
 import logging
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Any, Union
 from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -82,7 +82,8 @@ class TestHistoryTracker:
         """Initialize the test history database."""
         try:
             with sqlite3.connect(self.db_path) as conn:
-                conn.execute("""
+                conn.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS test_executions (
                         execution_id TEXT PRIMARY KEY,
                         timestamp TEXT NOT NULL,
@@ -94,9 +95,11 @@ class TestHistoryTracker:
                         execution_time_seconds REAL NOT NULL,
                         pipeline_context TEXT NOT NULL
                     )
-                """)
+                """
+                )
 
-                conn.execute("""
+                conn.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS test_failures (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         execution_id TEXT NOT NULL,
@@ -105,15 +108,20 @@ class TestHistoryTracker:
                         duration REAL NOT NULL,
                         FOREIGN KEY (execution_id) REFERENCES test_executions (execution_id)
                     )
-                """)
+                """
+                )
 
-                conn.execute("""
+                conn.execute(
+                    """
                     CREATE INDEX IF NOT EXISTS idx_timestamp ON test_executions (timestamp)
-                """)
+                """
+                )
 
-                conn.execute("""
+                conn.execute(
+                    """
                     CREATE INDEX IF NOT EXISTS idx_execution_id ON test_failures (execution_id)
-                """)
+                """
+                )
 
         except Exception as e:
             self.logger.error(f"Failed to initialize test history database: {e}")
@@ -475,7 +483,13 @@ class NotificationManager:
         # Add environment information from pipeline context
         env_info = {}
         for key, value in result.pipeline_context.items():
-            if key.lower() in ["python_version", "os", "platform", "branch", "commit"]:
+            if key.lower() in [
+                "python_version",
+                "os",
+                "platform",
+                "branch",
+                "commit",
+            ]:
                 env_info[key] = value
 
         debugging_info["environment_info"] = env_info
@@ -578,7 +592,8 @@ class NotificationManager:
         # Send email
         try:
             with smtplib.SMTP(
-                config.get("smtp_server", "localhost"), config.get("smtp_port", 587)
+                config.get("smtp_server", "localhost"),
+                config.get("smtp_port", 587),
             ) as server:
                 if config.get("use_tls", True):
                     server.starttls()
@@ -696,19 +711,21 @@ class NotificationManager:
         self.logger.info(f"File notification written via {channel.name}")
 
     def _generate_email_subject(
-        self, notification: TestFailureNotification, result: TestExecutionResult
+        self,
+        notification: TestFailureNotification,
+        result: TestExecutionResult,
     ) -> str:
         """Generate email subject line."""
         if result.failed_tests == 0:
             return f"✅ APGI Framework Tests Passed - {result.execution_id}"
         else:
-            status = (
-                "🔥 CRITICAL" if notification.critical_failures > 0 else "⚠️ FAILED"
-            )
+            status = "🔥 CRITICAL" if notification.critical_failures > 0 else "⚠️ FAILED"
             return f"{status} APGI Framework Tests - {result.failed_tests} failures - {result.execution_id}"
 
     def _generate_email_body(
-        self, notification: TestFailureNotification, result: TestExecutionResult
+        self,
+        notification: TestFailureNotification,
+        result: TestExecutionResult,
     ) -> str:
         """Generate HTML email body."""
         if result.failed_tests == 0:
@@ -732,7 +749,9 @@ class NotificationManager:
         """
 
     def _generate_failure_email_body(
-        self, notification: TestFailureNotification, result: TestExecutionResult
+        self,
+        notification: TestFailureNotification,
+        result: TestExecutionResult,
     ) -> str:
         """Generate failure email body."""
         recommendations_html = "".join(
@@ -780,7 +799,9 @@ class NotificationManager:
         """
 
     def _generate_slack_message(
-        self, notification: TestFailureNotification, result: TestExecutionResult
+        self,
+        notification: TestFailureNotification,
+        result: TestExecutionResult,
     ) -> Dict[str, Any]:
         """Generate Slack message payload."""
         if result.failed_tests == 0:
@@ -844,7 +865,9 @@ class NotificationManager:
             }
 
     def _generate_teams_message(
-        self, notification: TestFailureNotification, result: TestExecutionResult
+        self,
+        notification: TestFailureNotification,
+        result: TestExecutionResult,
     ) -> Dict[str, Any]:
         """Generate Microsoft Teams message payload."""
         if result.failed_tests == 0:
@@ -858,7 +881,10 @@ class NotificationManager:
                         "activityTitle": "✅ All Tests Passed",
                         "activitySubtitle": f"Execution ID: {result.execution_id}",
                         "facts": [
-                            {"name": "Total Tests", "value": str(result.total_tests)},
+                            {
+                                "name": "Total Tests",
+                                "value": str(result.total_tests),
+                            },
                             {
                                 "name": "Coverage",
                                 "value": f"{result.coverage_percentage:.1f}%",

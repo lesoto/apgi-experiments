@@ -12,9 +12,9 @@ import hashlib
 import json
 import threading
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Callable, Dict, Optional, Union, List
 
 import joblib
 import numpy as np
@@ -595,7 +595,7 @@ def main():
     }
 
     cache.set("test_key", test_data)
-    print(f"  Cached data with key: test_key")
+    print("  Cached data with key: test_key")
 
     # Retrieve data
     retrieved_data = cache.get("test_key")
@@ -622,7 +622,7 @@ def main():
 
     preprocessing_config = {"normalize": True, "filter": True}
     data_cache.cache_preprocessed_data("test_file.csv", preprocessing_config, sample_df)
-    print(f"  Cached preprocessed data")
+    print("  Cached preprocessed data")
 
     # Retrieve cached data
     cached_df = data_cache.get_preprocessed_data("test_file.csv", preprocessing_config)

@@ -6,11 +6,11 @@ This module provides common build and development utilities.
 
 import subprocess
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 
 def run_command(
-    cmd: List[str], cwd: str = None, check: bool = True
+    cmd: List[str], cwd: Optional[str] = None, check: bool = True
 ) -> subprocess.CompletedProcess:
     """Run a command and return the result.
 
@@ -105,7 +105,7 @@ def check_build_environment() -> Dict[str, bool]:
     return checks
 
 
-def analyze_dependencies(project_path: str = None) -> Dict[str, Any]:
+def analyze_dependencies(project_path: Optional[str] = None) -> Dict[str, Any]:
     """Analyze project dependencies.
 
     Parameters
@@ -119,12 +119,12 @@ def analyze_dependencies(project_path: str = None) -> Dict[str, Any]:
         Dependency analysis results
     """
     if project_path is None:
-        project_path = get_project_root()
-
-    project_path = Path(project_path)
+        project_root = get_project_root()
+    else:
+        project_root = Path(project_path)
 
     # Read requirements.txt if exists
-    requirements_file = project_path / "requirements.txt"
+    requirements_file = project_root / "requirements.txt"
     dependencies = []
 
     if requirements_file.exists():
@@ -135,12 +135,12 @@ def analyze_dependencies(project_path: str = None) -> Dict[str, Any]:
                     dependencies.append(line)
 
     # Read pyproject.toml if exists
-    pyproject_file = project_path / "pyproject.toml"
+    pyproject_file = project_root / "pyproject.toml"
     pyproject_deps = []
 
     if pyproject_file.exists():
         try:
-            import toml
+            import toml  # type: ignore
 
             config = toml.load(pyproject_file)
             pyproject_deps = config.get("project", {}).get("dependencies", [])
@@ -154,7 +154,7 @@ def analyze_dependencies(project_path: str = None) -> Dict[str, Any]:
     }
 
 
-def collect_resources(project_path: str = None) -> Dict[str, List[str]]:
+def collect_resources(project_path: Optional[str] = None) -> Dict[str, List[str]]:
     """Collect project resources.
 
     Parameters
@@ -168,10 +168,11 @@ def collect_resources(project_path: str = None) -> Dict[str, List[str]]:
         Resource files by type
     """
     if project_path is None:
-        project_path = get_project_root()
+        project_root = get_project_root()
+    else:
+        project_root = Path(project_path)
 
-    project_path = Path(project_path)
-    resources = {
+    resources: Dict[str, List[str]] = {
         "config_files": [],
         "data_files": [],
         "resource_files": [],
@@ -180,29 +181,25 @@ def collect_resources(project_path: str = None) -> Dict[str, List[str]]:
 
     # Collect config files
     for pattern in ["*.yaml", "*.yml", "*.json", "*.toml", "*.ini"]:
-        resources["config_files"].extend(project_path.rglob(pattern))
+        resources["config_files"].extend(str(p) for p in project_root.rglob(pattern))
 
     # Collect data files
     for pattern in ["*.csv", "*.txt", "*.md"]:
-        resources["data_files"].extend(project_path.rglob(pattern))
+        resources["data_files"].extend(str(p) for p in project_root.rglob(pattern))
 
     # Collect resource files
-    resources_dir = project_path / "resources"
+    resources_dir = project_root / "resources"
     if resources_dir.exists():
-        resources["resource_files"] = list(resources_dir.rglob("*"))
+        resources["resource_files"] = [str(p) for p in resources_dir.rglob("*")]
 
     # Collect icon files
     for pattern in ["*.ico", "*.icns", "*.png", "*.jpg"]:
-        resources["icon_files"].extend(project_path.rglob(pattern))
-
-    # Convert to strings
-    for key in resources:
-        resources[key] = [str(p) for p in resources[key]]
+        resources["icon_files"].extend(str(p) for p in project_root.rglob(pattern))
 
     return resources
 
 
-def get_version(project_path: str = None) -> str:
+def get_version(project_path: Optional[str] = None) -> str:
     """Get project version.
 
     Parameters
@@ -216,20 +213,20 @@ def get_version(project_path: str = None) -> str:
         Project version
     """
     if project_path is None:
-        project_path = get_project_root()
-
-    project_path = Path(project_path)
+        project_root = get_project_root()
+    else:
+        project_root = Path(project_path)
 
     # Try VERSION file
-    version_file = project_path / "VERSION"
+    version_file = project_root / "VERSION"
     if version_file.exists():
         return version_file.read_text().strip()
 
     # Try pyproject.toml
-    pyproject_file = project_path / "pyproject.toml"
+    pyproject_file = project_root / "pyproject.toml"
     if pyproject_file.exists():
         try:
-            import toml
+            import toml  # type: ignore
 
             config = toml.load(pyproject_file)
             return config.get("project", {}).get("version", "0.1.0")
@@ -239,7 +236,7 @@ def get_version(project_path: str = None) -> str:
     return "0.1.0"
 
 
-def detect_hidden_imports(project_path: str = None) -> List[str]:
+def detect_hidden_imports(project_path: Optional[str] = None) -> List[str]:
     """Detect hidden imports in the project.
 
     Parameters
@@ -253,9 +250,10 @@ def detect_hidden_imports(project_path: str = None) -> List[str]:
         List of hidden imports
     """
     if project_path is None:
-        project_path = get_project_root()
+        project_root = get_project_root()
+    else:
+        project_root = Path(project_path)
 
-    project_path = Path(project_path)
     hidden_imports = []
 
     # Common hidden imports for scientific packages
@@ -273,7 +271,7 @@ def detect_hidden_imports(project_path: str = None) -> List[str]:
     ]
 
     # Check if these packages are used
-    python_files = list(project_path.rglob("*.py"))
+    python_files = list(project_root.rglob("*.py"))
 
     for py_file in python_files:
         try:

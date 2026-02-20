@@ -5,7 +5,7 @@ Implements the primary falsification test for the APGI Framework, testing whethe
 full ignition signatures can occur without consciousness.
 """
 
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 from dataclasses import dataclass
 import numpy as np
 from datetime import datetime
@@ -490,7 +490,7 @@ class PrimaryFalsificationTest:
             trial_results=trial_results,
             total_falsifying_trials=total_falsifying,
             falsification_rate=falsification_rate,
-            mean_confidence=mean_confidence,
+            mean_confidence=float(mean_confidence),
             p_value=p_value,
             effect_size=effect_size,
             statistical_power=statistical_power,
@@ -589,7 +589,6 @@ class PrimaryFalsificationTest:
         # Extract parameters with defaults
         n_trials = parameters.get("n_trials", 100)
         n_participants = parameters.get("n_participants", 20)
-        confidence_threshold = parameters.get("confidence_threshold", 0.7)
 
         logger.info(
             f"Starting Primary Falsification Test: {n_trials} trials, {n_participants} participants"
@@ -607,7 +606,6 @@ class PrimaryFalsificationTest:
                 trial_result = self._run_single_trial(
                     trial_id=f"{test_id}_trial_{trial_idx:03d}",
                     participant_id=participant_id,
-                    confidence_threshold=confidence_threshold,
                 )
                 trial_results.append(trial_result)
 

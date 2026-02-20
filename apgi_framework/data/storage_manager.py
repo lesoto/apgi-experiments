@@ -652,14 +652,14 @@ class StorageManager:
                         validation_summary["valid_datasets"] += 1
                     else:
                         validation_summary["invalid_datasets"] += 1
-                        validation_summary["validation_errors"][exp_id] = (
-                            validation_result["errors"]
-                        )
+                        validation_summary["validation_errors"][
+                            exp_id
+                        ] = validation_result["errors"]
 
                     if validation_result["warnings"]:
-                        validation_summary["validation_warnings"][exp_id] = (
-                            validation_result["warnings"]
-                        )
+                        validation_summary["validation_warnings"][
+                            exp_id
+                        ] = validation_result["warnings"]
 
                     total_quality += validation_result["quality_score"]
 

@@ -1,10 +1,10 @@
 """
-Simple test for utility modules - direct execution without pytest discovery issues.
+Simple test for utility modules - direct execution without pytest discovery
+issues.
 """
 
 import sys
 import tempfile
-import shutil
 from pathlib import Path
 
 # Add project root to path

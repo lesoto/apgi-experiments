@@ -63,7 +63,9 @@ class ExampleDataLoader:
         """Load example data for a specific modality and subject.
 
         Args:
-            modality: Type of data to load ('eeg', 'pupillometry', 'cardiac', 'behavioral').
+            modality: Type of data to load (
+                'eeg', 'pupillometry', 'cardiac', 'behavioral'
+            ).
             subject_id: Subject identifier.
 
         Returns:
@@ -71,12 +73,14 @@ class ExampleDataLoader:
         """
         if modality not in self.available_modalities:
             raise ValueError(
-                f"Unknown modality: {modality}. Available: {self.available_modalities}"
+                f"Unknown modality: {modality}. "
+                f"Available: {self.available_modalities}"
             )
 
         if subject_id not in self.available_subjects:
             raise ValueError(
-                f"Unknown subject: {subject_id}. Available: {self.available_subjects}"
+                f"Unknown subject: {subject_id}. "
+                f"Available: {self.available_subjects}"
             )
 
         # Construct file paths
@@ -112,7 +116,8 @@ class ExampleDataLoader:
             modality: Type of data to load.
 
         Returns:
-            Dictionary with subject IDs as keys and data dictionaries as values.
+            Dictionary with subject IDs as keys and
+            data dictionaries as values.
         """
         all_data = {}
 
@@ -157,7 +162,9 @@ class ExampleDataLoader:
             summary.update(
                 {
                     "sampling_rate": metadata.get("sampling_rate"),
-                    "duration_seconds": len(data) / metadata.get("sampling_rate", 1000),
+                    "duration_seconds": (
+                        len(data) / metadata.get("sampling_rate", 1000)
+                    ),
                     "channels": [
                         col for col in data.columns if col.startswith("channel_")
                     ],
@@ -167,7 +174,9 @@ class ExampleDataLoader:
             summary.update(
                 {
                     "sampling_rate": metadata.get("sampling_rate"),
-                    "duration_seconds": len(data) / metadata.get("sampling_rate", 250),
+                    "duration_seconds": (
+                        len(data) / metadata.get("sampling_rate", 250)
+                    ),
                     "pupil_columns": [col for col in data.columns if "pupil" in col],
                 }
             )
@@ -175,7 +184,7 @@ class ExampleDataLoader:
             summary.update(
                 {
                     "sampling_rate": metadata.get("sampling_rate"),
-                    "duration_seconds": len(data) / metadata.get("sampling_rate", 4),
+                    "duration_seconds": (len(data) / metadata.get("sampling_rate", 4)),
                     "heart_rate_range": [
                         data["heart_rate"].min(),
                         data["heart_rate"].max(),

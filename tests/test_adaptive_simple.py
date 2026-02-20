@@ -3,7 +3,6 @@ Simplified tests for adaptive module components that focus on existing functiona
 """
 
 import pytest
-import numpy as np
 from datetime import datetime
 
 from apgi_framework.adaptive.quest_plus_staircase import (

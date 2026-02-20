@@ -285,7 +285,6 @@ class TestWorkflowOrchestrator:
                                 with mock.patch.object(
                                     self.orchestrator, "_run_cleanup"
                                 ) as mock_cleanup:
-
                                     mock_init.return_value = {"status": "completed"}
                                     mock_validation.return_value = {
                                         "status": "completed"
@@ -321,7 +320,6 @@ class TestWorkflowOrchestrator:
                             self.orchestrator, "_run_report_generation"
                         ):
                             with mock.patch.object(self.orchestrator, "_run_cleanup"):
-
                                 result = self.orchestrator.run_parallel_workflow()
 
                                 assert isinstance(result, WorkflowResult)

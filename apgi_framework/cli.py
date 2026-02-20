@@ -13,6 +13,13 @@ from pathlib import Path
 from typing import Dict, Any, Optional, List
 from datetime import datetime
 
+from apgi_framework.main_controller import MainApplicationController
+from apgi_framework.testing.batch_runner import BatchTestRunner
+from apgi_framework.testing.persistence import (
+    TestResultPersistence,
+    store_test_results,
+)
+
 
 def validate_trials_range(value):
     """Validate trials argument is within documented range (100-10000)."""
@@ -163,19 +170,6 @@ def validate_gain_range(value):
         raise argparse.ArgumentTypeError(f"Invalid float value for gain: {value}")
 
 
-from .main_controller import MainApplicationController
-from .config import ConfigManager, APGIParameters, ExperimentalConfig
-from .exceptions import APGIFrameworkError, ConfigurationError
-from .testing.batch_runner import BatchTestRunner, run_failed_tests
-from .testing.persistence import TestResultPersistence, store_test_results
-from .testing.test_generator import (
-    SuiteGenerator,
-    analyze_test_coverage,
-    generate_missing_tests,
-    create_coverage_report,
-)
-
-
 class APGIFrameworkCLI:
     """Command-line interface for the APGI Framework Testing System."""
 
@@ -187,10 +181,10 @@ class APGIFrameworkCLI:
     def setup_logging(self, log_level: str = "INFO") -> None:
         """Setup logging for CLI operations."""
         try:
-            from .logging.centralized_logging import APGILogManager
+            from apgi_framework.logging.centralized_logging import APGILogManager
         except ImportError:
             # Fallback to standardized logging if centralized logging is not available
-            from .logging.standardized_logging import get_logger
+            from apgi_framework.logging.standardized_logging import get_logger
 
             self.logger = get_logger(__name__)
             return
@@ -603,7 +597,7 @@ Examples:
         )
 
         # Status command
-        status_parser = subparsers.add_parser("status", help="Show system status")
+        subparsers.add_parser("status", help="Show system status")
 
         # Parameter override commands
         param_parser = subparsers.add_parser("set-params", help="Set APGI parameters")
@@ -943,7 +937,7 @@ Examples:
                     return
 
                 print(f"\nPerformance Trends (Last {args.days} days):")
-                print(f"{'='*80}")
+                print(f"{'=' * 80}")
                 for trend in trends:
                     print(f"\nTest: {trend['test_name']}")
                     print(f"  Success Rate: {trend['success_rate']:.1%}")
@@ -965,7 +959,7 @@ Examples:
                     return
 
                 print(f"\nFailure Pattern Analysis (Last {args.days} days):")
-                print(f"{'='*80}")
+                print(f"{'=' * 80}")
 
                 if patterns.get("failed_tests"):
                     print("\nMost Frequently Failing Tests:")
@@ -1008,7 +1002,6 @@ Examples:
 
         try:
             from .utils.test_utils import TestUtilities
-            from .testing.batch_runner import BatchTestRunner
             from .testing.persistence import store_test_results
 
             # Initialize test utilities
@@ -1137,7 +1130,7 @@ Examples:
                 test_suites = test_utils.discover_all_tests()
 
                 print(f"\nDiscovered {len(test_suites)} test suites:")
-                print(f"{'='*60}")
+                print(f"{'=' * 60}")
 
                 total_tests = 0
                 for suite in test_suites:
@@ -1159,7 +1152,7 @@ Examples:
                     print()
 
                 print(f"Total Tests: {total_tests}")
-                print(f"{'='*60}\n")
+                print(f"{'=' * 60}\n")
 
             elif args.list_categories:
                 test_suites = test_utils.discover_all_tests()
@@ -1172,11 +1165,11 @@ Examples:
                         categories.add(cat)
                         category_counts[cat] = category_counts.get(cat, 0) + 1
 
-                print(f"\nAvailable Test Categories:")
-                print(f"{'='*40}")
+                print("\nAvailable Test Categories:")
+                print(f"{'=' * 40}")
                 for category in sorted(categories):
                     print(f"  {category}: {category_counts[category]} tests")
-                print(f"{'='*40}\n")
+                print(f"{'=' * 40}\n")
 
             elif args.list_modules:
                 test_suites = test_utils.discover_all_tests()
@@ -1190,11 +1183,11 @@ Examples:
                         suite.test_cases
                     )
 
-                print(f"\nAvailable Test Modules:")
-                print(f"{'='*40}")
+                print("\nAvailable Test Modules:")
+                print(f"{'=' * 40}")
                 for module in sorted(modules):
                     print(f"  {module}: {module_counts[module]} tests")
-                print(f"{'='*40}\n")
+                print(f"{'=' * 40}\n")
 
             elif args.list_tags:
                 test_suites = test_utils.discover_all_tests()
@@ -1207,11 +1200,11 @@ Examples:
                             all_tags.add(tag)
                             tag_counts[tag] = tag_counts.get(tag, 0) + 1
 
-                print(f"\nAvailable Test Tags:")
-                print(f"{'='*40}")
+                print("\nAvailable Test Tags:")
+                print(f"{'=' * 40}")
                 for tag in sorted(all_tags):
                     print(f"  {tag}: {tag_counts[tag]} tests")
-                print(f"{'='*40}\n")
+                print(f"{'=' * 40}\n")
 
             elif args.export_tree:
                 test_suites = test_utils.discover_all_tests()
@@ -2066,7 +2059,7 @@ Examples:
         }
 
         # Group by modules
-        modules = {}
+        modules: Dict[str, List[Any]] = {}
         for suite in test_suites:
             module = self._extract_module_from_suite(suite)
             if module not in modules:
@@ -2139,7 +2132,7 @@ Examples:
         # Redirect to enhanced coverage management
         self.manage_enhanced_coverage(args)
 
-    def run(self, args: List[str] = None) -> None:
+    def run(self, args: Optional[List[str]] = None) -> None:
         """Main entry point for the CLI."""
         parser = self.create_parser()
         parsed_args = parser.parse_args(args)
@@ -2214,6 +2207,81 @@ Examples:
                     self.controller.shutdown_system()
                 except Exception as e:
                     self.logger.warning(f"Error during cleanup: {e}")
+
+
+def run_failed_tests(result_file: str, parallel: bool = True) -> Any:
+    """
+    Re-run failed tests from a previous test result file.
+
+    Args:
+        result_file: Path to the JSON result file
+        parallel: Whether to run tests in parallel
+
+    Returns:
+        Test execution summary
+    """
+    try:
+        # Load the result file
+        results_path = Path("test_results") / result_file
+        if not results_path.exists():
+            results_path = Path(result_file)
+
+        if not results_path.exists():
+            raise FileNotFoundError(f"Result file not found: {result_file}")
+
+        with open(results_path, "r") as f:
+            data = json.load(f)
+
+        # Extract failed tests
+        failed_tests = []
+        if "test_results" in data:
+            for result in data["test_results"]:
+                if result.get("status") in ["failed", "error"]:
+                    failed_tests.append(result.get("test_name"))
+
+        if not failed_tests:
+            print("No failed tests found in result file")
+            return None
+
+        print(f"Found {len(failed_tests)} failed tests to re-run")
+
+        # Run the failed tests using pytest
+        import subprocess
+        import sys
+
+        cmd = [sys.executable, "-m", "pytest"]
+        cmd.extend(failed_tests)
+
+        if parallel:
+            cmd.extend(["-n", "auto"])  # Use pytest-xdist for parallel execution
+
+        cmd.extend(
+            [
+                "--tb=short",
+                "--verbose",
+                "--json-report",
+                "--json-report-file=re_run_results.json",
+            ]
+        )
+
+        result = subprocess.run(cmd, capture_output=True, text=True)
+
+        # Parse results
+        results_file = Path("re_run_results.json")
+        if results_file.exists():
+            with open(results_file, "r") as f:
+                summary_data = json.load(f)
+
+            # Clean up
+            results_file.unlink()
+
+            return summary_data.get("summary", {})
+
+        return {"error": "Failed to parse re-run results"}
+
+    except Exception as e:
+        print(f"Error re-running failed tests: {e}")
+        return {"error": str(e)}
 
 
 def main():

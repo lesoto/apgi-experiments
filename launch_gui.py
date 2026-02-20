@@ -2,19 +2,17 @@
 """
 Comprehensive GUI Launcher for APGI Framework
 
-This script provides a centralized launcher to access all GUI applications and tools
+This script provides a centralized launcher to access all GUI applications
+and tools
 in the APGI Framework, organized by category for easy navigation.
 """
 
 import sys
-import os
 from pathlib import Path
 import tkinter as tk
-from tkinter import ttk, messagebox, font
-import importlib.util
+from tkinter import ttk, messagebox
 import subprocess
 import threading
-import webbrowser
 
 
 # Configuration constants
@@ -194,7 +192,9 @@ class ComprehensiveGUILauncher:
         )
 
         self.style.configure(
-            "Status.TLabel", font=("Helvetica", 9, "bold"), background="#ffffff"
+            "Status.TLabel",
+            font=("Helvetica", 9, "bold"),
+            background="#ffffff",
         )
 
     def check_app_availability(self):

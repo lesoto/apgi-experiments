@@ -8,11 +8,10 @@ for multimodal physiological data.
 """
 
 import json
-import warnings
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Union
 
 import numpy as np
 import pandas as pd
@@ -135,13 +134,6 @@ class DataValidator:
     def _validate_csv_structure(self, df: pd.DataFrame, results: Dict) -> bool:
         """Validate CSV DataFrame structure."""
         required_columns = ["timestamp", "eeg_fz", "pupil_diameter", "eda"]
-        optional_columns = [
-            "eeg_pz",
-            "heart_rate",
-            "event_marker",
-            "subject_id",
-            "session_id",
-        ]
 
         # Check required columns
         missing_columns = [col for col in required_columns if col not in df.columns]
@@ -325,9 +317,9 @@ class DataValidator:
             )
 
         if "pupil_diameter" in df.columns:
-            quality_metrics["signal_quality"]["pupil_diameter"] = (
-                self._assess_signal_quality(df["pupil_diameter"])
-            )
+            quality_metrics["signal_quality"][
+                "pupil_diameter"
+            ] = self._assess_signal_quality(df["pupil_diameter"])
 
         if "eda" in df.columns:
             quality_metrics["signal_quality"]["eda"] = self._assess_signal_quality(

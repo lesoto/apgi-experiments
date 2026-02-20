@@ -453,9 +453,10 @@ class AIACCValidator:
             activations
         )
         coherence_low, coherence_details = self.validate_gamma_coherence_low(coherences)
-        connectivity_disrupted, connectivity_details = (
-            self.validate_effective_connectivity_disruption(connectivities)
-        )
+        (
+            connectivity_disrupted,
+            connectivity_details,
+        ) = self.validate_effective_connectivity_disruption(connectivities)
 
         # Overall AI/ACC engagement is absent if all criteria are met
         engagement_absent = (

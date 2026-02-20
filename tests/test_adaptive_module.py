@@ -3,8 +3,6 @@ Tests for adaptive module components.
 """
 
 import pytest
-import numpy as np
-from unittest.mock import Mock, patch
 from datetime import datetime
 
 from apgi_framework.adaptive.quest_plus_staircase import (
@@ -18,7 +16,6 @@ from apgi_framework.adaptive.stimulus_generators import (
     GaborParameters,
     ToneParameters,
     CO2PuffParameters,
-    StimulusGenerator,
     GaborPatchGenerator,
     ToneGenerator,
 )
@@ -156,7 +153,7 @@ class TestQuestPlusStaircase:
         assert staircase.state.trial_number == 1
         assert len(staircase.state.intensities) == 1
         assert len(staircase.state.responses) == 1
-        assert staircase.state.responses[0] == True
+        assert staircase.state.responses[0] is True
         assert staircase.state.intensities[0] == intensity
 
     def test_convergence_checking(self):

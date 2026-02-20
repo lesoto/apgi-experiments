@@ -928,7 +928,8 @@ class TestAPGITestExecution:
         tests_dir.mkdir()
 
         # Core module tests
-        (tests_dir / "test_apgi_core.py").write_text("""
+        (tests_dir / "test_apgi_core.py").write_text(
+            """
 import pytest
 import numpy as np
 
@@ -967,10 +968,12 @@ def test_threshold_detection():
     assert isinstance(conscious_states, np.ndarray)
     assert conscious_states.dtype == bool
     assert np.sum(conscious_states) >= 0  # At least 0 conscious states
-""")
+"""
+        )
 
         # Neural processing tests
-        (tests_dir / "test_neural_processing.py").write_text("""
+        (tests_dir / "test_neural_processing.py").write_text(
+            """
 import pytest
 import numpy as np
 
@@ -1034,10 +1037,12 @@ def test_physiological_monitoring():
     assert 60 <= mean_hr <= 100  # Typical resting HR range
     assert hr_std > 0  # Should have some variability
     assert len(heart_rate) == num_samples
-""")
+"""
+        )
 
         # Integration tests
-        (tests_dir / "test_apgi_integration.py").write_text("""
+        (tests_dir / "test_apgi_integration.py").write_text(
+            """
 import pytest
 import numpy as np
 
@@ -1148,7 +1153,8 @@ def test_apgi_parameter_estimation():
     
     assert len(trial_outcomes) == num_trials
     assert all('surprise' in trial for trial in trial_outcomes)
-""")
+"""
+        )
 
     def test_apgi_test_execution(self):
         """Test execution of APGI-style tests."""
@@ -1200,7 +1206,8 @@ def test_apgi_parameter_estimation():
         tests_dir = self.test_project_dir / "tests"
         error_test_file = tests_dir / "test_apgi_errors.py"
 
-        error_test_file.write_text("""
+        error_test_file.write_text(
+            """
 import pytest
 import numpy as np
 
@@ -1219,7 +1226,8 @@ def test_apgi_calculation_error():
     data = np.array([1, 2, 3])
     result = np.mean(data) / 0  # Division by zero
     assert result > 0
-""")
+"""
+        )
 
         original_cwd = Path.cwd()
         try:

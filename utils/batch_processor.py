@@ -9,18 +9,17 @@ validation protocols, and analyses in parallel with progress tracking.
 
 import importlib.util
 import json
-import os
 import pickle
 import sys
 import time
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
+from tqdm import tqdm  # type: ignore
 
 # Add project root to Python path
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -56,10 +55,8 @@ except (FileNotFoundError, ImportError, AttributeError) as e:
 
 
 try:
-    from .config_manager import get_config
-    from .logging_config import apgi_logger
+    from .logging_config import apgi_logger  # type: ignore
 except ImportError:
-    from utils.config_manager import get_config
     from utils.logging_config import apgi_logger
 
 
@@ -283,7 +280,6 @@ class BatchProcessor:
         """Run an analysis job."""
         analysis_type = job.parameters["analysis_type"]
         input_file = job.parameters["input_file"]
-        parameters = job.parameters["parameters"]
 
         # Load data
         if not Path(input_file).exists():
@@ -462,7 +458,7 @@ class BatchProcessor:
         }
 
         # Print summary
-        print(f"\nBatch processing complete:")
+        print("\nBatch processing complete:")
         print(f"  Total jobs: {self.results['total_jobs']}")
         print(f"  Completed: {self.results['completed']}")
         print(f"  Failed: {self.results['failed']}")
@@ -555,7 +551,7 @@ def main():
         )
 
     # Run batch
-    results = processor.run_batch(show_progress=True)
+    processor.run_batch(show_progress=True)
 
     # Save report
     processor.save_batch_report("results/batch_report.json")

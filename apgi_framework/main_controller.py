@@ -295,17 +295,17 @@ class MainApplicationController:
 
         try:
             # Validate mathematical engine
-            validation_results["mathematical_engine"] = (
-                self._validate_mathematical_engine()
-            )
+            validation_results[
+                "mathematical_engine"
+            ] = self._validate_mathematical_engine()
 
             # Validate neural simulators
             validation_results["neural_simulators"] = self._validate_neural_simulators()
 
             # Validate falsification tests
-            validation_results["falsification_tests"] = (
-                self._validate_falsification_tests()
-            )
+            validation_results[
+                "falsification_tests"
+            ] = self._validate_falsification_tests()
 
             # Validate data manager
             validation_results["data_manager"] = self._validate_data_manager()
@@ -349,16 +349,17 @@ class MainApplicationController:
             )
 
             # Test integrated calculation
-            integrated_surprise, integrated_probability = (
-                equation.calculate_integrated_ignition_probability(
-                    raw_extero_error=1.0,
-                    raw_intero_error=0.8,
-                    extero_variance=0.5,
-                    intero_variance=0.7,
-                    arousal=1.2,
-                    valence=0.1,
-                    stakes=1.5,
-                )
+            (
+                integrated_surprise,
+                integrated_probability,
+            ) = equation.calculate_integrated_ignition_probability(
+                raw_extero_error=1.0,
+                raw_intero_error=0.8,
+                extero_variance=0.5,
+                intero_variance=0.7,
+                arousal=1.2,
+                valence=0.1,
+                stakes=1.5,
             )
 
             # Validate results are in expected ranges

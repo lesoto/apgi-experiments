@@ -5,7 +5,6 @@ This module contains experimental paradigms for core consciousness mechanisms.
 """
 
 from typing import Dict, Any, List
-import numpy as np
 
 
 class CoreMechanismExperiment:
@@ -13,7 +12,7 @@ class CoreMechanismExperiment:
 
     def __init__(self, name: str):
         self.name = name
-        self.parameters = {}
+        self.parameters: Dict[str, Any] = {}
 
     def run(self, **kwargs) -> Dict[str, Any]:
         """Run the experiment."""

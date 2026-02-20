@@ -12,13 +12,19 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 from datetime import datetime
 import logging
 from pathlib import Path
 
-from ..core.equation import APGIEquation
-from ..utils.progress_monitor import ProgressMonitor
+# Optional seaborn import
+try:
+    import seaborn as sns
+
+    HAS_SEABORN = True
+except ImportError:
+    HAS_SEABORN = False
+    sns = None
+
 from ..exceptions import AnalysisError, ValidationError
 
 logger = logging.getLogger(__name__)
@@ -129,8 +135,8 @@ class AnalysisEngine:
             )
 
             # Generate visualizations
-            plots = {}
-            figure_data = {}
+            plots: Dict[str, str] = {}
+            figure_data: Dict[str, Any] = {}
             if generate_plots:
                 plots, figure_data = self._generate_visualizations(
                     data, analysis_type, stats, analysis_id
@@ -234,7 +240,12 @@ class AnalysisEngine:
 
     def _comparative_analysis(
         self, data: pd.DataFrame, params: Dict[str, Any]
-    ) -> Tuple[Dict, Dict, Dict, Dict]:
+    ) -> Tuple[
+        Dict[str, Any],
+        Dict[str, float],
+        Dict[str, float],
+        Dict[str, Tuple[float, float]],
+    ]:
         """Perform comparative analysis (t-tests, ANOVA)."""
         from scipy import stats as scipy_stats
 
@@ -242,10 +253,10 @@ class AnalysisEngine:
         group_cols = [col for col in data.columns if col.endswith("_group")]
         numeric_cols = data.select_dtypes(include=[np.number]).columns
 
-        stats = {}
-        p_values = {}
-        effect_sizes = {}
-        conf_intervals = {}
+        stats: Dict[str, Any] = {}
+        p_values: Dict[str, float] = {}
+        effect_sizes: Dict[str, float] = {}
+        conf_intervals: Dict[str, Tuple[float, float]] = {}
 
         for group_col in group_cols:
             groups = data[group_col].unique()
@@ -340,7 +351,12 @@ class AnalysisEngine:
 
     def _regression_analysis(
         self, data: pd.DataFrame, params: Dict[str, Any]
-    ) -> Tuple[Dict, Dict, Dict, Dict]:
+    ) -> Tuple[
+        Dict[str, Any],
+        Dict[str, float],
+        Dict[str, float],
+        Dict[str, Tuple[float, float]],
+    ]:
         """Perform regression analysis."""
         from sklearn.linear_model import LinearRegression
         from sklearn.metrics import r2_score, mean_squared_error
@@ -348,10 +364,10 @@ class AnalysisEngine:
         numeric_data = data.select_dtypes(include=[np.number]).dropna()
         numeric_cols = numeric_data.columns
 
-        stats = {}
-        p_values = {}
-        effect_sizes = {}
-        conf_intervals = {}
+        stats: Dict[str, Any] = {}
+        p_values: Dict[str, float] = {}
+        effect_sizes: Dict[str, float] = {}
+        conf_intervals: Dict[str, Tuple[float, float]] = {}
 
         # Simple linear regression for each pair
         for i, col1 in enumerate(numeric_cols):
@@ -380,14 +396,19 @@ class AnalysisEngine:
 
     def _time_series_analysis(
         self, data: pd.DataFrame, params: Dict[str, Any]
-    ) -> Tuple[Dict, Dict, Dict, Dict]:
+    ) -> Tuple[
+        Dict[str, Any],
+        Dict[str, float],
+        Dict[str, float],
+        Dict[str, Tuple[float, float]],
+    ]:
         """Perform time series analysis."""
         numeric_data = data.select_dtypes(include=[np.number]).dropna()
 
-        stats = {}
-        p_values = {}
-        effect_sizes = {}
-        conf_intervals = {}
+        stats: Dict[str, Any] = {}
+        p_values: Dict[str, float] = {}
+        effect_sizes: Dict[str, float] = {}
+        conf_intervals: Dict[str, Tuple[float, float]] = {}
 
         for col in numeric_data.columns:
             series = numeric_data[col]

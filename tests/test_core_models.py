@@ -176,9 +176,13 @@ class TestPredictiveIgnitionNetwork:
         sensory_input = np.random.randn(10) * 0.1
         somatic_gain = 1.0
 
-        predictions, errors, weighted_errors, ignited, ignition_prob = (
-            network.forward_pass(sensory_input, somatic_gain)
-        )
+        (
+            predictions,
+            errors,
+            weighted_errors,
+            ignited,
+            ignition_prob,
+        ) = network.forward_pass(sensory_input, somatic_gain)
 
         # Check outputs
         assert len(predictions) == 10
@@ -203,9 +207,13 @@ class TestPredictiveIgnitionNetwork:
         sensory_input = np.random.randn(10) * 2.0
         somatic_gain = 2.0
 
-        predictions, errors, weighted_errors, ignited, ignition_prob = (
-            network.forward_pass(sensory_input, somatic_gain)
-        )
+        (
+            predictions,
+            errors,
+            weighted_errors,
+            ignited,
+            ignition_prob,
+        ) = network.forward_pass(sensory_input, somatic_gain)
 
         # Should ignite with high surprise
         assert ignited is True

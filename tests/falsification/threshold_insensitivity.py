@@ -6,7 +6,7 @@ challenges. Tests whether the ignition threshold θₜ remains unchanged despite
 manipulations that should modulate it according to the APGI Framework.
 """
 
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 from enum import Enum
 import numpy as np
@@ -15,7 +15,7 @@ from datetime import datetime
 from apgi_framework.core.equation import APGIEquation
 from apgi_framework.core.threshold import ThresholdManager
 from apgi_framework.exceptions import ValidationError, SimulationError
-from .error_handling_wrapper import with_error_handling, log_test_execution
+from .error_handling_wrapper import with_error_handling
 import logging
 
 logger = logging.getLogger(__name__)
@@ -157,7 +157,6 @@ class ThresholdInsensitivityTest:
             ValidationError: If parameters are invalid
             SimulationError: If simulation fails
         """
-        start_time = datetime.now()
 
         try:
             # Validate parameters
@@ -220,18 +219,12 @@ class ThresholdInsensitivityTest:
                 drug_conditions,
             )
 
-            end_time = datetime.now()
-            log_test_execution(
-                "Threshold Insensitivity Test", start_time, end_time, True
-            )
+            logger.info("Threshold Insensitivity Test completed successfully")
 
             return result
 
         except Exception as e:
-            end_time = datetime.now()
-            log_test_execution(
-                "Threshold Insensitivity Test", start_time, end_time, False, e
-            )
+            logger.error(f"Threshold Insensitivity Test failed: {e}")
             raise
 
     def _run_single_trial(
@@ -620,7 +613,7 @@ class ThresholdInsensitivityTest:
             drug_sensitivity_results=drug_sensitivity_results,
             total_insensitive_trials=total_insensitive,
             insensitivity_rate=insensitivity_rate,
-            mean_confidence=mean_confidence,
+            mean_confidence=float(mean_confidence),
             p_value=p_value,
             effect_size=effect_size,
             statistical_power=statistical_power,
@@ -743,7 +736,6 @@ class ThresholdInsensitivityTest:
         # Extract parameters with defaults
         n_trials = parameters.get("n_trials", 150)
         n_participants = parameters.get("n_participants", 25)
-        confidence_threshold = parameters.get("confidence_threshold", 0.75)
         drug_conditions = parameters.get(
             "drug_conditions",
             [
@@ -774,7 +766,6 @@ class ThresholdInsensitivityTest:
                     trial_id=f"{test_id}_trial_{trial_idx:03d}",
                     participant_id=participant_id,
                     drug_type=drug_condition,
-                    confidence_threshold=confidence_threshold,
                 )
                 trial_results.append(trial_result)
 

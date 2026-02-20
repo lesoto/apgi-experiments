@@ -16,14 +16,12 @@ import sys
 from pathlib import Path
 import json
 from datetime import datetime
-import numpy as np
+import logging
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from apgi_framework.main_controller import MainApplicationController
-from apgi_framework.config import ConfigManager
-import logging
 
 # Setup logging with standardized system
 try:
@@ -36,7 +34,7 @@ except ImportError:
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)  # type: ignore
 
 
 def batch_process_threshold_variations():
@@ -72,7 +70,7 @@ def batch_process_threshold_variations():
 
             # Update output directory for this run
             controller.config_manager.update_experimental_config(
-                output_directory=f"results/batch_threshold/threshold_{threshold}",
+                output_directory=(f"results/batch_threshold/threshold_{threshold}"),
                 n_trials=500,  # Fewer trials for batch processing
                 random_seed=42,
             )
@@ -111,13 +109,15 @@ def batch_process_threshold_variations():
 
         logger.info("\nDetailed Results:")
         logger.info(
-            f"{'Threshold':<12} {'Falsified':<12} {'Confidence':<12} {'P-value':<12}"
+            f"{'Threshold':<12} {'Falsified':<12} "
+            f"{'Confidence':<12} {'P-value':<12}"
         )
         logger.info("-" * 60)
         for r in results:
             falsified_str = "YES" if r["is_falsified"] else "NO"
             logger.info(
-                f"{r['threshold']:<12.1f} {falsified_str:<12} {r['confidence']:<12.3f} {r['p_value']:<12.6f}"
+                f"{r['threshold']:<12.1f} {falsified_str:<12} "
+                f"{r['confidence']:<12.3f} {r['p_value']:<12.6f}"
             )
 
         logger.info("=" * 60 + "\n")
@@ -167,7 +167,10 @@ def batch_process_precision_combinations():
 
                 # Update output directory
                 controller.config_manager.update_experimental_config(
-                    output_directory=f"results/batch_precision/extero_{extero_p}_intero_{intero_p}",
+                    output_directory=(
+                        f"results/batch_precision/"
+                        f"extero_{extero_p}_intero_{intero_p}"
+                    ),
                     n_trials=500,
                     random_seed=42,
                 )
@@ -205,15 +208,14 @@ def batch_process_precision_combinations():
         logger.info(f"Combinations falsified: {falsified_count}/{len(results)}")
 
         logger.info("\nDetailed Results:")
-        logger.info(
-            f"{'Extero':<10} {'Intero':<10} {'Ratio':<10} {'Falsified':<12} {'Confidence':<12}"
-        )
+        logger.info("Extero    Intero    Ratio    Falsified    Confidence")
         logger.info("-" * 60)
         for r in results:
             falsified_str = "YES" if r["is_falsified"] else "NO"
             logger.info(
                 f"{r['extero_precision']:<10.1f} {r['intero_precision']:<10.1f} "
-                f"{r['precision_ratio']:<10.2f} {falsified_str:<12} {r['confidence']:<12.3f}"
+                f"{r['precision_ratio']:<10.2f} {falsified_str:<12} "
+                f"{r['confidence']:<12.3f}"
             )
 
         logger.info("=" * 60 + "\n")
@@ -389,14 +391,6 @@ def save_batch_results(results, batch_name):
     logger.info(f"\nBatch results saved to: {filename}")
 
 
-def run_somatic_marker_priming_experiment(**kwargs):
-    """
-    Wrapper function for somatic_marker_priming experiment.
-    Maps to batch processing threshold variations.
-    """
-    return batch_process_threshold_variations()
-
-
 def run_probabilistic_category_learning_experiment(**kwargs):
     """Wrapper for probabilistic_category_learning experiment."""
     return batch_process_threshold_variations()
@@ -418,24 +412,6 @@ def run_masking_experiment(**kwargs):
 
 def run_sternberg_memory_experiment(**kwargs):
     """Wrapper for sternberg_memory experiment."""
-    # Use reduced parameters for GUI testing
-    n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 50))
-    if n_trials < 100:  # Quick mode for GUI
-        return run_quick_batch_test(n_trials)
-    return batch_process_threshold_variations()
-
-
-def run_posner_cueing_experiment(**kwargs):
-    """Wrapper for posner_cueing experiment."""
-    # Use reduced parameters for GUI testing
-    n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 50))
-    if n_trials < 100:  # Quick mode for GUI
-        return run_quick_batch_test(n_trials)
-    return batch_process_threshold_variations()
-
-
-def run_probabilistic_category_learning_experiment(**kwargs):
-    """Wrapper for probabilistic_category_learning experiment."""
     # Use reduced parameters for GUI testing
     n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 50))
     if n_trials < 100:  # Quick mode for GUI

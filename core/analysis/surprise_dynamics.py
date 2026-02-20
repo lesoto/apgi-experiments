@@ -10,7 +10,8 @@ pi_e = 1.0  # fixed extero precision
 pi_i = np.abs(
     np.random.normal(1, 0.5, steps)
 )  # intero precision with somatic bias variation
-theta_t = 1.5 + np.cumsum(np.random.normal(0, 0.1, steps)) * 0.2  # dynamic threshold
+theta_t = 1.5 + np.cumsum(np.random.normal(0, 0.1, steps)) * 0.2
+# dynamic threshold
 S_t = pi_e * np.abs(epsilon_e) + pi_i * np.abs(epsilon_i)  # total surprise
 ignitions = S_t > theta_t  # ignition events
 

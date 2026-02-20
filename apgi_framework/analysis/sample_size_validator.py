@@ -8,13 +8,10 @@ soma-bias testing (n > 100).
 """
 
 import numpy as np
-import scipy.stats as stats
-from scipy.stats import norm, t, chi2, f
 from typing import Dict, List, Tuple, Optional, Any, Union
 from dataclasses import dataclass, field
 from enum import Enum
-import warnings
-from .replication_tracker import PowerAnalyzer, PowerAnalysisResult
+from .replication_tracker import PowerAnalyzer
 
 
 class ValidationStatus(Enum):
@@ -74,7 +71,7 @@ class PowerReport:
     overall_adequacy: bool
     critical_issues: List[str]
     recommendations: List[str]
-    power_summary: Dict[str, float]
+    power_summary: Dict[str, Union[float, int]]
 
 
 class SampleSizeValidator:
@@ -214,9 +211,6 @@ class SampleSizeValidator:
             ValidationResult with validation details
         """
         requirement = self.requirements[TestRequirement.NEURAL_SIGNATURE_MINIMUM]
-
-        # Effective sample size considers both participants and trials
-        effective_n = n_participants * np.sqrt(n_trials_per_participant)
 
         # Check minimum requirement
         meets_minimum = n_participants >= requirement.minimum_n

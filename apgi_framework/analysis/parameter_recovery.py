@@ -7,10 +7,10 @@ known ground-truth parameters.
 """
 
 import numpy as np
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 import matplotlib.pyplot as plt
-from scipy import stats
+from scipy import stats  # type: ignore
 import pandas as pd
 
 from ..logging.standardized_logging import get_logger
@@ -309,7 +309,7 @@ class SyntheticDataGenerator:
             )
 
             datasets.append((ground_truth, detection, heartbeat, oddball))
-            progress.update(message=f"Dataset {i+1}/{n_datasets}")
+            progress.update(message=f"Dataset {i + 1}/{n_datasets}")
 
         progress.complete()
         return datasets

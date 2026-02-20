@@ -27,7 +27,8 @@ def create_sample_module():
     sample_file = os.path.join(temp_dir, "sample_module.py")
 
     with open(sample_file, "w") as f:
-        f.write("""
+        f.write(
+            """
 def calculate_area(length, width):
     '''Calculate the area of a rectangle.'''
     if length <= 0 or width <= 0:
@@ -52,7 +53,8 @@ class Rectangle:
     
     def perimeter(self):
         return calculate_perimeter(self.length, self.width)
-""")
+"""
+        )
 
     return temp_dir, sample_file
 
@@ -114,12 +116,12 @@ def demonstrate_coverage_collection():
         print(f"Coverage data collected for execution: {coverage_data.execution_id}")
 
         # Display coverage results
-        print(f"\n=== Coverage Results ===")
+        print("\n=== Coverage Results ===")
         print(f"Overall coverage: {coverage_data.overall_coverage:.2f}%")
         print(f"Timestamp: {coverage_data.timestamp}")
 
         if coverage_data.line_coverage:
-            print(f"\nLine Coverage by File:")
+            print("\nLine Coverage by File:")
             for file_path, coverage in coverage_data.line_coverage.items():
                 filename = os.path.basename(file_path)
                 print(f"  {filename}: {coverage:.2f}%")
@@ -129,10 +131,12 @@ def demonstrate_coverage_collection():
             for module_name, module_cov in coverage_data.module_coverage.items():
                 print(f"  Module: {module_cov.module_name}")
                 print(
-                    f"    Lines: {module_cov.covered_lines}/{module_cov.total_lines} ({module_cov.line_coverage:.2f}%)"
+                    f"    Lines: {module_cov.covered_lines}/"
+                    f"{module_cov.total_lines} ({module_cov.line_coverage:.2f}%)"
                 )
                 print(
-                    f"    Branches: {module_cov.covered_branches}/{module_cov.total_branches} ({module_cov.branch_coverage:.2f}%)"
+                    f"    Branches: {module_cov.covered_branches}/"
+                    f"{module_cov.total_branches} ({module_cov.branch_coverage:.2f}%)"
                 )
                 if module_cov.uncovered_lines:
                     print(f"    Uncovered lines: {module_cov.uncovered_lines}")

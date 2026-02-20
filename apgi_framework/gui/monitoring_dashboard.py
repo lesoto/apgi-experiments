@@ -156,7 +156,9 @@ class LiveEEGMonitor:
         artifact_color = (
             "green"
             if artifact_rate < 0.2
-            else "orange" if artifact_rate < 0.4 else "red"
+            else "orange"
+            if artifact_rate < 0.4
+            else "red"
         )
         self.artifact_label.config(text=artifact_text, foreground=artifact_color)
 
@@ -365,7 +367,9 @@ class PupillometryMonitor:
         quality_color = (
             "green"
             if quality_score >= 0.8
-            else "orange" if quality_score >= 0.6 else "red"
+            else "orange"
+            if quality_score >= 0.6
+            else "red"
         )
         self.quality_label.config(text=quality_text, foreground=quality_color)
 
@@ -466,7 +470,9 @@ class CardiacMonitor:
         quality_color = (
             "green"
             if quality_score >= 0.8
-            else "orange" if quality_score >= 0.6 else "red"
+            else "orange"
+            if quality_score >= 0.6
+            else "red"
         )
         self.quality_label.config(text=quality_text, foreground=quality_color)
 
@@ -475,7 +481,9 @@ class CardiacMonitor:
         rpeak_color = (
             "green"
             if rpeak_confidence >= 0.9
-            else "orange" if rpeak_confidence >= 0.7 else "red"
+            else "orange"
+            if rpeak_confidence >= 0.7
+            else "red"
         )
         self.rpeak_label.config(text=rpeak_text, foreground=rpeak_color)
 
@@ -694,7 +702,9 @@ class QualityAlertSystem:
             (
                 logging.WARNING
                 if level == "warning"
-                else logging.ERROR if level == "error" else logging.INFO
+                else logging.ERROR
+                if level == "error"
+                else logging.INFO
             ),
             f"Quality alert: {source} - {message}",
         )

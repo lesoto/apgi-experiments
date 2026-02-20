@@ -7,13 +7,11 @@ and publication-ready statistical reporting for APGI framework validation studie
 """
 
 import numpy as np
-import pandas as pd
 from typing import Dict, List, Tuple, Optional, Any, Union
 from dataclasses import dataclass, field, asdict
 from enum import Enum
 from datetime import datetime
 import json
-import warnings
 
 from .statistical_tester import StatisticalTester, StatisticalResult
 from .effect_size_calculator import EffectSizeCalculator, EffectSizeResult
@@ -22,7 +20,8 @@ from .replication_tracker import (
     ReplicationSummary,
     ExperimentResult,
 )
-from .sample_size_validator import SampleSizeValidator, PowerReport, ValidationResult
+from .sample_size_validator import SampleSizeValidator, PowerReport
+from ..logging.standardized_logging import get_logger
 
 
 class ReportFormat(Enum):
@@ -117,6 +116,9 @@ class StatisticalReportGenerator:
         self.significance_threshold = significance_threshold
         self.effect_size_threshold = effect_size_threshold
         self.power_threshold = power_threshold
+
+        # Initialize logger
+        self.logger = get_logger(__name__)
 
         # Initialize component analyzers
         self.statistical_tester = StatisticalTester(alpha=significance_threshold)
@@ -261,7 +263,9 @@ class StatisticalReportGenerator:
                     criterion_type=criterion,
                     statistical_results=relevant_results,
                     effect_sizes=relevant_effects,
-                    sample_size=power_analysis.power_summary.get("total_tests", 100),
+                    sample_size=int(
+                        power_analysis.power_summary.get("total_tests", 100)
+                    ),
                     theoretical_predictions=theoretical_framework or {},
                 )
                 falsification_assessments.append(assessment)
@@ -417,7 +421,6 @@ class StatisticalReportGenerator:
     ) -> FalsificationConclusion:
         """Determine falsification conclusion based on evidence."""
         # Get theoretical predictions for this criterion
-        expected_outcome = theoretical_predictions.get(criterion_type, {})
 
         # Strong evidence thresholds
         strong_significance = p_value < 0.001

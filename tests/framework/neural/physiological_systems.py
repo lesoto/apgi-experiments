@@ -10,7 +10,6 @@ import time
 from apgi_framework.neural.pupillometry_interface import (
     PupillometryInterface,
     PupillometryConfig,
-    PupilSample,
     EyeType,
     BlinkDetectionMethod,
 )
@@ -39,10 +38,15 @@ def test_pupillometry_interface():
     # Initialize interface
     pupil_interface = PupillometryInterface(config)
 
-    print(f"✓ Created PupillometryInterface with {config.sampling_rate} Hz sampling")
+    # fmt: off
+    print(
+        f"✓ Created PupillometryInterface with {config.sampling_rate} "
+        "Hz sampling"
+    )
+    # fmt: on
 
     # Start streaming with simulated data
-    print("✓ Starting data streamingapgi_framework.")
+    print("✓ Starting data streaming.")
     pupil_interface.start_streaming()
 
     # Let it collect some data
@@ -53,7 +57,7 @@ def test_pupillometry_interface():
     print(f"✓ Collected {len(samples)} samples")
 
     # Process data
-    print("✓ Processing pupillometry dataapgi_framework.")
+    print("✓ Processing pupillometry data.")
     processed = pupil_interface.process_data(
         samples=samples,
         apply_blink_detection=True,
@@ -107,7 +111,12 @@ def test_physiological_monitoring():
     # Initialize monitoring system
     physio_monitor = PhysiologicalMonitoring(config)
 
-    print(f"✓ Created PhysiologicalMonitoring with {config.sampling_rate} Hz sampling")
+    # fmt: off
+    print(
+        f"✓ Created PhysiologicalMonitoring with {config.sampling_rate} "
+        "Hz sampling"
+    )
+    # fmt: on
 
     # Register callback for real-time processing
     def data_callback(sample):
@@ -118,7 +127,7 @@ def test_physiological_monitoring():
     print("✓ Registered data callback")
 
     # Start streaming with simulated data
-    print("✓ Starting multi-modal data streamingapgi_framework.")
+    print("✓ Starting multi-modal data streaming.")
     physio_monitor.start_streaming()
 
     # Let it collect some data
@@ -129,19 +138,27 @@ def test_physiological_monitoring():
     print(f"✓ Collected {len(samples)} integrated samples")
 
     # Get specific signal data
-    ecg_data, ecg_times = physio_monitor.get_signal_data(SignalType.ECG, n_samples=500)
-    scr_data, scr_times = physio_monitor.get_signal_data(SignalType.SCR, n_samples=500)
+    # fmt: off
+    ecg_data, ecg_times = physio_monitor.get_signal_data(
+        SignalType.ECG, n_samples=500
+    )
+    # fmt: on
+    # fmt: off
+    scr_data, scr_times = physio_monitor.get_signal_data(
+        SignalType.SCR, n_samples=500
+    )
+    # fmt: on
     resp_data, resp_times = physio_monitor.get_signal_data(
         SignalType.RESP, n_samples=500
     )
 
-    print(f"✓ Retrieved signal data:")
+    print("✓ Retrieved signal data:")
     print(f"  - ECG: {len(ecg_data)} samples")
     print(f"  - SCR: {len(scr_data)} samples")
     print(f"  - Respiration: {len(resp_data)} samples")
 
     # Compute comprehensive metrics
-    print("✓ Computing comprehensive metricsapgi_framework.")
+    print("✓ Computing comprehensive metrics.")
     metrics = physio_monitor.compute_comprehensive_metrics()
 
     if "heart_rate" in metrics:
@@ -156,15 +173,20 @@ def test_physiological_monitoring():
         print(f"  - SCR rate: {metrics['scr_rate']:.2f} events/min")
 
     if "respiration_rate" in metrics:
-        print(f"  - Respiration rate: {metrics['respiration_rate']:.1f} breaths/min")
+        # fmt: off
+        print(
+            f"  - Respiration rate: {metrics['respiration_rate']:.1f} "
+            "breaths/min"
+        )
+        # fmt: on
         print(f"  - Current phase: {metrics.get('current_phase', 'unknown')}")
 
     # Test synchronization
-    print("✓ Testing synchronizationapgi_framework.")
+    print("✓ Testing synchronization.")
     external_time = time.time()
     synced_sample = physio_monitor.synchronize_with_external(external_time)
     if synced_sample:
-        print(f"  - Found synchronized sample within tolerance")
+        print("  - Found synchronized sample within tolerance")
 
     # Get quality metrics
     quality = physio_monitor.get_quality_metrics()
@@ -215,7 +237,7 @@ def test_integration():
     pupil_samples = pupil_interface.get_buffer_data(n_samples=50)
     physio_samples = physio_monitor.get_buffer_data(n_samples=50)
 
-    print(f"✓ Collected synchronized data:")
+    print("✓ Collected synchronized data:")
     print(f"  - Pupil samples: {len(pupil_samples)}")
     print(f"  - Physiological samples: {len(physio_samples)}")
 
@@ -226,7 +248,7 @@ def test_integration():
 
         if synced_physio:
             time_diff = abs(synced_physio.timestamp - pupil_time)
-            print(f"✓ Synchronization successful:")
+            print("✓ Synchronization successful:")
             print(f"  - Time difference: {time_diff*1000:.2f} ms")
 
     # Stop both systems

@@ -20,7 +20,7 @@ from typing import List, Dict, Any
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from apgi_framework.data import StorageManager, DataExporter, APGIVisualizer
+from apgi_framework.data import StorageManager
 from apgi_framework.core import FalsificationResult
 import logging
 
@@ -35,7 +35,7 @@ except ImportError:
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
-    logger = logging.getLogger(__name__)
+    logger: Any = logging.getLogger(__name__)
 
 
 def load_saved_results(results_directory: str = "results") -> List[Dict[str, Any]]:
@@ -91,7 +91,7 @@ def analyze_falsification_rates(results: List[Dict[str, Any]]):
     total_count = len(results)
     falsification_rate = falsified_count / total_count if total_count > 0 else 0
 
-    logger.info(f"\nOverall Statistics:")
+    logger.info("\nOverall Statistics:")
     logger.info(f"  Total experiments: {total_count}")
     logger.info(f"  Falsified: {falsified_count}")
     logger.info(f"  Not falsified: {total_count - falsified_count}")
@@ -108,7 +108,7 @@ def analyze_falsification_rates(results: List[Dict[str, Any]]):
             test_types[test_type]["falsified"] += 1
 
     if len(test_types) > 1:
-        logger.info(f"\nFalsification Rates by Test Type:")
+        logger.info("\nFalsification Rates by Test Type:")
         for test_type, counts in test_types.items():
             rate = counts["falsified"] / counts["total"] if counts["total"] > 0 else 0
             logger.info(
@@ -160,14 +160,16 @@ def analyze_statistical_power(results: List[Dict[str, Any]]):
     medium_power = sum(1 for p in power_values if 0.5 <= p < 0.8)
     low_power = sum(1 for p in power_values if p < 0.5)
 
-    logger.info(f"\nPower Distribution:")
+    logger.info("\nPower Distribution:")
     logger.info(
-        f"  High power (≥0.8): {high_power} ({high_power/len(power_values):.1%})"
+        f"  High power (≥0.8): {high_power} ({high_power / len(power_values):.1%})"
     )
     logger.info(
-        f"  Medium power (0.5-0.8): {medium_power} ({medium_power/len(power_values):.1%})"
+        f"  Medium power (0.5-0.8): {medium_power} ({medium_power / len(power_values):.1%})"
     )
-    logger.info(f"  Low power (<0.5): {low_power} ({low_power/len(power_values):.1%})")
+    logger.info(
+        f"  Low power (<0.5): {low_power} ({low_power / len(power_values):.1%})"
+    )
 
     # Identify underpowered experiments
     if low_power > 0:
@@ -211,11 +213,11 @@ def analyze_effect_sizes(results: List[Dict[str, Any]]):
     large = sum(1 for d in effect_sizes if abs(d) >= 0.8)
 
     logger.info(f"\nEffect Size Distribution:")
-    logger.info(f"  Small (|d| < 0.5): {small} ({small/len(effect_sizes):.1%})")
+    logger.info(f"  Small (|d| < 0.5): {small} ({small / len(effect_sizes):.1%})")
     logger.info(
-        f"  Medium (0.5 ≤ |d| < 0.8): {medium} ({medium/len(effect_sizes):.1%})"
+        f"  Medium (0.5 ≤ |d| < 0.8): {medium} ({medium / len(effect_sizes):.1%})"
     )
-    logger.info(f"  Large (|d| ≥ 0.8): {large} ({large/len(effect_sizes):.1%})")
+    logger.info(f"  Large (|d| ≥ 0.8): {large} ({large / len(effect_sizes):.1%})")
 
     # Relationship between effect size and falsification
     falsified_results = [
@@ -229,7 +231,7 @@ def analyze_effect_sizes(results: List[Dict[str, Any]]):
         falsified_effects = [r["effect_size"] for r in falsified_results]
         not_falsified_effects = [r["effect_size"] for r in not_falsified_results]
 
-        logger.info(f"\nEffect Size by Falsification Status:")
+        logger.info("\nEffect Size by Falsification Status:")
         logger.info(f"  Falsified experiments:")
         logger.info(f"    Mean: {np.mean(falsified_effects):.3f}")
         logger.info(f"    Median: {np.median(falsified_effects):.3f}")
@@ -279,7 +281,7 @@ def compare_experiments(results: List[Dict[str, Any]]):
     not_falsified = [r for r in results if not r.get("is_falsified", False)]
 
     if falsified and not_falsified:
-        logger.info(f"\nComparative Statistics:")
+        logger.info("\nComparative Statistics:")
         logger.info(f"\nFalsified Experiments (n={len(falsified)}):")
         logger.info(
             f"  Mean confidence: {np.mean([r.get('confidence_level', 0) for r in falsified]):.3f}"

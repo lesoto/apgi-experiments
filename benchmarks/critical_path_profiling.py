@@ -296,7 +296,11 @@ class CriticalPathProfiler:
 
         return normalized_data
 
-    def _simulate_eeg_processing(self, samples: int, channels: int) -> Dict[str, Any]:
+    def _simulate_eeg_processing(
+        self,
+        samples: int,
+        channels: int,
+    ) -> Dict[str, Any]:
         """Simulate EEG data processing."""
         data = np.random.randn(samples, channels)
 
@@ -401,7 +405,7 @@ class CriticalPathProfiler:
 
         for i, ax in enumerate(axes):
             ax.plot(times, data[:, i])
-            ax.set_title(f"Channel {i+1}")
+            ax.set_title(f"Channel {i + 1}")
             ax.set_xlabel("Time (s)")
             ax.set_ylabel("Amplitude")
 

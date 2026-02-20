@@ -6,25 +6,18 @@ Comprehensive data quality assessment and anomaly detection system for APGI fram
 Provides quality scoring, anomaly detection, and data validation insights.
 """
 
-import json
-import warnings
-from collections import defaultdict
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
+from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 # APGI imports
 from logging_config import apgi_logger
 from scipy import stats
 from sklearn.ensemble import IsolationForest
-from sklearn.metrics import silhouette_score
-from sklearn.preprocessing import StandardScaler
 
 
 @dataclass
@@ -274,11 +267,11 @@ class DataQualityAssessment:
                 try:
                     # Try to parse as datetime
                     pd.to_datetime(col_data, errors="raise")
-                except:
+                except Exception:
                     consistency_issues += col_data.notna().sum()
-                    consistency_details[f"{col}_date_format"] = (
-                        "Inconsistent date formats"
-                    )
+                    consistency_details[
+                        f"{col}_date_format"
+                    ] = "Inconsistent date formats"
 
         # Calculate consistency score
         if total_checks > 0:
@@ -336,9 +329,9 @@ class DataQualityAssessment:
                     invalid_percentages = ((col_data < 0) | (col_data > 100)).sum()
                     if invalid_percentages > 0:
                         accuracy_score -= (invalid_percentages / len(col_data)) * 0.1
-                        accuracy_details[f"{col}_invalid_percentage"] = (
-                            invalid_percentations
-                        )
+                        accuracy_details[
+                            f"{col}_invalid_percentage"
+                        ] = invalid_percentages
 
                 # Check for statistical outliers
                 if len(col_data) > 10 and col_data.std() > 0:
@@ -373,7 +366,7 @@ class DataQualityAssessment:
         self, data: pd.DataFrame
     ) -> List[AnomalyDetection]:
         """Detect statistical anomalies using multiple methods."""
-        anomalies = []
+        anomalies: List[AnomalyDetection] = []
 
         # Focus on numeric columns
         numeric_cols = data.select_dtypes(include=[np.number]).columns
@@ -391,7 +384,6 @@ class DataQualityAssessment:
             # Method 1: Isolation Forest
             iso_forest = IsolationForest(contamination=0.1, random_state=42)
             anomaly_labels = iso_forest.fit_predict(X)
-            anomaly_scores = iso_forest.decision_function(X)
 
             # Identify anomalies
             anomaly_indices = np.where(anomaly_labels == -1)[0]
@@ -439,7 +431,7 @@ class DataQualityAssessment:
                             from scipy.stats import kstest
 
                             # Simple multimodality check using kernel density
-                            values = col_data.values
+                            values = np.asarray(col_data.values, dtype=float)
                             if len(values) > 50:
                                 # Look for multiple peaks in distribution
                                 hist, bins = np.histogram(values, bins=20)
@@ -718,7 +710,9 @@ class DataQualityAssessment:
             (
                 "green"
                 if m.status == "good"
-                else "orange" if m.status == "warning" else "red"
+                else "orange"
+                if m.status == "warning"
+                else "red"
             )
             for m in report.metrics
         ]

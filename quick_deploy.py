@@ -7,13 +7,13 @@ Usage:
     python quick_deploy.py [--auto] [--port PORT] [--env ENVIRONMENT]
 """
 
-import os
 import sys
 import subprocess
-import time
 import argparse
 from pathlib import Path
-from typing import Optional, Dict, Any
+
+# Check if running in interactive mode
+IS_INTERACTIVE = sys.stdin.isatty() and sys.stdout.isatty()
 
 # Add framework to path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -37,7 +37,7 @@ except ImportError as e:
     handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
     logger.addHandler(handler)
 else:
-    logger = get_logger(__name__)
+    logger = get_logger(__name__)  # type: ignore
 
 
 class QuickDeploy:
@@ -95,7 +95,8 @@ class QuickDeploy:
         except (subprocess.CalledProcessError, FileNotFoundError):
             print("[ERROR] Docker or Docker Compose not found")
             print(
-                "Please install Docker Desktop from https://www.docker.com/products/docker-desktop"
+                "Please install Docker Desktop from "
+                "https://www.docker.com/products/docker-desktop"
             )
             return False
 
@@ -213,7 +214,8 @@ class QuickDeploy:
 
         print(f"Container ID: {status['container_id']}")
         print(
-            f"Web Interface: http://localhost:{list(self.manager.config.ports.values())[0]}"
+            "Web Interface: "
+            f"http://localhost:{list(self.manager.config.ports.values())[0]}"
         )
         print(f"Health Status: {status['health_status']}")
 
@@ -260,9 +262,10 @@ class QuickDeploy:
         print("=" * 50)
 
         if status["is_running"]:
-            print(f"[OK] Running: Yes")
+            print("[OK] Running: Yes")
             print(
-                f"Web Interface: http://localhost:{list(self.manager.config.ports.values())[0]}"
+                "Web Interface: "
+                f"http://localhost:{list(self.manager.config.ports.values())[0]}"
             )
             print(f"Health: {status['health_status']}")
             print(f"CPU: {status['cpu_usage']:.1f}%")
@@ -351,6 +354,11 @@ Examples:
     )
 
     args = parser.parse_args()
+
+    # Auto-enable auto mode in non-interactive environments
+    if not IS_INTERACTIVE and not args.auto:
+        print("Non-interactive environment detected, enabling auto mode...")
+        args.auto = True
 
     if args.command == "deploy" or args.command is None:
         # Deployment flow

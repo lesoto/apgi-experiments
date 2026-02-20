@@ -182,11 +182,13 @@ class TestEndToEndWorkflowProperties:
             (tests_dir / filename).write_text(content)
 
         # Create basic configuration files
-        (project_dir / "pytest.ini").write_text("""
+        (project_dir / "pytest.ini").write_text(
+            """
 [tool:pytest]
 testpaths = tests
 python_files = test_*.py
-""")
+"""
+        )
 
         return project_dir
 
@@ -943,13 +945,15 @@ def test_apgi_equation_with_fixtures(eeg_data, pupil_data):
             (tests_dir / filename).write_text(content)
 
         # Create pytest configuration
-        (project_dir / "pytest.ini").write_text("""
+        (project_dir / "pytest.ini").write_text(
+            """
 [tool:pytest]
 testpaths = tests
 python_files = test_*.py
 python_classes = Test*
 python_functions = test_*
-""")
+"""
+        )
 
         # Execute tests with fixtures
         batch_runner = BatchTestRunner()

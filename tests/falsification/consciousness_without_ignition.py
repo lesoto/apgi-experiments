@@ -6,7 +6,7 @@ This test evaluates whether conscious reports can occur when neural ignition sig
 are absent (P3b < 2 μV, gamma PLV < 0.15, PCI < 0.3, no frontoparietal BOLD elevation).
 """
 
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Optional
 from dataclasses import dataclass
 import numpy as np
 from datetime import datetime
@@ -20,12 +20,10 @@ from apgi_framework.simulators.bold_simulator import BOLDSimulator
 from apgi_framework.simulators.pci_calculator import PCICalculator
 from tests.falsification.consciousness_assessment import (
     ConsciousnessAssessmentSimulator,
-    ConsciousnessLevel,
 )
 from apgi_framework.exceptions import ValidationError, SimulationError
 from tests.falsification.error_handling_wrapper import (
     with_error_handling,
-    log_test_execution,
 )
 import logging
 
@@ -155,7 +153,6 @@ class ConsciousnessWithoutIgnitionTest:
             ValidationError: If parameters are invalid
             SimulationError: If simulation fails
         """
-        start_time = datetime.now()
 
         try:
             # Validate parameters
@@ -204,18 +201,12 @@ class ConsciousnessWithoutIgnitionTest:
                 test_id, trial_results, participant_results, n_trials, n_participants
             )
 
-            end_time = datetime.now()
-            log_test_execution(
-                "Consciousness Without Ignition Test", start_time, end_time, True
-            )
+            logger.info("Consciousness Without Ignition Test completed successfully")
 
             return result
 
         except Exception as e:
-            end_time = datetime.now()
-            log_test_execution(
-                "Consciousness Without Ignition Test", start_time, end_time, False, e
-            )
+            logger.error(f"Consciousness Without Ignition Test failed: {e}")
             raise
 
     def _run_single_trial(
@@ -516,7 +507,7 @@ class ConsciousnessWithoutIgnitionTest:
             trial_results=trial_results,
             total_falsifying_trials=total_falsifying,
             falsification_rate=falsification_rate,
-            mean_confidence=mean_confidence,
+            mean_confidence=float(mean_confidence),
             participants_with_falsification=participants_with_falsification,
             participant_falsification_rates=participant_falsification_rates,
             p_value=p_value,
@@ -632,7 +623,6 @@ class ConsciousnessWithoutIgnitionTest:
         # Extract parameters with defaults
         n_trials = parameters.get("n_trials", 100)
         n_participants = parameters.get("n_participants", 25)
-        confidence_threshold = parameters.get("confidence_threshold", 0.8)
 
         logger.info(
             f"Starting Consciousness Without Ignition Test: {n_trials} trials, {n_participants} participants"
@@ -652,7 +642,6 @@ class ConsciousnessWithoutIgnitionTest:
                 trial_result = self._run_single_trial(
                     trial_id=f"{test_id}_trial_{trial_idx:03d}",
                     participant_id=participant_id,
-                    confidence_threshold=confidence_threshold,
                 )
                 trial_results.append(trial_result)
 
@@ -662,6 +651,13 @@ class ConsciousnessWithoutIgnitionTest:
             except Exception as e:
                 logger.error(f"Trial {trial_idx} failed: {e}")
                 # Continue with other trials
+
+        # Group trials by participant
+        participant_results = {}
+        for trial in trial_results:
+            if trial.participant_id not in participant_results:
+                participant_results[trial.participant_id] = []
+            participant_results[trial.participant_id].append(trial)
 
         # Analyze results
         result = self._analyze_results(

@@ -6,7 +6,7 @@ selection, and execution controls.
 """
 
 import sys
-from typing import Dict, List, Optional, Set
+from typing import Dict, List
 from pathlib import Path
 
 try:

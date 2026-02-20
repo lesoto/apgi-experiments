@@ -277,7 +277,6 @@ class TestSystemValidator:
         with mock.patch.object(self.validator, "_collect_system_info"):
             with mock.patch.object(self.validator, "_run_mathematical_validation"):
                 with mock.patch.object(self.validator, "_calculate_overall_results"):
-
                     report = self.validator.run_validation(ValidationLevel.BASIC)
 
                     assert isinstance(report, SystemValidationReport)
@@ -309,7 +308,6 @@ class TestSystemValidator:
                                         with mock.patch.object(
                                             self.validator, "_calculate_overall_results"
                                         ):
-
                                             report = self.validator.run_validation(
                                                 ValidationLevel.COMPREHENSIVE
                                             )
@@ -451,7 +449,6 @@ class TestSystemValidator:
                             with mock.patch.object(
                                 self.validator, "_test_signature_thresholds"
                             ):
-
                                 self.validator._run_neural_simulation_validation()
 
                                 assert (
@@ -513,7 +510,6 @@ class TestSystemValidator:
                         with mock.patch.object(
                             self.validator, "_test_result_interpretation"
                         ):
-
                             self.validator._run_falsification_logic_validation()
 
                             assert (
@@ -548,7 +544,6 @@ class TestSystemValidator:
                 with mock.patch.object(
                     self.validator, "_test_configuration_management"
                 ):
-
                     self.validator._run_data_integrity_validation()
 
                     assert (
@@ -703,7 +698,6 @@ class TestSystemValidator:
                 with mock.patch.object(
                     self.validator, "_test_configuration_propagation"
                 ):
-
                     self.validator._run_integration_validation()
 
                     assert (
@@ -725,7 +719,6 @@ class TestSystemValidator:
                     with mock.patch.object(
                         self.validator, "_test_graceful_degradation"
                     ):
-
                         self.validator._run_error_handling_validation()
 
                         assert (
@@ -745,7 +738,6 @@ class TestSystemValidator:
                     with mock.patch.object(
                         self.validator, "_test_concurrent_execution"
                     ):
-
                         self.validator._run_performance_validation()
 
                         assert (
@@ -762,7 +754,6 @@ class TestSystemValidator:
         with mock.patch.object(self.validator, "_test_large_dataset_handling"):
             with mock.patch.object(self.validator, "_test_extended_execution"):
                 with mock.patch.object(self.validator, "_test_resource_limits"):
-
                     self.validator._run_stress_tests()
 
                     # Stress tests should be added to performance category

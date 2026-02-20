@@ -213,7 +213,6 @@ class CodeSandbox:
                     contextlib.redirect_stdout(stdout_capture),
                     contextlib.redirect_stderr(stderr_capture),
                 ):
-
                     exec(code, exec_context)
 
                 return {

@@ -914,9 +914,9 @@ class PhysiologicalMonitoring:
             )
 
             if cycles:
-                metrics["respiration_rate"] = (
-                    self.respiration_monitor.compute_respiration_rate(cycles)
-                )
+                metrics[
+                    "respiration_rate"
+                ] = self.respiration_monitor.compute_respiration_rate(cycles)
                 metrics["breath_cycles"] = len(cycles)
                 metrics["current_phase"] = self.respiration_monitor.get_current_phase(
                     resp_data, timestamps, time.time()

@@ -9,13 +9,11 @@ comparisons correction for validating APGI framework falsification criteria.
 import numpy as np
 import scipy.stats as stats
 from scipy.stats import ttest_ind, ttest_rel, f_oneway, mannwhitneyu, wilcoxon
-from scipy.stats import kruskal, friedmanchisquare
+from scipy.stats import kruskal
 from statsmodels.stats.multitest import multipletests
-from statsmodels.stats.contingency_tables import mcnemar
 from typing import Dict, List, Tuple, Optional, Union, Any
 from dataclasses import dataclass
 from enum import Enum
-import warnings
 
 
 class TestType(Enum):
@@ -227,7 +225,7 @@ class StatisticalTester:
         # Generate interpretation
         interpretation = self._interpret_result(p_value, effect_size, "one-way ANOVA")
 
-        sample_sizes = {f"group_{i+1}": len(group) for i, group in enumerate(groups)}
+        sample_sizes = {f"group_{i + 1}": len(group) for i, group in enumerate(groups)}
 
         return StatisticalResult(
             test_type=TestType.ONE_WAY_ANOVA.value,
@@ -343,7 +341,7 @@ class StatisticalTester:
             p_value, effect_size, "Kruskal-Wallis test"
         )
 
-        sample_sizes = {f"group_{i+1}": len(group) for i, group in enumerate(groups)}
+        sample_sizes = {f"group_{i + 1}": len(group) for i, group in enumerate(groups)}
 
         return StatisticalResult(
             test_type=TestType.KRUSKAL_WALLIS.value,
@@ -549,7 +547,6 @@ class StatisticalTester:
         self, differences: np.ndarray, w_statistic: float
     ) -> float:
         """Calculate matched-pairs rank-biserial correlation for Wilcoxon test."""
-        n = len(differences)
         # Remove zero differences
         non_zero_diffs = differences[differences != 0]
         n_non_zero = len(non_zero_diffs)
@@ -574,7 +571,7 @@ class StatisticalTester:
 
     def _find_clusters_1d(self, mask: np.ndarray) -> List[np.ndarray]:
         """Find connected clusters in 1D boolean mask."""
-        clusters = []
+        clusters: List[np.ndarray] = []
         if not np.any(mask):
             return clusters
 

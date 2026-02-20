@@ -781,7 +781,9 @@ class ResultsProcessor:
                 css_class = (
                     "quality-good"
                     if value > 0.8
-                    else "quality-warning" if value > 0.6 else "quality-poor"
+                    else "quality-warning"
+                    if value > 0.6
+                    else "quality-poor"
                 )
                 quality_rows += (
                     f"<tr><td>{key}</td><td class='{css_class}'>{value:.4f}</td></tr>"

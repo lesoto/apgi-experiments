@@ -12,7 +12,9 @@ try:
 except ImportError:
     HAS_BENCHMARK = False
 
-pytest.importorskip("pytest_benchmark")
+if not HAS_BENCHMARK:
+    pytest.skip("pytest-benchmark not available", allow_module_level=True)
+
 import numpy as np
 import pandas as pd
 import time
@@ -21,16 +23,25 @@ import pstats
 import io
 from pathlib import Path
 import sys
-import os
 
 # Add the project root to the path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 try:
-    from apgi_framework.core.models.apgi_agent import APGIAgent
-    from apgi_framework.analysis.analysis_engine import AnalysisEngine
-    from apgi_framework.core.data_models import ExperimentData
-    from apgi_framework.adaptive.stimulus_generators import StimulusGenerator
+    from apgi_framework.core.models.apgi_agent import APGIAgent as ImportedAPGIAgent
+    from apgi_framework.analysis.analysis_engine import (
+        AnalysisEngine as ImportedAnalysisEngine,
+    )
+    from apgi_framework.core.data_models import ExperimentalTrial
+    from apgi_framework.adaptive.stimulus_generators import (
+        StimulusGenerator as ImportedStimulusGenerator,
+    )
+
+    # Use imported classes
+    APGIAgent = ImportedAPGIAgent
+    AnalysisEngine = ImportedAnalysisEngine
+    ExperimentData = ExperimentalTrial
+    StimulusGenerator = ImportedStimulusGenerator
 except ImportError as e:
     print(f"Warning: Could not import APGI modules: {e}")
 
@@ -215,7 +226,7 @@ class TestAnalysisEnginePerformance:
             exp_data = ExperimentData(data)
 
             with BenchmarkTimer(f"Analysis size {size}") as timer:
-                result = self.engine.analyze_data(exp_data)
+                analysis_result = self.engine.analyze_data(exp_data)
 
             times.append(timer.end_time - timer.start_time)
 
@@ -378,7 +389,7 @@ class TestMemoryPerformance:
                 arr = np.random.rand(10000, 100)  # ~80MB per array
                 arrays.append(arr)
                 # Simulate some processing
-                result = np.mean(arr)
+                processed_result = np.mean(arr)
             return len(arrays)
 
         result = benchmark(allocate_large_arrays)

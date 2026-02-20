@@ -175,9 +175,9 @@ class ParameterExtractor:
             "sigma_beta",
         ]:
             samples = fit_result.extract(param_name)[param_name]
-            population_params[param_name] = (
-                ParameterExtractor.extract_parameter_distribution(samples, param_name)
-            )
+            population_params[
+                param_name
+            ] = ParameterExtractor.extract_parameter_distribution(samples, param_name)
 
         return population_params
 
@@ -202,7 +202,6 @@ class ConvergenceDiagnosticsCalculator:
 
         # Between-chain variance
         chain_means = np.mean(chains, axis=1)
-        overall_mean = np.mean(chain_means)
         B = n_samples * np.var(chain_means, ddof=1)
 
         # Within-chain variance
@@ -311,8 +310,8 @@ class ConvergenceDiagnosticsCalculator:
                 np.sum(sp["treedepth__"] >= sp["treedepth__"].max())
                 for sp in sampler_params
             )
-        except (AttributeError, KeyError, IndexError) as e:
-            self.logger.warning(f"Could not extract sampler diagnostics: {e}")
+        except (AttributeError, KeyError, IndexError):
+            logger.warning("Could not extract sampler diagnostics")
             divergences = 0
             tree_depth_exceeded = 0
             warnings_list.append("Could not extract sampler diagnostics")
@@ -389,7 +388,7 @@ class IndividualParameterEstimator:
         )
 
         # Fit model
-        fit_result = self.model.fit(stan_data)
+        self.model.fit(stan_data)
 
         # Extract parameters
         estimates = self.model.extract_parameters(

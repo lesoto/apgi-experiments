@@ -138,23 +138,23 @@ class SignatureValidator:
         # Check amplitude range
         if signature.amplitude < 0 or signature.amplitude > 50.0:
             is_valid = False
-            validation_details["amplitude_error"] = (
-                f"Amplitude {signature.amplitude} μV out of range [0, 50]"
-            )
+            validation_details[
+                "amplitude_error"
+            ] = f"Amplitude {signature.amplitude} μV out of range [0, 50]"
 
         # Check latency range
         if not (200 <= signature.latency <= 600):
             is_valid = False
-            validation_details["latency_error"] = (
-                f"Latency {signature.latency} ms out of range [200, 600]"
-            )
+            validation_details[
+                "latency_error"
+            ] = f"Latency {signature.latency} ms out of range [200, 600]"
 
         # Check electrode location
         if signature.electrode != "Pz":
             is_valid = False
-            validation_details["electrode_error"] = (
-                f"Invalid electrode {signature.electrode}, expected Pz"
-            )
+            validation_details[
+                "electrode_error"
+            ] = f"Invalid electrode {signature.electrode}, expected Pz"
 
         # Check consciousness threshold
         validation_details["conscious_threshold"] = (
@@ -188,16 +188,16 @@ class SignatureValidator:
         for connection, plv in signature.plv_values.items():
             if not (0.0 <= plv <= 1.0):
                 is_valid = False
-                validation_details[f"plv_error_{connection}"] = (
-                    f"PLV {plv} out of range [0, 1]"
-                )
+                validation_details[
+                    f"plv_error_{connection}"
+                ] = f"PLV {plv} out of range [0, 1]"
 
         # Check duration
         if signature.duration <= 0:
             is_valid = False
-            validation_details["duration_error"] = (
-                f"Invalid duration {signature.duration} ms"
-            )
+            validation_details[
+                "duration_error"
+            ] = f"Invalid duration {signature.duration} ms"
 
         # Check frequency range
         if (
@@ -206,9 +206,9 @@ class SignatureValidator:
             or signature.frequency_range[0] >= signature.frequency_range[1]
         ):
             is_valid = False
-            validation_details["frequency_error"] = (
-                f"Invalid frequency range {signature.frequency_range}"
-            )
+            validation_details[
+                "frequency_error"
+            ] = f"Invalid frequency range {signature.frequency_range}"
 
         # Check peak frequency
         if not (
@@ -217,9 +217,9 @@ class SignatureValidator:
             <= signature.frequency_range[1]
         ):
             is_valid = False
-            validation_details["peak_frequency_error"] = (
-                f"Peak frequency {signature.peak_frequency} outside range"
-            )
+            validation_details[
+                "peak_frequency_error"
+            ] = f"Peak frequency {signature.peak_frequency} outside range"
 
         # Check consciousness thresholds
         max_plv = max(signature.plv_values.values()) if signature.plv_values else 0.0
@@ -255,9 +255,9 @@ class SignatureValidator:
         for region, z_score in signature.activations.items():
             if z_score < 0 or z_score > 15.0:
                 is_valid = False
-                validation_details[f"z_score_error_{region}"] = (
-                    f"Z-score {z_score} out of range [0, 15]"
-                )
+                validation_details[
+                    f"z_score_error_{region}"
+                ] = f"Z-score {z_score} out of range [0, 15]"
 
         # Check peak activation consistency
         expected_peak = (
@@ -265,9 +265,9 @@ class SignatureValidator:
         )
         if abs(signature.peak_activation - expected_peak) > 0.01:
             is_valid = False
-            validation_details["peak_consistency_error"] = (
-                "Peak activation inconsistent with maximum"
-            )
+            validation_details[
+                "peak_consistency_error"
+            ] = "Peak activation inconsistent with maximum"
 
         # Check active regions consistency
         expected_active = [
@@ -277,16 +277,16 @@ class SignatureValidator:
         ]
         if set(signature.active_regions) != set(expected_active):
             is_valid = False
-            validation_details["active_regions_error"] = (
-                "Active regions inconsistent with thresholds"
-            )
+            validation_details[
+                "active_regions_error"
+            ] = "Active regions inconsistent with thresholds"
 
         # Check network coherence
         if not (0.0 <= signature.network_coherence <= 1.0):
             is_valid = False
-            validation_details["coherence_error"] = (
-                f"Network coherence {signature.network_coherence} out of range"
-            )
+            validation_details[
+                "coherence_error"
+            ] = f"Network coherence {signature.network_coherence} out of range"
 
         # Check consciousness thresholds
         validation_details["conscious_threshold"] = (
@@ -320,30 +320,30 @@ class SignatureValidator:
         # Check PCI value range
         if not (0.0 <= signature.pci_value <= 1.0):
             is_valid = False
-            validation_details["pci_error"] = (
-                f"PCI value {signature.pci_value} out of range [0, 1]"
-            )
+            validation_details[
+                "pci_error"
+            ] = f"PCI value {signature.pci_value} out of range [0, 1]"
 
         # Check complexity components
         for component, value in signature.complexity_components.items():
             if not (0.0 <= value <= 1.0):
                 is_valid = False
-                validation_details[f"complexity_error_{component}"] = (
-                    f"Component {value} out of range"
-                )
+                validation_details[
+                    f"complexity_error_{component}"
+                ] = f"Component {value} out of range"
 
         # Check connectivity and perturbation response
         if not (0.0 <= signature.connectivity_strength <= 1.0):
             is_valid = False
-            validation_details["connectivity_error"] = (
-                "Connectivity strength out of range"
-            )
+            validation_details[
+                "connectivity_error"
+            ] = "Connectivity strength out of range"
 
         if not (0.0 <= signature.perturbation_response <= 1.0):
             is_valid = False
-            validation_details["perturbation_error"] = (
-                "Perturbation response out of range"
-            )
+            validation_details[
+                "perturbation_error"
+            ] = "Perturbation response out of range"
 
         # Check consciousness thresholds
         validation_details["conscious_threshold"] = (
@@ -427,14 +427,15 @@ class SignatureValidator:
 
         # Analyze falsification patterns
         is_complete_ignition = self._check_complete_ignition(threshold_validations)
-        is_falsification_pattern, falsification_confidence = (
-            self._analyze_falsification_pattern(
-                p3b_signature,
-                gamma_signature,
-                bold_signature,
-                pci_signature,
-                threshold_validations,
-            )
+        (
+            is_falsification_pattern,
+            falsification_confidence,
+        ) = self._analyze_falsification_pattern(
+            p3b_signature,
+            gamma_signature,
+            bold_signature,
+            pci_signature,
+            threshold_validations,
         )
 
         return CombinedSignature(
@@ -716,12 +717,12 @@ class SignatureValidator:
             summary["gamma_duration"] = combined_signature.gamma_signature.duration
 
         if combined_signature.bold_signature:
-            summary["bold_peak_activation"] = (
-                combined_signature.bold_signature.peak_activation
-            )
-            summary["bold_bilateral_dlpfc"] = (
-                combined_signature.bold_signature.bilateral_dlpfc
-            )
+            summary[
+                "bold_peak_activation"
+            ] = combined_signature.bold_signature.peak_activation
+            summary[
+                "bold_bilateral_dlpfc"
+            ] = combined_signature.bold_signature.bilateral_dlpfc
 
         if combined_signature.pci_signature:
             summary["pci_value"] = combined_signature.pci_signature.pci_value

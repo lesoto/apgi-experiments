@@ -10,19 +10,13 @@ import os
 import numpy as np
 from tkinter import messagebox, filedialog
 import subprocess
-import csv
 import pandas as pd
-import datetime
-from matplotlib.backends.backend_pdf import PdfPages
-import sys
 import logging
-from pathlib import Path
-from typing import Dict, Any, Optional, List, Union, Tuple, Callable
-import time
+from typing import Dict, Any, Optional, List, Tuple
 import traceback
 import gc
-import threading
 from abc import ABC, abstractmethod
+import datetime
 
 
 # Configuration constants
@@ -186,14 +180,9 @@ try:
     from apgi_framework.core.somatic_marker import SomaticMarkerEngine
     from apgi_framework.core.threshold import ThresholdManager
 
-    from apgi_framework.config import ConfigManager, APGIParameters, ExperimentalConfig
+    from apgi_framework.config import ConfigManager
     from apgi_framework.cli import APGIFrameworkCLI
 
-    from apgi_framework.core.data_models import (
-        FalsificationResult,
-        NeuralSignatures,
-        ConsciousnessAssessment,
-    )
     from apgi_framework.data.data_manager import IntegratedDataManager
     from apgi_framework.data.report_generator import ReportGenerator
     from apgi_framework.data.visualizer import APGIVisualizer
@@ -201,24 +190,24 @@ try:
     try:
         from apgi_framework.falsification import PrimaryFalsificationTest
     except ImportError:
-        PrimaryFalsificationTest = None
+        PrimaryFalsificationTest = None  # type: ignore
 
     try:
         from apgi_framework.falsification import ConsciousnessWithoutIgnitionTest
     except ImportError:
-        ConsciousnessWithoutIgnitionTest = None
+        ConsciousnessWithoutIgnitionTest = None  # type: ignore
 
     try:
         from apgi_framework.falsification.threshold_insensitivity_test import (
             ThresholdInsensitivityTest,
         )
     except ImportError:
-        ThresholdInsensitivityTest = None
+        ThresholdInsensitivityTest = None  # type: ignore
 
     try:
         from apgi_framework.falsification.soma_bias_test import SomaBiasTest
     except ImportError:
-        SomaBiasTest = None
+        SomaBiasTest = None  # type: ignore
 
     try:
         from apgi_framework.analysis.bayesian_models import HierarchicalBayesianModel
@@ -227,30 +216,34 @@ try:
             HierarchicalBayesianModel  # Alias for compatibility
         )
     except ImportError:
-        BayesianParameterEstimator = None
+        BayesianParameterEstimator = None  # type: ignore
 
     try:
         from apgi_framework.analysis.effect_size_calculator import EffectSizeCalculator
     except ImportError:
-        EffectSizeCalculator = None
+        EffectSizeCalculator = None  # type: ignore
 
     try:
-        from apgi_framework.analysis.parameter_estimation import ParameterEstimation
+        from apgi_framework.analysis.parameter_estimation import (
+            ParameterEstimates as ParameterEstimation,
+        )
     except ImportError:
-        ParameterEstimation = None
+        ParameterEstimation = None  # type: ignore
 
     # Clinical applications - use available classes
     try:
-        from apgi_framework.clinical.disorder_classification import DisorderClassifier
+        from apgi_framework.clinical.disorder_classification import (
+            DisorderClassification as DisorderClassifier,
+        )
     except ImportError:
-        DisorderClassifier = None
+        DisorderClassifier = None  # type: ignore
 
     try:
         from apgi_framework.clinical.parameter_extraction import (
             ClinicalParameterExtractor,
         )
     except ImportError:
-        ClinicalParameterExtractor = None
+        ClinicalParameterExtractor = None  # type: ignore
 
     # Neural simulators
     from apgi_framework.simulators.p3b_simulator import P3bSimulator
@@ -262,12 +255,12 @@ try:
     try:
         from apgi_framework.adaptive.quest_plus_staircase import QuestPlusStaircase
     except ImportError:
-        QuestPlusStaircase = None
+        QuestPlusStaircase = None  # type: ignore
 
     try:
         from apgi_framework.adaptive.stimulus_generators import StimulusGenerator
     except ImportError:
-        StimulusGenerator = None
+        StimulusGenerator = None  # type: ignore
 
 except ImportError as e:
     try:
@@ -276,9 +269,6 @@ except ImportError as e:
         logger = get_logger("gui_import")
         logger.warning(f"Warning: Some APGI Framework modules not available: {e}")
     except ImportError:
-        # Fallback to basic logging if centralized logging not available
-        import logging
-
         logger = logging.getLogger("gui_import")
         logger.warning(f"Warning: Some APGI Framework modules not available: {e}")
     # Fallback imports for basic functionality
@@ -314,15 +304,15 @@ except ImportError as e:
             logger = logging.getLogger("gui_import_error")
             logger.error(f"Error: Even basic APGI Framework imports failed: {e2}")
         # Set all components to None for graceful degradation
-        ConfigManager = None
-        APGIEquation = None
-        PrecisionCalculator = None
-        PredictionErrorProcessor = None
-        APGIFrameworkCLI = None
-        IntegratedDataManager = None
-        BayesianParameterEstimator = None
-        DisorderClassifier = None
-        QuestPlusStaircase = None
+        ConfigManager = None  # type: ignore
+        APGIEquation = None  # type: ignore
+        PrecisionCalculator = None  # type: ignore
+        PredictionErrorProcessor = None  # type: ignore
+        APGIFrameworkCLI = None  # type: ignore
+        IntegratedDataManager = None  # type: ignore
+        BayesianParameterEstimator = None  # type: ignore
+        DisorderClassifier = None  # type: ignore
+        QuestPlusStaircase = None  # type: ignore
 
 
 class ErrorSeverity(Enum):
@@ -810,7 +800,7 @@ class InputValidator:
 
             # Check for special values
             if not (-1e10 <= num_value <= 1e10):
-                return False, None, f"{param_name} value is out of reasonable range"
+                return False, None, (f"{param_name} value is out of reasonable range")
 
             return True, num_value, None
 
@@ -821,7 +811,10 @@ class InputValidator:
 
     @staticmethod
     def validate_integer_input(
-        value: str, param_name: str, min_val: int = None, max_val: int = None
+        value: str,
+        param_name: str,
+        min_val: Optional[int] = None,
+        max_val: Optional[int] = None,
     ) -> Tuple[bool, Optional[int], Optional[str]]:
         """Validate and sanitize integer input."""
         is_valid, float_val, error_msg = InputValidator.validate_numeric_input(
@@ -832,7 +825,7 @@ class InputValidator:
             return False, None, error_msg
 
         try:
-            int_val = int(float_val)
+            int_val = int(float_val)  # type: ignore
 
             # Check if it was actually an integer
             if float_val != int_val:
@@ -845,7 +838,9 @@ class InputValidator:
 
     @staticmethod
     def validate_file_path(
-        file_path: str, must_exist: bool = False, allowed_extensions: List[str] = None
+        file_path: str,
+        must_exist: bool = False,
+        allowed_extensions: Optional[List[str]] = None,
     ) -> Tuple[bool, Optional[str], Optional[str]]:
         """Validate file path."""
         try:
@@ -6429,10 +6424,11 @@ class APGIFrameworkGUI(ctk.CTk):
                         if value is not None:
                             # Convert to string for validation
                             str_value = str(value)
-                            is_valid, validation_error = (
-                                self.config_validator.validate_parameter(
-                                    param_name, str_value
-                                )
+                            (
+                                is_valid,
+                                validation_error,
+                            ) = self.config_validator.validate_parameter(
+                                param_name, str_value
                             )
 
                             if is_valid:

@@ -8,7 +8,6 @@ including parameter validation, default values, and experimental settings.
 from dataclasses import dataclass
 from typing import Dict, Any, Optional
 import json
-from pathlib import Path
 
 from apgi_framework.exceptions import ConfigurationError
 from apgi_framework.utils.path_utils import get_path_manager
@@ -342,11 +341,11 @@ class ConfigManager:
             elif section_name == "experimental_config":
                 result = validator.validate_experimental_config(**section_data)
             elif section_name == "retry_config":
-                result = validator.validate_retry_config(**section_data)
+                result = validator.validate_retry_config(**section_data)  # type: ignore
             elif section_name == "performance_thresholds":
-                result = validator.validate_performance_thresholds(**section_data)
+                result = validator.validate_performance_thresholds(**section_data)  # type: ignore
             elif section_name == "stimulus_parameters":
-                result = validator.validate_stimulus_parameters(**section_data)
+                result = validator.validate_stimulus_parameters(**section_data)  # type: ignore
             else:
                 return  # Skip validation for unknown sections
 
@@ -547,7 +546,12 @@ class ConfigManager:
         Returns:
             Dictionary containing validation status and details.
         """
-        report = {"valid": True, "errors": [], "warnings": [], "details": {}}
+        report: Dict[str, Any] = {
+            "valid": True,
+            "errors": [],
+            "warnings": [],
+            "details": {},
+        }
 
         try:
             # Validate APGI parameters
@@ -580,11 +584,6 @@ class ConfigManager:
             True if parameter is valid, False otherwise
         """
         try:
-            # Import here to avoid circular dependency
-            from apgi_framework.validation.parameter_validator import get_validator
-
-            validator = get_validator()
-
             # Create a temporary parameters object with the test value
             temp_params = APGIParameters()
             setattr(temp_params, param_name, value)

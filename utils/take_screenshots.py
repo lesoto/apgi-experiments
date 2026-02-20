@@ -585,7 +585,6 @@ class APGIScreenshotDocumentation:
                         or "consciousness" in window_title.lower()
                         or "consciousness" in owner_name.lower()
                     ):
-
                         # Get window bounds
                         bounds = window_info.get("kCGWindowBounds", {})
                         if bounds:
@@ -1232,9 +1231,7 @@ class APGIScreenshotDocumentation:
                     "18_final_state", "Final GUI state - after all documentation"
                 )
 
-            print(
-                f"\n✅ Completed {len(self.doc_structure['screenshots'])} screenshots"
-            )
+            print(f"\n✅ Completed {len(self.doc_structure['screenshots'])} screenshots")
 
         except Exception as e:
             print(f"❌ Error during screen documentation: {e}")
@@ -1628,7 +1625,6 @@ class APGIScreenshotDocumentation:
                         and self.gui_window.width > 0
                         and self.gui_window.height > 0
                     ):
-
                         # Activate window one more time right before screenshot
                         self.gui_window.activate()
                         time.sleep(0.3)
@@ -1851,7 +1847,6 @@ class APGIScreenshotDocumentation:
                         and hasattr(window, "width")
                         and hasattr(window, "height")
                     ):
-
                         title = (
                             str(window.title)
                             if hasattr(window, "title") and window.title

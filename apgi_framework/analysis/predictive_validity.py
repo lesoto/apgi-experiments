@@ -6,10 +6,9 @@ This module implements validation tasks to test whether estimated parameters
 """
 
 import numpy as np
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Optional, Tuple, Union
 from dataclasses import dataclass
-from scipy import stats
-import pandas as pd
+from scipy import stats  # type: ignore
 
 from .bayesian_models import ParameterEstimates
 
@@ -45,7 +44,11 @@ class ValidityResult:
         sig = (
             "***"
             if self.p_value < 0.001
-            else "**" if self.p_value < 0.01 else "*" if self.p_value < 0.05 else "ns"
+            else "**"
+            if self.p_value < 0.01
+            else "*"
+            if self.p_value < 0.05
+            else "ns"
         )
         return (
             f"ValidityResult({self.parameter_name} → {self.task_name}: "
@@ -285,7 +288,9 @@ class BodyVigilanceScaleAnalyzer:
         """
         return float(np.mean([responses[item] for item in self.scale_items]))
 
-    def collect_questionnaire(self, participant_id: str) -> Dict[str, float]:
+    def collect_questionnaire(
+        self, participant_id: str
+    ) -> Dict[str, Union[str, float]]:
         """
         Collect Body Vigilance Scale questionnaire.
 
@@ -296,11 +301,13 @@ class BodyVigilanceScaleAnalyzer:
             Dictionary of responses
         """
         # Simulate questionnaire responses
-        responses = {item: np.random.uniform(0, 10) for item in self.scale_items}
+        responses: Dict[str, Union[str, float]] = {
+            item: np.random.uniform(0, 10) for item in self.scale_items
+        }
         responses["participant_id"] = participant_id
         responses["total_score"] = self.compute_bvs_score(responses)
 
-        return responses
+        return responses  # type: ignore
 
     def predict_from_beta(
         self, beta: float, baseline_bvs: float = 5.0, sensitivity: float = 3.0
@@ -394,8 +401,8 @@ class PredictivePowerComparator:
             ValidityResult
         """
         # Extract parameter values
-        param_values = []
-        perf_values = []
+        param_values: List[float] = []
+        perf_values: List[Optional[float]] = []
 
         for est in parameter_estimates:
             # Find matching performance data
@@ -422,12 +429,12 @@ class PredictivePowerComparator:
             else:
                 perf_values.append(getattr(perf, performance_metric, np.nan))
 
-        param_values = np.array(param_values)
-        perf_values = np.array(perf_values)
+        param_values_array = np.array(param_values)
+        perf_values_array = np.array(perf_values)
 
         # Compute correlation
         r, p, r_squared = PredictivePowerComparator.compute_correlation(
-            param_values, perf_values
+            param_values_array, perf_values_array
         )
 
         effect_size = PredictivePowerComparator.classify_effect_size(r)
@@ -525,7 +532,7 @@ class PredictivePowerComparator:
             if comp.apgi_better:
                 report.append(f"  Improvement: {comp.improvement_percentage:.1f}%")
             else:
-                report.append(f"  Traditional measure performs better")
+                report.append("  Traditional measure performs better")
             report.append("")
 
         # Summary
@@ -634,7 +641,9 @@ class PredictiveValidityFramework:
                 else (
                     "**"
                     if result.p_value < 0.01
-                    else "*" if result.p_value < 0.05 else "ns"
+                    else "*"
+                    if result.p_value < 0.05
+                    else "ns"
                 )
             )
 

@@ -11,7 +11,6 @@ import json
 import subprocess
 import sys
 import threading
-import time
 import tkinter as tk
 from pathlib import Path
 from tkinter import scrolledtext, ttk, simpledialog
@@ -31,7 +30,7 @@ class UtilsRunnerGUI:
         self.root.geometry("800x600")
 
         # Get utils directory
-        self.utils_dir = Path(__file__).parent / "utils"
+        self.utils_dir: Optional[Path] = Path(__file__).parent / "utils"
 
         # Validate utils directory exists
         if not self.utils_dir.exists():
@@ -282,7 +281,7 @@ class UtilsRunnerGUI:
         self.output_text.tag_config(self.TAG_SUCCESS, foreground="green")
         self.output_text.tag_config(self.TAG_WARNING, foreground="orange")
 
-    def log_output(self, message: str, tag: str = None):
+    def log_output(self, message: str, tag: Optional[str] = None):
         """Add message to output text area.
 
         Args:
@@ -350,7 +349,7 @@ class UtilsRunnerGUI:
         def run_all():
             for i, script in enumerate(self.scripts):
                 self.log_output(
-                    f"Running script {i+1}/{len(self.scripts)}: {script.name}",
+                    f"Running script {i + 1}/{len(self.scripts)}: {script.name}",
                     self.TAG_INFO,
                 )
                 self.scripts_listbox.selection_clear(0, tk.END)
@@ -380,8 +379,8 @@ class UtilsRunnerGUI:
         script: Path,
         wait: bool = False,
         retry_count: int = 0,
-        timeout: int = None,
-        args: List[str] = None,
+        timeout: Optional[int] = None,
+        args: Optional[List[str]] = None,
     ) -> bool:
         """Run a single script.
 
@@ -399,7 +398,6 @@ class UtilsRunnerGUI:
         """
         import time
 
-        start_time = time.time()
         script_name = script.name
 
         # Prepare command
@@ -427,7 +425,7 @@ class UtilsRunnerGUI:
                 text=True,
                 bufsize=1,
                 universal_newlines=True,
-                cwd=self.utils_dir.parent,
+                cwd=self.utils_dir.parent if self.utils_dir else Path.cwd(),
             )
 
             self.running_processes[script_name] = process
@@ -607,7 +605,7 @@ def main():
     try:
         # Create and run the GUI
         root = tk.Tk()
-        app = UtilsRunnerGUI(root)
+        UtilsRunnerGUI(root)
 
         # Center window on screen
         root.update_idletasks()

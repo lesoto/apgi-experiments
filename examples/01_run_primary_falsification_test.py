@@ -4,9 +4,10 @@ Example 1: Running Primary Falsification Test from CLI
 This example demonstrates how to run the primary falsification test,
 which tests whether full ignition signatures can occur without consciousness.
 
-The primary falsification criterion is the most decisive test of the APGI Framework:
-if we observe all neural signatures of ignition (P3b, gamma synchrony, BOLD activation,
-PCI) without any evidence of consciousness, the framework would be falsified.
+The primary falsification criterion is the most decisive test of the APGI
+Framework: if we observe all neural signatures of ignition (P3b, gamma
+synchrony, BOLD activation, PCI) without any evidence of consciousness,
+the framework would be falsified.
 """
 
 import sys
@@ -16,7 +17,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from apgi_framework.main_controller import MainApplicationController
-from apgi_framework.config import ConfigManager
 from apgi_framework.logging.standardized_logging import get_logger
 
 logger = get_logger("01_run_primary_falsification_test")
@@ -48,7 +48,8 @@ def run_primary_falsification_test_basic():
         logger.info("RESULTS")
         logger.info("=" * 60)
         logger.info(
-            f"Falsification Status: {'FALSIFIED' if result.is_falsified else 'NOT FALSIFIED'}"
+            f"Falsification Status: "
+            f"{'FALSIFIED' if result.is_falsified else 'NOT FALSIFIED'}"
         )
         logger.info(f"Confidence Level: {result.confidence_level:.3f}")
         logger.info(f"Effect Size: {result.effect_size:.3f}")
@@ -102,10 +103,18 @@ def run_primary_falsification_test_custom():
 
         # Run the test
         logger.info("Running primary falsification test with custom parameters...")
-        logger.info(f"  - Trials: 2000")
-        logger.info(f"  - Interoceptive Precision: 2.0")
-        logger.info(f"  - Threshold: 3.0")
-        logger.info(f"  - Random Seed: 42")
+        logger.info(
+            f"  - Trials: {controller.config_manager.get_experimental_config()['n_trials']}"
+        )
+        logger.info(
+            f"  - Interoceptive Precision: {controller.config_manager.get_apgi_parameters()['intero_precision']}"
+        )
+        logger.info(
+            f"  - Threshold: {controller.config_manager.get_apgi_parameters()['threshold']}"
+        )
+        logger.info(
+            f"  - Random Seed: {controller.config_manager.get_experimental_config()['random_seed']}"
+        )
 
         result = primary_test.run_falsification_test(n_trials=2000)
 
@@ -115,7 +124,8 @@ def run_primary_falsification_test_custom():
         logger.info("=" * 60)
         logger.info(f"Test Type: {result.test_type}")
         logger.info(
-            f"Falsification Status: {'FALSIFIED' if result.is_falsified else 'NOT FALSIFIED'}"
+            f"Falsification Status: "
+            f"{'FALSIFIED' if result.is_falsified else 'NOT FALSIFIED'}"
         )
         logger.info(f"Confidence Level: {result.confidence_level:.3f}")
         logger.info(f"Effect Size (Cohen's d): {result.effect_size:.3f}")
@@ -128,12 +138,12 @@ def run_primary_falsification_test_custom():
         if result.is_falsified:
             logger.info("  ⚠️  The APGI Framework has been FALSIFIED!")
             logger.info(
-                "  Full ignition signatures were observed without consciousness."
+                "  Full ignition signatures were observed " "without consciousness."
             )
         else:
             logger.info("  ✓ The APGI Framework passed this falsification test.")
             logger.info(
-                "  No instances of full ignition without consciousness were found."
+                "  No instances of full ignition without " "consciousness were found."
             )
 
         logger.info("=" * 60 + "\n")
@@ -192,7 +202,8 @@ def run_primary_falsification_test_with_validation():
         logger.info("RESULTS")
         logger.info("=" * 60)
         logger.info(
-            f"Falsification Status: {'FALSIFIED' if result.is_falsified else 'NOT FALSIFIED'}"
+            f"Falsification Status: "
+            f"{'FALSIFIED' if result.is_falsified else 'NOT FALSIFIED'}"
         )
         logger.info(f"Confidence Level: {result.confidence_level:.3f}")
         logger.info(f"P-value: {result.p_value:.6f}")

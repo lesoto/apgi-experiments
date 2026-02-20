@@ -4792,10 +4792,11 @@ class APGIFrameworkGUI(ctk.CTk):
                     if value is not None:
                         # Convert to string for validation
                         str_value = str(value)
-                        is_valid, validation_error = (
-                            self.config_validator.validate_parameter(
-                                param_name, str_value
-                            )
+                        (
+                            is_valid,
+                            validation_error,
+                        ) = self.config_validator.validate_parameter(
+                            param_name, str_value
                         )
 
                         if is_valid:

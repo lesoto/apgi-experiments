@@ -14,12 +14,10 @@ Comprehensive backup and restore functionality for:
 
 import hashlib
 import json
-import logging
 import os
 import shutil
 import tarfile
 import threading
-import time
 import zipfile
 from dataclasses import asdict, dataclass
 from datetime import datetime
@@ -35,7 +33,7 @@ if __name__ == "__main__":
     sys.path.insert(0, str(PROJECT_ROOT))
 
 try:
-    from .logging_config import apgi_logger
+    from .logging_config import apgi_logger  # type: ignore
 except ImportError:
     try:
         from utils.logging_config import apgi_logger

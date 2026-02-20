@@ -1749,22 +1749,22 @@ class APGIFalsificationGUI(ctk.CTk):
                 test_controllers["Primary"] = self._create_mock_controller("Primary")
 
             if ConsciousnessWithoutIgnitionTest is not None:
-                test_controllers["Consciousness Without Ignition"] = (
-                    ConsciousnessWithoutIgnitionTest()
-                )
+                test_controllers[
+                    "Consciousness Without Ignition"
+                ] = ConsciousnessWithoutIgnitionTest()
             else:
-                test_controllers["Consciousness Without Ignition"] = (
-                    self._create_mock_controller("Consciousness Without Ignition")
-                )
+                test_controllers[
+                    "Consciousness Without Ignition"
+                ] = self._create_mock_controller("Consciousness Without Ignition")
 
             if ThresholdInsensitivityTest is not None:
-                test_controllers["Threshold Insensitivity"] = (
-                    ThresholdInsensitivityTest()
-                )
+                test_controllers[
+                    "Threshold Insensitivity"
+                ] = ThresholdInsensitivityTest()
             else:
-                test_controllers["Threshold Insensitivity"] = (
-                    self._create_mock_controller("Threshold Insensitivity")
-                )
+                test_controllers[
+                    "Threshold Insensitivity"
+                ] = self._create_mock_controller("Threshold Insensitivity")
 
             if SomaBiasTest is not None:
                 test_controllers["Soma-Bias"] = SomaBiasTest()

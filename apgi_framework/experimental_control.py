@@ -11,9 +11,9 @@ from typing import Dict, List, Optional, Tuple, Any
 from enum import Enum
 import numpy as np
 from datetime import datetime
-from ..logging.standardized_logging import get_logger
+import logging
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class ResponseSystemType(Enum):
@@ -179,7 +179,7 @@ class ExperimentalControlManager:
             is_intact=is_intact,
             response_time_mean=rt_mean,
             response_time_std=rt_std,
-            accuracy=accuracy,
+            accuracy=float(accuracy),
             consistency_score=consistency_score,
             validation_timestamp=datetime.now(),
             notes="; ".join(notes),
@@ -252,7 +252,7 @@ class ExperimentalControlManager:
 
         return TaskComprehensionResult(
             task_type=task_type,
-            comprehension_score=comprehension_score,
+            comprehension_score=float(comprehension_score),
             training_trials_completed=training_trials_completed,
             performance_criterion_met=overall_comprehension,
             response_consistency=response_consistency,
@@ -333,7 +333,7 @@ class ExperimentalControlManager:
             response_systems=response_validations,
             task_comprehension=comprehension_results,
             overall_validity=overall_validity,
-            control_score=control_score,
+            control_score=float(control_score),
             recommendations=recommendations,
             timestamp=datetime.now(),
         )
@@ -639,14 +639,15 @@ class ParticipantSimulator:
         confidences = [r.confidence for r in responses]
 
         return {
-            "accuracy_mean": np.mean(accuracies),
-            "accuracy_std": np.std(accuracies),
-            "response_time_mean": np.mean(response_times),
-            "response_time_std": np.std(response_times),
-            "confidence_mean": np.mean(confidences),
-            "confidence_std": np.std(confidences),
-            "consistency_score": 1.0
-            - (np.std(response_times) / np.mean(response_times)),
+            "accuracy_mean": float(np.mean(accuracies)),
+            "accuracy_std": float(np.std(accuracies)),
+            "response_time_mean": float(np.mean(response_times)),
+            "response_time_std": float(np.std(response_times)),
+            "confidence_mean": float(np.mean(confidences)),
+            "confidence_std": float(np.std(confidences)),
+            "consistency_score": float(
+                1.0 - (np.std(response_times) / np.mean(response_times))
+            ),
             "final_fatigue": responses[-1].fatigue_level if responses else 0.0,
             "total_trials": len(responses),
         }
@@ -717,7 +718,7 @@ class ParticipantPopulationGenerator:
             }
 
             profile = ParticipantProfile(
-                participant_id=f"P{i+1:03d}",
+                participant_id=f"P{i + 1:03d}",
                 age=age,
                 cognitive_ability=cognitive_ability,
                 attention_span=attention_span,
@@ -801,7 +802,7 @@ class ParticipantPopulationGenerator:
             learning_rate = np.clip(np.random.normal(1.0, 0.2), 0.5, 1.5)
 
             profile = ParticipantProfile(
-                participant_id=f"{condition.upper()}{i+1:03d}",
+                participant_id=f"{condition.upper()}{i + 1:03d}",
                 age=age,
                 cognitive_ability=cognitive_ability,
                 attention_span=attention_span,
@@ -983,7 +984,7 @@ class StimulusValidator:
         )
 
         if stimulus.detection_threshold * supraliminal_intensity > stimulus.luminance:
-            issues.append(f"Tactile intensity insufficient for supraliminal detection")
+            issues.append("Tactile intensity insufficient for supraliminal detection")
 
         return issues
 
@@ -1081,7 +1082,9 @@ class TaskValidator:
         )
         if stability_window > 1:
             stability_data = accuracies[-stability_window:]
-            performance_stability = 1.0 - np.std(stability_data)  # Higher = more stable
+            performance_stability = float(
+                1.0 - np.std(stability_data)
+            )  # Higher = more stable
         else:
             performance_stability = 0.0
 
@@ -1122,9 +1125,9 @@ class TaskValidator:
             task_id=task_id,
             participant_id=participant_id,
             training_trials_completed=trials_completed,
-            final_performance=final_performance,
+            final_performance=float(final_performance),
             learning_curve_slope=learning_curve_slope,
-            performance_stability=performance_stability,
+            performance_stability=float(performance_stability),
             criterion_met=criterion_met,
             additional_training_needed=additional_training_needed,
             timestamp=datetime.now(),
@@ -1320,11 +1323,11 @@ class WellTrainedTaskChecker:
             }
 
         # Calculate overall metrics
-        overall_performance = np.mean(session_performances)
+        overall_performance = float(np.mean([float(p) for p in session_performances]))
         performance_consistency = (
             1.0 - np.std(session_performances) if len(session_performances) > 1 else 1.0
         )
-        average_stability = np.mean(session_stabilities)
+        average_stability = float(np.mean([float(s) for s in session_stabilities]))
 
         # Calculate cross-session correlation (learning trajectory)
         if len(session_performances) >= 3:
@@ -1349,7 +1352,7 @@ class WellTrainedTaskChecker:
                 # Fatigue resistance = how well performance is maintained
                 if first_performance > 0:
                     resistance = second_performance / first_performance
-                    fatigue_resistance_scores.append(min(1.0, resistance))
+                    fatigue_resistance_scores.append(min(1.0, float(resistance)))
 
         fatigue_resistance = (
             np.mean(fatigue_resistance_scores) if fatigue_resistance_scores else 0.5
@@ -1669,12 +1672,12 @@ class ConsciousnessMeasurementValidator:
 
         return MetacognitiveAssessment(
             participant_id=participant_id,
-            type_1_performance=type_1_accuracy,
+            type_1_performance=float(type_1_accuracy),
             type_2_performance=type_2_performance,
             meta_d_prime=meta_d_prime,
             confidence_accuracy_correlation=conf_acc_correlation,
             calibration_score=calibration_score,
-            resolution_score=resolution_score,
+            resolution_score=float(resolution_score),
             is_intact=is_intact,
             assessment_details=assessment_details,
             timestamp=datetime.now(),
@@ -1738,9 +1741,9 @@ class ConsciousnessMeasurementValidator:
 
         # Range validity (values within expected range)
         if measure_type in ["confidence", "wagering"]:
-            range_validity = np.mean([(0 <= v <= 1) for v in values])
+            range_validity = float(np.mean([(0 <= v <= 1) for v in values]))
         elif measure_type == "forced_choice":
-            range_validity = np.mean([(0 <= v <= 1) for v in values])
+            range_validity = float(np.mean([(0 <= v <= 1) for v in values]))
         else:
             range_validity = 1.0  # Assume valid range for other measures
 
@@ -1749,7 +1752,7 @@ class ConsciousnessMeasurementValidator:
         # Variability validity (sufficient variability to be informative)
         if std_value > 0.05:  # Some minimum variability expected
             variability_validity = min(
-                1.0, std_value / 0.3
+                1.0, float(std_value) / 0.3
             )  # Normalize to reasonable range
         else:
             variability_validity = 0.1  # Very low validity for no variability
@@ -1759,14 +1762,16 @@ class ConsciousnessMeasurementValidator:
         # Reference validity (correlation with reference if provided)
         if reference_values and len(reference_values) == len(values):
             if len(set(values)) > 1 and len(set(reference_values)) > 1:
-                ref_correlation = max(0, np.corrcoef(values, reference_values)[0, 1])
+                ref_correlation = max(
+                    0.0, float(np.corrcoef(values, reference_values)[0, 1])
+                )
                 validity_components.append(ref_correlation)
 
-        validity_score = np.mean(validity_components)
+        validity_score = float(np.mean(validity_components))
 
         return ConsciousnessMeasure(
             measure_type=measure_type,
-            value=mean_value,
+            value=float(mean_value),
             confidence_interval=confidence_interval,
             reliability=reliability,
             validity_score=validity_score,
@@ -1927,7 +1932,7 @@ class ConsciousnessMeasurementValidator:
             measures=measures,
             metacognitive_assessment=metacognitive_assessment,
             convergent_validity=convergent_validity,
-            measurement_reliability=measurement_reliability,
+            measurement_reliability=float(measurement_reliability),
             overall_validity=overall_validity,
             recommendations=recommendations,
             timestamp=datetime.now(),
@@ -2025,7 +2030,7 @@ class ExperimentalIntegrityChecker:
         }
 
     def check_response_system_integrity(
-        self, participant_id: str, response_data: Dict[str, List[float]]
+        self, participant_id: str, response_data: Dict[str, Dict[str, Any]]
     ) -> IntegrityCheckResult:
         """
         Check integrity of participant response systems.
@@ -2051,8 +2056,8 @@ class ExperimentalIntegrityChecker:
 
                 # Extract response times and accuracies
                 if "response_times" in data and "accuracies" in data:
-                    response_times = data["response_times"]
-                    accuracies = data["accuracies"]
+                    response_times = list(data["response_times"])
+                    accuracies = list(data["accuracies"])
 
                     validation = self.control_manager.validate_response_system(
                         participant_id, system_type, response_times, accuracies
@@ -2075,7 +2080,7 @@ class ExperimentalIntegrityChecker:
 
             except ValueError:
                 issues.append(f"Unknown response system type: {system_type_str}")
-                recommendations.append(f"Verify response system type specification")
+                recommendations.append("Verify response system type specification")
 
         # Calculate overall score
         overall_score = np.mean(system_scores) if system_scores else 0.0
@@ -2094,7 +2099,7 @@ class ExperimentalIntegrityChecker:
         return IntegrityCheckResult(
             check_name="response_system_integrity",
             passed=passed,
-            score=overall_score,
+            score=float(overall_score),
             details=details,
             issues=issues,
             recommendations=recommendations,
@@ -2277,7 +2282,7 @@ class ExperimentalIntegrityChecker:
         return IntegrityCheckResult(
             check_name="experimental_condition_compliance",
             passed=passed,
-            score=overall_score,
+            score=float(overall_score),
             details=details,
             issues=issues,
             recommendations=recommendations,
@@ -2394,7 +2399,7 @@ class ExperimentalIntegrityChecker:
         return IntegrityCheckResult(
             check_name="data_quality_assessment",
             passed=passed,
-            score=overall_score,
+            score=float(overall_score),
             details=details,
             issues=issues,
             recommendations=recommendations,
@@ -2567,8 +2572,8 @@ class ExperimentalIntegrityChecker:
                     ],
                     timestamp=datetime.now(),
                 )
-                reports[f"error_{exp_data.get('experiment_id', 'unknown')}"] = (
-                    error_report
-                )
+                reports[
+                    f"error_{exp_data.get('experiment_id', 'unknown')}"
+                ] = error_report
 
         return reports

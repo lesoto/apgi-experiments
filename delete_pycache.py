@@ -405,7 +405,7 @@ def clear_log_files(
                 print(f"Error clearing {file_path}: {str(e)}")
 
 
-def parse_args(argv: List[str] = None):
+def parse_args(argv: Optional[List[str]] = None):
     p = argparse.ArgumentParser(
         description="Comprehensive cleanup of temporary files, debugging artifacts, and experiment outputs"
     )
@@ -564,7 +564,7 @@ def parse_args(argv: List[str] = None):
     return p.parse_args(argv)
 
 
-def main(argv: List[str] = None):
+def main(argv: Optional[List[str]] = None):
     args = parse_args(argv)
     current_dir = os.path.dirname(os.path.abspath(__file__))
     root_directory = os.path.abspath(args.root) if args.root else current_dir

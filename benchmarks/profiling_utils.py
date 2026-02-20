@@ -422,10 +422,6 @@ class BenchmarkRunner:
 
             if row["success"]:
                 report_lines.append("- Status: [OK] Success\n")
-                if "duration" in row:
-                    report_lines.append(f"- Duration: {row['duration']:.4f}s\n")
-                if "avg_cpu" in row:
-                    report_lines.append(f"- Avg CPU: {row['avg_cpu']:.2f}%\n")
                 if "max_memory" in row:
                     report_lines.append(f"- Max Memory: {row['max_memory']:.2f}MB\n")
             else:
@@ -483,8 +479,9 @@ if __name__ == "__main__":
 
     def pandas_benchmark():
         import pandas as pd
+        import numpy as np
 
-        df = pd.DataFrame(np.random.rand(10000, 100))  # type: ignore
+        df = pd.DataFrame(np.random.rand(10000, 100))
         return df.describe()
 
     benchmarks = {

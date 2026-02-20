@@ -7,12 +7,11 @@ for validating statistical significance in APGI framework testing.
 """
 
 import numpy as np
-import scipy.stats as stats
-from scipy.stats import t, chi2, f
-from typing import Tuple, Optional, Dict, Any, Union
+import scipy.stats as stats  # type: ignore
+from scipy.stats import t, f  # type: ignore
+from typing import Tuple, Optional, Dict, Any, Union, Callable, List
 from dataclasses import dataclass
 from enum import Enum
-import warnings
 
 
 class EffectSizeType(Enum):
@@ -220,7 +219,7 @@ class EffectSizeCalculator:
         # Interpretation
         interpretation = self._interpret_eta_squared(eta_squared)
 
-        sample_sizes = {f"group_{i+1}": len(group) for i, group in enumerate(groups)}
+        sample_sizes = {f"group_{i + 1}": len(group) for i, group in enumerate(groups)}
 
         return EffectSizeResult(
             effect_size_type=EffectSizeType.ETA_SQUARED.value,
@@ -252,11 +251,6 @@ class EffectSizeCalculator:
         k = len(groups)  # number of groups
         n = sum(len(group) for group in groups)  # total sample size
         df_between = k - 1
-        df_within = n - k
-
-        # Calculate mean squares
-        ms_between = f_statistic * (df_within / df_between)  # Approximation
-        ms_within = 1.0  # Normalized
 
         # Omega-squared
         omega_squared = (df_between * (f_statistic - 1)) / (
@@ -273,7 +267,7 @@ class EffectSizeCalculator:
             omega_squared
         )  # Same scale as eta-squared
 
-        sample_sizes = {f"group_{i+1}": len(group) for i, group in enumerate(groups)}
+        sample_sizes = {f"group_{i + 1}": len(group) for i, group in enumerate(groups)}
 
         return EffectSizeResult(
             effect_size_type=EffectSizeType.OMEGA_SQUARED.value,
@@ -337,7 +331,7 @@ class EffectSizeCalculator:
     def bootstrap_confidence_interval(
         self,
         data: Union[np.ndarray, Tuple[np.ndarray, ...]],
-        statistic_func: callable,
+        statistic_func: Callable[[Union[np.ndarray, Tuple[np.ndarray, ...]]], float],
         confidence_level: float = 0.95,
         n_bootstrap: int = 10000,
         method: ConfidenceIntervalMethod = ConfidenceIntervalMethod.BIAS_CORRECTED_BOOTSTRAP,
@@ -359,7 +353,9 @@ class EffectSizeCalculator:
         original_stat = statistic_func(data)
 
         # Generate bootstrap samples
-        bootstrap_stats = []
+        bootstrap_stats_list: List[float] = []
+
+        bootstrap_data: Union[np.ndarray, Tuple[np.ndarray, ...]]
 
         if isinstance(data, tuple):
             # Multiple arrays
@@ -369,7 +365,7 @@ class EffectSizeCalculator:
                 indices = np.random.choice(n, size=n, replace=True)
                 bootstrap_data = tuple(arr[indices] for arr in data)
                 bootstrap_stat = statistic_func(bootstrap_data)
-                bootstrap_stats.append(bootstrap_stat)
+                bootstrap_stats_list.append(bootstrap_stat)
         else:
             # Single array
             n = len(data)
@@ -377,9 +373,9 @@ class EffectSizeCalculator:
                 indices = np.random.choice(n, size=n, replace=True)
                 bootstrap_data = data[indices]
                 bootstrap_stat = statistic_func(bootstrap_data)
-                bootstrap_stats.append(bootstrap_stat)
+                bootstrap_stats_list.append(bootstrap_stat)
 
-        bootstrap_stats = np.array(bootstrap_stats)
+        bootstrap_stats = np.array(bootstrap_stats_list)
 
         # Calculate confidence interval based on method
         alpha = 1 - confidence_level
@@ -438,7 +434,9 @@ class EffectSizeCalculator:
             n1, n2 = len(g1), len(g2)
             m1, m2 = np.mean(g1), np.mean(g2)
             s1, s2 = np.std(g1, ddof=1), np.std(g2, ddof=1)
-            pooled_std = np.sqrt(((n1 - 1) * s1**2 + (n2 - 1) * s2**2) / (n1 + n2 - 2))
+            pooled_std = np.sqrt(
+                ((n1 - 1) * s1**2 + (n2 - 1) * s2**2) / (n1 + n2 - 2)
+            )
             return (m1 - m2) / pooled_std
 
         bootstrap_result = self.bootstrap_confidence_interval(

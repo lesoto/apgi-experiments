@@ -811,9 +811,10 @@ class ThresholdDetectionSystem:
         )
 
         # Identify shared and modality-specific neural signatures
-        shared_signatures, modality_specific_signatures = (
-            self._analyze_neural_signatures(neural_data1, neural_data2)
-        )
+        (
+            shared_signatures,
+            modality_specific_signatures,
+        ) = self._analyze_neural_signatures(neural_data1, neural_data2)
 
         comparison = CrossModalThreshold(
             primary_modality=modality1,

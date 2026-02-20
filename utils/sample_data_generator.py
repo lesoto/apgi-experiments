@@ -268,7 +268,9 @@ class SampleDataGenerator:
         sigma = 800
         amplitude = 15.0  # 15 BPM typical increase
 
-        hr_increase = amplitude * np.exp(-((time_ms - peak_time) ** 2) / (2 * sigma**2))
+        hr_increase = amplitude * np.exp(
+            -((time_ms - peak_time) ** 2) / (2 * sigma**2)
+        )
 
         return hr_increase
 

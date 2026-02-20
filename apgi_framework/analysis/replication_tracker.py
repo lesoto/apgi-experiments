@@ -7,14 +7,11 @@ sample sizes and statistical power in APGI framework validation studies.
 """
 
 import numpy as np
-import scipy.stats as stats
 from scipy.stats import norm, t, chi2, f
-from typing import Dict, List, Tuple, Optional, Any, Union
-from dataclasses import dataclass, field
+from typing import Dict, List, Tuple, Optional, Any
 from enum import Enum
-import warnings
+from dataclasses import dataclass, field
 from datetime import datetime
-import json
 
 
 class ReplicationStatus(Enum):
@@ -171,8 +168,8 @@ class ReplicationTracker:
         success_rate = successful / total
 
         # Calculate meta-analytic statistics
-        mean_effect_size = np.mean(effect_sizes)
-        effect_size_heterogeneity = np.std(effect_sizes)
+        mean_effect_size = float(np.mean(effect_sizes))
+        effect_size_heterogeneity = float(np.std(effect_sizes))
 
         # Combine p-values using Fisher's method
         combined_p_value = self._combine_p_values_fisher(p_values)
@@ -200,7 +197,7 @@ class ReplicationTracker:
             interpretation=interpretation,
         )
 
-    def meta_analysis(self, weights: Optional[List[float]] = None) -> Dict[str, float]:
+    def meta_analysis(self, weights: Optional[np.ndarray] = None) -> Dict[str, Any]:
         """
         Perform meta-analysis of effect sizes across replications.
 
@@ -264,7 +261,7 @@ class ReplicationTracker:
         lab_results = {}
 
         # Group experiments by lab
-        labs = {}
+        labs: Dict[str, List[ExperimentResult]] = {}
         for exp in self.experiments:
             if exp.lab_id not in labs:
                 labs[exp.lab_id] = []
@@ -321,7 +318,7 @@ class ReplicationTracker:
         # Factors contributing to confidence
         consistency_factor = 1 / (1 + np.std(effect_sizes))
         magnitude_factor = min(
-            1.0, abs(np.mean(effect_sizes)) / abs(original_effect_size)
+            1.0, float(abs(np.mean(effect_sizes)) / abs(original_effect_size))
         )
         replication_factor = success_rate
 
@@ -329,7 +326,7 @@ class ReplicationTracker:
         confidence = (consistency_factor * magnitude_factor * replication_factor) ** (
             1 / 3
         )
-        return confidence
+        return float(confidence)
 
     def _interpret_replication_results(
         self,
@@ -555,7 +552,7 @@ class PowerAnalyzer:
 
         if sample_size is not None:
             # Calculate power given sample size
-            df = sample_size - 2
+            # df = sample_size - 2  # Not needed for power calculation
 
             # Fisher's z transformation
             z_r = 0.5 * np.log((1 + effect_size) / (1 - effect_size))
@@ -728,7 +725,9 @@ class PowerAnalyzer:
         effect_magnitude = (
             "small"
             if abs(effect_size) < 0.5
-            else "medium" if abs(effect_size) < 0.8 else "large"
+            else "medium"
+            if abs(effect_size) < 0.8
+            else "large"
         )
 
         return (
