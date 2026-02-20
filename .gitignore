@@ -61,3 +61,5 @@ test_storage/
 tmp/
 temp/
 *.tmp
+.hypothesis/
+session_data/
