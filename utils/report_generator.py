@@ -26,6 +26,8 @@ except ImportError:
     WEASYPRINT_AVAILABLE = False
     warnings.warn("WeasyPrint not available. PDF generation disabled.")
 
+apgi_logger: Any = None
+
 try:
     from utils.logging_config import apgi_logger
 except ImportError:
@@ -39,6 +41,7 @@ except ImportError:
     apgi_logger = MockAPGILogger()
 
 # APGI imports
+performance_profiler: Any = None
 try:
     from utils.performance_profiler import performance_profiler
 except ImportError:
@@ -365,20 +368,22 @@ class ReportGenerator:
         self, validation_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Analyze validation data and extract insights."""
-        summary = {
-            "total_protocols": len(validation_data.get("protocols", {})),
+        summary: Dict[str, Any] = {
+            "total_protocols": 0,
             "passed_protocols": 0,
             "failed_protocols": 0,
-            "total_duration": 0,
-            "avg_performance": 0,
-            "error_rate": 0,
+            "total_duration": 0.0,
+            "avg_performance": 0.0,
+            "error_rate": 0.0,
             "issues_found": [],
         }
 
         protocols = validation_data.get("protocols", {})
-        total_duration = 0
+        total_duration = 0.0
         total_errors = 0
         total_calls = 0
+
+        summary["total_protocols"] = len(protocols)
 
         for protocol_name, protocol_data in protocols.items():
             status = protocol_data.get("status", "unknown")

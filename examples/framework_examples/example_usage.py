@@ -6,14 +6,15 @@ and gamma synchrony detection for APGI framework validation.
 """
 
 import numpy as np
+
 from apgi_framework.neural import (
-    EEGInterface,
-    EEGConfig,
     ChannelInfo,
     ChannelType,
+    EEGConfig,
+    EEGInterface,
     ERPAnalysis,
-    MicrostateAnalysis,
     GammaSynchronyAnalysis,
+    MicrostateAnalysis,
 )
 
 
@@ -161,7 +162,7 @@ def example_microstate_analysis():
     print(f"  Total segments: {len(sequence.durations)}")
     print(f"  State occurrences: {sequence.occurrences}")
     print(f"  State coverage (%): {sequence.coverage}")
-    print(f"\nTransition matrix:")
+    print("\nTransition matrix:")
     print(sequence.transition_matrix)
     print()
 
@@ -247,7 +248,7 @@ def example_integrated_pipeline():
 
     # Initialize all analyzers
     erp = ERPAnalysis(sampling_rate=sampling_rate)
-    ms = MicrostateAnalysis(n_states=4, sampling_rate=sampling_rate)
+    MicrostateAnalysis(n_states=4, sampling_rate=sampling_rate)
     gamma = GammaSynchronyAnalysis(sampling_rate=sampling_rate)
 
     # Simulate trials

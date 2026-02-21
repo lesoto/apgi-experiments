@@ -4,30 +4,29 @@ Comprehensive reporting and visualization system.
 Provides session reports, parameter visualizations, and data export functionality.
 """
 
-import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
-from typing import Dict, Any, Optional, List
-from pathlib import Path
-from datetime import datetime
 import csv
 import json
 import logging
-
-import sys
 import os
+import sys
+import tkinter as tk
+from datetime import datetime
+from pathlib import Path
+from tkinter import filedialog, messagebox, ttk
+from typing import Any, Dict, List
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 try:
-    from ..data.parameter_estimation_models import SessionData, ParameterEstimates
     from ..data.parameter_estimation_dao import ParameterEstimationDAO
+    from ..data.parameter_estimation_models import ParameterEstimates, SessionData
 except ImportError:
     # Handle relative import when run directly
-    from apgi_framework.data.parameter_estimation_models import (
-        SessionData,
-        ParameterEstimates,
-    )
     from apgi_framework.data.parameter_estimation_dao import ParameterEstimationDAO
+    from apgi_framework.data.parameter_estimation_models import (
+        ParameterEstimates,
+        SessionData,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -244,8 +243,8 @@ class ParameterVisualizationEngine:
             output_path: Output file path for plot
         """
         try:
-            import matplotlib.pyplot as plt
             import matplotlib
+            import matplotlib.pyplot as plt
 
             matplotlib.use("Agg")  # Non-interactive backend
 

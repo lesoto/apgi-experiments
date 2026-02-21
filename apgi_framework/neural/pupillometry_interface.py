@@ -6,13 +6,14 @@ artifact interpolation, and luminance-independent dilation measurement
 for APGI experiments.
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Callable
-from enum import Enum
-import numpy as np
-from collections import deque
 import threading
 import time
+from collections import deque
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any, Callable, Dict, List, Optional, Tuple
+
+import numpy as np
 
 
 class EyeType(Enum):
@@ -521,7 +522,7 @@ class LuminanceCorrector:
         valid_mask = ~np.isnan(luminance) & (luminance > 0)
         predicted = np.zeros_like(diameters)
 
-        if np.any(valid_mask):
+        if self.luminance_model_params is not None and np.any(valid_mask):
             log_luminance = np.log(luminance[valid_mask])
             predicted[valid_mask] = (
                 self.luminance_model_params["slope"] * log_luminance
@@ -529,7 +530,8 @@ class LuminanceCorrector:
             )
 
         # Remove predicted luminance effect
-        corrected = diameters - predicted + self.luminance_model_params["intercept"]
+        if self.luminance_model_params is not None:
+            corrected = diameters - predicted + self.luminance_model_params["intercept"]
 
         return corrected
 
@@ -753,7 +755,10 @@ class PupillometryInterface:
                 diameters, baseline
             )
 
-            result["baseline"] = baseline
+            baseline_array = (
+                np.array([baseline]) if np.isscalar(baseline) else np.asarray(baseline)
+            )
+            result["baseline"] = baseline_array
             result["baseline_corrected_diameters"] = corrected
             result["percent_change"] = percent_change
 
@@ -761,7 +766,7 @@ class PupillometryInterface:
 
         return result
 
-    def get_quality_metrics(self) -> Dict[str, any]:
+    def get_quality_metrics(self) -> Dict[str, Any]:
         """
         Assess pupillometry data quality.
 
@@ -822,7 +827,7 @@ class PupillometryInterface:
                 "is_artifact": np.array([s.is_artifact for s in samples]),
                 "sampling_rate": self.config.sampling_rate,
             }
-            np.savez(filename, **data_dict)
+            np.savez(filename, **data_dict)  # type: ignore
 
         elif format == "csv":
             import csv

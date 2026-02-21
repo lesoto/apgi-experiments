@@ -6,10 +6,11 @@ for testing, development, and educational purposes.
 """
 
 import json
-import pandas as pd
 from pathlib import Path
-from typing import Dict, Any, Optional, Union
+from typing import Any, Dict, Optional, Union
+
 import numpy as np
+import pandas as pd
 
 
 class ExampleDataLoader:
@@ -236,7 +237,7 @@ class ExampleDataLoader:
             channels = ["Fz", "Cz", "Pz", "Oz", "F3", "F4", "P3", "P4"]
 
             for subj_idx in range(n_subjects):
-                subject_id = f"synthetic_subject_{subj_idx+1:03d}"
+                subject_id = f"synthetic_subject_{subj_idx + 1:03d}"
 
                 # Generate realistic EEG-like signals
                 data = {}

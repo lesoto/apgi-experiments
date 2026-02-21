@@ -5,13 +5,14 @@ Provides R-peak detection, HRV analysis, HEP extraction, and quality assessment
 for interoceptive precision estimation in APGI experiments.
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any
+import time
+from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Dict, Optional, Tuple
+
 import numpy as np
 from scipy import signal
 from scipy.stats import zscore
-import time
 
 # Try to import numba for optimization
 try:
@@ -458,7 +459,6 @@ class HRVAnalyzer:
         )
 
         # Define frequency bands
-        vlf_band = (0.0, 0.04)  # Very low frequency
         lf_band = (0.04, 0.15)  # Low frequency
         hf_band = (0.15, 0.4)  # High frequency
 
@@ -475,7 +475,7 @@ class HRVAnalyzer:
         total_power = np.trapz(psd, freqs)
 
         # LF/HF ratio
-        lf_hf_ratio = lf_power / hf_power if hf_power > 0 else 0.0
+        lf_hf_ratio = float(lf_power) / float(hf_power) if float(hf_power) > 0 else 0.0
 
         return {
             "lf_power": float(lf_power),
@@ -681,8 +681,145 @@ class CardiacQualityAssessor:
         """
         self.sampling_rate = sampling_rate
 
+    def preprocess_ecg(self, ecg_signal: np.ndarray) -> np.ndarray:
+        """
+        Preprocess ECG signal with filtering.
+
+        Args:
+            ecg_signal: Raw ECG signal
+
+        Returns:
+            Preprocessed ECG signal
+        """
+        # Bandpass filter (0.5-40 Hz for ECG)
+        nyquist = self.sampling_rate / 2.0
+        b, a = signal.butter(4, [0.5 / nyquist, 40.0 / nyquist], btype="bandpass")
+        filtered = signal.filtfilt(b, a, ecg_signal)
+
+        # Remove baseline wander with high-pass filter
+        b_hp, a_hp = signal.butter(2, 0.5 / nyquist, btype="highpass")
+        filtered = signal.filtfilt(b_hp, a_hp, filtered)
+
+        return filtered
+
+    def detect_r_peaks_pan_tompkins(
+        self, ecg_signal: np.ndarray, timestamps: np.ndarray
+    ) -> np.ndarray:
+        """
+        Detect R-peaks using optimized Pan-Tompkins algorithm.
+
+        Args:
+            ecg_signal: Preprocessed ECG signal
+            timestamps: Timestamp array
+
+        Returns:
+            Array of R-peak timestamps
+        """
+        # Use optimized derivative calculation
+        if NUMBA_AVAILABLE:
+            derivative = _optimized_derivative(ecg_signal)
+        else:
+            # Fallback to numpy
+            derivative = np.diff(ecg_signal)
+            derivative = np.pad(derivative, (0, 1), mode="edge")
+
+        # Squaring (emphasizes higher frequencies) - vectorized
+        squared = derivative**2
+
+        # Optimized moving window integration
+        window_size = int(0.15 * self.sampling_rate)  # 150ms window
+
+        if (
+            NUMBA_AVAILABLE and len(squared) < 100000
+        ):  # Only use numba for smaller arrays
+            integrated = _optimized_moving_average(squared, window_size)
+        else:
+            # Use numpy convolution for large arrays
+            kernel = np.ones(window_size) / window_size
+            integrated = np.convolve(squared, kernel, mode="same")
+
+        # Vectorized adaptive thresholding
+        signal_mean = np.mean(integrated)
+        signal_std = np.std(integrated)
+        threshold = signal_mean + 0.5 * signal_std
+
+        # Use optimized peak finding
+        min_distance = int(0.3 * self.sampling_rate)  # Min 300ms between peaks
+
+        if NUMBA_AVAILABLE and len(integrated) < 100000:
+            peak_indices = _find_peaks_vectorized(integrated, threshold, min_distance)
+        else:
+            # Fallback to scipy
+            peak_indices, _ = signal.find_peaks(
+                integrated, height=threshold, distance=min_distance
+            )
+
+        # Convert to timestamps
+        if len(peak_indices) > 0:
+            peaks = timestamps[peak_indices]
+        else:
+            peaks = np.array([])
+
+        # Apply physiological constraints using optimized function
+        min_rr_interval = 60.0 / 200.0  # 200 bpm max
+
+        if NUMBA_AVAILABLE and len(peaks) > 0:
+            peaks = _filter_peaks_physiological(peaks, min_rr_interval)
+        else:
+            # Fallback for empty or large arrays
+            if len(peaks) > 1:
+                filtered_peaks = [peaks[0]]
+                for peak in peaks[1:]:
+                    if peak - filtered_peaks[-1] >= min_rr_interval:
+                        filtered_peaks.append(peak)
+                peaks = np.array(filtered_peaks)
+
+        return peaks
+
+    def detect_r_peaks_adaptive(
+        self, ecg_signal: np.ndarray, timestamps: np.ndarray
+    ) -> np.ndarray:
+        """
+        Detect R-peaks using adaptive threshold method.
+
+        Args:
+            ecg_signal: Preprocessed ECG signal
+            timestamps: Timestamp array
+
+        Returns:
+            Array of R-peak timestamps
+        """
+        # Compute adaptive threshold using moving statistics
+        window_size = int(0.5 * self.sampling_rate)  # 500ms window
+
+        peaks = []
+        threshold_history = []
+
+        for i in range(window_size, len(ecg_signal) - window_size, window_size // 4):
+            window = ecg_signal[i - window_size : i + window_size]
+
+            # Adaptive threshold: mean + k * std
+            threshold = np.mean(window) + 0.6 * np.std(window)
+            threshold_history.append(threshold)
+
+            # Find peaks in window
+            window_peaks = signal.find_peaks(
+                ecg_signal[i : i + window_size],
+                height=threshold,
+                distance=int(0.3 * self.sampling_rate),  # Min 300ms between peaks
+            )[0]
+
+            # Convert to timestamps
+            for peak_idx in window_peaks:
+                peaks.append(timestamps[i + peak_idx])
+
+        return np.array(peaks)
+
     def compute_signal_quality_index(
-        self, ecg_signal: np.ndarray, r_peaks: np.ndarray, timestamps: np.ndarray
+        self,
+        ecg_signal: np.ndarray,
+        r_peaks: np.ndarray,
+        timestamps: np.ndarray,
     ) -> float:
         """
         Compute signal quality index based on template matching.
@@ -707,8 +844,8 @@ class CardiacQualityAssessor:
             peak_idx = np.argmin(np.abs(timestamps - r_peak))
 
             # Extract template
-            start_idx = max(0, peak_idx - window_size // 2)
-            end_idx = min(len(ecg_signal), peak_idx + window_size // 2)
+            start_idx = max(0, int(peak_idx) - window_size // 2)
+            end_idx = min(len(ecg_signal), int(peak_idx) + window_size // 2)
 
             if end_idx - start_idx == window_size:
                 template = ecg_signal[start_idx:end_idx]
@@ -882,7 +1019,7 @@ class CardiacQualityAssessor:
             # Benchmark
             for _ in range(n_iterations):
                 start_time = time.perf_counter()
-                peaks = algorithm_func(preprocessed, timestamps)
+                algorithm_func(preprocessed, timestamps)
                 end_time = time.perf_counter()
                 times.append(end_time - start_time)
 
@@ -891,17 +1028,19 @@ class CardiacQualityAssessor:
             std_time = np.std(times)
             samples_per_second = signal_length / mean_time
 
-            results[f"{algorithm_name.value}_mean_time"] = mean_time
-            results[f"{algorithm_name.value}_std_time"] = std_time
-            results[f"{algorithm_name.value}_samples_per_second"] = samples_per_second
-            results[f"{algorithm_name.value}_realtime_factor"] = (
+            results[f"{algorithm_name.value}_mean_time"] = float(mean_time)
+            results[f"{algorithm_name.value}_std_time"] = float(std_time)
+            results[f"{algorithm_name.value}_samples_per_second"] = float(
+                samples_per_second
+            )
+            results[f"{algorithm_name.value}_realtime_factor"] = float(
                 samples_per_second / self.sampling_rate
             )
 
         # Overall performance summary
-        results["numba_available"] = NUMBA_AVAILABLE
-        results["signal_length"] = signal_length
-        results["sampling_rate"] = self.sampling_rate
-        results["n_iterations"] = n_iterations
+        results["numba_available"] = float(NUMBA_AVAILABLE)
+        results["signal_length"] = float(signal_length)
+        results["sampling_rate"] = float(self.sampling_rate)
+        results["n_iterations"] = float(n_iterations)
 
         return results

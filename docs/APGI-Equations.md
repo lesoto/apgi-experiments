@@ -7,7 +7,7 @@
 ### 1.1 Core Variables and Their Units
 
 | Symbol | Name | Units | Interpretation | Measurable Via |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | $S(t)$ | Accumulated Surprise | [nats] = [dimensionless] | Information content competing for access | EEG: P3b amplitude (μV); fMRI: BOLD signal |
 | $\theta_t(t)$ | Dynamic Ignition Threshold | [nats] = [dimensionless] | Energy/information barrier to broadcast | Behavioral: detection threshold (contrast) |
 | $\varepsilon^e(t)$ | Exteroceptive Prediction Error | [sensory units] | Discrepancy between input and prediction | EEG: prediction-related negativity |
@@ -43,6 +43,7 @@ $$\Pi = \frac{1}{\sigma_\varepsilon^2}$$
 **Dimensions:** $[1/(\text{error}^2)]$
 
 **Biological interpretation:**
+
 - High precision: prediction errors are tightly clustered (low variance) → high confidence
 - Low precision: prediction errors are scattered (high variance) → low confidence
 - Precision weighting prioritizes reliable signals
@@ -82,11 +83,12 @@ Problem: $\Pi \cdot [\text{dimensionless}] = [1/\text{error}^2]$ ≠ signal stre
 
 ---
 
-**AFTER (Dimensionally Correct - Option A: Information Theoretic)**
+### AFTER (Dimensionally Correct - Option A: Information Theoretic)
 
 $$S(t) = \frac{1}{2}\Pi^e(t) \cdot (\varepsilon^e(t))^2 + \frac{1}{2}\Pi^i_{\text{eff}}(t) \cdot (\varepsilon^i(t))^2$$
 
 **Dimensional verification:**
+
 - $\Pi^e \cdot (\varepsilon^e)^2 = [1/\text{error}^2] \times [\text{error}^2] = [\text{dimensionless}]$ ✓
 - $S(t)$ now has units of [nats] (information-theoretic surprise)
 - Comparable across sensory modalities (both dimensionless)
@@ -107,13 +109,11 @@ $S(t)$ represents the total **surprise** (information content of observations re
 $$\Pi^i_{\text{eff}} = \Pi^i_{\text{baseline}} \cdot \exp(\beta \cdot M(c,a))$$
 Problem: Exponential can be unbounded; no biological justification
 
----
-
 **AFTER (Biologically Bounded):**
 
 #### Option A: Sigmoid Modulation (Recommended for high flexibility)
 
-$$\Pi^i_{\text{eff}}(t) = \Pi^i_{\text{baseline}} \cdot \left[1 + \beta \cdot \sigma(M(t) - M_0)\right]$$
+$$\Pi^i_{\text{eff}} = \Pi^i_{\text{baseline}} \cdot \left[1 + \beta \cdot \sigma(M(t) - M_0)\right]$$
 
 where:
 
@@ -122,11 +122,13 @@ where:
 - $\beta \in [0, 2]$ controls modulation strength
 
 **Dimensional verification:**
+
 - $\sigma(\cdot) = [\text{dimensionless}] \in (0,1)$
 - $1 + \beta \sigma = [\text{dimensionless}] \in (1, 1+\beta)$
 - $\Pi^i_{\text{eff}} = \Pi^i_{\text{baseline}} \times [\text{dimensionless}] = [1/\text{error}^2]$ ✓
 
 **Biological justification:**
+
 - Sigmoid bounded between 0 and 1 (plausible for neuromodulation)
 - $\beta > 0$: positive somatic markers increase interoceptive precision (safe conditions)
 - $\beta < 0$: negative somatic markers increase interoceptive precision (threat/salience)
@@ -159,6 +161,7 @@ where $\beta \in [-1, 1]$ and clipping ensures $\Pi^i_{\text{eff}} \in [0.5, 2.0
 ### 2.3 Ignition Criterion (Unified Continuous Formulation)
 
 **BEFORE (Discrete-Continuous Mismatch):**
+
 - "If $S_t > \theta_t$ then Ignition" (discrete)
 - "Ignition probability = $\sigma(\alpha(S_t - \theta_t))$" (continuous)
 - Incompatible formulations
@@ -167,7 +170,7 @@ where $\beta \in [-1, 1]$ and clipping ensures $\Pi^i_{\text{eff}} \in [0.5, 2.0
 
 **AFTER (Unified Stochastic Formulation):**
 
-**Definition 1: Deterministic Threshold Crossing (Low-Noise Limit)**
+### Definition 1: Deterministic Threshold Crossing (Low-Noise Limit)
 
 $$\text{Ignition occurs when: } S(t) = \theta(t)$$
 
@@ -181,7 +184,7 @@ When noise is negligible, ignition is **all-or-none**: occurs at the moment when
 
 ---
 
-**Definition 2: Probabilistic Model (Realistic, Includes Noise)**
+### Definition 2: Probabilistic Model (Realistic, Includes Noise)
 
 $$P(\text{broadcast at time } t \mid S(t), \theta(t)) = \Phi\left(\frac{S(t) - \theta(t)}{\sigma_{\text{noise}}}\right)$$
 
@@ -224,7 +227,7 @@ $$\frac{dS}{dt} = -\tau_S^{-1} S(t) + \frac{1}{2}\Pi^e(t)(\varepsilon^e(t))^2 + 
 **Component-by-component explanation:**
 
 | Term | Meaning | Dynamics |
-|---|---|---|
+| --- | --- | --- |
 | $-\tau_S^{-1} S(t)$ | Surprise decay | Leaky integration; information fades with time constant $\tau_S$ |
 | $\frac{1}{2}\Pi^e(\varepsilon^e)^2$ | Exteroceptive surprise input | Sensory error weighted by sensory precision |
 | $\frac{1}{2}\Pi^i_{\text{eff}}(\varepsilon^i)^2$ | Interoceptive surprise input | Body state error weighted by embodied precision |
@@ -260,7 +263,7 @@ $$\frac{d\theta}{dt} = \tau_\theta^{-1}(\theta_0(A(t)) - \theta(t)) + \gamma_M M
 **Component-by-component:**
 
 | Term | Meaning | Function |
-|---|---|---|
+| --- | --- | --- |
 | $\tau_\theta^{-1}(\theta_0(A) - \theta)$ | Homeostatic restoration | Threshold relaxes toward arousal-dependent baseline |
 | $\gamma_M M(t)$ | Somatic marker influence | Anticipated homeostatic cost; lowers threshold if safety predicted |
 | $\lambda S(t)$ | Metabolic cost feedback | **NEW**: As S increases, metabolic cost increases → threshold rises |
@@ -300,14 +303,14 @@ where:
 
 ---
 
-**AFTER: Complete ODE for somatic marker state**
+### AFTER: Complete ODE for somatic marker state
 
 $$\frac{dM}{dt} = \tau_M^{-1}(M^*(\varepsilon^i(t)) - M(t)) + \gamma_{\text{context}} C(t) + \sigma_M \xi_M(t)$$
 
 **Component-by-component:**
 
 | Term | Meaning | Implementation |
-|---|---|---|
+| --- | --- | --- |
 | $\tau_M^{-1}(M^* - M)$ | Somatic state dynamics | M tracks predicted homeostatic cost; exponential approach |
 | $M^*(\varepsilon^i)$ | Predicted somatic cost | Function of actual interoceptive state |
 | $\gamma_{\text{context}} C(t)$ | Context modulation | Learned associations with environments |
@@ -318,6 +321,7 @@ $$\frac{dM}{dt} = \tau_M^{-1}(M^*(\varepsilon^i(t)) - M(t)) + \gamma_{\text{cont
 $$M^*(\varepsilon^i(t)) = \tanh(\beta_M \varepsilon^i(t))$$
 
 **Rationale:**
+
 - $\tanh$ maps unbounded interoceptive errors to bounded somatic cost $\in (-1, 1)$
 - Large positive $\varepsilon^i$ (elevated heart rate, etc.) → $M^* \to 1$ (high predicted cost)
 - Large negative $\varepsilon^i$ (suppressed physiology, etc.) → $M^* \to -1$ (cost of constraint)
@@ -329,12 +333,14 @@ $$C(t) = \sum_k \omega_k \phi_k(t)$$
 where $\phi_k(t)$ are learned context features (e.g., environmental safety cues) with weights $\omega_k$ learned from experience.
 
 **Biological implementation:**
+
 - vmPFC encodes M (interoceptive self-model)
 - Insula provides $\varepsilon^i$ input to vmPFC
 - Amygdala/basolateral inputs provide context $C(t)$
 - Dopamine modulates learning rates for context weights
 
 **Dimensional verification:**
+
 - $[\tau_M^{-1}(M^* - M)] = [1/\text{time}] \times [\text{dimensionless}] = [\text{nats/time}]$ ✓
 - $[\tanh(\cdot)] = [\text{dimensionless}]$ ✓
 
@@ -348,7 +354,7 @@ where $\phi_k(t)$ are learned context features (e.g., environmental safety cues)
 
 ---
 
-**AFTER: Complete ODE for arousal state**
+### AFTER: Complete ODE for arousal state
 
 $$\frac{dA}{dt} = \tau_A^{-1}(A_{\text{target}}(t) - A(t)) + \sigma_A \xi_A(t)$$
 
@@ -359,7 +365,7 @@ $$A_{\text{target}}(t) = A_{\text{circ}}(t) + g_{\text{stim}}(\max \varepsilon) 
 **Components:**
 
 | Term | Meaning | Range | Source |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | $A_{\text{circ}}(t)$ | Circadian rhythm | [0,1] | Suprachiasmatic nucleus |
 | $g_{\text{stim}}(\max \varepsilon)$ | Stimulus-driven arousal | [0,1] | Salience of current input |
 | $\int K(t-s) \varepsilon^i(s) ds$ | Interoceptive arousal | [0,1] | Recent body state history |
@@ -384,14 +390,17 @@ $$K(t) = \frac{1}{\tau_{\text{int}}} e^{-t/\tau_{\text{int}}}$$
 Recent body state perturbations increase arousal; effect decays over $\tau_{\text{int}} \approx 5-10$ min.
 
 **Biological implementation:**
+
 - Locus coeruleus (LC) firing rate encodes $A(t)$
 - LC receives inputs from: SCN (circadian), thalamus (stimulus), vagus nerve (interoceptive), amygdala (learned threat)
 - Orexin/hypocretin in lateral hypothalamus coordinates these inputs
 
 **Dimensional verification:**
+
 - $[\tau_A^{-1}(A_{\text{target}} - A)] = [1/\text{time}] \times [\text{dimensionless}] = [1/\text{time}]$ ✓
 
 **Timescales:**
+
 - $\tau_A^{\text{fast}} \approx 100-500$ ms (stimulus-driven phasic response)
 - $\tau_A^{\text{slow}} \approx 5-30$ min (homeostatic baseline adjustment)
 
@@ -405,7 +414,7 @@ $$\frac{d\Pi^e}{dt} = \alpha_\Pi^e (\Pi^{e*}(\text{task}) - \Pi^e) + \sigma_{\Pi
 
 where target precision depends on task demands:
 
-$$\Pi^{e*}(\text{task}) = \Pi^{e,\text{baseline}} \cdot \begin{cases} 
+$$\Pi^{e*}(\text{task}) = \Pi^{e,\text{baseline}} \cdot \begin{cases}
 1.0 & \text{if task-irrelevant} \\
 1.5 & \text{if task-relevant} \\
 2.5 & \text{if task-critical (near threshold)}
@@ -422,6 +431,7 @@ $$\Pi^{i*}(\text{threat}) = \Pi^{i,0} \cdot \left(1 + \rho \cdot M(t)\right)^+$$
 Threat-related somatic markers increase interoceptive precision (gain tuning for body monitoring).
 
 **Biological implementation:**
+
 - Posterior insula (primary interoceptive cortex) processes precision based on interoceptive salience
 - Anterior insula (emotion integration) modulates this based on M
 - Learning rate $\alpha_\Pi$ controlled by dopamine (reward prediction error)
@@ -443,6 +453,7 @@ $$\frac{d(\sigma_\varepsilon^e)^2}{dt} = \alpha_\sigma ((\varepsilon^e(t) - \mu_
 with typical learning rate $\alpha_\sigma = 0.005$ (even slower adaptation to variance change).
 
 **Interpretation:**
+
 - System maintains exponential-moving-average statistics of prediction error distributions
 - These adapt slowly to non-stationary input distributions
 - Allow comparison across modalities with different scales
@@ -481,7 +492,7 @@ Estimate $\alpha$ from behavioral data: fit logistic to detection probability cu
 
 In the **low-noise limit** ($\alpha \to \infty$):
 
-$$B(t) \to \begin{cases} 
+$$B(t) \to \begin{cases}
 1 & \text{if } S(t) > \theta(t) \\
 0 & \text{if } S(t) < \theta(t) \\
 \text{undefined} & \text{if } S(t) = \theta(t)
@@ -602,7 +613,7 @@ where $B_\ell(t) = \sigma(\alpha_\ell(S_\ell - \theta_\ell))$ is the ignition pr
 ## PART 6: SUMMARY TABLE - ALL EQUATIONS
 
 | System Component | Equation | Units | Key Parameters |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **Accumulated Signal** | $S = \frac{1}{2}\Pi^e(\varepsilon^e)^2 + \frac{1}{2}\Pi^i_{\text{eff}}(\varepsilon^i)^2$ | [nats] | $\Pi^e, \Pi^i$ |
 | **Signal Dynamics** | $\frac{dS}{dt} = -\tau_S^{-1}S + \frac{1}{2}\Pi^e(\varepsilon^e)^2 + \frac{1}{2}\Pi^i_{\text{eff}}(\varepsilon^i)^2$ | [nats/s] | $\tau_S \approx 0.5$ s |
 | **Effective Precision** | $\Pi^i_{\text{eff}} = \Pi^i_{\text{baseline}} [1 + \beta \sigma(M-M_0)]$ | [1/error²] | $\beta \in [0,2]$ |

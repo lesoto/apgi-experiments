@@ -6,18 +6,20 @@ interoceptive prediction errors receive preferential weighting compared to
 exteroceptive prediction errors when precision is matched.
 """
 
-from typing import Dict, List, Optional, Tuple, Any
+import logging
 from dataclasses import dataclass
-import numpy as np
 from datetime import datetime
-from scipy import stats
+from typing import Dict, List, Optional, Tuple
+
+import numpy as np
+from scipy import stats  # type: ignore
 
 from apgi_framework.core.equation import APGIEquation
 from apgi_framework.core.precision import PrecisionCalculator
 from apgi_framework.core.prediction_error import PredictionErrorProcessor
-from apgi_framework.exceptions import ValidationError, SimulationError
-from .error_handling_wrapper import with_error_handling, log_test_execution
-import logging
+from apgi_framework.exceptions import SimulationError, ValidationError
+
+from .error_handling_wrapper import with_error_handling
 
 logger = logging.getLogger(__name__)
 
@@ -143,8 +145,6 @@ class SomaBiasTest:
             ValidationError: If parameters are invalid
             SimulationError: If simulation fails
         """
-        start_time = datetime.now()
-
         try:
             # Validate parameters
             if n_trials_per_participant <= 0:
@@ -198,14 +198,9 @@ class SomaBiasTest:
                 n_participants,
             )
 
-            end_time = datetime.now()
-            log_test_execution("Soma-Bias Test", start_time, end_time, True)
-
             return result
 
-        except Exception as e:
-            end_time = datetime.now()
-            log_test_execution("Soma-Bias Test", start_time, end_time, False, e)
+        except Exception:
             raise
 
     def _run_single_trial(
@@ -575,7 +570,7 @@ class SomaBiasTest:
 
         # Cohen's d for one-sample test against μ = 1
         cohens_d = abs(mean_beta - 1.0) / std_beta
-        return cohens_d
+        return float(cohens_d)
 
     def _calculate_statistical_power(self, n_participants: int) -> float:
         """Calculate statistical power for detecting soma-bias"""
@@ -756,8 +751,6 @@ class SomaBiasTest:
         # Extract parameters with defaults
         n_trials = parameters.get("n_trials", 200)
         n_participants = parameters.get("n_participants", 30)
-        confidence_threshold = parameters.get("confidence_threshold", 0.8)
-        precision_tolerance = parameters.get("precision_matching_tolerance", 0.1)
 
         logger.info(
             f"Starting Soma-Bias Test: {n_trials} trials, {n_participants} participants"
@@ -767,21 +760,15 @@ class SomaBiasTest:
         test_id = f"soma_bias_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
         # Generate participant profiles
-        participants = self._generate_participant_profiles(n_participants)
-
         # Run trials
         trial_results = []
         for trial_idx in range(n_trials):
             participant_id = f"participant_{(trial_idx % n_participants) + 1:02d}"
-            participant_profile = participants[participant_id]
 
             try:
                 trial_result = self._run_single_trial(
                     trial_id=f"{test_id}_trial_{trial_idx:03d}",
                     participant_id=participant_id,
-                    participant_profile=participant_profile,
-                    precision_tolerance=precision_tolerance,
-                    confidence_threshold=confidence_threshold,
                 )
                 trial_results.append(trial_result)
 
@@ -792,15 +779,29 @@ class SomaBiasTest:
                 logger.error(f"Trial {trial_idx} failed: {e}")
                 # Continue with other trials
 
-        # Analyze results
-        result = self._analyze_results(test_id, trial_results, n_trials, n_participants)
+        # Build participant results dictionary
+        participant_results: Dict[str, List[SomaBiasTrialResult]] = {}
+        for result in trial_results:
+            pid = result.participant_id
+            if pid not in participant_results:
+                participant_results[pid] = []
+            participant_results[pid].append(result)
 
-        logger.info(
-            f"Test completed: mean β = {result.mean_beta:.3f}, "
-            f"falsified = {result.is_framework_falsified}"
+        # Analyze results
+        analysis_result = self._analyze_results(
+            test_id,
+            trial_results,
+            participant_results,
+            n_trials // n_participants,
+            n_participants,
         )
 
-        return result
+        logger.info(
+            f"Test completed: mean β = {analysis_result.mean_beta:.3f}, "
+            f"falsified = {analysis_result.is_framework_falsified}"
+        )
+
+        return analysis_result
 
     def _generate_participant_profiles(self, n_participants: int) -> Dict[str, Dict]:
         """Generate basic participant profiles for soma-bias test.
@@ -813,7 +814,7 @@ class SomaBiasTest:
         """
         participants = {}
         for i in range(n_participants):
-            participant_id = f"participant_{i+1:02d}"
+            participant_id = f"participant_{i + 1:02d}"
             participants[participant_id] = {
                 "participant_id": participant_id,
                 "age": np.random.normal(35, 10),  # Age around 35 ± 10 years

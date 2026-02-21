@@ -16,8 +16,8 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from apgi_framework.main_controller import MainApplicationController
 from apgi_framework.logging.standardized_logging import get_logger
+from apgi_framework.main_controller import MainApplicationController
 
 logger = get_logger("01_run_primary_falsification_test")
 

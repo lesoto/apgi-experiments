@@ -30,7 +30,9 @@ except ImportError:
         def __init__(self):
             self.logger = logging.getLogger(__name__)
 
-    apgi_logger = MockAPGILogger()
+    # Use a different name to avoid conflicts
+    _fallback_logger: Any = MockAPGILogger()
+    apgi_logger = _fallback_logger
 
 from matplotlib.patches import FancyBboxPatch
 
@@ -724,7 +726,7 @@ class PipelineVisualizer:
                     f.write(f"- **ID**: {node.id}\n")
                     f.write(f"- **Description**: {node.description}\n")
                     if node.parameters:
-                        f.write(f"- **Parameters**:\n")
+                        f.write("- **Parameters**:\n")
                         for param, value in node.parameters.items():
                             f.write(f"  - `{param}`: {value}\n")
                     if node.metadata:

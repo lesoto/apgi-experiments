@@ -6,7 +6,7 @@ Tests critical performance paths and identifies regressions.
 import pytest
 
 try:
-    import pytest_benchmark
+    import pytest_benchmark  # type: ignore # noqa: F401
 
     HAS_BENCHMARK = True
 except ImportError:
@@ -15,61 +15,79 @@ except ImportError:
 if not HAS_BENCHMARK:
     pytest.skip("pytest-benchmark not available", allow_module_level=True)
 
+import cProfile
+import io
+import pstats
+import sys
+import time
+from pathlib import Path
+from typing import Any
+
 import numpy as np
 import pandas as pd
-import time
-import cProfile
-import pstats
-import io
-from pathlib import Path
-import sys
 
 # Add the project root to the path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+# Declare variables as Any to avoid type conflicts
+APGIAgent: Any = None
+AnalysisEngine: Any = None
+ExperimentData: Any = None
+StimulusGenerator: Any = None
+
 try:
-    from apgi_framework.core.models.apgi_agent import APGIAgent as ImportedAPGIAgent
+    from apgi_framework.adaptive.stimulus_generators import (
+        StimulusGenerator as ImportedStimulusGenerator,
+    )
     from apgi_framework.analysis.analysis_engine import (
         AnalysisEngine as ImportedAnalysisEngine,
     )
     from apgi_framework.core.data_models import ExperimentalTrial
-    from apgi_framework.adaptive.stimulus_generators import (
-        StimulusGenerator as ImportedStimulusGenerator,
-    )
+    from apgi_framework.core.models.apgi_agent import APGIAgent as ImportedAPGIAgent
 
     # Use imported classes
     APGIAgent = ImportedAPGIAgent
     AnalysisEngine = ImportedAnalysisEngine
     ExperimentData = ExperimentalTrial
     StimulusGenerator = ImportedStimulusGenerator
+    IMPORTS_SUCCESSFUL = True
 except ImportError as e:
     print(f"Warning: Could not import APGI modules: {e}")
 
-    # Create mock classes for benchmarking
-    class APGIAgent:
+    IMPORTS_SUCCESSFUL = False
+
+# Define mock classes if imports failed
+if not IMPORTS_SUCCESSFUL:
+
+    class FallbackAPGIAgent:
         def __init__(self):
             self.state = np.random.rand(100)
 
         def update(self, observation):
             return np.random.rand(10)
 
-    class AnalysisEngine:
+    class FallbackAnalysisEngine:
         def __init__(self):
             pass
 
         def analyze_data(self, data):
             return {"result": np.random.rand(100)}
 
-    class ExperimentData:
+    class FallbackExperimentData:
         def __init__(self, data):
             self.data = data
 
-    class StimulusGenerator:
+    class FallbackStimulusGenerator:
         def __init__(self):
             pass
 
         def generate_stimulus(self, params):
             return np.random.rand(1000)
+
+    APGIAgent = FallbackAPGIAgent
+    AnalysisEngine = FallbackAnalysisEngine
+    ExperimentData = FallbackExperimentData
+    StimulusGenerator = FallbackStimulusGenerator
 
 
 class BenchmarkTimer:
@@ -226,7 +244,7 @@ class TestAnalysisEnginePerformance:
             exp_data = ExperimentData(data)
 
             with BenchmarkTimer(f"Analysis size {size}") as timer:
-                analysis_result = self.engine.analyze_data(exp_data)
+                _ = self.engine.analyze_data(exp_data)
 
             times.append(timer.end_time - timer.start_time)
 
@@ -389,7 +407,7 @@ class TestMemoryPerformance:
                 arr = np.random.rand(10000, 100)  # ~80MB per array
                 arrays.append(arr)
                 # Simulate some processing
-                processed_result = np.mean(arr)
+                _ = np.mean(arr)
             return len(arrays)
 
         result = benchmark(allocate_large_arrays)
@@ -420,7 +438,7 @@ class TestMemoryPerformance:
         stats = snapshot_after.compare_to(snapshot_before, "lineno")
         total_freed = sum(-stat.size_diff for stat in stats if stat.size_diff < 0)
 
-        print(f"Memory freed: {total_freed / (1024*1024):.2f} MB")
+        print(f"Memory freed: {total_freed / (1024 * 1024):.2f} MB")
 
         # Should free at least 1GB of memory
         assert total_freed > 1024 * 1024 * 1024, "Memory not properly cleaned up"

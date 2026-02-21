@@ -9,31 +9,28 @@ This module provides comprehensive batch test execution capabilities including:
 - Performance metrics collection
 """
 
-import os
-import sys
 import json
-import time
-import threading
+import os
 import subprocess
-from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, asdict
+import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass
 from datetime import datetime
-import logging
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 import pytest
+
 from ..config import ConfigManager
 from ..logging.standardized_logging import get_logger
 from .activity_logger import (
-    get_activity_logger,
-    log_test_execution_start,
-    log_test_execution_end,
-    log_test_case_start,
-    log_test_case_end,
     ActivityType,
-    ActivityLevel,
     activity_span,
+    get_activity_logger,
+    log_test_case_end,
+    log_test_case_start,
+    log_test_execution_end,
+    log_test_execution_start,
 )
 
 logger = get_logger(__name__)
@@ -348,7 +345,7 @@ class BatchTestRunner:
             if self._stop_execution:
                 break
 
-            self.logger.info(f"Running test {i+1}/{len(test_files)}: {test_file}")
+            self.logger.info(f"Running test {i + 1}/{len(test_files)}: {test_file}")
 
             result = self._run_single_test(test_file, timeout)
             test_results.append(result)
@@ -472,7 +469,7 @@ class BatchTestRunner:
         end_time: datetime,
         duration: float,
     ) -> TestResult:
-        """Parse pytest output into TestResult."""
+        """Parse pytest output into Result."""
 
         output = subprocess_result.stdout
         error_output = subprocess_result.stderr

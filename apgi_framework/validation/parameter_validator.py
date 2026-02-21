@@ -5,11 +5,10 @@ Provides comprehensive validation for all APGI Framework parameters including
 range checking, type validation, and helpful error messages.
 """
 
-from typing import Dict, List, Tuple, Optional, Any, Union
 from dataclasses import dataclass
-import numpy as np
+from typing import Dict, List, Optional
 
-from ..exceptions import ValidationError, ConfigurationError
+import numpy as np
 
 
 @dataclass
@@ -124,7 +123,7 @@ class ParameterValidator:
         "pci_threshold": (0.1, 0.8, "PCI threshold (typical: 0.3-0.5)"),
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.validation_history: List[ValidationResult] = []
 
     def validate_apgi_parameters(self, **params) -> ValidationResult:
@@ -170,6 +169,8 @@ class ParameterValidator:
                     f"{param_name}: Must be numeric, got {type(value).__name__}"
                 )
                 continue
+
+            value = float(value)  # Cast to float for subsequent operations
 
             # Range check
             if not (min_val <= value <= max_val):
@@ -223,7 +224,7 @@ class ParameterValidator:
                 )
             elif ratio < 0.5:
                 suggestions.append(
-                    f"Exteroceptive precision is {1/ratio:.1f}x higher than interoceptive - strong exteroceptive bias"
+                    f"Exteroceptive precision is {1 / ratio:.1f}x higher than interoceptive - strong exteroceptive bias"
                 )
 
         result = ValidationResult(
@@ -625,7 +626,7 @@ class ParameterValidator:
             f"  Total validations: {total_validations}\n"
             f"  Successful: {successful}\n"
             f"  Failed: {failed}\n"
-            f"  Success rate: {successful/total_validations*100:.1f}%"
+            f"  Success rate: {successful / total_validations * 100:.1f}%"
         )
 
 

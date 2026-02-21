@@ -5,21 +5,18 @@ Provides comprehensive automated deployment with environment management,
 health monitoring, and self-healing capabilities.
 """
 
-import os
-import sys
-import json
-import time
 import subprocess
 import threading
-from pathlib import Path
-from typing import Dict, List, Optional, Any, Callable
+import time
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-import logging
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
 import yaml
 
-from .deployment_validator import DeploymentValidator, DeploymentValidationReport
 from ..logging.standardized_logging import get_logger
+from .deployment_validator import DeploymentValidator
 
 logger = get_logger(__name__)
 
@@ -235,7 +232,7 @@ class DeploymentAutomationManager:
                 ".",
             ]
 
-            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            subprocess.run(cmd, capture_output=True, text=True, check=True)
             self.logger.info("Docker image built successfully")
             return True
 

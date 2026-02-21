@@ -8,16 +8,17 @@ Provides comprehensive results processing capabilities including:
 - Integration with analysis and visualization
 """
 
-from typing import Dict, List, Optional, Any, Tuple, Union
-from dataclasses import dataclass, asdict
-import numpy as np
-import pandas as pd
-from datetime import datetime, timedelta
 import json
 import logging
-from pathlib import Path
-from ..security.secure_pickle import safe_pickle_load, safe_pickle_dump
+import pickle
 from collections import defaultdict
+from dataclasses import asdict, dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
+
+import numpy as np
+import pandas as pd
 
 from ..analysis.analysis_engine import AnalysisResult
 from ..exceptions import ProcessingError, ValidationError
@@ -31,6 +32,7 @@ class ProcessedResult:
 
     result_id: str
     timestamp: datetime
+
     experiment_type: str
 
     # Raw data
@@ -47,17 +49,9 @@ class ProcessedResult:
     visualization_data: Optional[Dict[str, Any]] = None
 
     # Metadata
-    parameters: Dict[str, Any] = None
-    quality_metrics: Dict[str, float] = None
-    notes: List[str] = None
-
-    def __post_init__(self):
-        if self.parameters is None:
-            self.parameters = {}
-        if self.quality_metrics is None:
-            self.quality_metrics = {}
-        if self.notes is None:
-            self.notes = []
+    parameters: Dict[str, Any] = field(default_factory=dict)
+    quality_metrics: Dict[str, float] = field(default_factory=dict)
+    notes: List[str] = field(default_factory=list)
 
 
 class ResultsProcessor:
@@ -182,9 +176,9 @@ class ResultsProcessor:
 
                 except Exception as e:
                     logger.error(
-                        f"Failed to process result {i} (type: {type(result).__name__}): {e}"
+                        f"Failed to process result {i} (type: {type(raw_results).__name__}): {e}"
                     )
-                    logger.debug(f"Result data that failed: {result}")
+                    logger.debug(f"Result data that failed: {raw_results}")
                     continue
 
             # Create batch summary
@@ -281,13 +275,14 @@ class ResultsProcessor:
             Path to generated report
         """
         try:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             report_filename = f"{processed_result.result_id}_report.{report_format}"
             report_path = self.output_dir / "reports" / report_filename
 
             logger.info(
                 f"Generating {report_format} report for {processed_result.result_id}"
             )
+
+            report_content: Union[str, Dict[str, Any]]
 
             if report_format == "html":
                 report_content = self._generate_html_report(
@@ -307,7 +302,7 @@ class ResultsProcessor:
                 if report_format == "json":
                     json.dump(report_content, f, indent=2, default=str)
                 else:
-                    f.write(report_content)
+                    f.write(str(report_content))
 
             logger.info(f"Report generated: {report_path}")
             return str(report_path)
@@ -380,9 +375,9 @@ class ResultsProcessor:
 
         # Check for required fields based on experiment type
         required_fields = ["data", "metadata"]
-        for field in required_fields:
-            if field not in raw_results:
-                logger.warning(f"Missing required field: {field}")
+        for req_field in required_fields:
+            if req_field not in raw_results:
+                logger.warning(f"Missing required field: {req_field}")
 
     def _calculate_summary_statistics(
         self, raw_results: Dict[str, Any]
@@ -432,7 +427,7 @@ class ResultsProcessor:
 
     def _aggregate_results(self, raw_results: Dict[str, Any]) -> Dict[str, Any]:
         """Aggregate results by categories and groups."""
-        aggregated = {}
+        aggregated: Dict[str, Any] = {}
 
         data = raw_results.get("data", {})
 
@@ -523,7 +518,7 @@ class ResultsProcessor:
         if sample_sizes:
             quality_metrics["min_sample_size"] = min(sample_sizes)
             quality_metrics["max_sample_size"] = max(sample_sizes)
-            quality_metrics["avg_sample_size"] = np.mean(sample_sizes)
+            quality_metrics["avg_sample_size"] = float(np.mean(sample_sizes))
 
         # Outlier detection (simplified)
         outlier_count = 0
@@ -610,13 +605,13 @@ class ResultsProcessor:
 
         result_dict = convert_numpy(result_dict)
 
-        with open(json_path, "w") as f:
-            json.dump(result_dict, f, indent=2)
+        with open(json_path, "w") as json_file:
+            json.dump(result_dict, json_file, indent=2)
 
         # Save as pickle for faster loading
         pickle_path = self.output_dir / f"{processed_result.result_id}.pkl"
-        with open(pickle_path, "wb") as f:
-            pickle.dump(processed_result, f)
+        with open(pickle_path, "wb") as pickle_file:
+            pickle.dump(processed_result, pickle_file)
 
         logger.debug(f"Processed result saved: {processed_result.result_id}")
 
@@ -624,9 +619,9 @@ class ResultsProcessor:
         self, processed_results: List[ProcessedResult]
     ) -> Dict[str, Any]:
         """Aggregate multiple results using simple aggregation."""
-        all_stats = {}
-        all_aggregated = {}
-        all_quality = {}
+        all_stats: Dict[str, List[float]] = defaultdict(list)
+        all_aggregated: Dict[str, List[Any]] = defaultdict(list)
+        all_quality: Dict[str, List[float]] = defaultdict(list)
 
         for result in processed_results:
             # Aggregate summary statistics
@@ -672,12 +667,11 @@ class ResultsProcessor:
             quality_score = result.quality_metrics.get("overall_quality_score", 0.5)
             weights.append(quality_score)
 
-        weights = np.array(weights)
-        weights = weights / np.sum(weights)  # Normalize
+        weights_array: np.ndarray = np.array(weights) / np.sum(weights)  # Normalize
 
         all_stats = defaultdict(list)
 
-        for result, weight in zip(processed_results, weights):
+        for result, weight in zip(processed_results, weights_array):
             for key, value in result.summary_statistics.items():
                 all_stats[key].append(value * weight)
 
@@ -874,14 +868,6 @@ class ResultsProcessor:
         include_metadata: bool,
     ) -> List[str]:
         """Export results to Excel format."""
-        try:
-            import openpyxl
-        except ImportError:
-            raise ImportError(
-                "openpyxl is required for Excel export. "
-                "Please install it with: pip install openpyxl"
-            )
-
         export_paths = []
 
         for result in processed_results:

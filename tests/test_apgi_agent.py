@@ -1,8 +1,9 @@
-import pytest
-import numpy as np
-import matplotlib
 import sys
 from pathlib import Path
+
+import matplotlib
+import numpy as np
+import pytest
 
 # Use non-interactive backend for testing
 matplotlib.use("Agg")

@@ -6,8 +6,10 @@ This module contains the main neural network models including:
 - PredictiveIgnitionNetwork: Neural network with ignition dynamics
 """
 
+from typing import Tuple
+
 import numpy as np
-from typing import Tuple, Optional
+
 from .precision import PrecisionCalculator
 from .prediction_error import PredictionErrorProcessor
 
@@ -131,7 +133,7 @@ class SomaticAgent:
             action = np.argmin(G_basic)
             G = G_basic
 
-        return action, conscious, G
+        return int(action), conscious, G
 
 
 class PredictiveIgnitionNetwork:
@@ -170,7 +172,7 @@ class PredictiveIgnitionNetwork:
         self.precision = np.ones(n_features)
 
         # Initialize global activation state
-        self.global_activation = np.zeros(n_global_units)
+        self.global_activation = np.zeros(n_global_units, dtype=np.float64)
 
         # Initialize precision calculator
         self.precision_calc = PrecisionCalculator()
@@ -217,7 +219,7 @@ class PredictiveIgnitionNetwork:
             self.global_activation += 0.1 * activation_update  # Learning rate
 
             # Apply activation function (tanh for stability)
-            self.global_activation = np.tanh(self.global_activation)
+            self.global_activation[:] = np.tanh(self.global_activation)
 
         return predictions, errors, weighted_errors, ignited, ignition_prob
 

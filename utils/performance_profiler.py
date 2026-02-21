@@ -7,7 +7,6 @@ Provides real-time monitoring, bottleneck identification, and performance optimi
 """
 
 import json
-import pickle
 import threading
 import time
 import warnings
@@ -17,15 +16,13 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from functools import wraps
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Deque, Dict, List, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import psutil
-import seaborn as sns
 
-# Project imports
 try:
     from utils.logging_config import apgi_logger
 except ImportError:
@@ -36,9 +33,11 @@ except ImportError:
         def __init__(self):
             self.logger = logging.getLogger(__name__)
 
-    apgi_logger = MockAPGILogger()
+        def log_performance_metric(self, name: str, value: float, unit: str) -> None:
+            """Mock performance metric logging."""
+            self.logger.info(f"Performance Metric - {name}: {value} {unit}")
 
-# Suppress matplotlib warnings
+    # Suppress matplotlib warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="matplotlib")
 
 
@@ -77,7 +76,8 @@ class SystemMonitor:
         self.update_interval = update_interval
         self.monitoring = False
         self.thread = None
-        self.metrics_history = deque(maxlen=3600)  # 1 hour at 1s intervals
+        # 1 hour at 1s intervals
+        self.metrics_history: Deque[Dict[str, Any]] = deque(maxlen=3600)
         self.start_time = datetime.now()
 
     def start_monitoring(self):
@@ -106,7 +106,12 @@ class SystemMonitor:
 
                 # Memory metrics
                 memory = psutil.virtual_memory()
-                swap = psutil.swap_memory()
+                try:
+                    swap = psutil.swap_memory()
+                    swap_percent = swap.percent
+                except Exception:
+                    # Handle systems where swap memory stats are unavailable
+                    swap_percent = None
 
                 # Disk metrics
                 disk = psutil.disk_usage(".")
@@ -128,7 +133,7 @@ class SystemMonitor:
                     "memory_percent": memory.percent,
                     "memory_used": memory.used,
                     "memory_available": memory.available,
-                    "swap_percent": swap.percent,
+                    "swap_percent": swap_percent,
                     "disk_percent": (disk.used / disk.total) * 100,
                     "disk_free": disk.free,
                     "process_memory_rss": process_memory.rss,
@@ -177,14 +182,14 @@ class SystemMonitor:
 class PerformanceProfiler:
     """Advanced performance profiling for APGI framework."""
 
-    def __init__(self, save_dir: Optional[Path] = None):
-        self.save_dir = save_dir or Path("apgi_output/performance_profiles")
+    def __init__(self, save_dir: Optional[Union[str, Path]] = None):
+        self.save_dir = Path(save_dir or "apgi_output/performance_profiles")
         self.save_dir.mkdir(parents=True, exist_ok=True)
 
         self.function_profiles: Dict[str, FunctionProfile] = {}
         self.custom_metrics: List[PerformanceMetric] = []
         self.system_monitor = SystemMonitor()
-        self.active_profiling = defaultdict(list)
+        self.active_profiling: defaultdict[str, List[Any]] = defaultdict(list)
 
         # Start system monitoring
         self.system_monitor.start_monitoring()
@@ -291,7 +296,7 @@ class PerformanceProfiler:
         value: float,
         unit: str,
         category: str = "custom",
-        metadata: Dict[str, Any] = None,
+        metadata: Optional[Dict[str, Any]] = None,
     ):
         """Add a custom performance metric."""
         metric = PerformanceMetric(
@@ -305,7 +310,7 @@ class PerformanceProfiler:
         self.custom_metrics.append(metric)
 
         # Also log to the main logger
-        apgi_logger.logger.log_performance_metric(name, value, unit)
+        apgi_logger.log_performance_metric(name, value, unit)
 
     def get_top_functions(
         self, metric: str = "total_time", limit: int = 10
@@ -327,7 +332,7 @@ class PerformanceProfiler:
 
     def generate_performance_report(self) -> Dict[str, Any]:
         """Generate comprehensive performance report."""
-        report = {
+        report: Dict[str, Any] = {
             "timestamp": datetime.now().isoformat(),
             "system_metrics": self.system_monitor.get_metrics_summary(),
             "function_profiles": {},
@@ -429,7 +434,7 @@ class PerformanceProfiler:
                         }
                     )
 
-        report["bottlenecks"] = bottlenecks
+        report["bottlenecks"] = bottlenecks  # type: ignore[assignment]
 
         # Generate recommendations
         recommendations = []
@@ -482,7 +487,7 @@ class PerformanceProfiler:
                     }
                 )
 
-        report["recommendations"] = recommendations
+        report["recommendations"] = recommendations  # type: ignore[assignment]
 
         return report
 
@@ -666,7 +671,7 @@ class PerformanceProfiler:
                 ax4.set_ylabel("Number of Functions")
                 ax4.set_title("Distribution of Function Performance")
                 ax4.axvline(
-                    np.mean(avg_times),
+                    float(np.mean(avg_times)),
                     color="red",
                     linestyle="--",
                     label=f"Mean: {np.mean(avg_times):.3f}s",
@@ -688,7 +693,7 @@ class PerformanceProfiler:
             ax5.set_ylabel("Frequency")
             ax5.set_title("Memory Usage Distribution")
             ax5.axvline(
-                np.mean(memory_usages),
+                float(np.mean(memory_usages)),
                 color="red",
                 linestyle="--",
                 label=f"Mean: {np.mean(memory_usages):.1f}MB",
@@ -698,7 +703,7 @@ class PerformanceProfiler:
         # 6. Categories Performance
         ax6 = fig.add_subplot(gs[3, 0:2])
         if self.custom_metrics:
-            categories = {}
+            categories: Dict[str, List[float]] = {}
             for metric in self.custom_metrics:
                 if metric.category not in categories:
                     categories[metric.category] = []
@@ -767,7 +772,7 @@ def profile_context(name: str, category: str = "context"):
 
 
 # Quick profiling functions
-def quick_profile(func: Callable, *args, **kwargs) -> Dict[str, Any]:
+def quick_profile(func: Callable, *args, **kwargs) -> Tuple[Any, Dict[str, Any]]:
     """Quickly profile a function call."""
     start_time = time.time()
     start_memory = psutil.Process().memory_info().rss

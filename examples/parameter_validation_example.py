@@ -15,9 +15,9 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from apgi_framework.validation import get_validator
-from apgi_framework.config import APGIParameters, ExperimentalConfig, ConfigManager
+from apgi_framework.config import APGIParameters
 from apgi_framework.exceptions import ConfigurationError
+from apgi_framework.validation import get_validator
 
 
 def example_1_basic_validation():
@@ -112,7 +112,7 @@ def example_4_config_manager_integration():
     # ConfigManager automatically validates on creation
     print("\n1. Creating valid configuration:")
     try:
-        params = APGIParameters(
+        _ = APGIParameters(
             extero_precision=2.0,
             intero_precision=1.5,
             extero_error=1.2,
@@ -128,7 +128,7 @@ def example_4_config_manager_integration():
     # Try to create invalid configuration
     print("\n2. Attempting to create invalid configuration:")
     try:
-        params = APGIParameters(
+        APGIParameters(
             extero_precision=-1.0,  # Invalid
             intero_precision=1.5,
             extero_error=1.2,

@@ -6,17 +6,17 @@ and retention management, and component-specific loggers for comprehensive
 activity logging and audit capabilities.
 """
 
+import json
 import logging
 import logging.handlers
 import sys
-import json
-from pathlib import Path
-from typing import Union, Dict, Any, Optional, List
-from datetime import datetime, timedelta
-from dataclasses import dataclass, asdict
-from enum import Enum
 import threading
 import traceback
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
 from .file_utils import FileUtils
 from .path_utils import get_path_manager
@@ -502,7 +502,6 @@ class LoggingUtils:
                         except Exception as e:
                             # Log cleanup failure to console only to avoid recursion
                             print(f"Failed to clean up log file {log_file}: {e}")
-
         except Exception as e:
             print(f"Error during log cleanup: {e}")
 
@@ -557,7 +556,7 @@ class LoggingUtils:
             stats["log_files_error"] = str(e)
 
         stats["log_files"] = log_files
-        stats["total_log_size"] = sum(f["size"] for f in log_files)
+        stats["total_log_size"] = sum(f["size"] for f in log_files)  # type: ignore
 
         return stats
 
@@ -572,14 +571,7 @@ class LoggingUtils:
         """
         Export filtered logs to file.
 
-        Args:
-            output_path: Path to export logs to
-            start_date: Start date filter (optional)
-            end_date: End date filter (optional)
-            components: Component name filter (optional)
-            levels: Log level filter (optional)
-
-        Returns:
+        Yields:
             Path to exported file
         """
         filtered_entries = []
@@ -608,7 +600,7 @@ class LoggingUtils:
                                 ):
                                     continue
                                 if levels and entry.get("level") not in [
-                                    l.name for l in levels
+                                    level.name for level in levels
                                 ]:
                                     continue
 
@@ -631,7 +623,7 @@ class LoggingUtils:
                 "start_date": start_date.isoformat() if start_date else None,
                 "end_date": end_date.isoformat() if end_date else None,
                 "components": components,
-                "levels": [l.name for l in levels] if levels else None,
+                "levels": [level.name for level in levels] if levels else None,
             },
             "entry_count": len(filtered_entries),
             "entries": filtered_entries,

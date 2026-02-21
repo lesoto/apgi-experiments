@@ -1,14 +1,13 @@
 """Paginated Log Viewer for APGI Framework to improve performance with large log files."""
 
-import os
-import re
-from typing import List, Optional, Tuple
-from pathlib import Path
-import customtkinter as ctk
 import tkinter as tk
+from pathlib import Path
 from tkinter import messagebox
+from typing import List
 
-from ..logging.standardized_logging import get_logger
+import customtkinter as ctk  # type: ignore[import]
+
+from apgi_framework.logging.standardized_logging import get_logger
 
 
 class PaginatedLogViewer:
@@ -29,7 +28,7 @@ class PaginatedLogViewer:
         self.lines_per_page = 500  # Number of lines per page
         self.current_page = 0
         self.total_lines = 0
-        self.filtered_lines = []
+        self.filtered_lines: List[str] = []
 
         # Filtering and search
         self.level_filter = "ALL"
@@ -366,7 +365,8 @@ class PaginatedLogViewer:
                 self._refresh_display()
             else:
                 messagebox.showwarning(
-                    "Invalid Page", f"Page number must be between 1 and {total_pages}"
+                    "Invalid Page",
+                    f"Page number must be between 1 and {total_pages}",
                 )
                 self.page_var.set(str(self.current_page + 1))
         except ValueError:

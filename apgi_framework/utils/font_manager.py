@@ -3,11 +3,11 @@ Font management system for APGI Framework.
 Provides cross-platform font compatibility with fallback chains.
 """
 
+import logging
 import platform
 import tkinter as tk
 from tkinter import font as tkFont
-from typing import List, Tuple, Optional
-import logging
+from typing import List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -177,14 +177,22 @@ class FontManager:
         family = self.get_font_family(font_type)
 
         try:
-            font_obj = tkFont.Font(family=family, size=size, weight=weight, slant=slant)
+            font_obj = tkFont.Font(
+                family=family,
+                size=size,
+                weight="normal" if weight == "normal" else "bold",
+                slant="roman" if slant == "roman" else "italic",
+            )
             return font_obj
         except Exception as e:
             logger.warning(f"Failed to create font {family}: {e}")
             # Try with generic font
             try:
                 return tkFont.Font(
-                    family="sans-serif", size=size, weight=weight, slant=slant
+                    family="sans-serif",
+                    size=size,
+                    weight="normal" if weight == "normal" else "bold",
+                    slant="roman" if slant == "roman" else "italic",
                 )
             except Exception as e2:
                 logger.error(f"Failed to create fallback font: {e2}")
@@ -330,7 +338,7 @@ def configure_widget_fonts(
     font_obj = font_manager.get_font(font_type, size)
 
     try:
-        widget.configure(font=font_obj)
+        widget.configure(font=font_obj)  # type: ignore
     except Exception as e:
         logger.warning(f"Failed to configure font for widget: {e}")
 
@@ -371,7 +379,7 @@ def get_preset_font(preset_name: str) -> tkFont.Font:
     preset = UI_FONT_PRESETS[preset_name]
     if len(preset) == 2:
         font_type, size = preset
-        return font_manager.get_font(font_type, size)
+        return font_manager.get_font(str(font_type), int(size), weight="normal")
     else:
         font_type, size, weight = preset
-        return font_manager.get_font(font_type, size, weight=weight)
+        return font_manager.get_font(str(font_type), int(size), weight=str(weight))

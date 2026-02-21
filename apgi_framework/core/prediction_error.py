@@ -5,9 +5,10 @@ This module implements prediction error processing and z-score standardization
 for both exteroceptive and interoceptive prediction errors used in the APGI equation.
 """
 
-import numpy as np
-from typing import Union, Optional, Tuple
 import warnings
+from typing import Optional, Tuple, Union
+
+import numpy as np
 
 from ..exceptions import MathematicalError
 

@@ -6,16 +6,14 @@ advanced psychophysical methods and neural validation.
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any, Union, Callable
-from enum import Enum
-import numpy as np
-from scipy import stats, optimize
-from scipy.signal import find_peaks
-import logging
 from datetime import datetime
-import json
+from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
 
-from apgi_framework.exceptions import ValidationError, SimulationError
+import numpy as np
+from scipy import optimize, stats
+
+from apgi_framework.exceptions import ValidationError
 from apgi_framework.logging.standardized_logging import get_logger
 
 logger = get_logger("threshold_detection")
@@ -380,12 +378,12 @@ class AdaptiveStaircase:
         self.trial_count = 0
         self.consecutive_correct = 0
         self.consecutive_incorrect = 0
-        self.intensity_history = []
-        self.response_history = []
+        self.intensity_history: List[float] = []
+        self.response_history: List[bool] = []
 
         # Reversal tracking
-        self.reversals = []
-        self.last_direction = None
+        self.reversals: List[int] = []
+        self.last_direction: Optional[str] = None
 
         logger.info(f"Adaptive staircase initialized: {rule}, start={start_intensity}")
 
@@ -466,7 +464,7 @@ class AdaptiveStaircase:
                 reversal_intensities.append(self.intensity_history[idx])
 
         if reversal_intensities:
-            return np.mean(reversal_intensities)
+            return float(np.mean(reversal_intensities))
         else:
             return self.current_intensity
 
@@ -498,9 +496,9 @@ class ThresholdDetectionSystem:
         }
 
         # Storage for results
-        self.threshold_estimates = {}
-        self.trial_data = {}
-        self.cross_modal_comparisons = {}
+        self.threshold_estimates: Dict[str, ThresholdEstimate] = {}
+        self.trial_data: Dict[str, List[TrialResponse]] = {}
+        self.cross_modal_comparisons: Dict[str, CrossModalThreshold] = {}
 
         logger.info("ThresholdDetectionSystem initialized")
 
@@ -553,7 +551,7 @@ class ThresholdDetectionSystem:
 
         # Extract threshold at target performance
         threshold = self._extract_threshold_at_performance(
-            best_function, best_fit["parameters"], target_performance
+            str(best_function), best_fit["parameters"], target_performance
         )
 
         # Calculate confidence interval
@@ -624,7 +622,7 @@ class ThresholdDetectionSystem:
             # Create stimulus parameters
             stim_params = StimulusParameters(
                 modality=modality,
-                intensity=intensity,
+                intensity=float(intensity),
                 duration=100,  # ms
                 frequency=1000 if modality == ModalityType.AUDITORY else None,
             )
@@ -704,6 +702,17 @@ class ThresholdDetectionSystem:
         self, intensities: np.ndarray, responses: np.ndarray, threshold: float
     ) -> Tuple[float, float]:
         """Calculate confidence interval for threshold estimate."""
+        # Use fallback for small datasets
+        if len(intensities) < 5:
+            se = (
+                np.std(intensities) / np.sqrt(len(intensities))
+                if len(intensities) > 1
+                else 0.1
+            )
+            ci_lower = threshold - 1.96 * se
+            ci_upper = threshold + 1.96 * se
+            return (max(0, ci_lower), ci_upper)
+
         # Bootstrap confidence interval
         n_bootstrap = 1000
         bootstrap_thresholds = []
@@ -724,7 +733,7 @@ class ThresholdDetectionSystem:
             except Exception:
                 continue
 
-        if bootstrap_thresholds:
+        if len(bootstrap_thresholds) >= 10:  # Need at least some successful fits
             ci_lower = np.percentile(bootstrap_thresholds, 2.5)
             ci_upper = np.percentile(bootstrap_thresholds, 97.5)
         else:
@@ -733,7 +742,7 @@ class ThresholdDetectionSystem:
             ci_lower = threshold - 1.96 * se
             ci_upper = threshold + 1.96 * se
 
-        return (ci_lower, ci_upper)
+        return (max(0, ci_lower), ci_upper)
 
     def _validate_with_neural_data(
         self, trial_data: List[TrialResponse]
@@ -885,7 +894,7 @@ class ThresholdDetectionSystem:
         pupil1_present = any(t.pupil_dilation is not None for t in data1)
         pupil2_present = any(t.pupil_dilation is not None for t in data2)
 
-        if pupil1_present and gamma2_present:
+        if pupil1_present and pupil2_present:
             shared_signatures.append("pupil_dilation")
 
         return shared_signatures, modality_specific_signatures

@@ -10,7 +10,7 @@ Includes EEG, pupil, EDA, and other physiological signals.
 import json
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -27,7 +27,7 @@ class SampleDataGenerator:
 
     def generate_eeg_data(
         self, include_artifacts: bool = True
-    ) -> Tuple[np.ndarray, Dict[str, Any]]:
+    ) -> Tuple[np.ndarray, List[float]]:
         """Generate realistic EEG data with P300 components."""
         # Base EEG signal (1/f noise + alpha rhythm)
         frequencies = np.array([1, 2, 4, 8, 10, 20, 40])
@@ -182,7 +182,7 @@ class SampleDataGenerator:
         hr_signal += noise
 
         # Ensure reasonable range
-        hr_signal = np.clip(hr_signal, 40, 120)
+        hr_signal = np.clip(hr_signal, 40, 120)  # type: ignore[assignment]
 
         return hr_signal
 
@@ -333,7 +333,7 @@ class SampleDataGenerator:
             event_idx = int(event_time * self.sampling_rate)
             if event_idx < self.n_samples:
                 end_idx = min(event_idx + 10, self.n_samples)
-                data["event_marker"][event_idx:end_idx] = 1  # 10ms event marker
+                data["event_marker"][event_idx:end_idx] = 1  # type: ignore[index]  # 10ms event marker
 
         df = pd.DataFrame(data)
 

@@ -6,14 +6,15 @@ neural signatures and machine learning classification with cross-validation.
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from sklearn.svm import SVC
-from sklearn.model_selection import cross_val_score, StratifiedKFold
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.model_selection import StratifiedKFold, cross_val_score
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
+from sklearn.svm import SVC
 
 
 class DisorderType(Enum):
@@ -133,7 +134,7 @@ class ClassificationResult:
     confusion_matrix: Optional[np.ndarray] = None
 
     # Classification report
-    classification_report: Optional[str] = None
+    classification_report: Optional[Dict[str, float]] = None
 
     # Neural signature profile
     neural_profile: Optional[NeuralSignatureProfile] = None
@@ -489,7 +490,7 @@ class DisorderClassification:
         profiles: List[NeuralSignatureProfile],
         labels: List[DisorderType],
         cv_folds: int = 5,
-    ) -> Dict[str, float]:
+    ) -> Dict[str, Any]:
         """
         Train classifier with cross-validation.
 
@@ -532,7 +533,9 @@ class DisorderClassification:
             "cv_scores": cv_scores.tolist(),
             "n_samples": len(profiles),
             "n_features": X.shape[1],
-            "feature_importance": feature_importance,
+            "feature_importance": feature_importance
+            if feature_importance is not None
+            else {},
         }
 
     def classify(self, profile: NeuralSignatureProfile) -> ClassificationResult:
@@ -608,7 +611,6 @@ class DisorderClassification:
 
         # Predict
         y_pred = self.classifier.predict(X_scaled)
-        y_proba = self.classifier.predict_proba(X_scaled)
 
         # Compute metrics
         accuracy = np.mean(y_pred == y_true)
@@ -616,17 +618,6 @@ class DisorderClassification:
         class_report = classification_report(
             y_true, y_pred, target_names=self.classifier.classes_
         )
-
-        # Compute AUC if binary or multi-class
-        try:
-            if len(self.classifier.classes_) == 2:
-                auc = roc_auc_score(y_true, y_proba[:, 1])
-            else:
-                auc = roc_auc_score(
-                    y_true, y_proba, multi_class="ovr", average="weighted"
-                )
-        except (ValueError, IndexError):
-            auc = None
 
         # Get feature importance
         feature_importance = None
@@ -643,14 +634,13 @@ class DisorderClassification:
             classification_report=class_report,
         )
 
-    def get_disorder_specific_signatures(self) -> Dict[DisorderType, Dict[str, float]]:
+    def get_disorder_specific_signatures(self) -> Dict[DisorderType, Dict[str, Any]]:
         """
         Get disorder-specific neural signature patterns.
 
         Returns:
             Dictionary mapping disorders to their characteristic signatures
         """
-        # Based on APGI theory predictions
         signatures = {
             DisorderType.GAD: {
                 "threshold": 2.5,  # Lower threshold
@@ -713,16 +703,18 @@ class DisorderClassification:
 
         # Compute z-scores (simplified - would use actual normative data in practice)
         z_scores = {
-            "threshold": (profile.threshold - control_sig["threshold"]) / 0.5,
+            "threshold": (profile.threshold - float(control_sig["threshold"])) / 0.5,
             "intero_precision": (
-                profile.intero_precision - control_sig["intero_precision"]
+                profile.intero_precision - float(control_sig["intero_precision"])
             )
             / 0.3,
             "p3b_amplitude_intero": (
-                profile.p3b_amplitude_intero - control_sig["p3b_amplitude_intero"]
+                profile.p3b_amplitude_intero
+                - float(control_sig["p3b_amplitude_intero"])
             )
             / 1.5,
-            "somatic_gain": (profile.somatic_gain - control_sig["somatic_gain"]) / 0.2,
+            "somatic_gain": (profile.somatic_gain - float(control_sig["somatic_gain"]))
+            / 0.2,
         }
 
         return z_scores

@@ -2,17 +2,13 @@
 Tests for CLI module components.
 """
 
-import pytest
 import argparse
-import json
-import tempfile
-from unittest.mock import Mock, patch, MagicMock
-from pathlib import Path
 from io import StringIO
+from unittest.mock import patch
+
+import pytest
 
 from apgi_framework.cli import APGIFrameworkCLI
-from apgi_framework.config import ConfigManager, APGIParameters, ExperimentalConfig
-from apgi_framework.exceptions import APGIFrameworkError, ConfigurationError
 
 
 class TestAPGIFrameworkCLI:
@@ -204,7 +200,7 @@ class TestAPGIFrameworkCLI:
 
         # Test configuration generation
         parser = cli.create_parser()
-        args = parser.parse_args(["generate-config", "--output", "test_config.json"])
+        parser.parse_args(["generate-config", "--output", "test_config.json"])
 
         # Test default config creation
         config_data = cli._create_default_config()

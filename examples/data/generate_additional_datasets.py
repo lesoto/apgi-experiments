@@ -5,12 +5,12 @@ This script creates additional example datasets to enhance the testing
 and development capabilities of the APGI Framework.
 """
 
-import numpy as np
-import pandas as pd
 import json
 from pathlib import Path
-from typing import Dict, Any, List
-import matplotlib.pyplot as plt
+from typing import Any, Dict, Optional
+
+import numpy as np
+import pandas as pd
 
 
 class DatasetGenerator:
@@ -18,7 +18,7 @@ class DatasetGenerator:
     Generate realistic example datasets for APGI Framework testing.
     """
 
-    def __init__(self, output_dir: str = None):
+    def __init__(self, output_dir: Optional[str] = None):
         """
         Initialize the dataset generator.
 
@@ -26,13 +26,13 @@ class DatasetGenerator:
             output_dir: Directory to save generated datasets
         """
         if output_dir is None:
-            self.output_dir = Path(__file__).parent / "data"
+            self.output_dir: Path = Path(__file__).parent / "data"
         else:
-            self.output_dir = Path(output_dir)
+            self.output_dir: Path = Path(output_dir)  # type: ignore
 
         # Create subdirectories
         for subdir in ["eeg", "pupillometry", "cardiac", "behavioral", "multimodal"]:
-            (self.output_dir / subdir).mkdir(parents=True, exist_ok=True)
+            (self.output_dir / subdir).mkdir(parents=True, exist_ok=True)  # type: ignore
 
     def generate_multimodal_dataset(
         self, subject_id: str = "multimodal_001"
@@ -219,7 +219,6 @@ class DatasetGenerator:
 
         duration_seconds = 60
         sampling_rate = 1000
-        n_samples = duration_seconds * sampling_rate
         time = np.arange(0, duration_seconds, 1 / sampling_rate)
 
         # EEG with epileptiform activity
@@ -272,8 +271,8 @@ class DatasetGenerator:
         # Add abnormal dilation episode
         dilation_start = int(25 * 250)  # 25 seconds, 250 Hz
         dilation_end = int(35 * 250)  # 35 seconds
-        pupil_data["pupil_diameter_left"][dilation_start:dilation_end] += 2.0
-        pupil_data["pupil_diameter_right"][dilation_start:dilation_end] += 2.0
+        pupil_data["pupil_diameter_left"][dilation_start:dilation_end] += 2.0  # type: ignore
+        pupil_data["pupil_diameter_right"][dilation_start:dilation_end] += 2.0  # type: ignore
 
         pupil_df = pd.DataFrame(pupil_data)
 
@@ -384,13 +383,13 @@ class DatasetGenerator:
         """
         print("Generating multimodal datasets...")
         for i in range(3):
-            subject_id = f"multimodal_{i+1:03d}"
+            subject_id = f"multimodal_{i + 1:03d}"
             dataset = self.generate_multimodal_dataset(subject_id)
             self.save_dataset(dataset, "multimodal")
 
         print("Generating pathological datasets...")
         for i in range(2):
-            subject_id = f"pathological_{i+1:03d}"
+            subject_id = f"pathological_{i + 1:03d}"
             dataset = self.generate_pathological_dataset(subject_id)
             self.save_dataset(dataset, "pathological")
 

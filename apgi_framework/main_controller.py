@@ -6,13 +6,13 @@ managing component integration, dependency injection, and system initialization.
 """
 
 import logging
-from typing import Dict, Any, Optional
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, Optional
+
 import numpy as np
 
 from .config import ConfigManager, get_config_manager
-from .exceptions import APGIFrameworkError
 from .core import (
     APGIEquation,
     PrecisionCalculator,
@@ -20,20 +20,21 @@ from .core import (
     SomaticMarkerEngine,
     ThresholdManager,
 )
+from .data import DataValidator, StorageManager
+from .exceptions import APGIFrameworkError
+from .falsification import (
+    ConsciousnessWithoutIgnitionTest,
+    PrimaryFalsificationTest,
+    SomaBiasTest,
+    ThresholdInsensitivityTest,
+)
 from .simulators import (
-    P3bSimulator,
-    GammaSimulator,
     BOLDSimulator,
+    GammaSimulator,
+    P3bSimulator,
     PCICalculator,
     SignatureValidator,
 )
-from .falsification import (
-    PrimaryFalsificationTest,
-    ConsciousnessWithoutIgnitionTest,
-    ThresholdInsensitivityTest,
-    SomaBiasTest,
-)
-from .data import StorageManager, DataValidator
 
 
 class MainApplicationController:
@@ -57,10 +58,10 @@ class MainApplicationController:
         self.logger = self._setup_logging()
 
         # Core components
-        self._mathematical_engine = None
-        self._neural_simulators = None
-        self._falsification_tests = None
-        self._data_manager = None
+        self._mathematical_engine: Optional[Dict[str, Any]] = None
+        self._neural_simulators: Optional[Dict[str, Any]] = None
+        self._falsification_tests: Optional[Dict[str, Any]] = None
+        self._data_manager: Optional[Dict[str, Any]] = None
 
         # System state
         self._initialized = False
@@ -251,6 +252,10 @@ class MainApplicationController:
             raise APGIFrameworkError(
                 "System not initialized. Call initialize_system() first."
             )
+        if self._mathematical_engine is None:
+            raise APGIFrameworkError(
+                "Mathematical engine failed to initialize and is not available."
+            )
         return self._mathematical_engine
 
     def get_neural_simulators(self) -> Dict[str, Any]:
@@ -258,6 +263,10 @@ class MainApplicationController:
         if not self._initialized:
             raise APGIFrameworkError(
                 "System not initialized. Call initialize_system() first."
+            )
+        if self._neural_simulators is None:
+            raise APGIFrameworkError(
+                "Neural simulators failed to initialize and are not available."
             )
         return self._neural_simulators
 
@@ -267,6 +276,18 @@ class MainApplicationController:
             raise APGIFrameworkError(
                 "System not initialized. Call initialize_system() first."
             )
+        if self._falsification_tests is None:
+            raise APGIFrameworkError(
+                "Falsification tests failed to initialize and are not available."
+            )
+        # Check for None components that indicate import failures
+        if (
+            "primary" in self._falsification_tests
+            and self._falsification_tests["primary"] is None
+        ):
+            raise APGIFrameworkError(
+                "Primary falsification test is not available due to import failure."
+            )
         return self._falsification_tests
 
     def get_data_manager(self) -> Dict[str, Any]:
@@ -274,6 +295,10 @@ class MainApplicationController:
         if not self._initialized:
             raise APGIFrameworkError(
                 "System not initialized. Call initialize_system() first."
+            )
+        if self._data_manager is None:
+            raise APGIFrameworkError(
+                "Data manager failed to initialize and is not available."
             )
         return self._data_manager
 
@@ -291,7 +316,7 @@ class MainApplicationController:
 
         self.logger.info("Running system validation...")
 
-        validation_results = {}
+        validation_results: Dict[str, Any] = {}
 
         try:
             # Validate mathematical engine
@@ -324,6 +349,7 @@ class MainApplicationController:
 
     def _validate_mathematical_engine(self) -> bool:
         """Validate mathematical engine components."""
+        assert self._mathematical_engine is not None
         try:
             equation = self._mathematical_engine["equation"]
 
@@ -376,6 +402,7 @@ class MainApplicationController:
 
     def _validate_neural_simulators(self) -> bool:
         """Validate neural simulator components."""
+        assert self._neural_simulators is not None
         try:
             # Test each simulator
             p3b_sig = self._neural_simulators["p3b"].generate_conscious_signature()
@@ -400,9 +427,6 @@ class MainApplicationController:
     def _validate_falsification_tests(self) -> bool:
         """Validate falsification test controllers."""
         try:
-            # Check that available test controllers are properly initialized
-            available_tests = ["primary"]
-
             # Check that the falsification tests dictionary exists and has expected structure
             if not isinstance(self._falsification_tests, dict):
                 return False
@@ -416,6 +440,7 @@ class MainApplicationController:
 
     def _validate_data_manager(self) -> bool:
         """Validate data management components."""
+        assert self._data_manager is not None
         try:
             # Check data manager components that are actually initialized
             required_components = ["storage", "validator"]

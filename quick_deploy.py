@@ -7,9 +7,9 @@ Usage:
     python quick_deploy.py [--auto] [--port PORT] [--env ENVIRONMENT]
 """
 
-import sys
-import subprocess
 import argparse
+import subprocess
+import sys
 from pathlib import Path
 
 # Check if running in interactive mode
@@ -21,9 +21,9 @@ sys.path.insert(0, str(Path(__file__).parent))
 # Graceful fallback for missing dependencies
 DEPLOYMENT_AVAILABLE = True
 try:
+    from apgi_framework.config.constants import TimingConstants
     from apgi_framework.deployment.automation_manager import DeploymentAutomationManager
     from apgi_framework.logging.standardized_logging import get_logger
-    from apgi_framework.config.constants import TimingConstants
 except ImportError as e:
     print(f"[WARNING] APGI Framework deployment modules not found: {e}")
     DEPLOYMENT_AVAILABLE = False

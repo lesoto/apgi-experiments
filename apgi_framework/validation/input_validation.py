@@ -6,8 +6,9 @@ and data to ensure security and data integrity.
 """
 
 import re
-from typing import Any, Optional, Union, List
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
+
 from ..logging.standardized_logging import get_logger
 
 # Initialize logger
@@ -146,7 +147,7 @@ def validate_string_input(
         # Check allowed characters
         if allowed_chars is not None:
             if not re.fullmatch(allowed_chars, str_value):
-                raise ValidationError(f"String contains invalid characters")
+                raise ValidationError("String contains invalid characters")
 
         # Check forbidden patterns
         if forbidden_patterns is not None:
@@ -162,7 +163,7 @@ def validate_string_input(
         raise ValidationError(f"Invalid string input: {e}")
 
 
-def validate_experiment_parameters(params: dict) -> dict:
+def validate_experiment_parameters(params: dict) -> Dict[str, Any]:
     """
     Validate experiment parameters.
 
@@ -175,7 +176,7 @@ def validate_experiment_parameters(params: dict) -> dict:
     Raises:
         ValidationError: If validation fails
     """
-    validated_params = {}
+    validated_params: Dict[str, Any] = {}
 
     # Validate common parameters
     if "n_participants" in params:
@@ -217,7 +218,9 @@ def validate_experiment_parameters(params: dict) -> dict:
 
 
 def validate_confirmation_input(
-    prompt: str, valid_yes: List[str] = None, valid_no: List[str] = None
+    prompt: str,
+    valid_yes: Optional[List[str]] = None,
+    valid_no: Optional[List[str]] = None,
 ) -> bool:
     """
     Validate user confirmation input with retry logic.

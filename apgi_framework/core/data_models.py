@@ -5,10 +5,10 @@ Defines the fundamental data structures used throughout the system for
 experimental trials, results, parameters, and statistical summaries.
 """
 
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Any, Optional, Union
-import uuid
+from typing import Any, Dict, List
 
 
 @dataclass
@@ -204,6 +204,13 @@ class StatisticalSummary:
     # Quality metrics
     publication_bias_tests: Dict[str, Any] = field(default_factory=dict)
     quality_assessment: Dict[str, float] = field(default_factory=dict)
+
+    # Additional statistical attributes for report generation
+    confidence_level: float = 0.95
+    correction_method: str = "bonferroni"
+    cross_lab_consistency: float = 0.0
+    total_sample_size: int = 0
+    effective_sample_size: int = 0
 
     # Metadata
     created_at: datetime = field(default_factory=datetime.now)

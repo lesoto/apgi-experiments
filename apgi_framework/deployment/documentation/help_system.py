@@ -5,9 +5,9 @@ Provides real-time help and guidance within the APGI Framework GUI.
 """
 
 import logging
-from typing import Dict, List, Optional, Callable
 from dataclasses import dataclass
 from enum import Enum
+from typing import Callable, Dict, List, Optional
 
 
 class HelpContext(Enum):
@@ -441,9 +441,9 @@ class InSystemHelpSystem:
 
     def _print_help_content(self, content: HelpContent) -> None:
         """Print help content to console (fallback)."""
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"HELP: {content.title}")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         print(f"\n{content.description}\n")
 
         if content.steps:
@@ -470,7 +470,7 @@ class InSystemHelpSystem:
                 print(f"  → {topic}")
             print()
 
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
 
     def search_help(self, query: str) -> List[HelpContent]:
         """

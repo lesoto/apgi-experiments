@@ -1,10 +1,10 @@
 """User preferences management for APGI Framework GUI."""
 
 import json
+import logging
 import os
 from pathlib import Path
-from typing import List, Dict, Any
-import logging
+from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 

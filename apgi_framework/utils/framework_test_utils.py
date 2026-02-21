@@ -5,24 +5,22 @@ This module provides test discovery, metadata extraction, test execution utiliti
 and test result processing functions for comprehensive test management.
 """
 
+import logging
+import os
+import re
 import subprocess
 import sys
-import json
-import re
-import os
-from pathlib import Path
-from typing import Union, List, Dict, Any, Optional, Set, Tuple
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
-import logging
-from datetime import datetime, timedelta
-import importlib.util
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set, Union
 
+from .ast_analyzer import ASTAnalyzer
 from .file_utils import FileUtils
-from .ast_analyzer import ASTAnalyzer, TestMetrics
 
 
-class FrameworkTestRunStatus(Enum):
+class FrameworkRunStatus(Enum):
     """Test execution status."""
 
     PASSED = "passed"
@@ -43,7 +41,7 @@ class FrameworkFailureCategory(Enum):
     TEARDOWN_ERROR = "teardown_error"
 
 
-class FrameworkTestRunCategory(Enum):
+class FrameworkRunCategory(Enum):
     """Test categories."""
 
     UNIT = "unit"
@@ -56,10 +54,10 @@ class FrameworkTestRunCategory(Enum):
 
 
 @dataclass
-class FrameworkTestConfiguration:
+class FrameworkConfiguration:
     """Test execution configuration."""
 
-    categories: List[FrameworkTestRunCategory] = field(default_factory=list)
+    categories: List[FrameworkRunCategory] = field(default_factory=list)
     modules: List[str] = field(default_factory=list)
     tags: List[str] = field(default_factory=list)
     parallel: bool = False
@@ -71,7 +69,7 @@ class FrameworkTestConfiguration:
 
 
 @dataclass
-class FrameworkTestDefinition:
+class FrameworkTestCase:
     """Represents a single test case."""
 
     name: str
@@ -79,7 +77,7 @@ class FrameworkTestDefinition:
     module: str  # Added module attribute
     class_name: Optional[str]
     method_name: str
-    category: FrameworkTestRunCategory
+    category: FrameworkRunCategory
     line_number: int
     docstring: Optional[str]
     parameters: List[str] = field(default_factory=list)
@@ -90,11 +88,11 @@ class FrameworkTestDefinition:
 
 
 @dataclass
-class FrameworkTestRunResult:
+class FrameworkRunResult:
     """Represents test execution result."""
 
-    test_case: FrameworkTestDefinition
-    status: FrameworkTestRunStatus
+    test_case: FrameworkTestCase
+    status: FrameworkRunStatus
     duration: float
     output: str
     error_message: Optional[str] = None
@@ -103,11 +101,11 @@ class FrameworkTestRunResult:
 
 
 @dataclass
-class FrameworkTestCollection:
+class FrameworkTestSuite:
     """Represents a collection of test cases."""
 
     name: str
-    test_cases: List[FrameworkTestDefinition]
+    test_cases: List[FrameworkTestCase]
     setup_methods: List[str] = field(default_factory=list)
     teardown_methods: List[str] = field(default_factory=list)
     fixtures: List[str] = field(default_factory=list)
@@ -115,7 +113,7 @@ class FrameworkTestCollection:
 
 
 @dataclass
-class FrameworkTestFailure:
+class FrameworkFailure:
     """Represents a test failure with detailed information."""
 
     test_name: str
@@ -128,7 +126,7 @@ class FrameworkTestFailure:
 
 
 @dataclass
-class FrameworkTestResults:
+class FrameworkResults:
     """Test execution results summary."""
 
     total_tests: int
@@ -137,32 +135,31 @@ class FrameworkTestResults:
     skipped_tests: int
     error_tests: int
     execution_time: float
-    failures: List[FrameworkTestFailure] = field(default_factory=list)
+    failures: List[FrameworkFailure] = field(default_factory=list)
     timestamp: Optional[datetime] = None
-    results: List[FrameworkTestRunResult] = field(default_factory=list)
+    results: List[FrameworkRunResult] = field(default_factory=list)
 
     @property
     def pass_rate(self) -> float:
         """Calculate pass rate percentage."""
-        return (
-            (self.passed_tests / self.total_tests * 100) if self.total_tests > 0 else 0
-        )
+        return self.passed_tests / self.total_tests * 100 if self.total_tests > 0 else 0
 
 
 @dataclass
-class FrameworkTestRunExecution:
+class FrameworkExecution:
     """Represents a test execution session."""
 
     execution_id: str
-    test_suites: List[FrameworkTestCollection]
-    results: List[FrameworkTestRunResult] = field(default_factory=list)
+    test_suites: List[FrameworkTestSuite]
+    results: Optional[FrameworkResults] = None
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
     configuration: Dict[str, Any] = field(default_factory=dict)
     environment: Dict[str, str] = field(default_factory=dict)
+    status: str = "pending"
 
 
-class FrameworkTestUtilities:
+class FrameworkTestUtils:
     """
     Comprehensive test utilities for discovery, execution, and result processing.
 
@@ -197,7 +194,7 @@ class FrameworkTestUtilities:
         root_dir: Union[str, Path],
         patterns: Optional[List[str]] = None,
         exclude_patterns: Optional[List[str]] = None,
-    ) -> List[FrameworkTestCollection]:
+    ) -> List[FrameworkTestSuite]:
         """
         Discover all test files and extract test cases.
 
@@ -252,7 +249,16 @@ class FrameworkTestUtilities:
         )
         return test_suites
 
-    def _extract_test_suite(self, file_path: Path) -> FrameworkTestCollection:
+    def discover_all_tests(self) -> List[FrameworkTestSuite]:
+        """
+        Discover all test suites in the project.
+
+        Returns:
+            List of all test suites found in the project
+        """
+        return self.discover_tests(self.base_path or ".")
+
+    def _extract_test_suite(self, file_path: Path) -> FrameworkTestSuite:
         """Extract test suite from a single test file."""
         elements = self.ast_analyzer.extract_code_elements(file_path)
         test_metrics = self.ast_analyzer.analyze_test_code(file_path)
@@ -264,14 +270,17 @@ class FrameworkTestUtilities:
 
         # Process code elements
         for element in elements:
-            if element.is_test and element.node_type.value in ["function", "method"]:
+            if element.is_test and element.node_type.value in [
+                "function",
+                "method",
+            ]:
                 # Determine category
                 category = self._determine_test_category(
                     file_path, element.name, element.decorators
                 )
 
                 # Create test case
-                test_case = FrameworkTestDefinition(
+                test_case = FrameworkTestCase(
                     name=(
                         f"{element.parent_class}.{element.name}"
                         if element.parent_class
@@ -301,7 +310,7 @@ class FrameworkTestUtilities:
         total_duration = sum(tc.estimated_duration for tc in test_cases)
 
         suite_name = file_path.stem
-        return FrameworkTestCollection(
+        return FrameworkTestSuite(
             name=suite_name,
             test_cases=test_cases,
             setup_methods=setup_methods,
@@ -312,7 +321,7 @@ class FrameworkTestUtilities:
 
     def _determine_test_category(
         self, file_path: Path, test_name: str, decorators: List[str]
-    ) -> FrameworkTestRunCategory:
+    ) -> FrameworkRunCategory:
         """Determine test category based on file path, name, and decorators."""
         file_name = file_path.name.lower()
         test_name_lower = test_name.lower()
@@ -320,38 +329,38 @@ class FrameworkTestUtilities:
         # Check decorators first
         for decorator in decorators:
             if "property" in decorator.lower() or "given" in decorator.lower():
-                return FrameworkTestRunCategory.PROPERTY
+                return FrameworkRunCategory.PROPERTY
             if "gui" in decorator.lower() or "ui" in decorator.lower():
-                return FrameworkTestRunCategory.GUI
+                return FrameworkRunCategory.GUI
             if "performance" in decorator.lower() or "benchmark" in decorator.lower():
-                return FrameworkTestRunCategory.PERFORMANCE
+                return FrameworkRunCategory.PERFORMANCE
 
         # Check file path
         if "integration" in str(file_path).lower():
-            return FrameworkTestRunCategory.INTEGRATION
+            return FrameworkRunCategory.INTEGRATION
         if "property" in file_name or "pbt" in file_name:
-            return FrameworkTestRunCategory.PROPERTY
+            return FrameworkRunCategory.PROPERTY
         if "gui" in file_name or "ui" in file_name:
-            return FrameworkTestRunCategory.GUI
+            return FrameworkRunCategory.GUI
         if "performance" in file_name or "benchmark" in file_name:
-            return FrameworkTestRunCategory.PERFORMANCE
+            return FrameworkRunCategory.PERFORMANCE
         if "smoke" in file_name:
-            return FrameworkTestRunCategory.SMOKE
+            return FrameworkRunCategory.SMOKE
 
         # Check test name
         if "integration" in test_name_lower:
-            return FrameworkTestRunCategory.INTEGRATION
+            return FrameworkRunCategory.INTEGRATION
         if "property" in test_name_lower:
-            return FrameworkTestRunCategory.PROPERTY
+            return FrameworkRunCategory.PROPERTY
         if "gui" in test_name_lower or "ui" in test_name_lower:
-            return FrameworkTestRunCategory.GUI
+            return FrameworkRunCategory.GUI
         if "performance" in test_name_lower or "benchmark" in test_name_lower:
-            return FrameworkTestRunCategory.PERFORMANCE
+            return FrameworkRunCategory.PERFORMANCE
         if "smoke" in test_name_lower:
-            return FrameworkTestRunCategory.SMOKE
+            return FrameworkRunCategory.SMOKE
 
         # Default to unit test
-        return FrameworkTestRunCategory.UNIT
+        return FrameworkRunCategory.UNIT
 
     def _extract_test_dependencies(self, element) -> Set[str]:
         """Extract test dependencies from code element."""
@@ -414,12 +423,12 @@ class FrameworkTestUtilities:
 
     def filter_tests(
         self,
-        test_suites: List[FrameworkTestCollection],
-        categories: Optional[List[FrameworkTestRunCategory]] = None,
+        test_suites: List[FrameworkTestSuite],
+        categories: Optional[List[FrameworkRunCategory]] = None,
         tags: Optional[List[str]] = None,
         name_pattern: Optional[str] = None,
         max_duration: Optional[float] = None,
-    ) -> List[FrameworkTestCollection]:
+    ) -> List[FrameworkTestSuite]:
         """
         Filter test suites based on criteria.
 
@@ -459,7 +468,7 @@ class FrameworkTestUtilities:
 
             # Create filtered suite if it has test cases
             if filtered_cases:
-                filtered_suite = FrameworkTestCollection(
+                filtered_suite = FrameworkTestSuite(
                     name=suite.name,
                     test_cases=filtered_cases,
                     setup_methods=suite.setup_methods,
@@ -475,9 +484,9 @@ class FrameworkTestUtilities:
 
     def execute_tests(
         self,
-        test_suites: List[FrameworkTestCollection],
+        test_suites: List[FrameworkTestSuite],
         config: Optional[Dict[str, Any]] = None,
-    ) -> FrameworkTestRunExecution:
+    ) -> FrameworkExecution:
         """
         Execute test suites using pytest.
 
@@ -494,7 +503,7 @@ class FrameworkTestUtilities:
         execution_id = f"test_run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
         # Create test execution
-        execution = FrameworkTestRunExecution(
+        execution = FrameworkExecution(
             execution_id=execution_id,
             test_suites=test_suites,
             start_time=datetime.now(),
@@ -517,7 +526,11 @@ class FrameworkTestUtilities:
 
         if config.get("coverage", False):
             cmd.extend(
-                ["--cov=apgi_framework", "--cov=research", "--cov-report=term-missing"]
+                [
+                    "--cov=apgi_framework",
+                    "--cov=research",
+                    "--cov-report=term-missing",
+                ]
             )
 
         # Add test files
@@ -535,7 +548,39 @@ class FrameworkTestUtilities:
 
             # Parse results
             execution.end_time = datetime.now()
-            execution.results = self._parse_pytest_output(result.stdout, result.stderr)
+            parsed_results = self._parse_pytest_output(result.stdout, result.stderr)
+
+            # Create summary results
+            total_tests = len(parsed_results)
+            passed_tests = sum(
+                1 for r in parsed_results if r.status == FrameworkRunStatus.PASSED
+            )
+            failed_tests = sum(
+                1 for r in parsed_results if r.status == FrameworkRunStatus.FAILED
+            )
+            skipped_tests = sum(
+                1 for r in parsed_results if r.status == FrameworkRunStatus.SKIPPED
+            )
+            error_tests = sum(
+                1 for r in parsed_results if r.status == FrameworkRunStatus.ERROR
+            )
+            execution_time = (
+                (execution.end_time - execution.start_time).total_seconds()
+                if execution.start_time and execution.end_time
+                else 0.0
+            )
+
+            execution.results = FrameworkResults(
+                total_tests=total_tests,
+                passed_tests=passed_tests,
+                failed_tests=failed_tests,
+                skipped_tests=skipped_tests,
+                error_tests=error_tests,
+                execution_time=execution_time,
+                failures=[],  # Would need to extract from output
+                timestamp=execution.end_time or datetime.now(),
+                results=parsed_results,
+            )
 
             return execution
 
@@ -550,39 +595,47 @@ class FrameworkTestUtilities:
 
     def _parse_pytest_output(
         self, stdout: str, stderr: str
-    ) -> List[FrameworkTestRunResult]:
+    ) -> List[FrameworkRunResult]:
         """Parse pytest output to extract test results."""
         results = []
 
         # Simple parsing - in a real implementation, this would be more sophisticated
         lines = stdout.split("\n")
         for line in lines:
-            if "::" in line and (
-                "PASSED" in line
-                or "FAILED" in line
-                or "SKIPPED" in line
-                or "ERROR" in line
+            if "::" in line and any(
+                status in line for status in ["PASSED", "FAILED", "SKIPPED", "ERROR"]
             ):
                 # Extract test name and status
                 parts = line.split()
                 if len(parts) >= 2:
-                    test_name = parts[0]
+                    # test_name = parts[0]  # Unused but kept for reference
                     status_str = parts[1]
 
                     # Map status
                     status_map = {
-                        "PASSED": FrameworkTestRunStatus.PASSED,
-                        "FAILED": FrameworkTestRunStatus.FAILED,
-                        "SKIPPED": FrameworkTestRunStatus.SKIPPED,
-                        "ERROR": FrameworkTestRunStatus.ERROR,
+                        "PASSED": FrameworkRunStatus.PASSED,
+                        "FAILED": FrameworkRunStatus.FAILED,
+                        "SKIPPED": FrameworkRunStatus.SKIPPED,
+                        "ERROR": FrameworkRunStatus.ERROR,
                     }
 
-                    status = status_map.get(status_str, FrameworkTestRunStatus.UNKNOWN)
+                    status = status_map.get(status_str, FrameworkRunStatus.UNKNOWN)
 
-                    # Create a basic test result
+                    # Create a basic test case for compatibility
                     # In a real implementation, we'd match this to the actual test definition
-                    result = FrameworkTestRunResult(
-                        test_case=None,  # Would be filled in with actual test case
+                    dummy_test_case = FrameworkTestCase(
+                        name=parts[0] if parts else "unknown",
+                        file_path=Path("unknown"),  # noqa: F821
+                        module="unknown",
+                        class_name=None,
+                        method_name="unknown",
+                        category=FrameworkRunCategory.UNIT,
+                        line_number=0,
+                        docstring=None,
+                    )
+
+                    result = FrameworkRunResult(
+                        test_case=dummy_test_case,
                         status=status,
                         duration=0.1,
                         output=line,
@@ -594,14 +647,14 @@ class FrameworkTestUtilities:
 
 
 # Backward compatibility aliases
-TestUtilities = FrameworkTestUtilities
-TestDefinition = FrameworkTestDefinition
-TestConfiguration = FrameworkTestConfiguration
-TestCollection = FrameworkTestCollection
-TestRunResult = FrameworkTestRunResult
-TestResults = FrameworkTestResults
-TestRunExecution = FrameworkTestRunExecution
-TestFailure = FrameworkTestFailure
-TestRunStatus = FrameworkTestRunStatus
-TestRunCategory = FrameworkTestRunCategory
+TestUtilities = FrameworkTestUtils
+TestDefinition = FrameworkTestCase
+TestConfiguration = FrameworkConfiguration
+TestCollection = FrameworkTestSuite
+TestRunResult = FrameworkRunResult
+TestResults = FrameworkResults
+TestRunExecution = FrameworkExecution
+TestFailure = FrameworkFailure
+TestRunStatus = FrameworkRunStatus
+TestRunCategory = FrameworkRunCategory
 FailureCategory = FrameworkFailureCategory

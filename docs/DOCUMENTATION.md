@@ -1,349 +1,241 @@
 # APGI Framework Documentation Index
 
-Complete documentation for the APGI Framework Testing System.
+This index provides a comprehensive guide to all APGI Framework documentation, organized by topic and user type.
+
+## Table of Contents
+
+1. [Quick Start](#quick-start)
+2. [User Documentation](#user-documentation)
+3. [Developer Documentation](#developer-documentation)
+4. [Research Documentation](#research-documentation)
+5. [API Reference](#api-reference)
+6. [Tutorials and Examples](#tutorials-and-examples)
+7. [Troubleshooting](#troubleshooting)
+8. [Contributing](#contributing)
 
 ## Quick Start
 
-**New Users Start Here:**
+### Getting Started Guides
 
-1. [Quick Start Guide](QUICK_START_GUIDE.md) - Get running in 5 minutes
-2. [GUI Visual Guide](GUI_VISUAL_GUIDE.md) - Visual walkthrough with diagrams
-3. [User Guide](USER_GUIDE.md) - Complete guide to using the system
-4. [Examples](../examples/README.md) - Working code examples
+- **[QUICK-START.md](QUICK-START.md)** - Basic setup and first test run
+- **[GUI_VISUAL_GUIDE.md](GUI_VISUAL_GUIDE.md)** - Graphical interface overview
+- **[CLI_REFERENCE.md](CLI_REFERENCE.md)** - Command-line interface guide
 
-## Core Documentation
+### Installation
+
+- **[README.md](../README.md)** - Project overview and installation
+- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Installation and setup issues
+
+## User Documentation
+
+### Framework Overview
+
+- **[DOCUMENTATION.md](DOCUMENTATION.md)** - Comprehensive framework overview
+- **[APGI-Equations.md](APGI-Equations.md)** - Mathematical foundations
+- **[APGI-Parameter-Specifications.md](APGI-Parameter-Specifications.md)** - Model parameters
+- **[EXPERIMENTS.md](EXPERIMENTS.md)** - Experimental protocols
 
 ### User Guides
 
-| Document | Description | Audience |
-| ---------- | ------------- | ---------- |
-| [Quick Start Guide](QUICK_START_GUIDE.md) | Get started in 5 minutes | New users |
-| [User Guide](USER_GUIDE.md) | Complete user guide covering GUI, CLI, and API usage | All users |
-| [GUI Visual Guide](GUI_VISUAL_GUIDE.md) | Visual walkthrough of GUI with diagrams | GUI users |
-| [CLI Reference](CLI_REFERENCE.md) | Comprehensive command-line interface reference | CLI users |
-| [Results Interpretation Guide](RESULTS_INTERPRETATION_GUIDE.md) | How to interpret falsification test results | Researchers |
-| [Troubleshooting](TROUBLESHOOTING.md) | Common issues and solutions | All users |
+- **[USER-GUIDE.md](USER-GUIDE.md)** - Complete user manual
+- **[RESULTS_INTERPRETATION_GUIDE.md](RESULTS_INTERPRETATION_GUIDE.md)** - Understanding test results
+- **[TESTING.md](TESTING.md)** - Test execution and validation
 
-### Technical Documentation
+### GUI Documentation
 
-| Document | Description | Audience |
-| ---------- | ------------- | ---------- |
-| [Error Handling Quick Reference](ERROR_HANDLING_QUICK_REFERENCE.md) | Error handling patterns and best practices | Developers |
-| [Validation Quick Reference](../VALIDATION_QUICK_REFERENCE.md) | Parameter validation reference | Developers |
-| [Parameter Validation Guide](parameter_validation_guide.md) | Detailed validation documentation | Developers |
+- **[GUI-ENTRY-POINTS.md](GUI-ENTRY-POINTS.md)** - GUI application entry points
+- **[GUI_VISUAL_GUIDE.md](GUI_VISUAL_GUIDE.md)** - Interface components and workflows
 
-### Theoretical Background
+## Developer Documentation
 
-| Document | Description | Audience |
-| ---------- | ------------- | ---------- |
-| [APGI Falsification](../APGI-Falsification.md) | Theoretical basis for falsification testing | Researchers |
-| [APGI Ignition Equation](../APGI-Ignition-Equation.md) | Mathematical framework documentation | Researchers |
-| [APGI Testable Predictions](../APGI-Testable-Predictions.md) | Framework predictions and tests | Researchers |
+### Development Setup
 
-## Examples and Tutorials
+- **[developer/index.md](developer/index.md)** - Developer documentation home
+- **[developer/contributing.md](developer/contributing.md)** - Contribution guidelines
+- **[developer/development-setup.md](developer/development-setup.md)** - Development environment setup
 
-### Example Scripts
+### Architecture and Design
 
-Located in `examples/` directory:
+- **[developer/architecture.md](developer/architecture.md)** - System architecture
+- **[developer/design-patterns.md](developer/design-patterns.md)** - Design patterns used
+- **[developer/code-organization.md](developer/code-organization.md)** - Code structure
 
-| Example | Description | Difficulty |
-| --------- | ------------- | ------------ |
-| [01_run_primary_falsification_test.py](../examples/01_run_primary_falsification_test.py) | Running primary falsification test | Beginner |
-| [02_batch_processing_configurations.py](../examples/02_batch_processing_configurations.py) | Batch processing multiple configurations | Intermediate |
-| [03_custom_analysis_saved_results.py](../examples/03_custom_analysis_saved_results.py) | Custom analysis of saved results | Intermediate |
-| [04_extending_falsification_criteria.py](../examples/04_extending_falsification_criteria.py) | Extending with new falsification tests | Advanced |
-| [validation_and_error_handling_example.py](../examples/validation_and_error_handling_example.py) | Validation and error handling | Beginner |
+### Development Workflows
 
-See [Examples README](../examples/README.md) for detailed descriptions and usage.
+- **[developer/git-workflow.md](developer/git-workflow.md)** - Git and version control
+- **[developer/testing-workflow.md](developer/testing-workflow.md)** - Testing procedures
+- **[developer/release-process.md](developer/release-process.md)** - Release management
 
-## Documentation by Task
+### Quality Assurance
 
-### Getting Started
+- **[developer/code-quality.md](developer/code-quality.md)** - Code quality standards
+- **[developer/testing-strategy.md](developer/testing-strategy.md)** - Testing approach
+- **[developer/performance-profiling.md](developer/performance-profiling.md)** - Performance analysis
 
-**I want to run my first falsification test:**
+## Research Documentation
 
-1. Read [Quick Start Guide](QUICK_START_GUIDE.md) - 5 minute setup
-2. Try [Example 01](../examples/01_run_primary_falsification_test.py)
-3. Review [Results Interpretation Guide](RESULTS_INTERPRETATION_GUIDE.md)
+### Research Methods
 
-**I want to use the CLI:**
+- **[research/index.md](research/index.md)** - Research documentation home
+- **[research/methodology.md](research/methodology.md)** - Research methodology
+- **[research/experimental-design.md](research/experimental-design.md)** - Experimental design principles
 
-1. Read [Quick Start Guide - CLI Section](QUICK_START_GUIDE.md#option-b-using-the-cli-recommended-for-automation)
-2. Read [CLI Reference](CLI_REFERENCE.md) for complete documentation
-3. Try basic commands:
+### Specific Research Areas
+
+- **[research/consciousness-research.md](research/consciousness-research.md)** - Consciousness research
+- **[research/neural-correlates.md](research/neural-correlates.md)** - Neural correlates of consciousness
+- **[research/computational-models.md](research/computational-models.md)** - Computational modeling
+
+### Data and Analysis
+
+- **[research/data-collection.md](research/data-collection.md)** - Data collection methods
+- **[research/statistical-analysis.md](research/statistical-analysis.md)** - Statistical analysis
+- **[research/validation-procedures.md](research/validation-procedures.md)** - Validation procedures
+
+## API Reference
+
+### Core API
+
+- **[api/index.md](api/index.md)** - API documentation home
+- **[api/core.md](api/core.md)** - Core framework API
+- **[api/models.md](api/models.md)** - Model classes and functions
+- **[api/simulators.md](api/simulators.md)** - Neural simulators API
+
+### Component APIs
+
+- **[api/config.md](api/config.md)** - Configuration management API
+- **[api/data.md](api/data.md)** - Data management API
+- **[api/workflow.md](api/workflow.md)** - Workflow orchestration API
+- **[api/gui.md](api/gui.md)** - GUI components API
+
+### Utility APIs
+
+- **[api/utils.md](api/utils.md)** - Utility functions
+- **[api/validation.md](api/validation.md)** - Validation and testing API
+- **[api/logging.md](api/logging.md)** - Logging and monitoring API
+
+## Tutorials and Examples
+
+### Basic Tutorials
+
+- **[examples/basic-tutorial.md](examples/basic-tutorial.md)** - Basic usage tutorial
+- **[examples/first-experiment.md](examples/first-experiment.md)** - Running your first experiment
+- **[examples/data-analysis.md](examples/data-analysis.md)** - Basic data analysis
+
+### Advanced Tutorials
+
+- **[examples/advanced-modeling.md](examples/advanced-modeling.md)** - Advanced modeling techniques
+- **[examples/custom-simulators.md](examples/custom-simulators.md)** - Creating custom simulators
+- **[examples/workflow-automation.md](examples/workflow-automation.md)** - Workflow automation
+
+### Code Examples
+
+- **[examples/code-samples/](examples/code-samples/)** - Code sample repository
+- **[examples/scripts/](examples/scripts/)** - Example scripts
+- **[examples/notebooks/](examples/notebooks/)** - Jupyter notebook examples
+
+## Troubleshooting
+
+### Problem Solving
+
+- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Comprehensive troubleshooting guide
+- **[FAQ.md](FAQ.md)** - Frequently asked questions
+- **[known-issues.md](known-issues.md)** - Known issues and workarounds
+
+### Support Resources
+
+- **[support.md](support.md)** - Getting help and support
+- **[community.md](community.md)** - Community resources
+- **[bug-reporting.md](bug-reporting.md)** - Bug reporting guidelines
+
+## Contributing
+
+### Contributor Documentation
+
+- **[CONTRIBUTING.md](../CONTRIBUTING.md)** - Contribution guidelines
+- **[CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md)** - Code of conduct
+- **[developer/contributing.md](developer/contributing.md)** - Detailed contribution guide
+
+### Development Resources
+
+- **[developer/index.md](developer/index.md)** - Developer documentation
+- **[developer/setup.md](developer/setup.md)** - Development setup
+- **[developer/testing.md](developer/testing.md)** - Testing guidelines
+
+## Documentation Organization
+
+### By User Type
+
+#### New Users
+
+1. [README.md](../README.md) - Overview
+2. [QUICK-START.md](QUICK-START.md) - Getting started
+3. [USER-GUIDE.md](USER-GUIDE.md) - Complete manual
+4. [GUI_VISUAL_GUIDE.md](GUI_VISUAL_GUIDE.md) - Interface guide
+
+#### Researchers
+
+1. [APGI-Equations.md](APGI-Equations.md) - Theory
+2. [EXPERIMENTS.md](EXPERIMENTS.md) - Experimental protocols
+3. [RESULTS_INTERPRETATION_GUIDE.md](RESULTS_INTERPRETATION_GUIDE.md) - Result analysis
+4. [research/](research/) - Research-specific documentation
+
+#### Developers
+
+1. [developer/index.md](developer/index.md) - Development docs
+2. [api/index.md](api/index.md) - API reference
+3. [examples/](examples/) - Code examples
+4. [TESTING.md](TESTING.md) - Testing procedures
+
+### By Topic
+
+#### Theory and Models
+
+- [APGI-Equations.md](APGI-Equations.md)
+- [APGI-Parameter-Specifications.md](APGI-Parameter-Specifications.md)
+- [research/computational-models.md](research/computational-models.md)
+
+#### Analysis and Results
+
+- [RESULTS_INTERPRETATION_GUIDE.md](RESULTS_INTERPRETATION_GUIDE.md)
+- [research/statistical-analysis.md](research/statistical-analysis.md)
+- [research/data-collection.md](research/data-collection.md)
+
+#### Implementation
+
+- [developer/architecture.md](developer/architecture.md)
+- [api/](api/)
+- [examples/](examples/)
+
+#### Testing and Validation
+
+- [TESTING.md](TESTING.md)
+- [developer/testing-strategy.md](developer/testing-strategy.md)
+- [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+
+## Documentation Standards
+
+### File Naming Conventions
+
+- `README.md` - Project overview (repository root)
+- `DOCUMENTATION.md` - Main documentation file
+- `USER-GUIDE.md` - Complete user manual
+- `QUICK-START.md` - Quick start guide
+- `TROUBLESHOOTING.md` - Problem-solving guide
+- `API-REFERENCE.md` - API documentation
+- `CHANGELOG.md` - Version history
+
+### Directory Structure
 
 ```bash
-python -m apgi_framework.cli validate-system
-python -m apgi_framework.cli run-test primary --trials 1000
+docs/
+├── api/                    # API reference documentation
+├── developer/             # Developer documentation
+├── examples/              # Tutorials and examples
+├── research/              # Research-specific documentation
+├── screenshots/           # Images and diagrams
+├── technical/             # Technical specifications
+├── user/                  # User documentation
+├── index.md              # Documentation home page
+└── README.md             # Documentation overview
 ```
-
-**I want to use the GUI:**
-
-1. Read [Quick Start Guide - GUI Section](QUICK_START_GUIDE.md#option-a-using-the-gui-recommended-for-beginners)
-2. Read [GUI Visual Guide](GUI_VISUAL_GUIDE.md) for visual walkthrough
-3. Launch GUI: `python launch_gui.py`
-4. Follow step-by-step instructions in guides
-
-### Running Tests
-
-**I want to run a single test:**
-
-- [User Guide - Running Tests](USER_GUIDE.md#running-a-test)
-- [Example 01](../examples/01_run_primary_falsification_test.py)
-- [CLI Reference - run-test](CLI_REFERENCE.md#run-test)
-
-**I want to run multiple tests:**
-
-- [User Guide - Batch Processing](USER_GUIDE.md#batch-processing)
-- [Example 02](../examples/02_batch_processing_configurations.py)
-- [CLI Reference - run-batch](CLI_REFERENCE.md#run-batch)
-
-**I want to customize parameters:**
-
-- [CLI Reference - Parameter Reference](CLI_REFERENCE.md#parameter-reference)
-- [User Guide - Parameter Configuration](USER_GUIDE.md#step-2-configure-parameters)
-- [Example 02](../examples/02_batch_processing_configurations.py)
-
-### Analyzing Results
-
-**I want to understand my results:**
-
-1. [Results Interpretation Guide](RESULTS_INTERPRETATION_GUIDE.md)
-2. [User Guide - Understanding Results](USER_GUIDE.md#understanding-results)
-3. Check [Common Scenarios](RESULTS_INTERPRETATION_GUIDE.md#common-scenarios)
-
-**I want to analyze saved results:**
-
-- [Example 03](../examples/03_custom_analysis_saved_results.py)
-- [User Guide - Loading Results](USER_GUIDE.md#loading-previous-results)
-
-**I want to export results:**
-
-- [User Guide - Exporting Data](USER_GUIDE.md#exporting-data)
-- [CLI Reference - Output Options](CLI_REFERENCE.md#--output-dir--o)
-
-### Troubleshooting
-
-**Something isn't working:**
-
-1. Check [Troubleshooting Guide](TROUBLESHOOTING.md)
-2. Run system validation: `python -m apgi_framework.cli validate-system --detailed`
-3. Enable debug logging: `--log-level DEBUG`
-4. Review [Common Issues](TROUBLESHOOTING.md#common-issues-and-solutions)
-
-**I'm getting errors:**
-
-- [Troubleshooting - Error Categories](TROUBLESHOOTING.md)
-- [Error Handling Quick Reference](ERROR_HANDLING_QUICK_REFERENCE.md)
-- Check logs: `cat results/apgi_framework.log`
-
-### Advanced Usage
-
-**I want to extend the framework:**
-
-- [Example 04](../examples/04_extending_falsification_criteria.py)
-- Review existing test implementations in `apgi_framework/falsification/`
-
-**I want to understand the theory:**
-
-- [APGI Falsification](../APGI-Falsification.md)
-- [APGI Ignition Equation](../APGI-Ignition-Equation.md)
-- [APGI Testable Predictions](../APGI-Testable-Predictions.md)
-
-**I want to contribute:**
-
-- Review code in `apgi_framework/`
-- Check [Error Handling Quick Reference](ERROR_HANDLING_QUICK_REFERENCE.md)
-- Follow patterns in existing examples
-
-## Documentation by User Type
-
-### Researchers
-
-**Primary Documents:**
-
-1. [User Guide](USER_GUIDE.md)
-2. [Results Interpretation Guide](RESULTS_INTERPRETATION_GUIDE.md)
-3. [APGI Falsification](../APGI-Falsification.md)
-4. [Examples](../examples/README.md)
-
-**Workflow:**
-
-1. Understand theoretical background
-2. Run falsification tests
-3. Interpret results correctly
-4. Report findings appropriately
-
-### Developers
-
-**Primary Documents:**
-
-1. [Error Handling Quick Reference](ERROR_HANDLING_QUICK_REFERENCE.md)
-2. [Validation Quick Reference](../VALIDATION_QUICK_REFERENCE.md)
-3. [Example 04 - Extending Framework](../examples/04_extending_falsification_criteria.py)
-4. Code in `apgi_framework/`
-
-**Workflow:**
-
-1. Understand system architecture
-2. Review existing implementations
-3. Follow error handling patterns
-4. Extend with new features
-
-### System Administrators
-
-**Primary Documents:**
-
-1. [Troubleshooting Guide](TROUBLESHOOTING.md)
-2. [CLI Reference](CLI_REFERENCE.md)
-3. [User Guide - Installation](USER_GUIDE.md#installation)
-
-**Workflow:**
-
-1. Install and configure system
-2. Validate installation
-3. Troubleshoot issues
-4. Maintain system health
-
-### Students/Learners
-
-**Primary Documents:**
-
-1. [Quick Start Guide](QUICK_START_GUIDE.md)
-2. [GUI Visual Guide](GUI_VISUAL_GUIDE.md)
-3. [User Guide](USER_GUIDE.md)
-4. [Examples](../examples/README.md)
-5. [APGI Falsification](../APGI-Falsification.md)
-
-**Workflow:**
-
-1. Start with Quick Start Guide
-2. Follow GUI Visual Guide for hands-on learning
-3. Run basic examples
-4. Understand theoretical concepts
-5. Progress to advanced topics
-
-## Quick Reference Cards
-
-### Common Commands
-
-```bash
-# System validation
-python -m apgi_framework.cli validate-system
-
-# Run primary test
-python -m apgi_framework.cli run-test primary --trials 1000
-
-# Run all tests
-python -m apgi_framework.cli run-batch --all-tests
-
-# Generate configuration
-python -m apgi_framework.cli generate-config --output config.json
-
-# Check status
-python -m apgi_framework.cli status
-```
-
-### Common Python Patterns
-
-```python
-# Initialize system
-from apgi_framework.main_controller import MainApplicationController
-
-controller = MainApplicationController()
-controller.initialize_system()
-
-# Run test
-tests = controller.get_falsification_tests()
-result = tests['primary'].run_test(n_trials=1000)
-
-# Cleanup
-controller.shutdown_system()
-```
-
-### Parameter Ranges
-
-| Parameter | Range | Default | Units |
-| ----------- | ------- | --------- | ------- |
-| extero_precision | 0.1-10.0 | 2.0 | dimensionless |
-| intero_precision | 0.1-10.0 | 1.5 | dimensionless |
-| threshold | 0.5-10.0 | 3.5 | dimensionless |
-| steepness | 0.1-5.0 | 2.0 | dimensionless |
-| somatic_gain | 0.1-5.0 | 1.3 | dimensionless |
-
-### Statistical Thresholds
-
-| Metric | Threshold | Interpretation |
-| -------- | ----------- | ---------------- |
-| Confidence | ≥ 0.8 | High confidence |
-| P-value | < 0.05 | Significant |
-| Effect Size | ≥ 0.5 | Medium effect |
-| Power | ≥ 0.8 | Well-powered |
-
-## Documentation Maintenance
-
-### Version Information
-
-- **Current Version**: 1.0
-- **Last Updated**: 2025-01-07
-- **Maintainer**: APGI Framework Development Team
-
-### Contributing to Documentation
-
-To improve documentation:
-
-1. Identify gaps or unclear sections
-2. Follow existing documentation style
-3. Include examples where appropriate
-4. Test all code examples
-5. Update this index if adding new documents
-
-### Documentation Guidelines
-
-- Use Markdown format
-- Include table of contents for long documents
-- Provide working code examples
-- Use consistent terminology
-- Include version and date information
-
-## Additional Resources
-
-### External Resources
-
-- [Python Documentation](<https://docs.python.org/3/>)
-- [NumPy Documentation](<https://numpy.org/doc/>)
-- [SciPy Documentation](<https://docs.scipy.org/doc/>)
-- [Matplotlib Documentation](<https://matplotlib.org/stable/contents.html>)
-
-### Related Projects
-
-- APGI Framework Core Implementation
-- Neural Signature Simulators
-- Statistical Analysis Tools
-
-### Support Channels
-
-1. **Documentation**: Start here
-2. [GitHub Issues](<https://github.com/your-org/ipi-framework/issues>): Report bugs
-3. **Email**: [support@ipiframework.org](mailto:support@ipiframework.org)
-4. **Validation**: System diagnostics
-5. **Logs**: Debug information
-
----
-
-**Need Help?**
-
-1. Check relevant documentation section above
-2. Try examples for your use case
-3. Run system validation
-4. Review troubleshooting guide
-5. Enable debug logging for detailed information
-
-**Quick Links:**
-
-- [Quick Start Guide](QUICK_START_GUIDE.md) - Get started fast
-- [GUI Visual Guide](GUI_VISUAL_GUIDE.md) - Visual walkthrough
-- [User Guide](USER_GUIDE.md) - Complete documentation
-- [Examples](../examples/README.md) - Working code
-- [CLI Reference](CLI_REFERENCE.md) - Command reference
-- [Troubleshooting](TROUBLESHOOTING.md) - Problem solving

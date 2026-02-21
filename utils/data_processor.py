@@ -75,7 +75,7 @@ class DataProcessor:
         Returns:
             Dictionary with validation results
         """
-        validation_results = {
+        validation_results: Dict[str, Any] = {
             "is_valid": True,
             "issues": [],
             "warnings": [],
@@ -284,14 +284,14 @@ class DataProcessor:
 
             # Extract features for each numeric column
             for col in numeric_cols:
-                values = window_data[col].values
+                values = np.asarray(window_data[col].values, dtype=float)
                 feature_row.update(
                     {
-                        f"{col}_mean": np.mean(values),
-                        f"{col}_std": np.std(values),
-                        f"{col}_min": np.min(values),
-                        f"{col}_max": np.max(values),
-                        f"{col}_median": np.median(values),
+                        f"{col}_mean": float(np.mean(values)),
+                        f"{col}_std": float(np.std(values)),
+                        f"{col}_min": float(np.min(values)),
+                        f"{col}_max": float(np.max(values)),
+                        f"{col}_median": float(np.median(values)),
                         f"{col}_skew": pd.Series(values).skew(),
                         f"{col}_kurtosis": pd.Series(values).kurtosis(),
                     }
@@ -380,8 +380,16 @@ def create_data_summary(
             "min": float(col_data.min()),
             "max": float(col_data.max()),
             "median": float(col_data.median()),
-            "skewness": float(col_data.skew()),
-            "kurtosis": float(col_data.kurtosis()),
+            "skewness": (
+                float(col_data.skew())  # type: ignore
+                if not col_data.empty and pd.notna(col_data.skew())
+                else 0.0
+            ),
+            "kurtosis": (
+                float(col_data.kurtosis())  # type: ignore
+                if not col_data.empty and pd.notna(col_data.kurtosis())
+                else 0.0
+            ),
         }
 
     # Quality metrics

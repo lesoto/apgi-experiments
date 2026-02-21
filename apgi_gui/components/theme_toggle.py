@@ -6,9 +6,7 @@ Provides a user-friendly interface for runtime theme switching with preview capa
 
 import tkinter as tk
 from tkinter import ttk
-import customtkinter as ctk
-from typing import Dict, Any, Optional, Callable, List
-from pathlib import Path
+from typing import Callable, Optional
 
 try:
     from ..utils.theme_manager import ThemeManager
@@ -16,7 +14,7 @@ try:
     THEME_MANAGER_AVAILABLE = True
 except ImportError:
     THEME_MANAGER_AVAILABLE = False
-    ThemeManager = None
+    ThemeManager = None  # type: ignore
 
 
 class ThemeToggleWidget:
@@ -161,7 +159,7 @@ class ThemeToggleWidget:
             # Calculate luminance
             luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
             return luminance < 0.5
-        except:
+        except Exception:
             return False
 
     def _on_theme_selected(self, event=None):
@@ -220,7 +218,7 @@ class ThemeToggleDialog:
     def __init__(self, parent, theme_manager: Optional[ThemeManager] = None):
         self.parent = parent
         self.theme_manager = theme_manager
-        self.result = None
+        self.result: Optional[str] = None
 
         # Create dialog
         self.dialog = tk.Toplevel(parent)

@@ -5,14 +5,13 @@ Provides safe alternatives to direct pickle usage with input validation,
 type checking, and sandboxing to prevent code execution vulnerabilities.
 """
 
-import pickle
 import hashlib
-import json
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union, Set
 import logging
-from dataclasses import is_dataclass, asdict
+import pickle
+from dataclasses import is_dataclass
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set, Union, cast, TypedDict
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +22,18 @@ class SecurePickleError(Exception):
     pass
 
 
+class ValidationResult(TypedDict, total=False):
+    """Type for pickle validation result dictionary."""
+
+    file_path: str
+    is_safe: bool
+    warnings: List[str]
+    errors: List[str]
+    file_size: int
+    checksum: Optional[str]
+    object_type: str
+
+
 class SecurePickleValidator:
     """
     Validates and secures pickle operations to prevent code execution attacks.
@@ -31,7 +42,7 @@ class SecurePickleValidator:
     """
 
     # Whitelisted safe types that can be unpickled
-    ALLOWED_TYPES = {
+    ALLOWED_TYPES: Set[Union[type, str]] = {
         # Basic types
         str,
         int,
@@ -99,7 +110,7 @@ class SecurePickleValidator:
             strict_mode: If True, rejects any unknown types. If False, logs warnings.
         """
         self.strict_mode = strict_mode
-        self.validation_cache = {}
+        self.validation_cache: Dict[str, Any] = {}
 
     def validate_pickle_data(
         self, data: bytes, expected_types: Optional[Set[type]] = None
@@ -166,7 +177,7 @@ class SecurePickleValidator:
 
         for pattern in dangerous_patterns:
             if pattern in data:
-                logger.warning(f"Dangerous pattern detected in pickle: {pattern}")
+                logger.warning(f"Dangerous pattern detected in pickle: {pattern!r}")
                 return True
 
         return False
@@ -219,8 +230,11 @@ class SecurePickleValidator:
             import io
 
             with io.BytesIO(data) as data_stream:
+                allowed_types: Set[Union[type, str]] = set(self.ALLOWED_TYPES)
+                if expected_types:
+                    allowed_types.update(expected_types)
                 unpickler = RestrictedUnpickler(
-                    data_stream, allowed_types=expected_types or self.ALLOWED_TYPES
+                    data_stream, allowed_types=allowed_types
                 )
                 result = unpickler.load()
 
@@ -298,7 +312,7 @@ class RestrictedUnpickler(pickle.Unpickler):
     Restricted unpickler that only allows safe types.
     """
 
-    def __init__(self, file, allowed_types: Set[type]):
+    def __init__(self, file, allowed_types: Set[Union[type, str]]):
         super().__init__(file)
         self.allowed_types = allowed_types
 
@@ -361,7 +375,7 @@ def safe_pickle_dump(
     )
 
 
-def validate_pickle_security(file_path: Union[str, Path]) -> Dict[str, Any]:
+def validate_pickle_security(file_path: Union[str, Path]) -> ValidationResult:
     """
     Validate a pickle file for security issues.
 
@@ -373,7 +387,7 @@ def validate_pickle_security(file_path: Union[str, Path]) -> Dict[str, Any]:
     """
     file_path = Path(file_path)
 
-    result = {
+    result: ValidationResult = {
         "file_path": str(file_path),
         "is_safe": False,
         "warnings": [],
@@ -412,7 +426,10 @@ def validate_pickle_security(file_path: Union[str, Path]) -> Dict[str, Any]:
 
             with io.BytesIO(data) as data_stream:
                 unpickler = RestrictedUnpickler(
-                    data_stream, allowed_types=_default_validator.ALLOWED_TYPES
+                    data_stream,
+                    allowed_types=cast(
+                        Set[Union[type, str]], _default_validator.ALLOWED_TYPES
+                    ),
                 )
                 obj = unpickler.load()
             result["is_safe"] = True

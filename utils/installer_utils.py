@@ -5,10 +5,10 @@ This module provides utilities for installing and managing the APGI system.
 """
 
 import os
-import sys
 import subprocess
+import sys
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Any, Dict, List, Optional
 
 
 class InstallerError(Exception):
@@ -141,6 +141,7 @@ def get_system_info() -> Dict[str, Any]:
         System information
     """
     import platform
+
     import psutil
 
     return {
@@ -218,7 +219,7 @@ def extract_version_from_pyproject(pyproject_path: str = "pyproject.toml") -> st
         raise InstallerError(f"pyproject.toml file not found: {pyproject_path}")
 
     try:
-        import toml
+        import toml  # type: ignore
 
         config = toml.load(pyproject_file)
         version = config.get("project", {}).get("version")
@@ -310,7 +311,7 @@ def generate_inno_setup_script(
     version: str,
     source_dir: str,
     output_dir: str,
-    executable_name: str = None,
+    executable_name: Optional[str] = None,
 ) -> str:
     """Generate Inno Setup script for Windows installer.
 

@@ -9,15 +9,20 @@ The core equation is:
 - Ignition Probability: Bₜ = σ(α(Sₜ - θₜ))
 """
 
-import numpy as np
-from typing import Union, Optional, TYPE_CHECKING
-import warnings
 import logging
+from typing import TYPE_CHECKING, Optional, Union, Dict, Any
 
-from apgi_framework.exceptions import MathematicalError
+import numpy as np
+
 from apgi_framework.config.constants import ModelConstants
+from apgi_framework.exceptions import MathematicalError
 
 if TYPE_CHECKING:
+    from apgi_framework.core.precision import PrecisionCalculator
+    from apgi_framework.core.prediction_error import PredictionErrorProcessor
+    from apgi_framework.core.somatic_marker import ContextType, SomaticMarkerEngine
+    from apgi_framework.core.threshold import ThresholdManager
+else:
     from apgi_framework.core.precision import PrecisionCalculator
     from apgi_framework.core.prediction_error import PredictionErrorProcessor
     from apgi_framework.core.somatic_marker import SomaticMarkerEngine
@@ -307,21 +312,21 @@ class APGIEquation:
 
         # Process prediction errors
         processed_extero_error = (
-            self.prediction_error_processor.process_exteroceptive_error(
+            self.prediction_error_processor.process_exteroceptive_error(  # type: ignore
                 raw_extero_error
             )
         )
         processed_intero_error = (
-            self.prediction_error_processor.process_interoceptive_error(
+            self.prediction_error_processor.process_interoceptive_error(  # type: ignore
                 raw_intero_error
             )
         )
 
         # Calculate precisions
-        extero_precision = self.precision_calculator.calculate_exteroceptive_precision(
+        extero_precision = self.precision_calculator.calculate_exteroceptive_precision(  # type: ignore
             extero_variance
         )
-        intero_precision = self.precision_calculator.calculate_interoceptive_precision(
+        intero_precision = self.precision_calculator.calculate_interoceptive_precision(  # type: ignore
             intero_variance, arousal=arousal
         )
 
@@ -329,14 +334,14 @@ class APGIEquation:
         from .somatic_marker import ContextType
 
         context_enum = context if context is not None else ContextType.NEUTRAL
-        somatic_gain = self.somatic_marker_engine.calculate_somatic_gain(
+        somatic_gain = self.somatic_marker_engine.calculate_somatic_gain(  # type: ignore
             context=context_enum, arousal=arousal, valence=valence, stakes=stakes
         )
 
         # Calculate final surprise
         return self.calculate_surprise(
-            extero_error=processed_extero_error,
-            intero_error=processed_intero_error,
+            extero_error=float(processed_extero_error),
+            intero_error=float(processed_intero_error),
             extero_precision=extero_precision,
             intero_precision=intero_precision,
             somatic_gain=somatic_gain,
@@ -435,14 +440,14 @@ class APGIEquation:
             ignition_occurred=ignition_occurred, context=context_enum
         )
 
-    def validate_integrated_components(self) -> dict:
+    def validate_integrated_components(self) -> Dict[str, Any]:
         """
         Validate that all integrated components are properly configured and compatible.
 
         Returns:
             Dictionary with detailed validation results for each component
         """
-        validation_results = {
+        validation_results: Dict[str, Any] = {
             "precision_calculator": {
                 "available": self.precision_calculator is not None,
                 "configured": False,
@@ -482,22 +487,22 @@ class APGIEquation:
                 ]
                 for method in required_methods:
                     if not hasattr(self.precision_calculator, method):
-                        validation_results["precision_calculator"]["errors"].append(
+                        validation_results["precision_calculator"]["errors"].append(  # type: ignore
                             f"Missing required method: {method}"
                         )
                     else:
-                        validation_results["precision_calculator"]["configured"] = True
+                        validation_results["precision_calculator"]["configured"] = True  # type: ignore
 
                 # Test basic functionality
                 test_precision = (
                     self.precision_calculator.calculate_exteroceptive_precision(1.0)
                 )
                 if not isinstance(test_precision, (int, float)) or test_precision <= 0:
-                    validation_results["precision_calculator"]["errors"].append(
+                    validation_results["precision_calculator"]["errors"].append(  # type: ignore
                         "Invalid precision calculation result"
                     )
                 else:
-                    validation_results["precision_calculator"]["compatible"] = True
+                    validation_results["precision_calculator"]["compatible"] = True  # type: ignore
 
             except Exception as e:
                 validation_results["precision_calculator"]["errors"].append(
@@ -515,33 +520,29 @@ class APGIEquation:
         if self.prediction_error_processor is not None:
             try:
                 required_methods = [
-                    "calculate_exteroceptive_error",
-                    "calculate_interoceptive_error",
+                    "process_exteroceptive_error",
+                    "process_interoceptive_error",
                 ]
                 for method in required_methods:
                     if not hasattr(self.prediction_error_processor, method):
-                        validation_results["prediction_error_processor"][
-                            "errors"
-                        ].append(f"Missing required method: {method}")
+                        validation_results["prediction_error_processor"]["errors"].append(f"Missing required method: {method}")  # type: ignore
                     else:
                         validation_results["prediction_error_processor"][
                             "configured"
-                        ] = True
+                        ] = True  # type: ignore
 
                 # Test basic functionality
                 test_error = (
-                    self.prediction_error_processor.calculate_exteroceptive_error(
-                        1.0, 0.5
-                    )
+                    self.prediction_error_processor.process_exteroceptive_error(1.0)
                 )
                 if not isinstance(test_error, (int, float)):
-                    validation_results["prediction_error_processor"]["errors"].append(
+                    validation_results["prediction_error_processor"]["errors"].append(  # type: ignore
                         "Invalid error calculation result"
                     )
                 else:
                     validation_results["prediction_error_processor"][
                         "compatible"
-                    ] = True
+                    ] = True  # type: ignore
 
             except Exception as e:
                 validation_results["prediction_error_processor"]["errors"].append(
@@ -558,20 +559,24 @@ class APGIEquation:
                 required_methods = ["calculate_somatic_gain"]
                 for method in required_methods:
                     if not hasattr(self.somatic_marker_engine, method):
-                        validation_results["somatic_marker_engine"]["errors"].append(
+                        validation_results["somatic_marker_engine"]["errors"].append(  # type: ignore
                             f"Missing required method: {method}"
                         )
                     else:
-                        validation_results["somatic_marker_engine"]["configured"] = True
+                        validation_results["somatic_marker_engine"]["configured"] = True  # type: ignore
 
                 # Test basic functionality
-                test_gain = self.somatic_marker_engine.calculate_somatic_gain(0.5)
+                from .somatic_marker import ContextType
+
+                test_gain = self.somatic_marker_engine.calculate_somatic_gain(
+                    context=ContextType.NEUTRAL, arousal=1.0, valence=0.0, stakes=1.0
+                )
                 if not isinstance(test_gain, (int, float)) or test_gain < 0:
-                    validation_results["somatic_marker_engine"]["errors"].append(
+                    validation_results["somatic_marker_engine"]["errors"].append(  # type: ignore
                         "Invalid somatic gain calculation result"
                     )
                 else:
-                    validation_results["somatic_marker_engine"]["compatible"] = True
+                    validation_results["somatic_marker_engine"]["compatible"] = True  # type: ignore
 
             except Exception as e:
                 validation_results["somatic_marker_engine"]["errors"].append(
@@ -588,20 +593,24 @@ class APGIEquation:
                 required_methods = ["get_current_threshold", "update_threshold"]
                 for method in required_methods:
                     if not hasattr(self.threshold_manager, method):
-                        validation_results["threshold_manager"]["errors"].append(
+                        validation_results["threshold_manager"]["errors"].append(  # type: ignore
                             f"Missing required method: {method}"
                         )
                     else:
-                        validation_results["threshold_manager"]["configured"] = True
+                        validation_results["threshold_manager"]["configured"] = True  # type: ignore
 
                 # Test basic functionality
-                test_threshold = self.threshold_manager.get_current_threshold()
+                from .somatic_marker import ContextType
+
+                test_threshold = self.threshold_manager.get_current_threshold(
+                    context=ContextType.NEUTRAL, arousal=1.0
+                )
                 if not isinstance(test_threshold, (int, float)) or test_threshold <= 0:
-                    validation_results["threshold_manager"]["errors"].append(
+                    validation_results["threshold_manager"]["errors"].append(  # type: ignore
                         "Invalid threshold value"
                     )
                 else:
-                    validation_results["threshold_manager"]["compatible"] = True
+                    validation_results["threshold_manager"]["compatible"] = True  # type: ignore
 
             except Exception as e:
                 validation_results["threshold_manager"]["errors"].append(

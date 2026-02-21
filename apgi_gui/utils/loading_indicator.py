@@ -5,10 +5,10 @@ Provides loading indicators for slow async operations in the GUI.
 Prevents UI freezing and provides visual feedback to users.
 """
 
+import threading
 import tkinter as tk
 from tkinter import ttk
-import threading
-from typing import Optional, Callable, Any
+from typing import Any, Callable, Optional
 
 
 class LoadingIndicator:

@@ -6,15 +6,17 @@ signatures and combines them into complete patterns for consciousness detection 
 falsification testing.
 """
 
-import numpy as np
-from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
+
+import numpy as np
+
+from .bold_simulator import BOLDSignature
+from .gamma_simulator import GammaSignature
 
 # Import signature classes
 from .p3b_simulator import P3bSignature
-from .gamma_simulator import GammaSignature
-from .bold_simulator import BOLDSignature
 from .pci_calculator import PCISignature
 
 
@@ -132,7 +134,7 @@ class SignatureValidator:
         Returns:
             Tuple of (is_valid, validation_details)
         """
-        validation_details = {}
+        validation_details: Dict[str, Any] = {}
         is_valid = True
 
         # Check amplitude range
@@ -181,7 +183,7 @@ class SignatureValidator:
         Returns:
             Tuple of (is_valid, validation_details)
         """
-        validation_details = {}
+        validation_details: Dict[str, Any] = {}
         is_valid = True
 
         # Check PLV values range
@@ -248,7 +250,7 @@ class SignatureValidator:
         Returns:
             Tuple of (is_valid, validation_details)
         """
-        validation_details = {}
+        validation_details: Dict[str, Any] = {}
         is_valid = True
 
         # Check Z-score ranges
@@ -314,7 +316,7 @@ class SignatureValidator:
         Returns:
             Tuple of (is_valid, validation_details)
         """
-        validation_details = {}
+        validation_details: Dict[str, Any] = {}
         is_valid = True
 
         # Check PCI value range
@@ -529,7 +531,7 @@ class SignatureValidator:
             return 0.0
 
         # Weighted average
-        return np.mean(probabilities)
+        return float(np.mean(probabilities))
 
     def _calculate_signature_coherence(
         self, threshold_validations: Dict[str, bool], present_signatures: List[str]
@@ -617,7 +619,7 @@ class SignatureValidator:
                 ai_acc_plv = np.mean(
                     [gamma_signature.plv_values[conn] for conn in ai_acc_connections]
                 )
-                gamma_ai_acc_suppressed = ai_acc_plv <= 0.25
+                gamma_ai_acc_suppressed = bool(ai_acc_plv <= 0.25)
 
         # Calculate falsification confidence
         falsification_indicators = [

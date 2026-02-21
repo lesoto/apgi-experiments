@@ -6,17 +6,19 @@ challenges. Tests whether the ignition threshold θₜ remains unchanged despite
 manipulations that should modulate it according to the APGI Framework.
 """
 
-from typing import Dict, List, Optional, Any
+import logging
 from dataclasses import dataclass
-from enum import Enum
-import numpy as np
 from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional
+
+import numpy as np
 
 from apgi_framework.core.equation import APGIEquation
 from apgi_framework.core.threshold import ThresholdManager
-from apgi_framework.exceptions import ValidationError, SimulationError
+from apgi_framework.exceptions import SimulationError, ValidationError
+
 from .error_handling_wrapper import with_error_handling
-import logging
 
 logger = logging.getLogger(__name__)
 

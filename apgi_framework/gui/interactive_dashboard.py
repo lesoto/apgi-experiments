@@ -5,38 +5,44 @@ Provides real-time monitoring, interactive visualizations, and experiment manage
 through a modern web interface using Flask and WebSocket for real-time updates.
 """
 
+from typing import Any, Dict, Optional
+
+# Pre-define Flask components to avoid redefinition issues
+Flask = None
+jsonify = None
+render_template = None
+request = None
+SocketIO = None
+emit = None
+
+# Import Flask components - successful imports will overwrite the None values
 try:
-    from flask import Flask, render_template, jsonify, request
-    from flask_socketio import SocketIO, emit
+    from flask import Flask, jsonify, render_template, request  # type: ignore
+    from flask_socketio import SocketIO, emit  # type: ignore
 except ImportError:
     print("Warning: flask_socketio not available. Running in limited mode.")
-    Flask = None
-    SocketIO = None
-    emit = None
-import sys
+
 import json
+import os
+import sys
 import threading
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Any, Optional
-import numpy as np
-import sys
-import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 try:
-    from ..logging.standardized_logging import get_logger
-    from ..data.dashboard import ExperimentMonitor, ExperimentComparator
-    from ..data.visualizer import InteractiveVisualizer
     from ..config import get_config_manager
+    from ..data.dashboard import ExperimentComparator, ExperimentMonitor
+    from ..data.visualizer import InteractiveVisualizer
+    from ..logging.standardized_logging import get_logger
 except ImportError:
     # Handle relative import when run directly
-    from apgi_framework.logging.standardized_logging import get_logger
-    from apgi_framework.data.dashboard import ExperimentMonitor, ExperimentComparator
-    from apgi_framework.data.visualizer import InteractiveVisualizer
     from apgi_framework.config import get_config_manager
+    from apgi_framework.data.dashboard import ExperimentComparator, ExperimentMonitor
+    from apgi_framework.data.visualizer import InteractiveVisualizer
+    from apgi_framework.logging.standardized_logging import get_logger
 
 
 class InteractiveWebDashboard:
@@ -65,7 +71,7 @@ class InteractiveWebDashboard:
         # Flask app setup
         template_dir = Path(__file__).parent / "templates"
         static_dir = Path(__file__).parent / "static"
-        self.app = Flask(
+        self.app = Flask(  # type: ignore
             __name__,
             template_folder=str(template_dir),
             static_folder=str(static_dir) if static_dir.exists() else None,
@@ -75,7 +81,7 @@ class InteractiveWebDashboard:
         )
 
         # WebSocket setup
-        self.socketio = SocketIO(
+        self.socketio = SocketIO(  # type: ignore
             self.app,
             cors_allowed_origins=["http://localhost:5000", "http://127.0.0.1:5000"],
         )
@@ -88,12 +94,12 @@ class InteractiveWebDashboard:
 
         # Dashboard state
         self.is_running = False
-        self.connected_clients = set()
-        self.update_thread = None
+        self.connected_clients: set[str] = set()
+        self.update_thread: Optional[threading.Thread] = None
         self.stop_event = threading.Event()
 
         # Data cache
-        self.dashboard_cache = {}
+        self.dashboard_cache: Dict[str, Any] = {}
         self.last_update = datetime.now()
 
         # Setup routes and WebSocket events
@@ -535,7 +541,7 @@ class InteractiveWebDashboard:
 
 def create_interactive_dashboard(
     port: int = 8050, host: str = "localhost"
-) -> InteractiveWebDashboard:
+) -> Optional[InteractiveWebDashboard]:
     """
     Create and configure an interactive dashboard.
 

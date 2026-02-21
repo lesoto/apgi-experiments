@@ -6,12 +6,12 @@ batch experiment execution, and configuration management.
 """
 
 import argparse
-import sys
 import json
 import logging
-from pathlib import Path
-from typing import Dict, Any, Optional, List
+import sys
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 from apgi_framework.main_controller import MainApplicationController
 from apgi_framework.testing.batch_runner import BatchTestRunner
@@ -1001,8 +1001,8 @@ Examples:
         self.logger.info("Running enhanced test execution")
 
         try:
-            from .utils.test_utils import TestUtilities
             from .testing.persistence import store_test_results
+            from .utils.framework_test_utils import TestUtilities
 
             # Initialize test utilities
             test_utils = TestUtilities(
@@ -1118,7 +1118,7 @@ Examples:
     def organize_tests(self, args: argparse.Namespace) -> None:
         """Organize and categorize tests with GUI feature parity."""
         try:
-            from .utils.test_utils import TestUtilities
+            from .utils.framework_test_utils import TestUtilities
 
             test_utils = TestUtilities(args.root_path)
         except ImportError as e:
@@ -1242,9 +1242,9 @@ Examples:
 
                 # Display enhanced analysis
                 metrics = analysis["metrics"]
-                print(f"\n{'='*70}")
+                print(f"\n{'=' * 70}")
                 print("Enhanced Test Coverage Analysis Results")
-                print(f"{'='*70}")
+                print(f"{'=' * 70}")
                 print(f"Total Modules: {metrics.total_modules}")
                 print(f"Tested Modules: {metrics.tested_modules}")
                 print(f"Total Functions/Methods: {metrics.total_functions}")
@@ -1260,11 +1260,11 @@ Examples:
                 # Show detailed gap analysis
                 gaps = analysis["coverage_gaps"]
                 if gaps:
-                    print(f"\nCoverage Gap Details:")
+                    print("\nCoverage Gap Details:")
                     print(
                         f"{'Module':<30} {'Function':<25} {'Priority':<10} {'Complexity'}"
                     )
-                    print(f"{'-'*80}")
+                    print(f"{'-' * 80}")
 
                     sorted_gaps = sorted(
                         gaps, key=lambda g: g.complexity_score, reverse=True
@@ -1274,10 +1274,10 @@ Examples:
                             f"{gap.module_name:<30} {gap.function_name:<25} {gap.test_priority:<10} {gap.complexity_score}"
                         )
 
-                print(f"\n{'='*70}")
+                print(f"\n{'=' * 70}")
 
             elif args.generate:
-                self.logger.info(f"Generating missing tests with enhanced options")
+                self.logger.info("Generating missing tests with enhanced options")
                 analysis = generator.analyze_codebase(
                     args.root_path,
                     include_patterns=args.include_patterns,
@@ -1292,7 +1292,7 @@ Examples:
                     print(f"  - {module_name}: {file_path}")
 
             elif args.report:
-                self.logger.info(f"Generating enhanced coverage report")
+                self.logger.info("Generating enhanced coverage report")
                 analysis = generator.analyze_codebase(
                     args.root_path,
                     include_patterns=args.include_patterns,
@@ -1338,9 +1338,9 @@ Examples:
 
                 # Display summary
                 metrics = analysis["metrics"]
-                print(f"\n{'='*60}")
+                print(f"\n{'=' * 60}")
                 print("Test Coverage Analysis Results")
-                print(f"{'='*60}")
+                print(f"{'=' * 60}")
                 print(f"Total Modules: {metrics.total_modules}")
                 print(f"Tested Modules: {metrics.tested_modules}")
                 print(f"Total Functions/Methods: {metrics.total_functions}")
@@ -1355,14 +1355,14 @@ Examples:
                 medium_priority = len([g for g in gaps if g.test_priority == "medium"])
                 low_priority = len([g for g in gaps if g.test_priority == "low"])
 
-                print(f"\nCoverage Gaps by Priority:")
+                print("\nCoverage Gaps by Priority:")
                 print(f"  High Priority: {high_priority}")
                 print(f"  Medium Priority: {medium_priority}")
                 print(f"  Low Priority: {low_priority}")
 
                 # Show top gaps
                 if gaps:
-                    print(f"\nTop 10 Coverage Gaps:")
+                    print("\nTop 10 Coverage Gaps:")
                     sorted_gaps = sorted(
                         gaps, key=lambda g: g.complexity_score, reverse=True
                     )
@@ -1372,7 +1372,7 @@ Examples:
                             f"(Complexity: {gap.complexity_score}, Priority: {gap.test_priority})"
                         )
 
-                print(f"\n{'='*60}")
+                print(f"\n{'=' * 60}")
 
             elif args.generate:
                 self.logger.info(f"Generating missing tests to {args.output_dir}")
@@ -1385,7 +1385,7 @@ Examples:
                 for module_name, file_path in generated_files.items():
                     print(f"  - {module_name}: {file_path}")
 
-                print(f"\nTo run the generated tests:")
+                print("\nTo run the generated tests:")
                 print(
                     f"  python -m apgi_framework.cli batch-test --test-paths {args.output_dir}/"
                 )
@@ -1410,16 +1410,16 @@ Examples:
 
     def _display_batch_test_summary(self, summary: Any) -> None:
         """Display batch test execution summary."""
-        print(f"\n{'='*80}")
+        print(f"\n{'=' * 80}")
         print("APGI Framework Advanced Batch Test Results")
-        print(f"{'='*80}")
+        print(f"{'=' * 80}")
 
         print(f"Total Tests: {summary.total_tests}")
         print(f"Passed: {summary.passed}")
         print(f"Failed: {summary.failed}")
         print(f"Skipped: {summary.skipped}")
         print(f"Errors: {summary.errors}")
-        print(f"Success Rate: {(summary.passed/summary.total_tests*100):.1f}%")
+        print(f"Success Rate: {(summary.passed / summary.total_tests * 100):.1f}%")
         print(f"Total Duration: {summary.total_duration:.2f} seconds")
         print(f"Start Time: {summary.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
         print(f"End Time: {summary.end_time.strftime('%Y-%m-%d %H:%M:%S')}")
@@ -1437,7 +1437,7 @@ Examples:
             if len(failed_tests) > 10:
                 print(f"  ... and {len(failed_tests) - 10} more")
 
-        print(f"\n{'='*80}\n")
+        print(f"\n{'=' * 80}\n")
 
     def _save_batch_test_summary(self, summary: Any) -> None:
         """Save batch test summary to file."""
@@ -1515,8 +1515,8 @@ Examples:
             print("No test result files found")
             return
 
-        print(f"\nRecent Test Results:")
-        print(f"{'='*60}")
+        print("\nRecent Test Results:")
+        print(f"{'=' * 60}")
         for i, result_file in enumerate(result_files[:20], 1):  # Show last 20
             mtime = datetime.fromtimestamp(result_file.stat().st_mtime)
             size = result_file.stat().st_size
@@ -1542,7 +1542,7 @@ Examples:
                 data = json.load(f)
 
             print(f"\nTest Result Details: {result_file}")
-            print(f"{'='*60}")
+            print(f"{'=' * 60}")
 
             if "summary" in data:
                 summary = data["summary"]
@@ -1556,7 +1556,7 @@ Examples:
                 print(f"End Time: {summary.get('end_time', 'N/A')}")
 
             if "test_results" in data:
-                print(f"\nTest Results:")
+                print("\nTest Results:")
                 for result in data["test_results"][:10]:  # Show first 10
                     print(
                         f"  - {result.get('test_name', 'Unknown')}: {result.get('status', 'Unknown')}"
@@ -1567,7 +1567,7 @@ Examples:
                 if len(data["test_results"]) > 10:
                     print(f"  ... and {len(data['test_results']) - 10} more tests")
 
-            print(f"\n{'='*60}\n")
+            print(f"\n{'=' * 60}\n")
 
         except Exception as e:
             self.logger.error(f"Failed to read test result file: {e}")
@@ -1612,9 +1612,9 @@ Examples:
 
     def _display_test_result(self, result: Any, test_type: str) -> None:
         """Display individual test result."""
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"APGI Framework Test Results: {test_type.upper()}")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
 
         if hasattr(result, "is_falsified"):
             print(
@@ -1627,13 +1627,13 @@ Examples:
         else:
             print(f"Result: {result}")
 
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
 
     def _display_batch_results(self, results: Dict[str, Any]) -> None:
         """Display batch experiment results."""
-        print(f"\n{'='*80}")
+        print(f"\n{'=' * 80}")
         print("APGI Framework Batch Falsification Test Results")
-        print(f"{'='*80}")
+        print(f"{'=' * 80}")
 
         for test_type, result in results.items():
             print(f"\n{test_type.upper()}:")
@@ -1647,13 +1647,13 @@ Examples:
             else:
                 print(f"  Result: {result}")
 
-        print(f"\n{'='*80}\n")
+        print(f"\n{'=' * 80}\n")
 
     def _display_detailed_validation(self, results: Dict[str, Any]) -> None:
         """Display detailed validation results."""
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("System Validation Results (Detailed)")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
 
         for component, status in results.items():
             if component != "overall":
@@ -1662,7 +1662,7 @@ Examples:
 
         overall_status = "PASS" if results.get("overall", False) else "FAIL"
         print(f"\nOverall Status: {overall_status}")
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
 
     def _display_simple_validation(self, results: Dict[str, Any]) -> None:
         """Display simple validation results."""
@@ -1671,9 +1671,9 @@ Examples:
 
     def _display_system_status(self, status: Dict[str, Any]) -> None:
         """Display system status."""
-        print(f"\n{'='*50}")
+        print(f"\n{'=' * 50}")
         print("APGI Framework System Status")
-        print(f"{'='*50}")
+        print(f"{'=' * 50}")
 
         for key, value in status.items():
             if key != "timestamp":
@@ -1684,7 +1684,7 @@ Examples:
                 print(f"{display_key}: {display_value}")
 
         print(f"Last Updated: {status.get('timestamp', 'Unknown')}")
-        print(f"{'='*50}\n")
+        print(f"{'=' * 50}\n")
 
     def _save_test_result(self, result: Any, test_type: str) -> None:
         """Save individual test result to file."""
@@ -1800,9 +1800,9 @@ Examples:
         self, execution, verbose: bool = False, progress_style: str = "bar"
     ) -> None:
         """Display test results in text format."""
-        print(f"\n{'='*80}")
+        print(f"\n{'=' * 80}")
         print("Test Execution Results")
-        print(f"{'='*80}")
+        print(f"{'=' * 80}")
 
         total_tests = len(execution.results)
         passed = len([r for r in execution.results if r.status.value == "passed"])
@@ -1816,7 +1816,7 @@ Examples:
         print(f"Skipped: {skipped}")
         print(f"Errors: {errors}")
         print(
-            f"Success Rate: {(passed/total_tests*100):.1f}%"
+            f"Success Rate: {(passed / total_tests * 100):.1f}%"
             if total_tests > 0
             else "N/A"
         )
@@ -1830,8 +1830,8 @@ Examples:
             r for r in execution.results if r.status.value in ["failed", "error"]
         ]
         if failed_tests and verbose:
-            print(f"\nFailed Tests:")
-            print(f"{'-'*60}")
+            print("\nFailed Tests:")
+            print(f"{'-' * 60}")
             for result in failed_tests:
                 print(
                     f"  {result.test_case.name}: {result.error_message or 'No error message'}"
@@ -1839,7 +1839,7 @@ Examples:
                 if verbose and result.traceback:
                     print(f"    Traceback: {result.traceback[:200]}...")
 
-        print(f"{'='*80}\n")
+        print(f"{'=' * 80}\n")
 
     def _display_results_json(self, execution) -> None:
         """Display test results in JSON format."""
@@ -1947,7 +1947,6 @@ Examples:
             <th>Error Message</th>
         </tr>
 """
-
         for result in execution.results:
             status_class = result.status.value
             html_content += f"""
@@ -2045,9 +2044,9 @@ Examples:
         except Exception as e:
             self.logger.warning(f"Failed to generate coverage report: {e}")
 
-    def _build_test_tree(self, test_suites) -> Dict[str, Any]:
+    def _build_test_tree(self, test_suites: Any) -> Dict[str, Any]:
         """Build hierarchical test tree structure."""
-        tree = {
+        tree: Dict[str, Any] = {
             "name": "Test Tree",
             "type": "root",
             "children": [],
@@ -2110,7 +2109,7 @@ Examples:
         return tree
 
     def _create_comprehensive_config(self) -> Dict[str, Any]:
-        """Create comprehensive configuration with all options."""
+        """Create comprehensive configuration."""
         config = self._create_default_config()
 
         # Add additional comprehensive options
@@ -2207,6 +2206,9 @@ Examples:
                     self.controller.shutdown_system()
                 except Exception as e:
                     self.logger.warning(f"Error during cleanup: {e}")
+
+        # If we reach here, command executed successfully
+        sys.exit(0)
 
 
 def run_failed_tests(result_file: str, parallel: bool = True) -> Any:

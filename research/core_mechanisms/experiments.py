@@ -4,7 +4,7 @@ Core mechanisms experiments for APGI Framework.
 This module contains experimental paradigms for core consciousness mechanisms.
 """
 
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
 
 class CoreMechanismExperiment:

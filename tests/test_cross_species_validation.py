@@ -4,11 +4,11 @@ Additional test files for new components to ensure comprehensive coverage.
 Separate test files for each major component to maintain organization.
 """
 
-import pytest
-import numpy as np
-from datetime import datetime
-from pathlib import Path
 import sys
+from pathlib import Path
+
+import numpy as np
+import pytest
 
 # Add project root to path
 sys.path.append(str(Path(__file__).parent.parent))
@@ -16,10 +16,10 @@ sys.path.append(str(Path(__file__).parent.parent))
 # Import cross-species validation components
 try:
     from apgi_framework.research.cross_species_validation import (
-        CrossSpeciesValidator,
-        Species,
-        NeuralSignatureType,
         CrossSpeciesSignature,
+        CrossSpeciesValidator,
+        NeuralSignatureType,
+        Species,
     )
 except ImportError as e:
     pytest.skip(f"Could not import cross-species validation: {e}")
@@ -120,9 +120,6 @@ class TestCrossSpeciesValidationExtended:
     def test_comprehensive_validation_workflow(self):
         """Test the complete cross-species validation workflow."""
         validator = CrossSpeciesValidator()
-
-        # Test comprehensive validation (mock implementation)
-        signature_types = [NeuralSignatureType.P3B, NeuralSignatureType.GAMMA_SYNC]
 
         # This would normally run comprehensive validation
         # For testing, just ensure the method exists and can be called

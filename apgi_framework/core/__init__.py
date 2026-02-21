@@ -6,21 +6,21 @@ the APGI ignition threshold equation, precision calculations, and prediction
 error processing.
 """
 
-from .equation import APGIEquation
-from .precision import PrecisionCalculator
-from .prediction_error import PredictionErrorProcessor
-from .somatic_marker import SomaticMarkerEngine, ContextType
-from .threshold import ThresholdManager, ThresholdAdaptationType
-from .models import SomaticAgent, PredictiveIgnitionNetwork
 from .data_models import (
     APGIParameters,
-    NeuralSignatures,
     ConsciousnessAssessment,
     ExperimentalTrial,
     FalsificationResult,
-    StatisticalSummary,
+    NeuralSignatures,
     PharmacologicalCondition,
+    StatisticalSummary,
 )
+from .equation import APGIEquation
+from .models import PredictiveIgnitionNetwork, SomaticAgent
+from .precision import PrecisionCalculator
+from .prediction_error import PredictionErrorProcessor
+from .somatic_marker import ContextType, SomaticMarkerEngine
+from .threshold import ThresholdAdaptationType, ThresholdManager
 
 __all__ = [
     "APGIEquation",

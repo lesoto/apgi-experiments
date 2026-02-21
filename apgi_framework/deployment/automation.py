@@ -5,21 +5,20 @@ Provides automated deployment, environment setup, dependency management,
 and deployment validation for production and development environments.
 """
 
-import os
-import sys
-import subprocess
 import json
+import os
 import shutil
-from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass
-import tempfile
+import subprocess
+import sys
 import venv
+from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
-from ..logging.standardized_logging import get_logger
 from ..config import get_config_manager
 from ..exceptions import APGIFrameworkError
+from ..logging.standardized_logging import get_logger
 
 
 class DeploymentError(APGIFrameworkError):
@@ -88,9 +87,9 @@ class DeploymentManager:
         self.config_manager = get_config_manager()
 
         # Deployment state
-        self.deployment_id = None
-        self.deployment_start_time = None
-        self.backup_created = False
+        self.deployment_id: Optional[str] = None
+        self.deployment_start_time: Optional[datetime] = None
+        self.backup_created: bool = False
 
         # Initialize deployment paths
         self.deploy_dir = Path(self.config.deploy_path)
@@ -110,7 +109,7 @@ class DeploymentManager:
             directory.mkdir(parents=True, exist_ok=True)
 
     def deploy(
-        self, source_path: str = None, create_backup: bool = True
+        self, source_path: Optional[str] = None, create_backup: bool = True
     ) -> Dict[str, Any]:
         """
         Perform automated deployment.
@@ -153,6 +152,7 @@ class DeploymentManager:
             # Step 8: Cleanup
             self._cleanup_deployment()
 
+            assert self.deployment_start_time is not None
             deployment_time = (
                 datetime.now() - self.deployment_start_time
             ).total_seconds()
@@ -371,7 +371,7 @@ APGI_ENABLE_MONITORING={self.config.enable_monitoring}
 
         self.logger.info("Environment file created")
 
-    def _deploy_application(self, source_path: str = None):
+    def _deploy_application(self, source_path: Optional[str] = None):
         """Deploy application files."""
         try:
             source = Path(source_path) if source_path else Path.cwd()
@@ -452,13 +452,14 @@ dashboard.start_dashboard()
     def _start_api_service(self):
         """Start API service."""
         # Placeholder for API service startup
-        self.logger.info(f"API service startup not implemented yet")
+        self.logger.info("API service startup not implemented yet")
 
     def _perform_health_check(self) -> Dict[str, Any]:
         """Perform health check on deployed services."""
         try:
-            import requests
             import time
+
+            import requests
 
             health_url = f"http://localhost:{self.config.dashboard_port}{self.config.health_check_url}"
 
@@ -563,7 +564,9 @@ dashboard.start_dashboard()
             self.logger.error(f"Rollback failed: {e}")
             return {"status": "failed", "error": str(e)}
 
-    def _run_command(self, command: List[str], cwd: str = None) -> Tuple[str, str, int]:
+    def _run_command(
+        self, command: List[str], cwd: Optional[str] = None
+    ) -> Tuple[str, str, int]:
         """Run shell command and return output."""
         try:
             result = subprocess.run(

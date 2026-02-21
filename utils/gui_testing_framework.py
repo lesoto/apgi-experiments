@@ -170,7 +170,7 @@ class TkinterTester(BaseGUITester):
                 "tkinter not available. Install tkinter to test tkinter GUIs."
             )
 
-        self.root = None
+        self.root: Optional[tk.Tk] = None
 
     def launch_app(self, app_class: type, *args, **kwargs) -> Optional[tk.Tk]:
         """Launch tkinter application for testing."""
@@ -269,9 +269,9 @@ class DashTester(BaseGUITester):
                 "Dash not available. Install dash[testing] to test Dash GUIs."
             )
 
-        self.app = None
-        self.runner = None
-        self.browser = None
+        self.app: Any = None
+        self.runner: Optional[ThreadedRunner] = None
+        self.browser: Optional[Browser] = None
 
     def launch_app(self, app_instance, port: int = 8050) -> str:
         """Launch Dash application for testing."""
@@ -395,6 +395,10 @@ def test_tkinter_utils_gui():
 
             # Load the module dynamically since filename has hyphen
             spec = importlib.util.spec_from_file_location("utils_gui", gui_file)
+            if spec is None:
+                raise ImportError(f"Could not load module from {gui_file}")
+            if spec.loader is None:
+                raise ImportError(f"Module loader not available for {gui_file}")
             utils_gui_module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(utils_gui_module)
             UtilsRunnerGUI = utils_gui_module.UtilsRunnerGUI

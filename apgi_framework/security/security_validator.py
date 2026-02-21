@@ -10,12 +10,11 @@ and prevent common security vulnerabilities including:
 """
 
 import ast
-import re
-import os
 import logging
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Union
+import re
 from dataclasses import is_dataclass
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +107,7 @@ class SecurityValidator:
             strict_mode: If True, rejects any suspicious content. If False, logs warnings.
         """
         self.strict_mode = strict_mode
-        self.validation_cache = {}
+        self.validation_cache: Dict[str, Any] = {}
 
     def validate_string_input(
         self, input_string: str, context: str = "unknown"

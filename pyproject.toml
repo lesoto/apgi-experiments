@@ -7,7 +7,7 @@ name = "apgi-framework-test-enhancement"
 version = "1.0.0"
 description = "Comprehensive Test Enhancement for APGI Framework"
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
 authors = [
     {name = "APGI Research Team", email = "research@apgi.org"}
 ]
@@ -31,7 +31,6 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Medical Science Apps.",
     "Topic :: Software Development :: Testing",
     "Topic :: Software Development :: Quality Assurance",
-    "License :: OSI Approved :: MIT License",
 ]
 requires-python = ">=3.8"
 dependencies = [
@@ -178,7 +177,7 @@ apgi-deploy = "apgi_framework.deployment.automation:main"
 apgi-dashboard = "apgi_framework.gui.interactive_dashboard:main"
 
 [tool.setuptools]
-packages = ["apgi_framework"]
+packages = ["apgi_framework", "tests"]
 include-package-data = true
 
 [tool.setuptools.package-data]
@@ -357,3 +356,47 @@ log_level = "INFO"
 
 # Mock external services in CI
 mock_external = true
+
+[tool.mypy]
+# Ignore missing imports for modules without type stubs
+ignore_missing_imports = true
+
+# Allow untyped defs for existing codebase
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = false
+
+# Disable strict mode for compatibility
+strict = false
+warn_return_any = false
+warn_unused_configs = false
+
+# Ignore specific modules that don't have type stubs
+[[tool.mypy.overrides]]
+module = [
+    "customtkinter.*",
+    "tkinter.*",
+    "PIL.*",
+    "pyautogui.*",
+    "pygetwindow.*",
+    "winreg.*",
+]
+ignore_missing_imports = true
+
+# More permissive settings for GUI modules
+[[tool.mypy.overrides]]
+module = [
+    "apgi_gui.*",
+]
+ignore_missing_imports = true
+disallow_untyped_defs = false
+check_untyped_defs = false
+
+# Slightly stricter for framework core modules
+[[tool.mypy.overrides]]
+module = [
+    "apgi_framework.*",
+]
+ignore_missing_imports = true
+disallow_untyped_defs = false
+check_untyped_defs = false

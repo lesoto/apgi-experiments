@@ -6,22 +6,16 @@ real-time progress tracking, and experiment comparison and analysis tools.
 """
 
 import json
+import logging
 import threading
 import time
 from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional, Callable
 from pathlib import Path
-import logging
-from dataclasses import asdict
-from collections import defaultdict, deque
+from typing import Any, Callable, Dict, List, Optional
 
 from ..core.data_models import (
-    FalsificationResult,
     ExperimentalTrial,
-    StatisticalSummary,
-    APGIParameters,
-    NeuralSignatures,
-    ConsciousnessAssessment,
+    FalsificationResult,
 )
 from ..exceptions import DashboardError
 from .visualizer import InteractiveVisualizer
@@ -41,8 +35,8 @@ class ExperimentMonitor:
         """
         self.update_interval = update_interval
         self.is_monitoring = False
-        self.experiments = {}
-        self.listeners = []
+        self.experiments: Dict[str, Any] = {}
+        self.listeners: List[Callable] = []
         self.logger = logging.getLogger(__name__)
 
         # Thread-safe data structures
@@ -94,8 +88,8 @@ class ExperimentMonitor:
         self,
         experiment_id: str,
         current_trial: int,
-        new_results: List[FalsificationResult] = None,
-        new_trials: List[ExperimentalTrial] = None,
+        new_results: Optional[List[FalsificationResult]] = None,
+        new_trials: Optional[List[ExperimentalTrial]] = None,
     ):
         """Update experiment progress"""
         with self._lock:
@@ -310,7 +304,7 @@ class ExperimentComparator:
     ) -> Dict[str, Any]:
         """Analyze parameter distributions across experiments"""
 
-        parameter_analysis = {
+        parameter_analysis: Dict[str, List[float]] = {
             "extero_precision": [],
             "intero_precision": [],
             "threshold": [],
@@ -522,15 +516,14 @@ class DashboardServer:
         """Get current dashboard data"""
 
         # Update with latest experiment data
-        self.dashboard_data["experiments"] = self.monitor.get_all_experiments()
+        experiments_data: Dict[str, Dict[str, Any]] = self.monitor.get_all_experiments()
+        self.dashboard_data["experiments"] = experiments_data
         self.dashboard_data["last_update"] = datetime.now().isoformat()
 
         # Generate comparison if multiple experiments exist
         if len(self.dashboard_data["experiments"]) > 1:
             try:
-                comparison = self.comparator.compare_experiments(
-                    self.dashboard_data["experiments"]
-                )
+                comparison = self.comparator.compare_experiments(experiments_data)
                 self.dashboard_data["comparisons"] = comparison
             except Exception as e:
                 self.logger.error(f"Error generating comparison: {str(e)}")

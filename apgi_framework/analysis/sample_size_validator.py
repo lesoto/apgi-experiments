@@ -7,10 +7,12 @@ power in APGI framework validation studies, with special requirements for
 soma-bias testing (n > 100).
 """
 
-import numpy as np
-from typing import Dict, List, Tuple, Optional, Any, Union
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Dict, List, Union
+
+import numpy as np
+
 from .replication_tracker import PowerAnalyzer
 
 
@@ -543,8 +545,10 @@ class SampleSizeValidator:
         )
 
         # Generate power summary
-        power_summary = {
-            "mean_power": np.mean([result.power for result in validation_results]),
+        power_summary: Dict[str, Union[float, int]] = {
+            "mean_power": float(
+                np.mean([result.power for result in validation_results])
+            ),
             "min_power": min([result.power for result in validation_results]),
             "max_power": max([result.power for result in validation_results]),
             "adequate_tests": sum(

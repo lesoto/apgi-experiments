@@ -5,10 +5,11 @@ This module implements the threshold manager that handles dynamic adjustment
 of the ignition threshold (θₜ) based on context, adaptation, and task demands.
 """
 
-import numpy as np
-from typing import Optional, List, Dict
-from enum import Enum
 import warnings
+from enum import Enum
+from typing import Dict, List, Optional
+
+import numpy as np
 
 from ..exceptions import MathematicalError
 from .somatic_marker import ContextType
@@ -181,7 +182,7 @@ class ThresholdManager:
         rate_error = recent_rate - self.target_ignition_rate
         threshold_adjustment = self.adaptation_rate * rate_error
 
-        return self._current_threshold + threshold_adjustment
+        return float(self._current_threshold + threshold_adjustment)
 
     def _contextual_adaptation(self, context: Optional[ContextType]) -> float:
         """Implement context-dependent threshold adaptation."""
@@ -231,8 +232,8 @@ class ThresholdManager:
 
                 # Volatility clustering detection
                 if len(recent_ignitions) >= 10:
-                    recent_volatility = np.std(recent_ignitions[-5:])
-                    historical_volatility = np.std(recent_ignitions[:-5])
+                    recent_volatility = float(np.std(recent_ignitions[-5:]))
+                    historical_volatility = float(np.std(recent_ignitions[:-5]))
                     volatility_ratio = recent_volatility / (
                         historical_volatility + 1e-8
                     )
@@ -269,14 +270,15 @@ class ThresholdManager:
                 )
 
                 # Apply adaptive scaling based on system stability
-                stability_factor = self._calculate_system_stability(recent_ignitions)
+                stability_factor = self._calculate_system_stability(
+                    np.array(recent_ignitions)
+                )
                 scaled_adjustment = total_adjustment * stability_factor
 
                 threshold += scaled_adjustment
-            else:
                 # Fallback to simple variability adjustment
                 variability_adjustment = 0.1 * recent_variability
-                threshold += variability_adjustment
+                threshold += float(variability_adjustment)
 
         # Predictive adjustment based on expected future states
         if len(self._ignition_history) >= 30:
@@ -334,7 +336,7 @@ class ThresholdManager:
         alpha = 0.3  # Smoothing factor
 
         # Calculate smoothed values
-        smoothed = [recent_history[0]]
+        smoothed = [float(recent_history[0])]
         for i in range(1, len(recent_history)):
             smoothed.append(alpha * recent_history[i] + (1 - alpha) * smoothed[-1])
 
@@ -349,7 +351,7 @@ class ThresholdManager:
             current_avg = np.mean(recent_history[-5:])
             predictive_adjustment = 0.02 * (predicted_next - current_avg)
 
-            return predictive_adjustment
+            return float(predictive_adjustment)
 
         return 0.0
 

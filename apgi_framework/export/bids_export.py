@@ -4,13 +4,13 @@ Provides standardized export functionality for neuroimaging data.
 """
 
 import json
-import pandas as pd
-import numpy as np
-from pathlib import Path
-from typing import Dict, List, Optional, Union, Any
-from datetime import datetime
 import re
 import warnings
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
+
+import numpy as np
+import pandas as pd
 
 
 class BIDSExporter:
@@ -105,7 +105,7 @@ class BIDSExporter:
         subject_id: str,
         session_id: Optional[str] = None,
         task_name: str = "rest",
-        channels: List[str] = None,
+        channels: Optional[List[str]] = None,
         sampling_rate: float = 1000.0,
         metadata: Optional[Dict] = None,
     ) -> Path:
@@ -162,7 +162,7 @@ class BIDSExporter:
     def _export_eeg_set(
         self,
         data: np.ndarray,
-        channels: List[str],
+        channels: Optional[List[str]],
         sampling_rate: float,
         output_path: Path,
     ):
@@ -177,7 +177,7 @@ class BIDSExporter:
         np.save(output_path.with_suffix(".npy"), data)
 
     def _create_channels_tsv(
-        self, channels: List[str], output_dir: Path, filename: str
+        self, channels: Optional[List[str]], output_dir: Path, filename: str
     ):
         """Create channels.tsv file."""
         if not channels:
@@ -219,8 +219,8 @@ class BIDSExporter:
     def _create_eeg_json(
         self,
         sampling_rate: float,
-        channels: List[str],
-        metadata: Dict,
+        channels: Optional[List[str]],
+        metadata: Optional[Dict],
         output_dir: Path,
         filename: str,
     ):
@@ -298,7 +298,11 @@ class BIDSExporter:
         return output_path
 
     def _create_beh_json(
-        self, columns: List[str], metadata: Dict, output_dir: Path, filename: str
+        self,
+        columns: List[str],
+        metadata: Optional[Dict],
+        output_dir: Path,
+        filename: str,
     ):
         """Create behavioral sidecar JSON file."""
         json_data = {
@@ -307,7 +311,7 @@ class BIDSExporter:
         }
 
         # Add column descriptions
-        column_descriptions = {}
+        column_descriptions: Dict[str, str] = {}
         for col in columns:
             if "reaction_time" in col.lower() or "rt" in col.lower():
                 column_descriptions[col] = "Reaction time in milliseconds"
@@ -320,7 +324,7 @@ class BIDSExporter:
             else:
                 column_descriptions[col] = f"Measurement: {col}"
 
-        json_data["Columns"] = column_descriptions
+        json_data["Columns"] = column_descriptions  # type: ignore
 
         # Add custom metadata
         if metadata:
@@ -335,7 +339,7 @@ class BIDSExporter:
         subject_id: str,
         session_id: Optional[str] = None,
         task_name: str = "rest",
-        sampling_rates: Dict[str, float] = None,
+        sampling_rates: Optional[Dict[str, float]] = None,
         metadata: Optional[Dict] = None,
     ) -> Dict[str, Path]:
         """
@@ -395,7 +399,7 @@ class BIDSExporter:
         self,
         data_type: str,
         sampling_rate: float,
-        metadata: Dict,
+        metadata: Optional[Dict],
         output_dir: Path,
         filename: str,
     ):
@@ -517,7 +521,11 @@ class BIDSExporter:
         Returns:
             Dictionary with validation results
         """
-        validation_results = {"errors": [], "warnings": [], "info": []}
+        validation_results: Dict[str, List[str]] = {
+            "errors": [],
+            "warnings": [],
+            "info": [],
+        }
 
         # Check required files
         required_files = ["dataset_description.json", "README.md"]
@@ -536,8 +544,6 @@ class BIDSExporter:
 
         # Check each subject
         for sub_dir in sub_dirs:
-            subject_id = sub_dir.name.split("-")[1]
-
             # Check for modality directories
             modalities = ["eeg", "beh", "physio"]
             for modality in modalities:
@@ -558,7 +564,7 @@ def export_apgi_to_bids(
     data: Dict[str, Any],
     bids_root: Union[str, Path],
     dataset_name: str = "APGI_Experiment",
-    authors: List[str] = None,
+    authors: Optional[List[str]] = None,
     description: str = "APGI Framework experiment data",
 ) -> Dict[str, Path]:
     """

@@ -14,63 +14,52 @@ import subprocess
 import sys
 from pathlib import Path
 
-try:
-    from .error_handling import (
-        APGIError,
-        ConfigurationError,
-        DataError,
-        ErrorSeverity,
-        format_error_message,
-        handle_error,
-        safe_execute,
-    )
-except ImportError:
-    # Fallback for standalone execution
-    try:
-        from error_handler import (
-            APGIError,
-            ConfigurationError,
-            DataError,
-            ErrorSeverity,
-            format_error_message,
-            handle_error,
-            safe_execute,
-        )
-    except ImportError:
-        # Minimal fallback if error_handler is not available
-        class APGIError(Exception):
-            pass
 
-        class ConfigurationError(APGIError):
-            pass
+# Error handling classes (fallback since error_handler module may not be available)
+class APGIError(Exception):
+    pass
 
-        class DataError(APGIError):
-            pass
 
-        class ErrorSeverity:
-            CRITICAL = "CRITICAL"
-            HIGH = "HIGH"
-            MEDIUM = "MEDIUM"
-            LOW = "LOW"
-            INFO = "INFO"
+class ConfigurationError(APGIError):
+    def __init__(self, message=None, context=None):
+        self.message = message or "Configuration error"
+        self.context = context or {}
+        super().__init__(self.message)
 
-        def format_error_message(error, context=None):
-            return str(error)
 
-        def handle_error(error, context=None):
-            print(f"Error: {format_error_message(error, context)}")
+class DataError(APGIError):
+    pass
 
-        def safe_execute(func, *args, **kwargs):
-            return func(*args, **kwargs)
+
+class ErrorSeverity:
+    CRITICAL = "CRITICAL"
+    HIGH = "HIGH"
+    MEDIUM = "MEDIUM"
+    LOW = "LOW"
+    INFO = "INFO"
+
+
+def format_error_message(error, context=None, reason=None):
+    if reason:
+        return f"{error}: {reason}"
+    if context:
+        return f"{error} (context: {context})"
+    return str(error)
+
+
+def handle_error(error, context=None):
+    print(f"Error: {format_error_message(error, context)}")
+
+
+def safe_execute(func, *args, **kwargs):
+    return func(*args, **kwargs)
 
 
 def run_command(command, description):
     """Run a command and handle errors gracefully."""
     print(f"\n📦 {description}...")
     try:
-        result = subprocess.run(
-            command, shell=True, check=True, capture_output=True, text=True
-        )
+        subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
         print(f"✅ {description} completed successfully")
         return True
     except subprocess.CalledProcessError as e:
@@ -134,17 +123,48 @@ def install_core_dependencies():
     print("   pip install -r requirements.txt")
     print()
 
-    # Upgrade pip first
-    run_command(
-        f"{sys.executable} -m pip install --upgrade pip --break-system-packages",
-        "Upgrading pip",
-    )
+    # Upgrade pip first (try multiple approaches)
+    pip_upgraded = False
+    try:
+        # First try without --break-system-packages
+        run_command(
+            f"{sys.executable} -m pip install --upgrade pip",
+            "Upgrading pip",
+        )
+        pip_upgraded = True
+    except Exception:
+        try:
+            # If that fails, try with --break-system-packages
+            run_command(
+                f"{sys.executable} -m pip install --upgrade pip --break-system-packages",
+                "Upgrading pip (with system packages override)",
+            )
+            pip_upgraded = True
+        except Exception:
+            print("⚠️  Could not upgrade pip, continuing with current version...")
+
+    if pip_upgraded:
+        print("✅ Pip upgraded successfully")
+    else:
+        print("ℹ️  Using existing pip version")
 
     # Install core requirements
-    success = run_command(
-        f"{sys.executable} -m pip install -r {requirements_path} --break-system-packages",
-        "Installing core dependencies",
-    )
+    success = False
+    try:
+        success = run_command(
+            f"{sys.executable} -m pip install -r {requirements_path} --break-system-packages",
+            "Installing core dependencies",
+        )
+    except Exception:
+        try:
+            # Fallback: try without --break-system-packages
+            success = run_command(
+                f"{sys.executable} -m pip install -r {requirements_path}",
+                "Installing core dependencies (fallback)",
+            )
+        except Exception:
+            print("❌ Failed to install core dependencies")
+            return False
 
     return success
 
@@ -186,7 +206,7 @@ def verify_installation():
         try:
             __import__(package)
             print(f"✅ {package}")
-        except ImportError as e:
+        except ImportError:
             error = ImportWarning(
                 message=format_error_message("missing_dependency", package=package),
                 package=package,

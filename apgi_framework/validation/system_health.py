@@ -4,14 +4,13 @@ System Health Checker
 Provides comprehensive system health checks and diagnostics for the APGI Framework.
 """
 
-from typing import Dict, List, Optional, Any
+import os
+import sys
 from dataclasses import dataclass, field
 from datetime import datetime
-import sys
-import os
-import numpy as np
+from typing import Any, Dict, List
 
-from ..exceptions import APGIFrameworkError
+import numpy as np
 
 
 @dataclass
@@ -93,7 +92,7 @@ class SystemHealthChecker:
     - Component availability
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.check_history: List[HealthCheckResult] = []
 
     def run_full_health_check(self) -> HealthCheckResult:
@@ -106,7 +105,7 @@ class SystemHealthChecker:
         timestamp = datetime.now()
         component_status = {}
         issues = []
-        warnings = []
+        warnings: List[str] = []
         recommendations = []
 
         checks_passed = 0
@@ -214,7 +213,7 @@ class SystemHealthChecker:
     def _check_python_environment(self) -> tuple:
         """Check Python environment"""
         issues = []
-        warnings = []
+        warnings: List[str] = []
 
         # Check Python version
         python_version = sys.version_info
@@ -238,7 +237,7 @@ class SystemHealthChecker:
     def _check_dependencies(self) -> tuple:
         """Check required dependencies"""
         issues = []
-        warnings = []
+        warnings: List[str] = []
 
         required_packages = {
             "numpy": "1.20.0",
@@ -272,7 +271,7 @@ class SystemHealthChecker:
     def _check_configuration(self) -> tuple:
         """Check configuration validity"""
         issues = []
-        warnings = []
+        warnings: List[str] = []
 
         try:
             from ..config import get_config_manager
@@ -302,7 +301,7 @@ class SystemHealthChecker:
     def _check_data_storage(self) -> tuple:
         """Check data storage availability"""
         issues = []
-        warnings = []
+        warnings: List[str] = []
 
         # Check results directory
         results_dir = "results"
@@ -344,7 +343,7 @@ class SystemHealthChecker:
     def _check_computational_resources(self) -> tuple:
         """Check computational resources"""
         issues = []
-        warnings = []
+        warnings: List[str] = []
 
         # Check NumPy functionality
         try:
@@ -369,7 +368,7 @@ class SystemHealthChecker:
     def _check_core_components(self) -> tuple:
         """Check core APGI Framework components"""
         issues = []
-        warnings = []
+        warnings: List[str] = []
 
         # Check core modules
         core_modules = [
@@ -454,7 +453,7 @@ class SystemHealthChecker:
         timestamp = datetime.now()
         component_status = {}
         issues = []
-        warnings = []
+        warnings: List[str] = []
 
         if component_name.lower() == "python":
             status, check_issues, check_warnings = self._check_python_environment()

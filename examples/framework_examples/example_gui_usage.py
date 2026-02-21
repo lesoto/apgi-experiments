@@ -5,6 +5,7 @@ Demonstrates how to launch and use the GUI for running parameter estimation expe
 """
 
 from pathlib import Path
+
 from apgi_framework.gui import launch_gui
 
 

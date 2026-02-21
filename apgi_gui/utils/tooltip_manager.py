@@ -5,12 +5,13 @@ Provides a comprehensive tooltip system for explaining parameters and their vali
 Supports both tkinter and customtkinter widgets.
 """
 
-import tkinter as tk
-from tkinter import ttk
-import customtkinter as ctk
-from typing import Dict, Any, Optional, Union
 import json
+import tkinter as tk
 from pathlib import Path
+from tkinter import ttk
+from typing import Any, Dict, Optional, Union
+
+import customtkinter as ctk
 
 
 class TooltipManager:

@@ -6,11 +6,12 @@ on ignition threshold modulation and physiological control measures for testing
 neuromodulatory falsification criteria.
 """
 
-from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
+from typing import Dict, List, Optional, Tuple
+
 import numpy as np
-from datetime import datetime, timedelta
 
 from ..exceptions import ValidationError
 
@@ -273,7 +274,8 @@ class PharmacologicalSimulator:
             abs(effect) for effect in threshold_modulation.values()
         )
         peak_effect_time = max(
-            threshold_modulation.keys(), key=lambda t: abs(threshold_modulation[t])
+            threshold_modulation.keys(),
+            key=lambda t: abs(threshold_modulation[t]),
         )
 
         # Validate drug effects
@@ -342,7 +344,9 @@ class PharmacologicalSimulator:
         return concentrations
 
     def _simulate_threshold_modulation(
-        self, administration: DrugAdministration, time_course: Dict[float, float]
+        self,
+        administration: DrugAdministration,
+        time_course: Dict[float, float],
     ) -> Dict[float, float]:
         """Simulate ignition threshold modulation over time"""
         drug_profile = administration.drug_profile
@@ -394,7 +398,9 @@ class PharmacologicalSimulator:
         return threshold_changes
 
     def _simulate_physiological_responses(
-        self, administration: DrugAdministration, time_course: Dict[float, float]
+        self,
+        administration: DrugAdministration,
+        time_course: Dict[float, float],
     ) -> Dict[str, Dict[float, float]]:
         """Simulate physiological control measures over time"""
         drug_profile = administration.drug_profile
@@ -462,7 +468,10 @@ class PharmacologicalSimulator:
         if total_effects == 0:
             return True
 
-        for effect_name, expected_range in drug_profile.physiological_effects.items():
+        for (
+            effect_name,
+            expected_range,
+        ) in drug_profile.physiological_effects.items():
             if effect_name in physiological_responses:
                 effect_values = list(physiological_responses[effect_name].values())
                 max_effect = max(abs(v) for v in effect_values)
@@ -511,29 +520,29 @@ class PharmacologicalSimulator:
                 / abs(expected_threshold_effect),
             )
 
-        # Calculate correlation for physiological effects
         physiological_correlations = []
         for effect_name, expected_range in drug_profile.physiological_effects.items():
             if effect_name in physiological_responses:
                 expected_effect = (expected_range[0] + expected_range[1]) / 2
                 effect_values = list(physiological_responses[effect_name].values())
-                observed_effect = max(effect_values, key=abs)
+                if effect_values:
+                    observed_effect = np.mean(effect_values)
+                    if expected_effect != 0:
+                        correlation = 1.0 - min(
+                            1.0,
+                            float(
+                                abs(expected_effect - observed_effect)
+                                / abs(expected_effect)
+                            ),
+                        )
+                    else:
+                        correlation = 1.0 if abs(observed_effect) < 0.1 else 0.0
+                    physiological_correlations.append(correlation)
 
-                if expected_effect == 0:
-                    correlation = 1.0 if abs(observed_effect) < 0.05 else 0.0
-                else:
-                    correlation = max(
-                        0.0,
-                        1.0
-                        - abs(expected_effect - observed_effect) / abs(expected_effect),
-                    )
-
-                physiological_correlations.append(correlation)
-
-        # Overall correlation is weighted average
+        # Calculate overall correlation
         if physiological_correlations:
-            overall_correlation = 0.6 * threshold_correlation + 0.4 * np.mean(
-                physiological_correlations
+            overall_correlation = 0.6 * threshold_correlation + 0.4 * float(
+                np.mean(physiological_correlations)
             )
         else:
             overall_correlation = threshold_correlation
@@ -691,8 +700,14 @@ class PharmacologicalSimulator:
         min_dose, max_dose = safe_ranges[drug_name]
 
         if dosage < min_dose:
-            return False, f"Dosage {dosage} mg below minimum safe dose {min_dose} mg"
+            return (
+                False,
+                f"Dosage {dosage} mg below minimum safe dose {min_dose} mg",
+            )
         elif dosage > max_dose:
-            return False, f"Dosage {dosage} mg exceeds maximum safe dose {max_dose} mg"
+            return (
+                False,
+                f"Dosage {dosage} mg exceeds maximum safe dose {max_dose} mg",
+            )
         else:
             return True, f"Dosage {dosage} mg is within safe range"

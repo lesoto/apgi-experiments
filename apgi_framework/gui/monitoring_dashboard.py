@@ -4,41 +4,26 @@ Real-time multi-modal monitoring dashboard.
 Provides live monitoring of EEG, pupillometry, cardiac signals, and parameter estimates.
 """
 
-import tkinter as tk
-from tkinter import ttk
-from typing import Dict, Any, Optional, List, Callable
-from datetime import datetime
-import numpy as np
+import os
+import sys
 import threading
 import time
-import sys
-import os
-import json
-import queue
+import tkinter as tk
+from datetime import datetime
+from tkinter import ttk
+from typing import Any, Dict, List, Optional
+
+import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 try:
     from ..logging.standardized_logging import get_logger
     from ..neural.eeg_interface import EEGInterface
-    from ..neural.pupillometry_interface import PupillometryInterface
-    from ..neural.physiological_monitoring import PhysiologicalMonitoring
-    from .realtime_data_stream import (
-        get_streamer,
-        start_realtime_streaming,
-        stop_realtime_streaming,
-    )
 except ImportError:
     # Handle relative import when run directly
     from apgi_framework.logging.standardized_logging import get_logger
     from apgi_framework.neural.eeg_interface import EEGInterface
-    from apgi_framework.neural.pupillometry_interface import PupillometryInterface
-    from apgi_framework.neural.physiological_monitoring import PhysiologicalMonitoring
-    from apgi_framework.gui.realtime_data_stream import (
-        get_streamer,
-        start_realtime_streaming,
-        stop_realtime_streaming,
-    )
 
 logger = get_logger(__name__)
 
@@ -117,14 +102,14 @@ class LiveEEGMonitor:
         # Current state
         self.current_quality = 0.0
         self.artifact_rate = 0.0
-        self.p3b_amplitude = None
-        self.hep_amplitude = None
+        self.p3b_amplitude: Optional[float] = None
+        self.hep_amplitude: Optional[float] = None
         self.bad_channels: List[str] = []
 
         # Real-time data streaming
-        self.eeg_interface = None
+        self.eeg_interface: Optional[EEGInterface] = None
         self.is_monitoring = False
-        self.update_thread = None
+        self.update_thread: Optional[threading.Thread] = None
         self.stop_event = threading.Event()
 
         logger.info("LiveEEGMonitor initialized")
@@ -152,7 +137,7 @@ class LiveEEGMonitor:
         self.quality_label.config(text=quality_text, foreground=color)
 
         # Update artifact rate
-        artifact_text = f"{artifact_rate*100:.1f}%"
+        artifact_text = f"{artifact_rate * 100:.1f}%"
         artifact_color = (
             "green"
             if artifact_rate < 0.2
@@ -201,7 +186,7 @@ class LiveEEGMonitor:
         if bad_channels:
             text = ", ".join(bad_channels[:5])  # Show first 5
             if len(bad_channels) > 5:
-                text += f" (+{len(bad_channels)-5} more)"
+                text += f" (+{len(bad_channels) - 5} more)"
             self.bad_channels_label.config(text=text, foreground="red")
         else:
             self.bad_channels_label.config(text="None", foreground="green")
@@ -215,9 +200,7 @@ class LiveEEGMonitor:
             # Initialize EEG interface
             from ..neural.eeg_interface import EEGConfig
 
-            config = EEGConfig(
-                sampling_rate=250.0, channel_count=32, buffer_size_seconds=10.0
-            )
+            config = EEGConfig(sampling_rate=250.0)
             self.eeg_interface = EEGInterface(config)
 
             # Register callback for data processing
@@ -281,8 +264,8 @@ class LiveEEGMonitor:
         if np.random.random() < 0.1:  # 10% chance of detection
             p3b_amp = np.random.normal(5.0, 2.0)  # Simulated P3b
             hep_amp = np.random.normal(3.0, 1.5)  # Simulated HEP
-            self.frame.after(0, self.update_p3b_amplitude, p3b_amp)
-            self.frame.after(0, self.update_hep_amplitude, hep_amp)
+            self.frame.after(0, self.update_p3b, p3b_amp)
+            self.frame.after(0, self.update_hep, hep_amp)
 
     def _update_loop(self) -> None:
         """GUI update loop."""
@@ -374,7 +357,7 @@ class PupillometryMonitor:
         self.quality_label.config(text=quality_text, foreground=quality_color)
 
         # Update data loss
-        loss_text = f"{data_loss*100:.1f}%"
+        loss_text = f"{data_loss * 100:.1f}%"
         loss_color = (
             "green" if data_loss < 0.1 else "orange" if data_loss < 0.3 else "red"
         )
@@ -698,16 +681,10 @@ class QualityAlertSystem:
         self.alert_text.see(tk.END)
         self.alert_text.config(state=tk.DISABLED)
 
-        logger.log(
-            (
-                logging.WARNING
-                if level == "warning"
-                else logging.ERROR
-                if level == "error"
-                else logging.INFO
-            ),
-            f"Quality alert: {source} - {message}",
-        )
+        if level == "warning":
+            logger.warning(alert_line)
+        else:
+            logger.error(alert_line)
 
     def check_eeg_quality(self, quality_score: float, artifact_rate: float) -> None:
         """
@@ -726,11 +703,11 @@ class QualityAlertSystem:
 
         if artifact_rate > 0.5:
             self.add_alert(
-                "error", f"High artifact rate: {artifact_rate*100:.1f}%", "EEG"
+                "error", f"High artifact rate: {artifact_rate * 100:.1f}%", "EEG"
             )
         elif artifact_rate > 0.3:
             self.add_alert(
-                "warning", f"Elevated artifact rate: {artifact_rate*100:.1f}%", "EEG"
+                "warning", f"Elevated artifact rate: {artifact_rate * 100:.1f}%", "EEG"
             )
 
     def check_pupil_quality(self, data_loss: float, tracking_loss: int) -> None:
@@ -743,12 +720,12 @@ class QualityAlertSystem:
         """
         if data_loss > 0.4:
             self.add_alert(
-                "error", f"High pupil data loss: {data_loss*100:.1f}%", "Pupillometry"
+                "error", f"High pupil data loss: {data_loss * 100:.1f}%", "Pupillometry"
             )
         elif data_loss > 0.2:
             self.add_alert(
                 "warning",
-                f"Moderate pupil data loss: {data_loss*100:.1f}%",
+                f"Moderate pupil data loss: {data_loss * 100:.1f}%",
                 "Pupillometry",
             )
 
@@ -805,6 +782,44 @@ class QualityAlertSystem:
                 summary[level] += 1
 
         return summary
+
+
+class MultiModalMonitoringDashboard:
+    """
+    Main dashboard that combines all monitoring components.
+    """
+
+    def __init__(self, root: tk.Tk):
+        """Initialize the multi-modal monitoring dashboard."""
+        self.root = root
+        self.root.title("APGI Multi-Modal Monitoring Dashboard")
+        self.root.geometry("1200x800")
+
+        # Create main notebook for different monitors
+        self.notebook = ttk.Notebook(root)
+        self.notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # Create individual monitors with proper frame containers
+        eeg_frame = tk.Frame(self.notebook)
+        self.eeg_monitor = LiveEEGMonitor(eeg_frame)
+
+        pupil_frame = tk.Frame(self.notebook)
+        self.pupil_monitor = PupillometryMonitor(pupil_frame)
+
+        cardiac_frame = tk.Frame(self.notebook)
+        self.cardiac_monitor = CardiacMonitor(cardiac_frame)
+
+        # Create alert system
+        alert_frame = tk.Frame(self.notebook)
+        self.alert_system = QualityAlertSystem(alert_frame)
+
+        # Add tabs to notebook
+        self.notebook.add(eeg_frame, text="EEG Monitoring")
+        self.notebook.add(pupil_frame, text="Pupillometry")
+        self.notebook.add(cardiac_frame, text="Cardiac")
+        self.notebook.add(alert_frame, text="Alerts")
+
+        logger.info("MultiModalMonitoringDashboard initialized")
 
 
 if __name__ == "__main__":

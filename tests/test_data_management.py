@@ -2,15 +2,16 @@
 Tests for data management modules.
 """
 
-import pytest
 import tempfile
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
-from apgi_framework.data.data_manager import IntegratedDataManager
-from apgi_framework.data.storage_manager import StorageManager
+import pytest
+
 from apgi_framework.data.data_exporter import DataExporter
+from apgi_framework.data.data_manager import IntegratedDataManager
 from apgi_framework.data.report_generator import ReportGenerator
+from apgi_framework.data.storage_manager import StorageManager
 
 
 class TestIntegratedDataManager:
@@ -489,9 +490,9 @@ class TestDataExporter:
 
             # Mock experimental trials using correct data model
             from apgi_framework.core.data_models import (
+                ConsciousnessAssessment,
                 ExperimentalTrial,
                 NeuralSignatures,
-                ConsciousnessAssessment,
             )
 
             trials = [
@@ -533,8 +534,8 @@ class TestReportGenerator:
 
             # Mock data
             from apgi_framework.core.data_models import (
-                FalsificationResult,
                 ExperimentalTrial,
+                FalsificationResult,
                 StatisticalSummary,
             )
 
@@ -551,9 +552,9 @@ class TestReportGenerator:
 
             # Mock experimental trials using correct data model
             from apgi_framework.core.data_models import (
+                ConsciousnessAssessment,
                 ExperimentalTrial,
                 NeuralSignatures,
-                ConsciousnessAssessment,
             )
 
             trials = [
@@ -589,11 +590,11 @@ class TestReportGenerator:
             generator = ReportGenerator(temp_dir)
 
             # Mock report using correct data model
+            from apgi_framework.core.data_models import StatisticalSummary
             from apgi_framework.data.report_generator import (
                 FalsificationReport,
                 ReportSection,
             )
-            from apgi_framework.core.data_models import StatisticalSummary
 
             report = FalsificationReport(
                 experiment_id="test_exp_001",

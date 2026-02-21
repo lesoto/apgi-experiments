@@ -5,12 +5,15 @@ This directory contains example code demonstrating how to use various components
 ## Available Examples
 
 ### Analysis Examples
+
 - **example_bayesian_parameter_estimation.py**: Demonstrates Bayesian parameter estimation methods for APGI models
 
-### GUI Examples  
+### GUI Examples
+
 - **example_gui_usage.py**: Shows how to integrate and use the APGI GUI components
 
 ### Neural Interface Examples
+
 - **example_signal_processing.py**: Examples of neural signal processing and analysis
 - **example_usage.py**: Comprehensive examples of neural interface usage
 
@@ -42,6 +45,7 @@ pip install scikit-learn tensorflow torch
 ## Example Structure
 
 Each example follows this pattern:
+
 1. Import necessary modules
 2. Setup configuration
 3. Initialize components
@@ -51,6 +55,7 @@ Each example follows this pattern:
 ## Contributing
 
 When adding new examples:
+
 1. Place them in the appropriate subdirectory
 2. Follow the existing naming convention (`example_*.py`)
 3. Include comprehensive documentation

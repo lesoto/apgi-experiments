@@ -5,21 +5,22 @@ Implements the primary falsification test for the APGI Framework, testing whethe
 full ignition signatures can occur without consciousness.
 """
 
-from typing import Dict, List, Optional
-from dataclasses import dataclass
-import numpy as np
-from datetime import datetime
-
-from apgi_framework.core.equation import APGIEquation
-from apgi_framework.simulators.signature_validator import SignatureValidator
-from apgi_framework.simulators.p3b_simulator import P3bSimulator
-from apgi_framework.simulators.gamma_simulator import GammaSimulator
-from apgi_framework.simulators.bold_simulator import BOLDSimulator
-from apgi_framework.simulators.pci_calculator import PCICalculator
-from apgi_framework.config import get_config_manager
-from apgi_framework.exceptions import ValidationError, SimulationError
-from tests.falsification.error_handling_wrapper import with_error_handling
 import logging
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Dict, List, Optional
+
+import numpy as np
+
+from apgi_framework.config import get_config_manager
+from apgi_framework.core.equation import APGIEquation
+from apgi_framework.exceptions import SimulationError, ValidationError
+from apgi_framework.simulators.bold_simulator import BOLDSimulator
+from apgi_framework.simulators.gamma_simulator import GammaSimulator
+from apgi_framework.simulators.p3b_simulator import P3bSimulator
+from apgi_framework.simulators.pci_calculator import PCICalculator
+from apgi_framework.simulators.signature_validator import SignatureValidator
+from tests.falsification.error_handling_wrapper import with_error_handling
 
 logger = logging.getLogger(__name__)
 

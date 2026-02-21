@@ -5,10 +5,11 @@ This module contains unit tests for the Interoceptive Gating experiment,
 which tests how interoceptive precision gates conscious access to exteroceptive stimuli.
 """
 
-import pytest
-import numpy as np
-from pathlib import Path
 import sys
+from pathlib import Path
+
+import numpy as np
+import pytest
 
 # Add project root to Python path
 sys.path.append(str(Path(__file__).parent.parent))

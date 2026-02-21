@@ -5,42 +5,32 @@ Provides comprehensive PDF report generation capabilities using ReportLab
 for experimental results, statistical analyses, and visualizations.
 """
 
-from typing import Dict, List, Optional, Any, Union
-from pathlib import Path
 import datetime
 import io
-import base64
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Union
 
 try:
-    from reportlab.lib.pagesizes import letter, A4
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.lib.units import inch
     from reportlab.lib import colors
+    from reportlab.lib.enums import TA_CENTER
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+    from reportlab.lib.units import inch
     from reportlab.platypus import (
-        SimpleDocTemplate,
+        Image,
+        KeepTogether,
+        PageBreak,
         Paragraph,
+        SimpleDocTemplate,
         Spacer,
         Table,
         TableStyle,
-        PageBreak,
-        Image,
-        KeepTogether,
     )
-    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
-    from reportlab.graphics.shapes import Drawing
-    from reportlab.graphics.charts.linecharts import HorizontalLineChart
-    from reportlab.graphics.charts.barcharts import VerticalBarChart
 
     REPORTLAB_AVAILABLE = True
 except ImportError:
     REPORTLAB_AVAILABLE = False
-
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-
-from ..utils.progress_monitor import ProgressMonitor
 
 
 @dataclass
@@ -61,16 +51,14 @@ class ReportConfig:
     subject: str = "Experimental Results"
     creator: str = "APGI PDF Generator"
     page_size: tuple = A4
-    margins: Dict[str, float] = None
-
-    def __post_init__(self):
-        if self.margins is None:
-            self.margins = {
-                "top": 1 * inch,
-                "bottom": 1 * inch,
-                "left": 1 * inch,
-                "right": 1 * inch,
-            }
+    margins: Dict[str, float] = field(
+        default_factory=lambda: {
+            "top": 1 * inch,
+            "bottom": 1 * inch,
+            "left": 1 * inch,
+            "right": 1 * inch,
+        }
+    )
 
 
 class PDFReportGenerator:
@@ -86,7 +74,7 @@ class PDFReportGenerator:
         self.config = config or ReportConfig()
         self.styles = getSampleStyleSheet()
         self._setup_custom_styles()
-        self.sections = []
+        self.sections: List[ReportSection] = []
 
     def _setup_custom_styles(self):
         """Setup custom paragraph styles."""
@@ -158,10 +146,10 @@ class PDFReportGenerator:
 
     def add_title_page(
         self,
-        title: str = None,
-        subtitle: str = None,
-        authors: List[str] = None,
-        date: str = None,
+        title: Optional[str] = None,
+        subtitle: Optional[str] = None,
+        authors: Optional[List[str]] = None,
+        date: Optional[str] = None,
     ):
         """Add a title page to the report."""
         title = title or self.config.title
@@ -254,7 +242,7 @@ class PDFReportGenerator:
 
     def add_experimental_results(self, results: Dict[str, Any]):
         """Add experimental results section."""
-        content_items = []
+        content_items: List[Union[str, Dict[str, Any]]] = []
 
         # Summary statistics
         if "summary" in results:
@@ -304,7 +292,7 @@ class PDFReportGenerator:
 
     def add_statistical_analysis(self, stats: Dict[str, Any]):
         """Add statistical analysis section."""
-        content_items = []
+        content_items: List[Union[str, Dict[str, Any]]] = []
 
         # Hypothesis tests
         if "tests" in stats:
@@ -343,14 +331,16 @@ class PDFReportGenerator:
 
         self.add_section("Statistical Analysis", content_items)
 
-    def add_matplotlib_figure(self, fig, title: str = None, caption: str = None):
+    def add_matplotlib_figure(
+        self, fig, title: Optional[str] = None, caption: Optional[str] = None
+    ):
         """Add a matplotlib figure to the report."""
         # Save figure to bytes
         img_buffer = io.BytesIO()
         fig.savefig(img_buffer, format="png", dpi=300, bbox_inches="tight")
         img_buffer.seek(0)
 
-        content_items = []
+        content_items: List[Union[str, Dict[str, Any]]] = []
 
         if title:
             content_items.append(
@@ -446,7 +436,7 @@ class PDFReportGenerator:
     def generate_pdf(
         self,
         output_path: Union[str, Path],
-        progress_callback: Optional[callable] = None,
+        progress_callback: Optional[Callable[[int, str], None]] = None,
     ) -> bool:
         """Generate the PDF report."""
         try:
@@ -537,7 +527,7 @@ class APGIReportTemplate:
 
         # Add experimental setup
         if "setup" in experiment_data:
-            setup_items = []
+            setup_items: List[Any] = []
             setup = experiment_data["setup"]
 
             setup_text = f"""

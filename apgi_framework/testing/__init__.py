@@ -9,40 +9,54 @@ This module provides comprehensive testing capabilities including:
 """
 
 from .batch_runner import (
+    BatchExecutionSummary,
     BatchTestRunner,
     TestResult,
-    BatchExecutionSummary,
     run_all_tests,
-    run_unit_tests,
+    run_failed_tests,
     run_integration_tests,
     run_research_tests,
-    run_failed_tests,
-)
-from .persistence import (
-    TestResultPersistence,
-    TestExecutionRecord,
-    BatchExecutionRecord,
-    get_persistence_manager,
-    store_test_results,
-    get_test_performance_report,
+    run_unit_tests,
 )
 from .ci_integrator import (
-    CIIntegrator,
-    CIConfiguration,
-    ChangeImpact,
     ChangeAnalyzer,
+    ChangeImpact,
+    CIConfiguration,
+    CIIntegrator,
+    ExecutionResult,
     PreCommitHookManager,
-    TestExecutionResult,
+)
+from .error_handler import (
+    Context,
+    DiagnosticInfo,
+    ErrorCategory,
+    ErrorHandler,
+    ErrorSeverity,
+    ResolutionGuidance,
+    SystemState,
 )
 from .notification_manager import (
-    NotificationManager,
+    HistoryTracker,
     NotificationChannel,
+    NotificationManager,
     TestFailureNotification,
-    TestHistoryTracker,
     create_email_channel,
+    create_file_channel,
     create_slack_channel,
     create_teams_channel,
-    create_file_channel,
+)
+from .performance_optimizer import (
+    PerformanceBenchmark,
+    PerformanceOptimizedTestRunner,
+    ResultCache,
+)
+from .persistence import (
+    BatchExecutionRecord,
+    TestExecutionRecord,
+    TestResultPersistence,
+    get_persistence_manager,
+    get_test_performance_report,
+    store_test_results,
 )
 
 __all__ = [
@@ -65,11 +79,11 @@ __all__ = [
     "ChangeImpact",
     "ChangeAnalyzer",
     "PreCommitHookManager",
-    "TestExecutionResult",
+    "ExecutionResult",
     "NotificationManager",
     "NotificationChannel",
     "TestFailureNotification",
-    "TestHistoryTracker",
+    "HistoryTracker",
     "create_email_channel",
     "create_slack_channel",
     "create_teams_channel",

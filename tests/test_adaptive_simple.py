@@ -2,8 +2,9 @@
 Simplified tests for adaptive module components that focus on existing functionality.
 """
 
-import pytest
 from datetime import datetime
+
+import pytest
 
 from apgi_framework.adaptive.quest_plus_staircase import (
     QuestPlusParameters,
@@ -11,11 +12,11 @@ from apgi_framework.adaptive.quest_plus_staircase import (
     StaircaseState,
 )
 from apgi_framework.adaptive.stimulus_generators import (
-    StimulusType,
-    StimulusParameters,
-    GaborParameters,
-    ToneParameters,
     CO2PuffParameters,
+    GaborParameters,
+    StimulusParameters,
+    StimulusType,
+    ToneParameters,
 )
 
 

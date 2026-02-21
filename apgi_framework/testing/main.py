@@ -8,30 +8,29 @@ configuration management, and graceful shutdown procedures.
 Requirements: All requirements
 """
 
-import sys
-import os
+import argparse
+import atexit
+import json
 import logging
 import signal
-import atexit
-from typing import Optional, Dict, Any, List
-from pathlib import Path
+import sys
 from dataclasses import dataclass
-import argparse
-import json
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional
 
 # Add the project root to Python path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from apgi_framework.testing.batch_runner import BatchTestRunner
-from apgi_framework.testing.ci_integrator import CIIntegrator, CIConfiguration
-from apgi_framework.testing.notification_manager import NotificationManager
 from apgi_framework.testing.activity_logger import (
-    get_activity_logger,
-    ActivityType,
     ActivityLevel,
+    ActivityType,
+    get_activity_logger,
 )
+from apgi_framework.testing.batch_runner import BatchTestRunner
+from apgi_framework.testing.ci_integrator import CIConfiguration, CIIntegrator
+from apgi_framework.testing.notification_manager import NotificationManager
 from apgi_framework.utils.logging_utils import setup_logging
 
 
@@ -47,7 +46,7 @@ class ApplicationConfig:
     parallel_execution: bool = True
     max_workers: int = 4
     coverage_threshold: float = 0.8
-    notification_channels: List[Dict[str, Any]] = None
+    notification_channels: Optional[List[Dict[str, Any]]] = None
 
     def __post_init__(self):
         if self.notification_channels is None:
@@ -59,23 +58,20 @@ class DependencyContainer:
 
     def __init__(self, config: ApplicationConfig):
         self.config = config
-        self._instances = {}
+        self._instances: Dict[str, Any] = {}
         self.logger = logging.getLogger(__name__)
 
     def get_batch_runner(self) -> BatchTestRunner:
         """Get or create BatchTestRunner instance."""
         if "batch_runner" not in self._instances:
-            self._instances["batch_runner"] = BatchTestRunner(
-                project_root=self.config.project_root,
-                parallel=self.config.parallel_execution,
-                max_workers=self.config.max_workers,
-            )
+            self._instances["batch_runner"] = BatchTestRunner()
         return self._instances["batch_runner"]
 
     def get_ci_integrator(self) -> CIIntegrator:
         """Get or create CIIntegrator instance."""
         if "ci_integrator" not in self._instances:
             ci_config = CIConfiguration(
+                test_subset_strategy="all",
                 pipeline_type="generic",
                 parallel_execution=self.config.parallel_execution,
                 max_workers=self.config.max_workers,
@@ -92,8 +88,9 @@ class DependencyContainer:
             from apgi_framework.testing.notification_manager import NotificationChannel
 
             channels = []
-            for channel_config in self.config.notification_channels:
-                channels.append(NotificationChannel(**channel_config))
+            if self.config.notification_channels:
+                for channel_config in self.config.notification_channels:
+                    channels.append(NotificationChannel(**channel_config))
 
             self._instances["notification_manager"] = NotificationManager(channels)
         return self._instances["notification_manager"]
@@ -119,7 +116,7 @@ class ApplicationLifecycleManager:
         self.config = config
         self.container = DependencyContainer(config)
         self.logger = logging.getLogger(__name__)
-        self._shutdown_handlers = []
+        self._shutdown_handlers: List[Callable] = []
         self._setup_signal_handlers()
 
     def _setup_signal_handlers(self):
@@ -171,7 +168,7 @@ class ApplicationLifecycleManager:
             # Test logging setup
             activity_logger = get_activity_logger()
             activity_logger.log_activity(
-                ActivityType.SYSTEM_STARTUP,
+                ActivityType.SYSTEM_EVENT,
                 ActivityLevel.INFO,
                 "Application startup validation completed",
                 data={
@@ -357,22 +354,24 @@ def create_config_from_args(args: argparse.Namespace) -> ApplicationConfig:
 def run_gui_mode(lifecycle_manager: ApplicationLifecycleManager) -> int:
     """Run the application in GUI mode."""
     try:
-        # Import GUI components (lazy import to avoid dependencies in CLI mode)
-        from apgi_framework.testing.gui_test_runner import MainTestWindow
+        import tkinter as tk
+        from apgi_framework.testing.gui_test_runner import TestRunnerGUI, GUI_AVAILABLE
+
+        if not GUI_AVAILABLE:
+            logger = logging.getLogger(__name__)
+            logger.error("GUI mode not available - missing tkinter dependencies")
+            return 1
 
         logger = logging.getLogger(__name__)
         logger.info("Starting GUI mode...")
 
         # Create and run GUI
-        app = MainTestWindow(
-            container=lifecycle_manager.container, config=lifecycle_manager.config
-        )
-
-        # Register GUI cleanup
-        lifecycle_manager.register_shutdown_handler(app.cleanup)
+        root = tk.Tk()
+        TestRunnerGUI(root=root)
 
         # Run the GUI
-        return app.run()
+        root.mainloop()
+        return 0
 
     except ImportError as e:
         logging.error(f"GUI dependencies not available: {e}")

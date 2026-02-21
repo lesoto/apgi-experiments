@@ -5,23 +5,21 @@ This module provides publication-quality plotting and figure generation
 for falsification test results and interactive visualization capabilities.
 """
 
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import seaborn as sns
-import numpy as np
-import pandas as pd
-from typing import Dict, List, Any, Optional, Tuple, Union
-from pathlib import Path
 import logging
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union, Callable, cast
+
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
 
 from ..core.data_models import (
-    FalsificationResult,
     ExperimentalTrial,
+    FalsificationResult,
     StatisticalSummary,
-    APGIParameters,
-    NeuralSignatures,
-    ConsciousnessAssessment,
 )
 from ..exceptions import VisualizationError
 
@@ -89,7 +87,9 @@ class APGIVisualizer:
             sns.set_palette("tab10")
 
     def plot_falsification_summary(
-        self, results: List[FalsificationResult], save_path: Optional[str] = None
+        self,
+        results: List[FalsificationResult],
+        save_path: Optional[Union[str, Path]] = None,
     ) -> str:
         """
         Create summary plot of falsification test results.
@@ -183,7 +183,9 @@ class APGIVisualizer:
             )
 
     def plot_neural_signatures(
-        self, trials: List[ExperimentalTrial], save_path: Optional[str] = None
+        self,
+        trials: List[ExperimentalTrial],
+        save_path: Optional[Union[str, Path]] = None,
     ) -> str:
         """
         Create comprehensive neural signature visualization.
@@ -291,7 +293,9 @@ class APGIVisualizer:
             )
 
     def plot_apgi_parameter_space(
-        self, trials: List[ExperimentalTrial], save_path: Optional[str] = None
+        self,
+        trials: List[ExperimentalTrial],
+        save_path: Optional[Union[str, Path]] = None,
     ) -> str:
         """
         Visualize APGI parameter space and ignition patterns.
@@ -395,7 +399,9 @@ class APGIVisualizer:
             )
 
     def plot_statistical_summary(
-        self, statistical_summary: StatisticalSummary, save_path: Optional[str] = None
+        self,
+        statistical_summary: StatisticalSummary,
+        save_path: Optional[Union[str, Path]] = None,
     ) -> str:
         """
         Create statistical summary visualization.
@@ -558,6 +564,9 @@ class APGIVisualizer:
 
             for plot_func, data, filename in figures:
                 save_path = self.output_dir / filename
+                plot_func = cast(
+                    Callable[[Any, Optional[Union[str, Path]]], str], plot_func
+                )
                 figure_path = plot_func(data, save_path)
                 figure_paths.append(figure_path)
 

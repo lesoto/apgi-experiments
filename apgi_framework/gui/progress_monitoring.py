@@ -4,9 +4,9 @@ Real-time progress monitoring for parameter estimation tasks.
 Provides classes for tracking task completion and data quality during experiments.
 """
 
-from typing import Dict, Any, Optional, Callable
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime, timedelta
+from typing import Any, Callable, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -162,7 +162,7 @@ class RealTimeProgressMonitor:
 if __name__ == "__main__":
     """Launch the progress monitoring demo as a standalone application."""
     import tkinter as tk
-    from tkinter import ttk, messagebox
+    from tkinter import messagebox, ttk
 
     class ProgressMonitorDemo:
         """Demo application for progress monitoring."""

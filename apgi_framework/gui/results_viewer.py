@@ -6,41 +6,45 @@ failure highlighting, quick navigation to failure details, and stack trace displ
 """
 
 import sys
-from typing import List, Dict, Optional, Any
-from datetime import datetime
-from pathlib import Path
+from typing import Dict, Optional
+
+from ..test_enhancement.models import (
+    FailureCategory,
+    TestFailure,
+    TestResults,
+    TestStatus,
+)
 
 try:
+    from PySide6.QtCore import Qt, Signal
+    from PySide6.QtGui import (
+        QColor,
+        QFont,
+        QSyntaxHighlighter,
+        QTextCharFormat,
+    )
     from PySide6.QtWidgets import (
-        QWidget,
-        QVBoxLayout,
-        QHBoxLayout,
-        QTreeWidget,
-        QTreeWidgetItem,
-        QTextEdit,
-        QSplitter,
-        QTabWidget,
-        QLabel,
-        QPushButton,
-        QGroupBox,
-        QScrollArea,
-        QFrame,
-        QLineEdit,
-        QComboBox,
+        QApplication,
         QCheckBox,
+        QComboBox,
+        QFrame,
+        QGroupBox,
+        QHBoxLayout,
+        QHeaderView,
+        QLabel,
+        QLineEdit,
+        QProgressBar,
+        QPushButton,
+        QScrollArea,
+        QSplitter,
         QTableWidget,
         QTableWidgetItem,
-        QHeaderView,
-        QProgressBar,
-        QApplication,
-    )
-    from PySide6.QtCore import Qt, Signal, QTimer
-    from PySide6.QtGui import (
-        QFont,
-        QColor,
-        QPalette,
-        QTextCharFormat,
-        QSyntaxHighlighter,
+        QTabWidget,
+        QTextEdit,
+        QTreeWidget,
+        QTreeWidgetItem,
+        QVBoxLayout,
+        QWidget,
     )
 
     PYSIDE6_AVAILABLE = True
@@ -48,101 +52,128 @@ except ImportError:
     # Fallback for environments without PySide6
     PYSIDE6_AVAILABLE = False
 
-    class QWidget:
+    class FallbackQWidget:
         pass
 
-    class QVBoxLayout:
+    class FallbackQVBoxLayout:
         pass
 
-    class QHBoxLayout:
+    class FallbackQHBoxLayout:
         pass
 
-    class QTreeWidget:
+    class FallbackQTreeWidget:
         pass
 
-    class QTreeWidgetItem:
+    class FallbackQTreeWidgetItem:
         pass
 
-    class QTextEdit:
+    class FallbackQTextEdit:
         pass
 
-    class QSplitter:
+    class FallbackQSplitter:
         pass
 
-    class QTabWidget:
+    class FallbackQTabWidget:
         pass
 
-    class QLabel:
+    class FallbackQLabel:
         pass
 
-    class QPushButton:
+    class FallbackQPushButton:
         pass
 
-    class QGroupBox:
+    class FallbackQGroupBox:
         pass
 
-    class QScrollArea:
+    class FallbackQScrollArea:
         pass
 
-    class QFrame:
+    class FallbackQFrame:
         pass
 
-    class QLineEdit:
+    class FallbackQLineEdit:
         pass
 
-    class QComboBox:
+    class FallbackQComboBox:
         pass
 
-    class QCheckBox:
+    class FallbackQCheckBox:
         pass
 
-    class QTableWidget:
+    class FallbackQTableWidget:
         pass
 
-    class QTableWidgetItem:
+    class FallbackQTableWidgetItem:
         pass
 
-    class QHeaderView:
+    class FallbackQHeaderView:
         Stretch = 1
         ResizeToContents = 2
 
-    class QProgressBar:
+    class FallbackQProgressBar:
         pass
 
-    class QApplication:
+    class FallbackQApplication:
         @staticmethod
         def clipboard():
             return None
 
-    class Signal:
+    class FallbackSignal:
         def __init__(self, *args):
             pass
 
-    class QSyntaxHighlighter:
+    class FallbackQSyntaxHighlighter:
         pass
 
-    class QFont:
+    class FallbackQPaintEvent:
+        pass
+
+    class FallbackQFont:
         Bold = 1
 
-    class QColor:
+    class FallbackQColor:
         def __init__(self, *args):
             pass
 
-    class Qt:
+        def name(self):
+            return "#000000"
+
+    class FallbackQt:
         Horizontal = 1
         UserRole = 256
 
-    class QTextCharFormat:
+    class FallbackQTextCharFormat:
         pass
 
-
-from ..test_enhancement.models import (
-    TestResults,
-    TestFailure,
-    TestCase,
-    TestStatus,
-    FailureCategory,
-)
+    # Assign fallback classes to expected names
+    QWidget = FallbackQWidget
+    QVBoxLayout = FallbackQVBoxLayout
+    QHBoxLayout = FallbackQHBoxLayout
+    QTreeWidget = FallbackQTreeWidget
+    QTreeWidgetItem = FallbackQTreeWidgetItem
+    QTextEdit = FallbackQTextEdit
+    QSplitter = FallbackQSplitter
+    QTabWidget = FallbackQTabWidget
+    QLabel = FallbackQLabel
+    QPushButton = FallbackQPushButton
+    QGroupBox = FallbackQGroupBox
+    QScrollArea = FallbackQScrollArea
+    QFrame = FallbackQFrame
+    QLineEdit = FallbackQLineEdit
+    QComboBox = FallbackQComboBox
+    QCheckBox = FallbackQCheckBox
+    QTableWidget = FallbackQTableWidget
+    QTableWidgetItem = FallbackQTableWidgetItem
+    QHeaderView = FallbackQHeaderView
+    QProgressBar = FallbackQProgressBar
+    QApplication = FallbackQApplication
+    Signal = FallbackSignal
+    QSyntaxHighlighter = FallbackQSyntaxHighlighter
+    QPaintEvent = FallbackQPaintEvent
+    QFont = FallbackQFont
+    QColor = FallbackQColor
+    Qt = FallbackQt
+    QTextCharFormat = FallbackQTextCharFormat
 
 
 class StackTraceHighlighter(QSyntaxHighlighter):

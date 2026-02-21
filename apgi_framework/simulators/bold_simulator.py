@@ -7,10 +7,11 @@ in key regions like dorsolateral prefrontal cortex, intraparietal sulcus, and
 anterior insula/ACC.
 """
 
-import numpy as np
-from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass
 from enum import Enum
+from typing import Dict, List, Optional, Tuple
+
+import numpy as np
 
 
 class BrainRegion(Enum):
@@ -324,7 +325,7 @@ class BOLDSimulator:
 
         # Convert to coherence measure (0-1, higher is more coherent)
         coherence = 1.0 / (1.0 + cv)
-        return coherence
+        return float(coherence)
 
     def validate_signature(self, signature: BOLDSignature) -> bool:
         """

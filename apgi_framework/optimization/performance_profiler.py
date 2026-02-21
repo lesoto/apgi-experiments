@@ -5,22 +5,21 @@ Provides comprehensive performance monitoring, profiling, and optimization
 tools to identify and resolve computational bottlenecks.
 """
 
-import time
-import psutil
-import threading
+import cProfile
 import functools
-from typing import Dict, List, Optional, Any, Callable, Union
+import io
+import json
+import pstats
+import threading
+import time
+from collections import defaultdict, deque
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
-import json
-import cProfile
-import pstats
-import io
-from contextlib import contextmanager
+from typing import Any, Callable, Dict, List, Optional, Union, cast
+
 import numpy as np
-import pandas as pd
-from collections import defaultdict, deque
-import logging
+import psutil
 
 from ..logging.standardized_logging import get_logger
 
@@ -75,7 +74,7 @@ class PerformanceProfiler:
         self._lock = threading.Lock()
 
     @contextmanager
-    def profile(self, operation_name: str, detailed: bool = None):
+    def profile(self, operation_name: str, detailed: Optional[bool] = None):
         """Context manager for profiling operations."""
         detailed = detailed if detailed is not None else self.enable_detailed_profiling
 
@@ -90,8 +89,8 @@ class PerformanceProfiler:
         }
 
         if detailed:
-            profile_data["profiler"] = cProfile.Profile()
-            profile_data["profiler"].enable()
+            profile_data["profiler"] = cProfile.Profile()  # type: ignore
+            profile_data["profiler"].enable()  # type: ignore
 
         self.cpu_monitor.start_monitoring()
 
@@ -109,7 +108,7 @@ class PerformanceProfiler:
             avg_cpu = self.cpu_monitor.stop_monitoring()
 
             if detailed and profile_data["profiler"]:
-                profile_data["profiler"].disable()
+                profile_data["profiler"].disable()  # type: ignore
 
             # Calculate metrics
             execution_time = end_time - start_time
@@ -124,7 +123,7 @@ class PerformanceProfiler:
 
             # Analyze bottlenecks
             bottlenecks = self._analyze_bottlenecks(
-                metrics, profile_data.get("profiler")
+                metrics, cast(Optional[cProfile.Profile], profile_data.get("profiler"))
             )
             recommendations = self._generate_recommendations(metrics, bottlenecks)
 
@@ -148,7 +147,11 @@ class PerformanceProfiler:
             )
 
     def profile_function(
-        self, func: Callable = None, *, name: str = None, detailed: bool = None
+        self,
+        func: Optional[Callable[..., Any]] = None,
+        *,
+        name: Optional[str] = None,
+        detailed: Optional[bool] = None,
     ):
         """Decorator for profiling functions."""
 
@@ -193,12 +196,13 @@ class PerformanceProfiler:
 
         # Detailed profiler analysis
         if profiler:
-            stats = pstats.Stats(profiler)
-            stats.sort_stats("cumulative")
+            # Remove unused stats variable and use ps directly
+            ps = pstats.Stats(profiler)
+            ps.sort_stats("cumulative")
 
             # Capture stats output
             s = io.StringIO()
-            stats.print_stats(10, file=s)
+            ps.print_stats(10)
             stats_output = s.getvalue()
 
             # Analyze for common bottlenecks
@@ -266,7 +270,7 @@ class PerformanceProfiler:
 
         return recommendations
 
-    def get_summary(self, operation_name: str = None) -> Dict[str, Any]:
+    def get_summary(self, operation_name: Optional[str] = None) -> Dict[str, Any]:
         """Get performance summary for operations."""
         if operation_name:
             if operation_name not in self.results:
@@ -297,7 +301,7 @@ class PerformanceProfiler:
 
     def _get_common_bottlenecks(self, results: List[ProfileResult]) -> List[str]:
         """Get most common bottlenecks across results."""
-        bottleneck_counts = defaultdict(int)
+        bottleneck_counts: Dict[str, int] = defaultdict(int)
         for result in results:
             for bottleneck in result.bottlenecks:
                 bottleneck_counts[bottleneck] += 1
@@ -308,7 +312,7 @@ class PerformanceProfiler:
 
     def _get_common_recommendations(self, results: List[ProfileResult]) -> List[str]:
         """Get most common recommendations across results."""
-        rec_counts = defaultdict(int)
+        rec_counts: Dict[str, int] = defaultdict(int)
         for result in results:
             for rec in result.recommendations:
                 rec_counts[rec] += 1
@@ -321,26 +325,27 @@ class PerformanceProfiler:
         """Export profiling results to JSON file."""
         filepath = Path(filepath)
 
-        export_data = {"timestamp": time.time(), "results": {}}
+        export_data: Dict[str, Any] = {"timestamp": time.time(), "results": {}}
 
         for op_name, results in self.results.items():
-            export_data["results"][op_name] = [
-                {
-                    "timestamp": r.timestamp,
-                    "duration": r.duration,
-                    "metrics": r.metrics.to_dict(),
-                    "bottlenecks": r.bottlenecks,
-                    "recommendations": r.recommendations,
-                }
-                for r in results
-            ]
+            if isinstance(results, list):
+                export_data["results"][op_name] = [
+                    {
+                        "timestamp": r.timestamp,
+                        "duration": r.duration,
+                        "metrics": r.metrics.to_dict(),
+                        "bottlenecks": r.bottlenecks,
+                        "recommendations": r.recommendations,
+                    }
+                    for r in results
+                ]
 
         with open(filepath, "w") as f:
             json.dump(export_data, f, indent=2)
 
         logger.info(f"Exported profiling results to {filepath}")
 
-    def clear_results(self, operation_name: str = None):
+    def clear_results(self, operation_name: Optional[str] = None):
         """Clear profiling results."""
         if operation_name:
             if operation_name in self.results:
@@ -408,7 +413,7 @@ class CPUMonitor:
                 cpu_percent = self.process.cpu_percent()
                 self.cpu_samples.append(cpu_percent)
                 time.sleep(0.1)  # Sample every 100ms
-            except:
+            except Exception:
                 break
 
 

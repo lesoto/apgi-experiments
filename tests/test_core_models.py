@@ -2,17 +2,17 @@
 Tests for core model modules.
 """
 
-import pytest
-import numpy as np
-from unittest.mock import Mock, patch
 import sys
 from pathlib import Path
+
+import numpy as np
+import pytest
 
 # Add the framework to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Import the real implementations
-from apgi_framework.core.models import SomaticAgent, PredictiveIgnitionNetwork
+from apgi_framework.core.models import PredictiveIgnitionNetwork, SomaticAgent
 
 
 class TestSomaticAgent:
@@ -370,8 +370,6 @@ class TestPredictiveIgnitionNetwork:
         sensory_input1 = np.random.randn(10) * 2.0
         _, _, _, ignited1, _ = network.forward_pass(sensory_input1, somatic_gain=2.0)
 
-        activation_after_first = network.global_activation.copy()
-
         # Second pass
         sensory_input2 = np.random.randn(10) * 0.5
         _, _, _, ignited2, _ = network.forward_pass(sensory_input2, somatic_gain=1.0)
@@ -407,7 +405,7 @@ class TestModelIntegration:
         # Higher surprise should lead to conscious decisions (when conditions are met)
         # Note: consciousness requires both high surprise AND low uncertainty (std < 0.5)
         # We can't guarantee the std condition, so we check that higher surprise has higher chance of consciousness
-        consciousness_values = [decision[1] for decision in decisions]
+        # consciousness_values = [decision[1] for decision in decisions]
 
         # At least some of the higher surprise values should lead to consciousness
         # (when uncertainty condition is also met)

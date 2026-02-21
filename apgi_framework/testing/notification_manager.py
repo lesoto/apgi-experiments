@@ -9,22 +9,20 @@ Requirements: 8.4, 8.5
 """
 
 import json
-import smtplib
 import logging
-from typing import Dict, List, Any, Union
-from dataclasses import dataclass, asdict
-from datetime import datetime, timedelta
-from pathlib import Path
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.mime.base import MIMEBase
-from email import encoders
+import smtplib
 import sqlite3
-import requests
-from urllib.parse import urljoin
+from dataclasses import asdict, dataclass
+from datetime import datetime, timedelta
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-from .ci_integrator import TestExecutionResult
-from .activity_logger import get_activity_logger, ActivityType, ActivityLevel
+import requests  # type: ignore
+
+from .activity_logger import ActivityLevel, ActivityType, get_activity_logger
+from .ci_integrator import ExecutionResult
 
 
 @dataclass
@@ -55,7 +53,7 @@ class TestFailureNotification:
 
 
 @dataclass
-class TestResultHistory:
+class ResultHistory:
     """Historical test result data."""
 
     execution_id: str
@@ -69,7 +67,7 @@ class TestResultHistory:
     pipeline_context: Dict[str, Any]
 
 
-class TestHistoryTracker:
+class HistoryTracker:
     """Tracks test execution history and provides trend analysis."""
 
     def __init__(self, db_path: str = ".ci/test_history.db"):
@@ -126,10 +124,10 @@ class TestHistoryTracker:
         except Exception as e:
             self.logger.error(f"Failed to initialize test history database: {e}")
 
-    def record_execution(self, result: TestExecutionResult):
+    def record_execution(self, result: ExecutionResult):
         """Record a test execution result."""
         try:
-            history = TestResultHistory(
+            history = ResultHistory(
                 execution_id=result.execution_id,
                 timestamp=result.start_time,
                 total_tests=result.total_tests,
@@ -309,9 +307,13 @@ class TestHistoryTracker:
 class NotificationManager:
     """Manages notifications for CI/CD test failures and results."""
 
-    def __init__(self, channels: List[NotificationChannel] = None, db_path: str = None):
+    def __init__(
+        self,
+        channels: Optional[List[NotificationChannel]] = None,
+        db_path: Optional[str] = None,
+    ):
         self.channels = channels or []
-        self.history_tracker = TestHistoryTracker(db_path)
+        self.history_tracker = HistoryTracker(db_path or ".ci/test_history.db")
         self.logger = logging.getLogger(__name__)
 
     def add_channel(self, channel: NotificationChannel):
@@ -322,7 +324,7 @@ class NotificationManager:
         """Remove a notification channel by name."""
         self.channels = [ch for ch in self.channels if ch.name != channel_name]
 
-    def notify_test_result(self, result: TestExecutionResult):
+    def notify_test_result(self, result: ExecutionResult):
         """Send notifications based on test execution result."""
         # Record the execution in history
         self.history_tracker.record_execution(result)
@@ -405,7 +407,7 @@ class NotificationManager:
             },
         )
 
-    def _should_notify(self, result: TestExecutionResult) -> bool:
+    def _should_notify(self, result: ExecutionResult) -> bool:
         """Determine if a notification should be sent."""
         # Always notify on failures
         if result.failed_tests > 0:
@@ -415,7 +417,7 @@ class NotificationManager:
         return any(ch.success_notification and ch.enabled for ch in self.channels)
 
     def _generate_notification(
-        self, result: TestExecutionResult
+        self, result: ExecutionResult
     ) -> TestFailureNotification:
         """Generate notification data from test result."""
         # Get trend analysis
@@ -450,7 +452,7 @@ class NotificationManager:
             actionable_recommendations=recommendations,
         )
 
-    def _generate_debugging_info(self, result: TestExecutionResult) -> Dict[str, Any]:
+    def _generate_debugging_info(self, result: ExecutionResult) -> Dict[str, Any]:
         """Generate debugging information for failures."""
         debugging_info = {
             "execution_context": result.pipeline_context,
@@ -464,7 +466,7 @@ class NotificationManager:
         }
 
         # Analyze failure patterns
-        error_types = {}
+        error_types: Dict[str, int] = {}
         for failure in result.failed_test_details:
             error = failure.get("error", "")
             if "ImportError" in error:
@@ -497,7 +499,7 @@ class NotificationManager:
         return debugging_info
 
     def _generate_recommendations(
-        self, result: TestExecutionResult, trend_analysis: Dict[str, Any]
+        self, result: ExecutionResult, trend_analysis: Dict[str, Any]
     ) -> List[str]:
         """Generate actionable recommendations based on failures and trends."""
         recommendations = []
@@ -554,7 +556,7 @@ class NotificationManager:
         self,
         channel: NotificationChannel,
         notification: TestFailureNotification,
-        result: TestExecutionResult,
+        result: ExecutionResult,
     ):
         """Send notification through a specific channel."""
         if channel.type == "email":
@@ -574,7 +576,7 @@ class NotificationManager:
         self,
         channel: NotificationChannel,
         notification: TestFailureNotification,
-        result: TestExecutionResult,
+        result: ExecutionResult,
     ):
         """Send email notification."""
         config = channel.config
@@ -613,7 +615,7 @@ class NotificationManager:
         self,
         channel: NotificationChannel,
         notification: TestFailureNotification,
-        result: TestExecutionResult,
+        result: ExecutionResult,
     ):
         """Send Slack notification."""
         config = channel.config
@@ -634,7 +636,7 @@ class NotificationManager:
         self,
         channel: NotificationChannel,
         notification: TestFailureNotification,
-        result: TestExecutionResult,
+        result: ExecutionResult,
     ):
         """Send Microsoft Teams notification."""
         config = channel.config
@@ -655,7 +657,7 @@ class NotificationManager:
         self,
         channel: NotificationChannel,
         notification: TestFailureNotification,
-        result: TestExecutionResult,
+        result: ExecutionResult,
     ):
         """Send generic webhook notification."""
         config = channel.config
@@ -682,7 +684,7 @@ class NotificationManager:
         self,
         channel: NotificationChannel,
         notification: TestFailureNotification,
-        result: TestExecutionResult,
+        result: ExecutionResult,
     ):
         """Write notification to file."""
         config = channel.config
@@ -713,7 +715,7 @@ class NotificationManager:
     def _generate_email_subject(
         self,
         notification: TestFailureNotification,
-        result: TestExecutionResult,
+        result: ExecutionResult,
     ) -> str:
         """Generate email subject line."""
         if result.failed_tests == 0:
@@ -725,7 +727,7 @@ class NotificationManager:
     def _generate_email_body(
         self,
         notification: TestFailureNotification,
-        result: TestExecutionResult,
+        result: ExecutionResult,
     ) -> str:
         """Generate HTML email body."""
         if result.failed_tests == 0:
@@ -733,7 +735,7 @@ class NotificationManager:
         else:
             return self._generate_failure_email_body(notification, result)
 
-    def _generate_success_email_body(self, result: TestExecutionResult) -> str:
+    def _generate_success_email_body(self, result: ExecutionResult) -> str:
         """Generate success email body."""
         return f"""
         <html>
@@ -751,7 +753,7 @@ class NotificationManager:
     def _generate_failure_email_body(
         self,
         notification: TestFailureNotification,
-        result: TestExecutionResult,
+        result: ExecutionResult,
     ) -> str:
         """Generate failure email body."""
         recommendations_html = "".join(
@@ -801,7 +803,7 @@ class NotificationManager:
     def _generate_slack_message(
         self,
         notification: TestFailureNotification,
-        result: TestExecutionResult,
+        result: ExecutionResult,
     ) -> Dict[str, Any]:
         """Generate Slack message payload."""
         if result.failed_tests == 0:
@@ -867,7 +869,7 @@ class NotificationManager:
     def _generate_teams_message(
         self,
         notification: TestFailureNotification,
-        result: TestExecutionResult,
+        result: ExecutionResult,
     ) -> Dict[str, Any]:
         """Generate Microsoft Teams message payload."""
         if result.failed_tests == 0:
@@ -940,8 +942,8 @@ def create_email_channel(
     smtp_server: str,
     from_email: str,
     to_emails: List[str],
-    username: str = None,
-    password: str = None,
+    username: Optional[str] = None,
+    password: Optional[str] = None,
 ) -> NotificationChannel:
     """Create an email notification channel."""
     return NotificationChannel(

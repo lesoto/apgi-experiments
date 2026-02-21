@@ -5,13 +5,14 @@ Provides comprehensive theme support including dark mode, light mode, and custom
 Supports both tkinter and customtkinter applications.
 """
 
-import tkinter as tk
-from tkinter import ttk
-import customtkinter as ctk
-from typing import Dict, Any, Optional, List, Union
 import json
-from pathlib import Path
 import os
+import tkinter as tk
+from pathlib import Path
+from tkinter import ttk
+from typing import Any, Dict, List, Optional, Union
+
+import customtkinter as ctk
 
 
 class ThemeManager:

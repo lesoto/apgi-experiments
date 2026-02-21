@@ -6,12 +6,13 @@ eta-squared, omega-squared, and bootstrap confidence interval estimation
 for validating statistical significance in APGI framework testing.
 """
 
-import numpy as np
-import scipy.stats as stats  # type: ignore
-from scipy.stats import t, f  # type: ignore
-from typing import Tuple, Optional, Dict, Any, Union, Callable, List
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+
+import numpy as np
+import scipy.stats as stats  # type: ignore
+from scipy.stats import f, t  # type: ignore
 
 
 class EffectSizeType(Enum):

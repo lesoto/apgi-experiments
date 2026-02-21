@@ -5,13 +5,14 @@ Provides data streaming, buffering, artifact detection, and channel management
 for neural data acquisition in APGI experiments.
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Callable
-from enum import Enum
-import numpy as np
-from collections import deque
 import threading
 import time
+from collections import deque
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any, Callable, Dict, List, Optional, Tuple
+
+import numpy as np
 
 
 class ChannelType(Enum):
@@ -197,8 +198,8 @@ class EEGInterface:
         self.artifact_detector = ArtifactDetector(config)
 
         # Data buffers
-        self.buffer = deque(maxlen=config.buffer_size)
-        self.timestamp_buffer = deque(maxlen=config.buffer_size)
+        self.buffer: deque[np.ndarray] = deque(maxlen=config.buffer_size)
+        self.timestamp_buffer: deque[float] = deque(maxlen=config.buffer_size)
 
         # Channel management
         self.channels = {ch.name: ch for ch in config.channels}
@@ -374,7 +375,7 @@ class EEGInterface:
             if ch.impedance is not None
         }
 
-    def check_signal_quality(self) -> Dict[str, any]:
+    def check_signal_quality(self) -> Dict[str, Any]:
         """
         Assess overall signal quality.
 

@@ -32,16 +32,22 @@ if __name__ == "__main__":
     PROJECT_ROOT = Path(__file__).parent.parent
     sys.path.insert(0, str(PROJECT_ROOT))
 
+# APGI imports with fallback
 try:
-    from .logging_config import apgi_logger  # type: ignore
-except ImportError:
-    try:
-        from utils.logging_config import apgi_logger
-    except ImportError:
-        # When running directly from utils directory
-        import logging_config
+    from apgi_framework.logging.standardized_logging import get_logger
 
-        apgi_logger = logging_config.apgi_logger
+    apgi_logger = get_logger(__name__)
+except ImportError:
+    import logging
+    from typing import Any
+
+    # Create a fallback logger
+    class MockAPGILogger:
+        def __init__(self):
+            self.logger = logging.getLogger(__name__)
+
+    _fallback_logger: Any = MockAPGILogger()
+    apgi_logger = _fallback_logger
 
 
 @dataclass

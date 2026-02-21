@@ -1,11 +1,8 @@
-import pytest
 import numpy as np
+import pytest
 
 # Import the Phase Transition model
 try:
-    from apgi_framework.core.somatic_marker import SomaticMarkerEngine
-    from apgi_framework.core.threshold import ThresholdManager
-
     # Create a mock SomaticAgent class for testing
     class SomaticAgent:
         def __init__(self, n_states=4, n_actions=3, n_contexts=2):

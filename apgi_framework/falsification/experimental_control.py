@@ -14,10 +14,11 @@ Key components:
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any, Union
-from enum import Enum
-import numpy as np
 from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
+
+import numpy as np
 
 from ..exceptions import ValidationError
 
@@ -178,7 +179,7 @@ class MetacognitiveAssessment:
         """Validate metacognitive assessment parameters"""
         if not -1.0 <= self.confidence_accuracy_correlation <= 1.0:
             raise ValidationError(
-                f"Confidence-accuracy correlation must be between -1.0 and 1.0"
+                "Confidence-accuracy correlation must be between -1.0 and 1.0"
             )
 
         for attr_name in [
@@ -303,7 +304,7 @@ class StimulusValidation:
                 )
 
         if self.presentation_duration < 0:
-            raise ValidationError(f"Presentation duration must be positive")
+            raise ValidationError("Presentation duration must be positive")
 
     def is_supraliminal_presentation(
         self, visibility_threshold: float = 0.8, detection_threshold: float = 0.9
@@ -408,7 +409,7 @@ class ExperimentalControlValidator:
         if not motor_responses:
             return False, {"reason": "no_motor_responses", "responses": []}
 
-        validation_details = {
+        validation_details: Dict[str, Any] = {
             "responses": [],
             "intact_responses": 0,
             "mean_rt": 0.0,
@@ -446,9 +447,9 @@ class ExperimentalControlValidator:
             consistency_values.append(response.consistency)
 
         validation_details["intact_responses"] = intact_count
-        validation_details["mean_rt"] = np.mean(rt_values)
-        validation_details["mean_accuracy"] = np.mean(accuracy_values)
-        validation_details["mean_consistency"] = np.mean(consistency_values)
+        validation_details["mean_rt"] = float(np.mean(rt_values))
+        validation_details["mean_accuracy"] = float(np.mean(accuracy_values))
+        validation_details["mean_consistency"] = float(np.mean(consistency_values))
 
         # Motor system is intact if majority of responses are intact
         is_intact = intact_count >= len(motor_responses) * 0.8
@@ -470,7 +471,7 @@ class ExperimentalControlValidator:
         if not verbal_responses:
             return False, {"reason": "no_verbal_responses", "responses": []}
 
-        validation_details = {
+        validation_details: Dict[str, Any] = {
             "responses": [],
             "intact_responses": 0,
             "mean_clarity": 0.0,
@@ -507,9 +508,9 @@ class ExperimentalControlValidator:
             comprehension_values.append(response.comprehension_accuracy)
 
         validation_details["intact_responses"] = intact_count
-        validation_details["mean_clarity"] = np.mean(clarity_values)
-        validation_details["mean_latency"] = np.mean(latency_values)
-        validation_details["mean_comprehension"] = np.mean(comprehension_values)
+        validation_details["mean_clarity"] = float(np.mean(clarity_values))
+        validation_details["mean_latency"] = float(np.mean(latency_values))
+        validation_details["mean_comprehension"] = float(np.mean(comprehension_values))
 
         # Verbal system is intact if majority of responses are intact
         is_intact = intact_count >= len(verbal_responses) * 0.8
@@ -786,7 +787,7 @@ class ExperimentalControlSimulator:
         responses = []
 
         for i in range(n_responses):
-            response_type = np.random.choice(list(ResponseModality))
+            response_type = np.random.choice(list(ResponseModality))  # type: ignore
 
             if system_integrity == "intact":
                 rt = np.random.uniform(300, 800)

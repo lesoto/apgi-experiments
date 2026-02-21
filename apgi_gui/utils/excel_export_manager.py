@@ -5,18 +5,19 @@ Provides comprehensive Excel export functionality for experimental data, results
 Supports multiple data formats and customizable styling.
 """
 
-import pandas as pd
-from typing import Dict, Any, Optional, List, Union
 import json
-from pathlib import Path
-from datetime import datetime
 import os
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
+
+import pandas as pd
 
 try:
     from openpyxl import Workbook
-    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-    from openpyxl.utils.dataframe import dataframe_to_rows
     from openpyxl.chart import BarChart, LineChart, Reference
+    from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+    from openpyxl.utils.dataframe import dataframe_to_rows
 
     OPENPYXL_AVAILABLE = True
 except ImportError:
@@ -576,7 +577,7 @@ def export_data_to_excel(
 def create_excel_export_dialog(parent, export_callback) -> None:
     """Create an Excel export dialog."""
     import tkinter as tk
-    from tkinter import ttk, filedialog, messagebox
+    from tkinter import filedialog, messagebox, ttk
 
     dialog = tk.Toplevel(parent)
     dialog.title("Export to Excel")

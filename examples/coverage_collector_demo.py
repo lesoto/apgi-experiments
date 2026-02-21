@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from apgi_framework.test_enhancement.coverage.coverage_collector import (
     CoverageCollector,
 )
-from apgi_framework.test_enhancement.models import TestExecution, TestConfiguration
+from apgi_framework.test_enhancement.models import TestConfiguration, TestExecution
 
 
 def create_sample_module():
@@ -127,7 +127,7 @@ def demonstrate_coverage_collection():
                 print(f"  {filename}: {coverage:.2f}%")
 
         if coverage_data.module_coverage:
-            print(f"\nModule Coverage Details:")
+            print("\nModule Coverage Details:")
             for module_name, module_cov in coverage_data.module_coverage.items():
                 print(f"  Module: {module_cov.module_name}")
                 print(
@@ -149,7 +149,7 @@ def demonstrate_coverage_collection():
         # Demonstrate retrieval
         loaded_data = collector.load_coverage_data(coverage_file)
         if loaded_data:
-            print(f"Coverage data loaded successfully")
+            print("Coverage data loaded successfully")
             print(f"Loaded execution ID: {loaded_data.execution_id}")
             print(f"Loaded overall coverage: {loaded_data.overall_coverage:.2f}%")
 
@@ -158,7 +158,7 @@ def demonstrate_coverage_collection():
         if cached_data:
             print(f"Coverage data retrieved from cache: {cached_data.execution_id}")
 
-        print(f"\n=== Demonstration Complete ===")
+        print("\n=== Demonstration Complete ===")
 
     finally:
         # Cleanup

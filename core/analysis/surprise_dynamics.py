@@ -1,5 +1,5 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 # Setup: Simulate 50 steps of errors and precisions
 np.random.seed(42)

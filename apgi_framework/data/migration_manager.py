@@ -5,10 +5,9 @@ Handles schema migrations and upgrades for both core framework
 and parameter estimation functionality.
 """
 
+import sqlite3
 from pathlib import Path
 from typing import Dict, List, Optional
-import sqlite3
-from datetime import datetime
 
 from ..exceptions import APGIFrameworkError
 from .parameter_estimation_schema import ParameterEstimationSchema

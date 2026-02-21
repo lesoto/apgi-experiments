@@ -5,14 +5,14 @@ Provides comprehensive theming support for both tkinter and customtkinter
 with automatic theme detection, widget tracking, and consistent styling.
 """
 
-import tkinter as tk
-from tkinter import ttk
-from typing import Dict, List, Optional, Any, Callable
 import json
 import logging
-from pathlib import Path
-from dataclasses import dataclass, asdict
+import tkinter as tk
+from dataclasses import asdict, dataclass
 from datetime import datetime
+from pathlib import Path
+from tkinter import ttk
+from typing import Any, Callable, Dict, List, Optional
 
 try:
     import customtkinter as ctk
@@ -228,15 +228,22 @@ class AdvancedThemeManager:
                 try:
                     import winreg
 
-                    with winreg.OpenKey(
-                        winreg.HKEY_CURRENT_USER,
+                    with winreg.OpenKey(  # type: ignore
+                        winreg.HKEY_CURRENT_USER,  # type: ignore
                         r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize",
                     ) as key:
-                        apps_use_light_theme = winreg.QueryValueEx(
+                        apps_use_light_theme = winreg.QueryValueEx(  # type: ignore
                             key, "AppsUseLightTheme"
                         )[0]
                         return "light" if apps_use_light_theme else "dark"
-                except:
+                except ImportError:
+                    # winreg not available on this platform
+                    pass
+                except OSError:
+                    # Registry access failed
+                    pass
+                except Exception:
+                    # Other registry errors
                     pass
 
             elif system == "Darwin":  # macOS
@@ -250,7 +257,7 @@ class AdvancedThemeManager:
                         text=True,
                     )
                     return "dark" if "Dark" in result.stdout else "light"
-                except:
+                except (FileNotFoundError, subprocess.SubprocessError):
                     pass
 
             elif system == "Linux":
@@ -270,7 +277,7 @@ class AdvancedThemeManager:
                     )
                     if "dark" in result.stdout.lower():
                         return "dark"
-                except:
+                except (FileNotFoundError, subprocess.SubprocessError):
                     pass
 
             # Default to light theme
@@ -359,16 +366,16 @@ class AdvancedThemeManager:
         try:
             # Apply theme based on widget type
             if isinstance(widget, (tk.Frame, ttk.Frame)):
-                widget.configure(bg=colors.background)
+                widget.configure(bg=colors.background)  # type: ignore
             elif isinstance(widget, (tk.Label, ttk.Label)):
-                widget.configure(bg=colors.background, fg=colors.foreground)
+                widget.configure(bg=colors.background, fg=colors.foreground)  # type: ignore
             elif isinstance(widget, (tk.Button, ttk.Button)):
                 widget.configure(
                     bg=colors.button_bg,
                     fg=colors.button_fg,
                     activebackground=colors.button_active,
                     activeforeground=colors.button_fg,
-                )
+                )  # type: ignore
             elif isinstance(widget, (tk.Entry, ttk.Entry)):
                 widget.configure(
                     bg=colors.entry_bg,
@@ -376,7 +383,7 @@ class AdvancedThemeManager:
                     insertbackground=colors.foreground,
                     selectbackground=colors.select_bg,
                     selectforeground=colors.select_fg,
-                )
+                )  # type: ignore
             elif isinstance(widget, (tk.Text,)):
                 widget.configure(
                     bg=colors.entry_bg,
@@ -384,7 +391,7 @@ class AdvancedThemeManager:
                     insertbackground=colors.foreground,
                     selectbackground=colors.select_bg,
                     selectforeground=colors.select_fg,
-                )
+                )  # type: ignore
             elif isinstance(widget, (tk.Checkbutton, ttk.Checkbutton)):
                 widget.configure(
                     bg=colors.background,
@@ -392,7 +399,7 @@ class AdvancedThemeManager:
                     selectcolor=colors.select_bg,
                     activebackground=colors.background,
                     activeforeground=colors.foreground,
-                )
+                )  # type: ignore
             elif isinstance(widget, (tk.Radiobutton, ttk.Radiobutton)):
                 widget.configure(
                     bg=colors.background,
@@ -400,23 +407,23 @@ class AdvancedThemeManager:
                     selectcolor=colors.select_bg,
                     activebackground=colors.background,
                     activeforeground=colors.foreground,
-                )
+                )  # type: ignore
             elif isinstance(widget, (tk.Scale, ttk.Scale)):
                 widget.configure(
                     bg=colors.background,
                     fg=colors.foreground,
                     troughcolor=colors.frame_bg,
                     activebackground=colors.accent,
-                )
+                )  # type: ignore
             elif isinstance(widget, (tk.Listbox,)):
                 widget.configure(
                     bg=colors.entry_bg,
                     fg=colors.entry_fg,
                     selectbackground=colors.select_bg,
                     selectforeground=colors.select_fg,
-                )
+                )  # type: ignore
             elif isinstance(widget, (tk.Canvas,)):
-                widget.configure(bg=colors.background)
+                widget.configure(bg=colors.background)  # type: ignore
 
             # Apply to children recursively
             for child in widget.winfo_children():
@@ -440,7 +447,7 @@ class AdvancedThemeManager:
                 ctk.set_appearance_mode("light")
 
             # Set custom color theme if available
-            colors = self.themes[self.current_theme]
+            self.themes[self.current_theme]  # Access to use the variable
             ctk.set_default_color_theme("blue")  # Use blue as base
 
         except Exception as e:
@@ -619,11 +626,24 @@ class AdvancedThemeManager:
             variable=auto_var,
             bg=colors.background,
             fg=colors.foreground,
-            command=lambda: self._update_setting("auto_detect_system", auto_var.get()),
+            command=lambda: self.update_setting("auto_detect_system", auto_var.get()),
         )
         auto_check.pack(side=tk.LEFT, padx=10)
 
         return frame
+
+    def update_setting(self, setting_name: str, value: Any):
+        """
+        Update a theme setting and save preferences.
+
+        Args:
+            setting_name: Name of the setting to update
+            value: New value for the setting
+        """
+        if setting_name in self.settings:
+            self.settings[setting_name] = value
+            self._save_user_preferences()
+            logger.info(f"Updated theme setting {setting_name} = {value}")
 
 
 def create_theme_manager(root_widget: tk.Widget) -> AdvancedThemeManager:

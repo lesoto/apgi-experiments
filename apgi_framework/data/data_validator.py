@@ -6,19 +6,16 @@ and storage integrity with automated quality assessment.
 """
 
 import hashlib
-import json
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple, Set
+from typing import Any, Dict, List
+
 import numpy as np
-import pandas as pd
 
 from ..exceptions import APGIFrameworkError
 from .data_models import (
     ExperimentalDataset,
     ExperimentMetadata,
-    QueryFilter,
-    StorageStats,
 )
 
 
@@ -114,7 +111,7 @@ class DataValidator:
         Returns:
             Dict containing validation results and quality metrics
         """
-        validation_result = {
+        validation_result: Dict[str, Any] = {
             "is_valid": True,
             "errors": [],
             "warnings": [],
@@ -132,11 +129,14 @@ class DataValidator:
             metadata_result = self.validate_metadata(dataset.metadata)
             validation_result["details"]["metadata"] = metadata_result
 
+            errors_list: List[str] = validation_result["errors"]
+            warnings_list: List[str] = validation_result["warnings"]
+
             if not metadata_result["is_valid"]:
                 validation_result["is_valid"] = False
-                validation_result["errors"].extend(metadata_result["errors"])
+                errors_list.extend(metadata_result["errors"])  # type: ignore
 
-            validation_result["warnings"].extend(metadata_result["warnings"])
+            warnings_list.extend(metadata_result["warnings"])  # type: ignore
 
             # Validate data structure
             structure_result = self.validate_data_structure(dataset.data)
@@ -144,7 +144,7 @@ class DataValidator:
 
             if not structure_result["is_valid"]:
                 validation_result["is_valid"] = False
-                validation_result["errors"].extend(structure_result["errors"])
+                validation_result["errors"].extend(structure_result["errors"])  # type: ignore
 
             # Validate data content
             content_result = self.validate_data_content(dataset.data)
@@ -152,7 +152,7 @@ class DataValidator:
 
             if not content_result["is_valid"]:
                 validation_result["is_valid"] = False
-                validation_result["errors"].extend(content_result["errors"])
+                validation_result["errors"].extend(content_result["errors"])  # type: ignore
 
             # Calculate quality metrics
             quality_metrics = self.calculate_quality_metrics(dataset)
@@ -163,23 +163,23 @@ class DataValidator:
             validation_result["details"]["sample_sizes"] = sample_result
 
             if not sample_result["is_valid"]:
-                validation_result["warnings"].extend(sample_result["warnings"])
+                validation_result["warnings"].extend(sample_result["warnings"])  # type: ignore
 
             # Overall quality assessment
             validation_result["quality_score"] = self._calculate_overall_quality(
-                validation_result["completeness"],
-                validation_result["consistency"],
-                validation_result["accuracy"],
-                validation_result["reliability"],
+                validation_result["completeness"],  # type: ignore
+                validation_result["consistency"],  # type: ignore
+                validation_result["accuracy"],  # type: ignore
+                validation_result["reliability"],  # type: ignore
             )
 
             # Update dataset metadata with validation results
-            dataset.metadata.data_quality_score = validation_result["quality_score"]
+            dataset.metadata.data_quality_score = validation_result["quality_score"]  # type: ignore
             dataset.metadata.completeness_percentage = (
-                validation_result["completeness"] * 100
+                validation_result["completeness"] * 100  # type: ignore
             )
             dataset.metadata.validation_status = (
-                "validated" if validation_result["is_valid"] else "failed"
+                "validated" if validation_result["is_valid"] else "failed"  # type: ignore
             )
 
         except Exception as e:
@@ -191,7 +191,7 @@ class DataValidator:
 
     def validate_metadata(self, metadata: ExperimentMetadata) -> Dict[str, Any]:
         """Validate experiment metadata."""
-        result = {"is_valid": True, "errors": [], "warnings": []}
+        result: Dict[str, Any] = {"is_valid": True, "errors": [], "warnings": []}
 
         # Check required fields
         for field in self.validation_rules["required_metadata_fields"]:
@@ -229,7 +229,7 @@ class DataValidator:
 
     def validate_data_structure(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Validate data structure and required fields."""
-        result = {"is_valid": True, "errors": [], "warnings": []}
+        result: Dict[str, Any] = {"is_valid": True, "errors": [], "warnings": []}
 
         if not data:
             result["errors"].append("Data dictionary is empty")
@@ -248,9 +248,9 @@ class DataValidator:
                 data["apgi_parameters"]
             )
             if not apgi_result["is_valid"]:
-                result["errors"].extend(apgi_result["errors"])
+                result["errors"].extend(apgi_result["errors"])  # type: ignore
                 result["is_valid"] = False
-            result["warnings"].extend(apgi_result["warnings"])
+            result["warnings"].extend(apgi_result["warnings"])  # type: ignore
 
         # Validate neural signatures structure
         if "neural_signatures" in data:
@@ -258,9 +258,9 @@ class DataValidator:
                 data["neural_signatures"]
             )
             if not neural_result["is_valid"]:
-                result["errors"].extend(neural_result["errors"])
+                result["errors"].extend(neural_result["errors"])  # type: ignore
                 result["is_valid"] = False
-            result["warnings"].extend(neural_result["warnings"])
+            result["warnings"].extend(neural_result["warnings"])  # type: ignore
 
         # Validate consciousness assessments structure
         if "consciousness_assessments" in data:
@@ -268,23 +268,23 @@ class DataValidator:
                 data["consciousness_assessments"]
             )
             if not consciousness_result["is_valid"]:
-                result["errors"].extend(consciousness_result["errors"])
+                result["errors"].extend(consciousness_result["errors"])  # type: ignore
                 result["is_valid"] = False
-            result["warnings"].extend(consciousness_result["warnings"])
+            result["warnings"].extend(consciousness_result["warnings"])  # type: ignore
 
         return result
 
     def validate_data_content(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Validate data content and value ranges."""
-        result = {"is_valid": True, "errors": [], "warnings": []}
+        result: Dict[str, Any] = {"is_valid": True, "errors": [], "warnings": []}
 
         # Validate APGI parameter values
         if "apgi_parameters" in data:
             param_result = self._validate_parameter_values(data["apgi_parameters"])
             if not param_result["is_valid"]:
-                result["errors"].extend(param_result["errors"])
+                result["errors"].extend(param_result["errors"])  # type: ignore
                 result["is_valid"] = False
-            result["warnings"].extend(param_result["warnings"])
+            result["warnings"].extend(param_result["warnings"])  # type: ignore
 
         # Validate neural signature values
         if "neural_signatures" in data:
@@ -292,9 +292,9 @@ class DataValidator:
                 data["neural_signatures"]
             )
             if not signature_result["is_valid"]:
-                result["errors"].extend(signature_result["errors"])
+                result["errors"].extend(signature_result["errors"])  # type: ignore
                 result["is_valid"] = False
-            result["warnings"].extend(signature_result["warnings"])
+            result["warnings"].extend(signature_result["warnings"])  # type: ignore
 
         # Validate consciousness assessment values
         if "consciousness_assessments" in data:
@@ -302,18 +302,18 @@ class DataValidator:
                 data["consciousness_assessments"]
             )
             if not consciousness_result["is_valid"]:
-                result["errors"].extend(consciousness_result["errors"])
+                result["errors"].extend(consciousness_result["errors"])  # type: ignore
                 result["is_valid"] = False
-            result["warnings"].extend(consciousness_result["warnings"])
+            result["warnings"].extend(consciousness_result["warnings"])  # type: ignore
 
         return result
 
     def _validate_apgi_parameters_structure(self, parameters: Any) -> Dict[str, Any]:
         """Validate APGI parameters structure."""
-        result = {"is_valid": True, "errors": [], "warnings": []}
+        result: Dict[str, Any] = {"is_valid": True, "errors": [], "warnings": []}
 
         if not isinstance(parameters, (dict, list)):
-            result["errors"].append("APGI parameters must be dict or list")
+            result["errors"].append("APGI parameters must be dict or list")  # type: ignore
             result["is_valid"] = False
             return result
 
@@ -321,17 +321,17 @@ class DataValidator:
         if isinstance(parameters, list):
             for i, param_set in enumerate(parameters):
                 if not isinstance(param_set, dict):
-                    result["errors"].append(f"Parameter set {i} must be a dictionary")
+                    result["errors"].append(f"Parameter set {i} must be a dictionary")  # type: ignore
                     result["is_valid"] = False
 
         return result
 
     def _validate_neural_signatures_structure(self, signatures: Any) -> Dict[str, Any]:
         """Validate neural signatures structure."""
-        result = {"is_valid": True, "errors": [], "warnings": []}
+        result: Dict[str, Any] = {"is_valid": True, "errors": [], "warnings": []}
 
         if not isinstance(signatures, (dict, list)):
-            result["errors"].append("Neural signatures must be dict or list")
+            result["errors"].append("Neural signatures must be dict or list")  # type: ignore
             result["is_valid"] = False
             return result
 
@@ -339,10 +339,10 @@ class DataValidator:
 
     def _validate_consciousness_structure(self, assessments: Any) -> Dict[str, Any]:
         """Validate consciousness assessments structure."""
-        result = {"is_valid": True, "errors": [], "warnings": []}
+        result: Dict[str, Any] = {"is_valid": True, "errors": [], "warnings": []}
 
         if not isinstance(assessments, (dict, list)):
-            result["errors"].append("Consciousness assessments must be dict or list")
+            result["errors"].append("Consciousness assessments must be dict or list")  # type: ignore
             result["is_valid"] = False
             return result
 
@@ -350,7 +350,7 @@ class DataValidator:
 
     def _validate_parameter_values(self, parameters: Any) -> Dict[str, Any]:
         """Validate APGI parameter value ranges."""
-        result = {"is_valid": True, "errors": [], "warnings": []}
+        result: Dict[str, Any] = {"is_valid": True, "errors": [], "warnings": []}
 
         param_ranges = self.validation_rules["parameter_ranges"]
 
@@ -361,12 +361,12 @@ class DataValidator:
                     if not isinstance(value, (int, float)):
                         result["errors"].append(
                             f"Parameter {param_name}{index} must be numeric"
-                        )
+                        )  # type: ignore
                         result["is_valid"] = False
                     elif not (min_val <= value <= max_val):
                         result["errors"].append(
                             f"Parameter {param_name}{index} ({value}) outside valid range [{min_val}, {max_val}]"
-                        )
+                        )  # type: ignore
                         result["is_valid"] = False
 
         if isinstance(parameters, dict):
@@ -380,7 +380,7 @@ class DataValidator:
 
     def _validate_signature_values(self, signatures: Any) -> Dict[str, Any]:
         """Validate neural signature value ranges."""
-        result = {"is_valid": True, "errors": [], "warnings": []}
+        result: Dict[str, Any] = {"is_valid": True, "errors": [], "warnings": []}
 
         signature_ranges = self.validation_rules["signature_ranges"]
 
@@ -391,12 +391,12 @@ class DataValidator:
                     if not isinstance(value, (int, float)):
                         result["errors"].append(
                             f"Signature {sig_name}{index} must be numeric"
-                        )
+                        )  # type: ignore
                         result["is_valid"] = False
                     elif not (min_val <= value <= max_val):
                         result["errors"].append(
                             f"Signature {sig_name}{index} ({value}) outside valid range [{min_val}, {max_val}]"
-                        )
+                        )  # type: ignore
                         result["is_valid"] = False
 
         if isinstance(signatures, dict):
@@ -410,7 +410,7 @@ class DataValidator:
 
     def _validate_consciousness_values(self, assessments: Any) -> Dict[str, Any]:
         """Validate consciousness assessment value ranges."""
-        result = {"is_valid": True, "errors": [], "warnings": []}
+        result: Dict[str, Any] = {"is_valid": True, "errors": [], "warnings": []}
 
         consciousness_ranges = self.validation_rules["consciousness_ranges"]
 
@@ -421,12 +421,12 @@ class DataValidator:
                     if not isinstance(value, (int, float)):
                         result["errors"].append(
                             f"Assessment {assess_name}{index} must be numeric"
-                        )
+                        )  # type: ignore
                         result["is_valid"] = False
                     elif not (min_val <= value <= max_val):
                         result["errors"].append(
                             f"Assessment {assess_name}{index} ({value}) outside valid range [{min_val}, {max_val}]"
-                        )
+                        )  # type: ignore
                         result["is_valid"] = False
 
         if isinstance(assessments, dict):
@@ -440,7 +440,7 @@ class DataValidator:
 
     def validate_sample_sizes(self, dataset: ExperimentalDataset) -> Dict[str, Any]:
         """Validate sample sizes for different test types."""
-        result = {"is_valid": True, "warnings": []}
+        result: Dict[str, Any] = {"is_valid": True, "warnings": []}
 
         min_sizes = self.validation_rules["min_sample_sizes"]
         n_participants = dataset.metadata.n_participants
@@ -616,7 +616,12 @@ class DataValidator:
 
     def check_data_integrity(self, file_path: Path) -> Dict[str, Any]:
         """Check file integrity using checksums."""
-        result = {"is_intact": True, "checksum": "", "size_bytes": 0, "errors": []}
+        result: Dict[str, Any] = {
+            "is_intact": True,
+            "checksum": "",
+            "size_bytes": 0,
+            "errors": [],
+        }
 
         try:
             if not file_path.exists():

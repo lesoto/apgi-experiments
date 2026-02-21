@@ -1,7 +1,8 @@
 """Default parameters configuration for APGI Framework GUI."""
 
 from dataclasses import dataclass
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Optional, Tuple
+
 from apgi_framework.config.constants import ModelConstants
 
 
@@ -186,18 +187,18 @@ class DefaultParameters:
         try:
             if rules["type"] == "float":
                 float_value = float(value)
-                min_val = rules["min"]
-                max_val = rules["max"]
+                min_val = rules["min"]  # type: ignore[assignment]
+                max_val = rules["max"]  # type: ignore[assignment]
 
-                if float_value < min_val or float_value > max_val:
+                if float_value < min_val or float_value > max_val:  # type: ignore[operator]
                     return False, f"Value must be between {min_val} and {max_val}"
 
             elif rules["type"] == "int":
                 int_value = int(value)
-                min_val = rules["min"]
-                max_val = rules["max"]
+                min_val = rules["min"]  # type: ignore[assignment]
+                max_val = rules["max"]  # type: ignore[assignment]
 
-                if int_value < min_val or int_value > max_val:
+                if int_value < min_val or int_value > max_val:  # type: ignore[operator]
                     return False, f"Value must be between {min_val} and {max_val}"
 
         except ValueError:

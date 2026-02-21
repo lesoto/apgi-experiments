@@ -8,11 +8,11 @@ individually, running all scripts sequentially, or running the complete test
 suite using pytest with real-time output display and error handling.
 """
 
+import os
 import subprocess
 import sys
 import threading
 import tkinter as tk
-import os
 from collections import deque
 from pathlib import Path
 from tkinter import scrolledtext, ttk

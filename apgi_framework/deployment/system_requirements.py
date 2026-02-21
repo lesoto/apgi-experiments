@@ -7,12 +7,12 @@ capabilities for running the APGI Framework parameter estimation system.
 
 import logging
 import platform
-import psutil
 import sys
-from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
-import subprocess
+from typing import Dict, List, Optional, Tuple
+
+import psutil
 
 
 class RequirementLevel(Enum):
@@ -415,8 +415,8 @@ class SystemRequirementsValidator:
         Returns:
             Estimated maximum sampling rate in Hz.
         """
-        cpu_cores = psutil.cpu_count(logical=False) or psutil.cpu_count()
-        ram_gb = psutil.virtual_memory().total / (1024**3)
+        cpu_cores: int = psutil.cpu_count(logical=False) or psutil.cpu_count() or 1
+        ram_gb: float = psutil.virtual_memory().total / (1024**3)
 
         # Simple heuristic based on hardware
         if cpu_cores >= 16 and ram_gb >= 32:

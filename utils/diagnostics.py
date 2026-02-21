@@ -15,11 +15,11 @@ Examples:
     python tools/diagnostics.py --config       # Check configuration
 """
 
-import sys
 import importlib
-import platform
-from pathlib import Path
 import json
+import platform
+import sys
+from pathlib import Path
 from typing import Dict
 
 # Add project root to path
@@ -102,8 +102,6 @@ class APGIDiagnostics:
         components = [
             "apgi_framework",
             "apgi_framework.config",
-            "apgi_framework.core.experiment",
-            "apgi_framework.falsification.primary_test",
             "apgi_framework.analysis.analysis_engine",
             "apgi_framework.logging.standardized_logging",
         ]

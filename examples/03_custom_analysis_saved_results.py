@@ -10,21 +10,19 @@ and perform custom analyses, including:
 - Extracting specific metrics
 """
 
-import sys
-from pathlib import Path
 import json
-import numpy as np
+import sys
 from datetime import datetime
-from typing import List, Dict, Any
+from pathlib import Path
+from typing import Any, Dict, List
+
+import numpy as np
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from apgi_framework.data import StorageManager
-from apgi_framework.core import FalsificationResult
 import logging
 
-# Setup logging with standardized system
 try:
     from apgi_framework.logging.standardized_logging import get_logger
 
@@ -35,7 +33,7 @@ except ImportError:
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
-    logger: Any = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)  # type: ignore
 
 
 def load_saved_results(results_directory: str = "results") -> List[Dict[str, Any]]:
@@ -118,7 +116,7 @@ def analyze_falsification_rates(results: List[Dict[str, Any]]):
     # Confidence level distribution
     confidence_levels = [r.get("confidence_level", 0) for r in results]
     if confidence_levels:
-        logger.info(f"\nConfidence Level Statistics:")
+        logger.info("\nConfidence Level Statistics:")
         logger.info(f"  Mean: {np.mean(confidence_levels):.3f}")
         logger.info(f"  Median: {np.median(confidence_levels):.3f}")
         logger.info(f"  Std Dev: {np.std(confidence_levels):.3f}")
@@ -149,10 +147,10 @@ def analyze_statistical_power(results: List[Dict[str, Any]]):
         logger.warning("No statistical power data available")
         return
 
-    logger.info(f"\nStatistical Power Summary:")
+    logger.info("\nStatistical Power Summary:")
     logger.info(f"  Number of experiments: {len(power_values)}")
-    logger.info(f"  Mean power: {np.mean(power_values):.3f}")
-    logger.info(f"  Median power: {np.median(power_values):.3f}")
+    logger.info(f"  Mean: {np.mean(power_values):.3f}")
+    logger.info(f"  Median: {np.median(power_values):.3f}")
     logger.info(f"  Std Dev: {np.std(power_values):.3f}")
 
     # Categorize by power level
@@ -200,7 +198,7 @@ def analyze_effect_sizes(results: List[Dict[str, Any]]):
         logger.warning("No effect size data available")
         return
 
-    logger.info(f"\nEffect Size Summary (Cohen's d):")
+    logger.info("\nEffect Size Summary (Cohen's d):")
     logger.info(f"  Number of experiments: {len(effect_sizes)}")
     logger.info(f"  Mean: {np.mean(effect_sizes):.3f}")
     logger.info(f"  Median: {np.median(effect_sizes):.3f}")
@@ -212,7 +210,7 @@ def analyze_effect_sizes(results: List[Dict[str, Any]]):
     medium = sum(1 for d in effect_sizes if 0.5 <= abs(d) < 0.8)
     large = sum(1 for d in effect_sizes if abs(d) >= 0.8)
 
-    logger.info(f"\nEffect Size Distribution:")
+    logger.info("\nEffect Size Distribution:")
     logger.info(f"  Small (|d| < 0.5): {small} ({small / len(effect_sizes):.1%})")
     logger.info(
         f"  Medium (0.5 ≤ |d| < 0.8): {medium} ({medium / len(effect_sizes):.1%})"
@@ -232,10 +230,10 @@ def analyze_effect_sizes(results: List[Dict[str, Any]]):
         not_falsified_effects = [r["effect_size"] for r in not_falsified_results]
 
         logger.info("\nEffect Size by Falsification Status:")
-        logger.info(f"  Falsified experiments:")
+        logger.info("  Falsified experiments:")
         logger.info(f"    Mean: {np.mean(falsified_effects):.3f}")
         logger.info(f"    Median: {np.median(falsified_effects):.3f}")
-        logger.info(f"  Not falsified experiments:")
+        logger.info("  Not falsified experiments:")
         logger.info(f"    Mean: {np.mean(not_falsified_effects):.3f}")
         logger.info(f"    Median: {np.median(not_falsified_effects):.3f}")
 
@@ -260,7 +258,7 @@ def compare_experiments(results: List[Dict[str, Any]]):
     )
 
     # Display top experiments
-    logger.info(f"\nTop 5 Experiments by Confidence Level:")
+    logger.info("\nTop 5 Experiments by Confidence Level:")
     logger.info(
         f"{'Rank':<6} {'File':<30} {'Falsified':<12} {'Confidence':<12} {'P-value':<12}"
     )
@@ -277,31 +275,32 @@ def compare_experiments(results: List[Dict[str, Any]]):
         )
 
     # Compare falsified vs not falsified
-    falsified = [r for r in results if r.get("is_falsified", False)]
-    not_falsified = [r for r in results if not r.get("is_falsified", False)]
 
-    if falsified and not_falsified:
+    falsified_results = [r for r in results if r.get("is_falsified", False)]
+    not_falsified_results = [r for r in results if not r.get("is_falsified", False)]
+
+    if falsified_results and not_falsified_results:
         logger.info("\nComparative Statistics:")
-        logger.info(f"\nFalsified Experiments (n={len(falsified)}):")
+        logger.info(f"\nFalsified Experiments (n={len(falsified_results)}):")
         logger.info(
-            f"  Mean confidence: {np.mean([r.get('confidence_level', 0) for r in falsified]):.3f}"
+            f"  Mean confidence: {np.mean([r.get('confidence_level', 0) for r in falsified_results]):.3f}"
         )
         logger.info(
-            f"  Mean effect size: {np.mean([r.get('effect_size', 0) for r in falsified]):.3f}"
+            f"  Mean effect size: {np.mean([r.get('effect_size', 0) for r in falsified_results]):.3f}"
         )
         logger.info(
-            f"  Mean p-value: {np.mean([r.get('p_value', 1.0) for r in falsified]):.6f}"
+            f"  Mean p-value: {np.mean([r.get('p_value', 1.0) for r in falsified_results]):.6f}"
         )
 
-        logger.info(f"\nNot Falsified Experiments (n={len(not_falsified)}):")
+        logger.info(f"\nNot Falsified Experiments (n={len(not_falsified_results)}):")
         logger.info(
-            f"  Mean confidence: {np.mean([r.get('confidence_level', 0) for r in not_falsified]):.3f}"
+            f"  Mean confidence: {np.mean([r.get('confidence_level', 0) for r in not_falsified_results]):.3f}"
         )
         logger.info(
-            f"  Mean effect size: {np.mean([r.get('effect_size', 0) for r in not_falsified]):.3f}"
+            f"  Mean effect size: {np.mean([r.get('effect_size', 0) for r in not_falsified_results]):.3f}"
         )
         logger.info(
-            f"  Mean p-value: {np.mean([r.get('p_value', 1.0) for r in not_falsified]):.6f}"
+            f"  Mean p-value: {np.mean([r.get('p_value', 1.0) for r in not_falsified_results]):.6f}"
         )
 
     logger.info("=" * 60 + "\n")
@@ -320,7 +319,7 @@ def extract_custom_metrics(results: List[Dict[str, Any]]):
         return
 
     # Extract all available metrics
-    all_keys = set()
+    all_keys: set[str] = set()
     for r in results:
         all_keys.update(r.keys())
 
@@ -336,7 +335,7 @@ def extract_custom_metrics(results: List[Dict[str, Any]]):
         logger.info(f"  {key}: {count}/{len(results)} ({coverage:.0f}%)")
 
     # Create summary statistics for numeric metrics
-    logger.info(f"\nNumeric Metric Summary:")
+    logger.info("\nNumeric Metric Summary:")
     for key in sorted(metric_keys):
         values = []
         for r in results:

@@ -13,15 +13,15 @@ Key improvements:
 - Enhanced error handling and logging
 """
 
-import customtkinter as ctk
-import tkinter as tk
-from tkinter import messagebox, filedialog
 import logging
 import sys
-import os
-from pathlib import Path
-from typing import Dict, Any, Optional
+import tkinter as tk
 from datetime import datetime
+from pathlib import Path
+from tkinter import filedialog, messagebox
+from typing import Any
+
+import customtkinter as ctk
 
 # Add project root to Python path for imports
 project_root = Path(__file__).parent.parent
@@ -30,29 +30,26 @@ sys.path.insert(0, str(project_root))
 # Import modular GUI components
 try:
     from apgi_framework.gui.components import (
-        MainGUIController,
-        create_main_gui_controller,
-        ParameterConfigPanel,
-        TestExecutionPanel,
-        ResultsVisualizationPanel,
         LoggingPanel,
+        ExecutionPanel,
+        ParameterConfigPanel,
+        ResultsVisualizationPanel,
+        create_main_gui_controller,
     )
     from apgi_framework.logging.standardized_logging import get_logger
-    from apgi_framework.config import ConfigManager
-    from apgi_framework.exceptions import APGIFrameworkError
 
     MODULAR_COMPONENTS_AVAILABLE = True
 except ImportError as e:
     logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger("apgi_falsification_gui")
-    logger.warning(f"Modular components not available: {e}")
+    fallback_logger = logging.getLogger("apgi_falsification_gui")
+    fallback_logger.warning(f"Modular components not available: {e}")
     MODULAR_COMPONENTS_AVAILABLE = False
 
     # Create fallback classes for basic functionality
     class MainGUIController:
         def __init__(self, parent):
             self.parent = parent
-            logger.warning("Using fallback MainGUIController")
+            fallback_logger.warning("Using fallback MainGUIController")
 
     class ConfigManager:
         def __init__(self):
@@ -63,7 +60,9 @@ except ImportError as e:
 
 
 if MODULAR_COMPONENTS_AVAILABLE:
-    logger = get_logger("apgi_falsification_gui")
+    logger: Any = get_logger("apgi_falsification_gui_refactored")
+else:
+    logger = fallback_logger
 
 
 class APGIFalsificationGUI(ctk.CTk):
@@ -242,7 +241,7 @@ class APGIFalsificationGUI(ctk.CTk):
 
             if MODULAR_COMPONENTS_AVAILABLE:
                 # Use modular test panel
-                test_panel = TestExecutionPanel(
+                test_panel = ExecutionPanel(
                     test_tab,
                     test_name,
                     progress_callback=self._on_progress_update,
@@ -566,7 +565,7 @@ class APGIFalsificationGUI(ctk.CTk):
 
                 if status["log_statistics"]:
                     stats = status["log_statistics"]
-                    status_text += f"\nLog Statistics:\n"
+                    status_text += "Log Statistics:\n"
                     status_text += f"INFO: {stats.get('INFO', 0)}\n"
                     status_text += f"WARNING: {stats.get('WARNING', 0)}\n"
                     status_text += f"ERROR: {stats.get('ERROR', 0)}\n"

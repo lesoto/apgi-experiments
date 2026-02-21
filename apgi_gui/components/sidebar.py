@@ -1,15 +1,10 @@
 """Sidebar component for the APGI Framework GUI."""
 
-import customtkinter as ctk
-import tkinter as tk
-from pathlib import Path
-from typing import Optional, Callable, Any, Dict
-import json
-import os
-import threading
-import time
-from datetime import datetime
 import logging
+import threading
+from pathlib import Path
+
+import customtkinter as ctk
 
 # Import user preferences for persistence
 try:
@@ -238,7 +233,6 @@ class Sidebar(ctk.CTkFrame):
             try:
                 # Get widget position
                 x = widget.winfo_rootx() + widget.winfo_width() // 2
-                y = widget.winfo_rooty() - 30
 
                 # Calculate position to center tooltip
                 tooltip.update_idletasks()
@@ -255,7 +249,7 @@ class Sidebar(ctk.CTkFrame):
         def hide_tooltip(event):
             try:
                 tooltip.place_forget()
-            except:
+            except Exception:
                 pass
 
         # Bind events

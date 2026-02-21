@@ -6,8 +6,7 @@ Can be used to replace direct thread creation in GUI applications.
 """
 
 import threading
-import time
-from typing import Callable, Optional, Any
+from typing import Any, Callable, Optional
 
 
 class ThreadTimeoutError(Exception):
@@ -142,8 +141,13 @@ def run_with_timeout(
     Returns:
         ThreadWithTimeout instance
     """
+    # Filter out reserved keyword arguments to prevent conflicts
+    filtered_kwargs = {
+        k: v for k, v in kwargs.items() if k not in ("target", "timeout", "on_timeout")
+    }
+
     thread = ThreadWithTimeout(
-        target=target, timeout=timeout, on_timeout=on_timeout, *args, **kwargs
+        target=target, timeout=timeout, on_timeout=on_timeout, *args, **filtered_kwargs  # type: ignore
     )
     thread.daemon = daemon
     thread.start()
@@ -182,12 +186,17 @@ def run_experiment_with_timeout(
         if on_error:
             on_error(ThreadTimeoutError(f"Experiment timed out after {timeout}s"))
 
+    # Filter out reserved keyword arguments to prevent conflicts
+    filtered_kwargs = {
+        k: v for k, v in kwargs.items() if k not in ("target", "timeout", "on_timeout")
+    }
+
     thread = run_with_timeout(
         target=experiment_func,
         timeout=timeout,
         on_timeout=on_timeout_wrapper,
         *args,
-        **kwargs,
+        **filtered_kwargs,  # type: ignore
     )
 
     # Add completion callback

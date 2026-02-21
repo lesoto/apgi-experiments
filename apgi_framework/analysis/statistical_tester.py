@@ -6,14 +6,14 @@ t-tests, ANOVA, non-parametric tests, cluster correction, and multiple
 comparisons correction for validating APGI framework falsification criteria.
 """
 
-import numpy as np
-import scipy.stats as stats
-from scipy.stats import ttest_ind, ttest_rel, f_oneway, mannwhitneyu, wilcoxon
-from scipy.stats import kruskal
-from statsmodels.stats.multitest import multipletests
-from typing import Dict, List, Tuple, Optional, Union, Any
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import numpy as np
+import scipy.stats as stats
+from scipy.stats import f_oneway, kruskal, mannwhitneyu, ttest_ind, ttest_rel, wilcoxon
+from statsmodels.stats.multitest import multipletests
 
 
 class TestType(Enum):

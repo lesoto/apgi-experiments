@@ -1,6 +1,6 @@
 # APGI Framework Testing Suite
 
-This document provides comprehensive information about the testing infrastructure for the APGI Framework.
+This document provides information about the testing infrastructure for the APGI Framework.
 
 ## 📊 Overview
 
@@ -105,12 +105,14 @@ python run_tests.py --all --report test_results.json
 ## 🔧 Configuration
 
 ### pytest.ini
+
 - Test discovery patterns
 - Marker definitions
 - Execution settings
 - Logging configuration
 
 ### pyproject.toml
+
 - Comprehensive testing configuration
 - Coverage settings
 - CI/CD integration
@@ -119,13 +121,15 @@ python run_tests.py --all --report test_results.json
 ## 📈 Test Results
 
 ### Current Status
+
 - ✅ __713 tests__ successfully discovered
 - ✅ __0 collection errors__
 - ✅ __GUI integration working__
 - ✅ __Test runner functional__
 
 ### Test Categories Distribution
-```
+
+```text
 Unit Tests:        583 (81.8%)
 GUI Tests:          78 (10.9%)
 Property Tests:     27 (3.8%)
@@ -136,18 +140,21 @@ Integration Tests:   8 (1.1%)
 ## 🎯 Best Practices
 
 ### Writing Tests
+
 1. Use descriptive test names following `test_<functionality>` pattern
 2. Organize tests by category using appropriate markers
 3. Include proper docstrings for test documentation
 4. Use the TestUtilities class for complex test scenarios
 
-### Test Categories
+### Test Category Markers
+
 - Mark unit tests with `@pytest.mark.unit`
 - Mark integration tests with `@pytest.mark.integration`
 - Mark GUI tests with `@pytest.mark.gui`
 - Mark performance tests with `@pytest.mark.performance`
 
 ### Running Tests
+
 - Use `run_tests.py` for comprehensive test execution
 - Use pytest directly for quick test runs
 - Generate coverage reports regularly
@@ -156,13 +163,16 @@ Integration Tests:   8 (1.1%)
 ## 🔍 GUI Testing
 
 ### Test Runner GUI
+
 The framework includes a comprehensive GUI test runner accessible through:
+
 - Main GUI application
 - Standalone test runner window
 - Real-time progress monitoring
 - Test selection and filtering
 
 ### GUI Test Features
+
 - Test discovery and organization
 - Category-based filtering
 - Real-time execution monitoring
@@ -172,11 +182,13 @@ The framework includes a comprehensive GUI test runner accessible through:
 ## 📊 Reporting
 
 ### Report Formats
+
 - __JSON__: Machine-readable detailed results
 - __HTML__: Human-readable coverage reports
 - __Console__: Real-time execution feedback
 
 ### Report Contents
+
 - Test execution summary
 - Category-wise breakdown
 - Coverage metrics
@@ -186,12 +198,14 @@ The framework includes a comprehensive GUI test runner accessible through:
 ## 🔄 Continuous Integration
 
 ### CI Configuration
+
 - Automated test execution on commits
 - Coverage reporting
 - Performance regression detection
 - Test result artifacts
 
 ### Quality Gates
+
 - Minimum coverage threshold: 80%
 - Zero tolerance for critical failures
 - Performance regression detection
@@ -200,6 +214,7 @@ The framework includes a comprehensive GUI test runner accessible through:
 ## 🛠️ Development Workflow
 
 ### Adding New Tests
+
 1. Create test file in appropriate directory
 2. Use proper naming conventions
 3. Add appropriate markers
@@ -207,6 +222,7 @@ The framework includes a comprehensive GUI test runner accessible through:
 5. Run discovery to verify integration
 
 ### Debugging Tests
+
 1. Use verbose mode for detailed output
 2. Run specific test categories
 3. Use pytest debugging features
@@ -216,11 +232,13 @@ The framework includes a comprehensive GUI test runner accessible through:
 ## 📚 Additional Resources
 
 ### Documentation
+
 - [pytest Documentation](https://docs.pytest.org/)
 - [Hypothesis Property Testing](https://hypothesis.works/)
 - [Coverage.py](https://coverage.readthedocs.io/)
 
 ### Tools
+
 - __pytest__: Test framework
 - __hypothesis__: Property-based testing
 - __coverage.py__: Coverage measurement
@@ -230,6 +248,7 @@ The framework includes a comprehensive GUI test runner accessible through:
 ## 🤝 Contributing
 
 When contributing to the testing suite:
+
 1. Follow existing naming conventions
 2. Add appropriate test markers
 3. Include comprehensive documentation

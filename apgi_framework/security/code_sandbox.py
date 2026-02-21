@@ -5,23 +5,10 @@ Provides a safe environment for dynamic code execution with strict
 security controls, resource limits, and input validation.
 """
 
-import sys
-import subprocess
-import tempfile
-import shutil
-import os
-import signal
-import resource
-from pathlib import Path
-from typing import Dict, Any, Optional, List, Union
-import logging
-from contextlib import contextmanager
-import json
-import hashlib
-import time
 import ast
+import logging
+from typing import Any, Dict, List, Optional
 
-from .secure_pickle import SecurePickleError
 
 logger = logging.getLogger(__name__)
 
@@ -203,8 +190,8 @@ class CodeSandbox:
             exec_context = self._prepare_execution_context(context)
 
             if capture_output:
-                import io
                 import contextlib
+                import io
 
                 stdout_capture = io.StringIO()
                 stderr_capture = io.StringIO()
@@ -275,7 +262,7 @@ class CodeSandbox:
         self, context: Optional[Dict[str, Any]]
     ) -> Dict[str, Any]:
         """Prepare secure execution context."""
-        exec_context = {
+        exec_context: Dict[str, Any] = {
             # Safe built-ins
             "__builtins__": {
                 "print": print,
@@ -309,7 +296,7 @@ class CodeSandbox:
         # Add allowed modules
         for module_name in self.allowed_modules:
             try:
-                exec_context[module_name] = __import__(module_name)
+                exec_context[str(module_name)] = __import__(module_name)  # type: ignore
             except ImportError:
                 pass
 
@@ -365,7 +352,7 @@ class SecurityValidator(ast.NodeVisitor):
         self.allowed_modules = allowed_modules
         self.forbidden_modules = forbidden_modules
         self.forbidden_functions = forbidden_functions
-        self.violations = []
+        self.violations: List[str] = []
 
     def visit_Import(self, node):
         """Check import statements."""

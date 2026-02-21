@@ -6,13 +6,13 @@ experiment control, data visualization, and collaborative features.
 """
 
 import json
+import logging
 import threading
 import time
-from typing import Dict, List, Optional, Any, Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-import logging
+from typing import Any, Callable, Dict, List, Optional
 
 # Check for optional dependencies
 FLASK_AVAILABLE = False
@@ -21,7 +21,7 @@ SOCKETIO_AVAILABLE = False
 logger = logging.getLogger(__name__)
 
 try:
-    from flask import Flask, request, jsonify
+    from flask import Flask, jsonify, request
     from flask_cors import CORS
 
     FLASK_AVAILABLE = True
@@ -607,7 +607,7 @@ class WebInterface:
 
         # Check file extension
         filename = file.filename
-        if not any(
+        if filename and not any(
             filename.lower().endswith("." + ext)
             for ext in self.config.allowed_extensions
         ):
@@ -620,8 +620,11 @@ class WebInterface:
         upload_dir = Path("uploads")
         upload_dir.mkdir(exist_ok=True)
 
-        file_path = upload_dir / filename
-        file.save(str(file_path))
+        if filename:
+            file_path = upload_dir / filename
+            file.save(str(file_path))
+        else:
+            raise ValueError("No filename provided")
 
         # Process file (example implementation)
         result = {
@@ -650,9 +653,9 @@ class WebInterface:
         experiments = self._get_experiment_data()
         for exp in experiments:
             if exp.get("status") == "running":
-                status["active_experiments"] += 1
+                status["active_experiments"] += 1  # type: ignore
             elif exp.get("status") == "completed":
-                status["completed_experiments"] += 1
+                status["completed_experiments"] += 1  # type: ignore
 
         return status
 
@@ -685,8 +688,14 @@ class WebInterface:
 
         if command == "run":
             try:
-                result = self._run_experiment(experiment_id)
-                emit("experiment_response", {"success": True, "data": result})
+                if experiment_id is not None:
+                    result = self._run_experiment(experiment_id)
+                    emit("experiment_response", {"success": True, "data": result})
+                else:
+                    emit(
+                        "experiment_response",
+                        {"success": False, "error": "No experiment ID provided"},
+                    )
             except Exception as e:
                 emit("experiment_response", {"success": False, "error": str(e)})
 

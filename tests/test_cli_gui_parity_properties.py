@@ -8,26 +8,22 @@ Tests that CLI commands provide equivalent functionality to GUI features,
 ensuring that all GUI capabilities are accessible through command-line interface.
 """
 
-import pytest
-from hypothesis import given, strategies as st, assume, settings
-import json
-import tempfile
-import shutil
-from pathlib import Path
-from typing import Dict, List, Any, Optional
-from unittest.mock import Mock, patch, MagicMock
 import argparse
-from io import StringIO
-import sys
+import shutil
+import tempfile
+from pathlib import Path
+from unittest.mock import Mock, patch
+
+import pytest
+from hypothesis import assume, given, settings
+from hypothesis import strategies as st
 
 from apgi_framework.cli import APGIFrameworkCLI
-from apgi_framework.utils.test_utils import (
-    TestUtilities,
-    TestDefinition,
-    TestCollection,
-    TestRunExecution,
-    TestRunCategory,
-    TestRunStatus,
+from apgi_framework.utils.framework_test_utils import (
+    FrameworkExecution,
+    FrameworkRunCategory,
+    FrameworkTestCase,
+    FrameworkTestSuite,
 )
 
 # Strategy generators for property-based testing
@@ -116,7 +112,7 @@ def org_request_strategy(draw):
 @st.composite
 def mock_test_case(draw):
     """Generate mock test case for testing."""
-    return TestDefinition(
+    return FrameworkTestCase(
         name=draw(
             st.text(alphabet="abcdefghijklmnopqrstuvwxyz_", min_size=5, max_size=30)
         ),
@@ -131,7 +127,7 @@ def mock_test_case(draw):
         method_name=draw(
             st.text(alphabet="abcdefghijklmnopqrstuvwxyz_", min_size=5, max_size=20)
         ),
-        category=draw(st.sampled_from(list(TestRunCategory))),
+        category=draw(st.sampled_from(list(FrameworkRunCategory))),
         line_number=draw(st.integers(min_value=1, max_value=1000)),
         docstring=draw(st.one_of(st.none(), st.text(min_size=10, max_size=100))),
         estimated_duration=draw(st.floats(min_value=0.1, max_value=10.0)),
@@ -173,12 +169,12 @@ class TestCLIGUIParityProperties:
 
         # Mock test discovery and execution
         mock_test_cases = [
-            TestDefinition(
+            FrameworkTestCase(
                 name=f"test_{i}",
                 file_path=Path(f"test_file_{i}.py"),
                 class_name=f"TestClass{i}",
                 method_name=f"test_method_{i}",
-                category=TestRunCategory.UNIT,
+                category=FrameworkRunCategory.UNIT,
                 line_number=10 + i,
                 docstring=f"Test case {i}",
                 estimated_duration=1.0,
@@ -187,17 +183,19 @@ class TestCLIGUIParityProperties:
             for i in range(3)
         ]
 
-        mock_suite = TestCollection(
+        mock_suite = FrameworkTestSuite(
             name="test_suite", test_cases=mock_test_cases, total_estimated_duration=3.0
         )
 
-        with patch("apgi_framework.utils.test_utils.TestUtilities") as mock_test_utils:
+        with patch(
+            "apgi_framework.utils.framework_test_utils.FrameworkTestUtils"
+        ) as mock_test_utils:
             mock_instance = Mock()
             mock_test_utils.return_value = mock_instance
             mock_instance.discover_all_tests.return_value = [mock_suite]
 
             # Mock execution results
-            mock_execution = TestRunExecution(
+            mock_execution = FrameworkExecution(
                 execution_id="test_exec_123",
                 test_suites=[mock_suite],
                 results=[],
@@ -451,7 +449,7 @@ class TestCLIGUIParityProperties:
             assert hasattr(self.cli, "_display_results_text")
 
         except SystemExit:
-            pytest.fail(f"CLI failed to parse valid progress configuration")
+            pytest.fail("CLI failed to parse valid progress configuration")
 
     @given(
         config_templates=st.sampled_from(["default", "minimal", "comprehensive"]),

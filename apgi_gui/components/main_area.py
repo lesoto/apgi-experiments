@@ -1,13 +1,15 @@
 """Main area component for the APGI Framework GUI."""
 
-import customtkinter as ctk
+import logging
 import tkinter as tk
 from pathlib import Path
-from typing import Dict, Any, Optional
-import json
-import logging
+from typing import Any, Dict, Optional
 
-from ..config import DefaultParameters, ParameterConfig
+import customtkinter as ctk
+
+from apgi_framework.security.secure_pickle import safe_pickle_load
+
+from ..config import DefaultParameters
 
 
 class MainArea(ctk.CTkFrame):
@@ -307,7 +309,7 @@ class MainArea(ctk.CTkFrame):
 
         self.logger.debug("Configuration content created successfully")
 
-    def on_tab_changed(self, selected_tab: str = None):
+    def on_tab_changed(self, selected_tab: Optional[str] = None):
         """Handle tab change events.
 
         Args:
@@ -343,7 +345,7 @@ class MainArea(ctk.CTkFrame):
 
             # Show user-friendly error notification
             try:
-                from ...framework.validation.error_dialog_manager import show_warning
+                from apgi_framework.validation.error_dialog_manager import show_warning
 
                 show_warning(
                     message=f"Failed to switch to '{current_tab}' tab. Showing configuration tab instead.",
@@ -811,7 +813,7 @@ class MainArea(ctk.CTkFrame):
         Returns:
             Dictionary containing current configuration
         """
-        data = {
+        data: Dict[str, Any] = {
             "apgi_parameters": {},
             "neural_signatures": {},
             "experimental_settings": {},
@@ -975,8 +977,10 @@ class MainArea(ctk.CTkFrame):
             return
 
         try:
-            import pandas as pd
             import json
+
+            import pandas as pd
+
             from apgi_framework.security.secure_pickle import safe_pickle_load
 
             file_path = Path(file_path)
@@ -998,7 +1002,7 @@ class MainArea(ctk.CTkFrame):
 
             self.app.update_status(f"Loaded data: {self.current_analysis_data.shape}")
             self.results_text.delete("1.0", "end")
-            self.results_text.insert("1.0", f"Data loaded successfully!\n\n")
+            self.results_text.insert("1.0", "Data loaded successfully!\n\n")
             self.results_text.insert(
                 "end", f"Shape: {self.current_analysis_data.shape}\n"
             )
@@ -1135,9 +1139,9 @@ class MainArea(ctk.CTkFrame):
             if not file_path:
                 return
 
-            file_path = Path(file_path)
+            save_path = Path(file_path)
 
-            if file_path.suffix == ".json":
+            if save_path.suffix == ".json":
                 # Export as JSON
                 import json
                 from datetime import datetime
@@ -1177,10 +1181,10 @@ class MainArea(ctk.CTkFrame):
 
                 export_data = convert_numpy(export_data)
 
-                with open(file_path, "w") as f:
+                with open(save_path, "w") as f:
                     json.dump(export_data, f, indent=2)
 
-            elif file_path.suffix == ".csv":
+            elif save_path.suffix == ".csv":
                 # Export summary as CSV
                 import pandas as pd
 
@@ -1200,9 +1204,9 @@ class MainArea(ctk.CTkFrame):
                         {"metric": key, "value": str(value), "type": "effect_size"}
                     )
 
-                pd.DataFrame(summary_data).to_csv(file_path, index=False)
+                pd.DataFrame(summary_data).to_csv(save_path, index=False)
 
-            self.app.update_status(f"Results exported to {file_path.name}")
+            self.app.update_status(f"Results exported to {save_path.name}")
 
         except Exception as e:
             self.app.update_status(f"Export failed: {e}", "error")
@@ -1227,21 +1231,20 @@ class MainArea(ctk.CTkFrame):
                 if not file_path:
                     return
 
-                import pandas as pd
                 import json
-                import pickle
 
-                file_path = Path(file_path)
+                import pandas as pd
 
-                if file_path.suffix == ".csv":
+                file_path_path = Path(file_path)
+
+                if file_path_path.suffix == ".csv":
                     self.current_viz_data = pd.read_csv(file_path)
-                elif file_path.suffix == ".json":
+                elif file_path_path.suffix == ".json":
                     with open(file_path, "r") as f:
                         data = json.load(f)
                     self.current_viz_data = pd.DataFrame(data)
-                elif file_path.suffix == ".pkl":
-                    with open(file_path, "rb") as f:
-                        self.current_viz_data = pickle.load(f)
+                elif file_path_path.suffix == ".pkl":
+                    self.current_viz_data = safe_pickle_load(file_path)
                     if not isinstance(self.current_viz_data, pd.DataFrame):
                         self.current_viz_data = pd.DataFrame(self.current_viz_data)
 
@@ -1303,13 +1306,13 @@ class MainArea(ctk.CTkFrame):
             self.app.update_status("Generating plot...")
             self.generate_plot_btn.configure(state="disabled")
 
-            import matplotlib.pyplot as plt
             import matplotlib
+            import matplotlib.pyplot as plt
 
             matplotlib.use("TkAgg")
-            from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-            import seaborn as sns
             import numpy as np
+            import seaborn as sns  # type: ignore
+            from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
             # Clear previous plot
             for widget in self.plot_canvas_frame.winfo_children():
@@ -1633,7 +1636,7 @@ PARAMETERS:
         for key, value in result.get("parameters", {}).items():
             details += f"  {key}: {value}\n"
 
-        details += f"\nDATA SUMMARY:\n"
+        details += "\nDATA SUMMARY:\n"
         details += f"Shape: {(result.get('data_summary') or {}).get('shape', 'N/A')}\n"
         # Show first 5 columns (safe slice - handles shorter arrays)
         details += (
@@ -1751,16 +1754,16 @@ PARAMETERS:
             if not file_path:
                 return
 
-            file_path = Path(file_path)
+            file_path_path = Path(file_path)
 
-            if file_path.suffix == ".json":
+            if file_path_path.suffix == ".json":
                 # Export as JSON
                 import json
 
                 with open(file_path, "w") as f:
                     json.dump(self.available_results, f, indent=2, default=str)
 
-            elif file_path.suffix == ".csv":
+            elif file_path_path.suffix == ".csv":
                 # Export summary as CSV
                 import pandas as pd
 
@@ -1781,7 +1784,7 @@ PARAMETERS:
 
                 pd.DataFrame(summary_data).to_csv(file_path, index=False)
 
-            elif file_path.suffix == ".pdf":
+            elif file_path_path.suffix == ".pdf":
                 # Create simple text report (would need reportlab for full PDF)
                 report_text = "EXPERIMENT RESULTS REPORT\n"
                 report_text += "=" * 50 + "\n\n"
@@ -1793,11 +1796,11 @@ PARAMETERS:
                     report_text += "-" * 30 + "\n"
 
                 # Save as text file with .pdf extension (simplified)
-                with open(file_path.with_suffix(".txt"), "w") as f:
+                with open(file_path_path.with_suffix(".txt"), "w") as f:
                     f.write(report_text)
-                file_path = file_path.with_suffix(".txt")
+                file_path_path = file_path_path.with_suffix(".txt")
 
-            self.app.update_status(f"Results report exported to {file_path.name}")
+            self.app.update_status(f"Results report exported to {file_path_path.name}")
 
         except Exception as e:
             self.app.update_status(f"Error exporting report: {e}", "error")

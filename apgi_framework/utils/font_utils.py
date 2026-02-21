@@ -2,7 +2,7 @@
 
 import platform
 import tkinter as tk
-from typing import Tuple, List
+from typing import List, Tuple
 
 
 def get_system_fonts() -> List[str]:

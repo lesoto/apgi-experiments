@@ -9,23 +9,15 @@ This script demonstrates how to:
 """
 
 import numpy as np
-from apgi_framework.analysis import (
-    # Bayesian modeling
-    HierarchicalBayesianModel,
-    SurpriseAccumulator,
-    IgnitionProbabilityCalculator,
-    # Parameter estimation
-    JointParameterFitter,
-    IndividualParameterEstimator,
-    # Parameter recovery
-    SyntheticDataGenerator,
-    ParameterRecoveryValidator,
-    GroundTruthParameters,
-    # Predictive validity
-    PredictiveValidityFramework,
-    EmotionalInterferenceTask,
-    ContinuousPerformanceTask,
+
+from apgi_framework.analysis import (  # Bayesian modeling; Parameter estimation; Parameter recovery; Predictive validity
     BodyVigilanceScaleAnalyzer,
+    ContinuousPerformanceTask,
+    EmotionalInterferenceTask,
+    GroundTruthParameters,
+    IgnitionProbabilityCalculator,
+    SurpriseAccumulator,
+    SyntheticDataGenerator,
 )
 
 
@@ -99,7 +91,7 @@ def example_parameter_estimation():
 
     ground_truth = GroundTruthParameters(theta0=0.5, pi_i=1.2, beta=1.1)
 
-    print(f"Ground truth parameters:")
+    print("Ground truth parameters:")
     print(f"  θ₀ = {ground_truth.theta0}")
     print(f"  Πᵢ = {ground_truth.pi_i}")
     print(f"  β = {ground_truth.beta}")
@@ -153,7 +145,7 @@ def example_parameter_recovery():
     print("=" * 70)
 
     # Initialize validator
-    validator = ParameterRecoveryValidator(random_seed=42)
+    # validator = ParameterRecoveryValidator(random_seed=42)
 
     print("Running parameter recovery validation...")
     print("(This would generate 100 synthetic datasets and fit models)")
@@ -189,7 +181,7 @@ def example_predictive_validity():
     print("=" * 70)
 
     # Initialize framework
-    framework = PredictiveValidityFramework()
+    # framework = PredictiveValidityFramework()
 
     # Test Πᵢ with emotional interference task
     print("Testing Πᵢ with emotional interference task...")

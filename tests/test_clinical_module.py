@@ -2,28 +2,20 @@
 Tests for clinical module components.
 """
 
+# Mock imports for testing
+# from unittest.mock import Mock, patch
+
 import pytest
-import numpy as np
-from unittest.mock import Mock, patch
-from datetime import datetime
 
 from apgi_framework.clinical.disorder_classification import (
+    ClassificationResult,
+    DisorderClassification,
     DisorderType,
     NeuralSignatureProfile,
-    DisorderClassification,
-    ClassificationResult,
 )
 from apgi_framework.clinical.parameter_extraction import (
-    ModalityType,
-    TaskType,
-    ClinicalParameters,
     ClinicalParameterExtractor,
-    ReliabilityMetrics,
-)
-from apgi_framework.clinical.treatment_prediction import (
-    TreatmentType,
-    TreatmentPredictor,
-    TreatmentPrediction,
+    ClinicalParameters,
 )
 
 
@@ -318,20 +310,6 @@ class TestClinicalParameterExtractor:
         """Test parameter extraction from assessment data."""
         extractor = ClinicalParameterExtractor(participant_id="test_participant")
 
-        # Mock assessment data
-        assessment_data = {
-            "threshold_detection": {
-                "visual_threshold": 0.75,
-                "auditory_threshold": 0.65,
-            },
-            "oddball": {
-                "p3b_amplitude_extero": 5.2,
-                "p3b_amplitude_intero": 3.8,
-                "reaction_time_mean": 450.0,
-            },
-            "heartbeat_detection": {"accuracy": 0.8, "confidence": 0.75},
-        }
-
         # Test parameter extraction (this would need to be implemented in the actual class)
         # For now, just test that the method exists
         assert hasattr(extractor, "create_standard_battery")
@@ -345,11 +323,14 @@ class TestTreatmentPredictor:
         """Test treatment predictor initialization."""
         # Check if TreatmentPredictor exists and can be imported
         try:
-            from apgi_framework.clinical.treatment_prediction import TreatmentPredictor
+            import apgi_framework.clinical.treatment_prediction
 
+            assert hasattr(
+                apgi_framework.clinical.treatment_prediction, "TreatmentPredictor"
+            )
             # For now, just test basic functionality
             assert True
-        except ImportError:
+        except (ImportError, AttributeError):
             # Skip test if module doesn't exist yet
             pytest.skip("TreatmentPredictor module not implemented yet")
 

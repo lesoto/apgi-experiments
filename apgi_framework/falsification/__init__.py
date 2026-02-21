@@ -6,8 +6,8 @@ This module implements the primary falsification testing framework for the APGI
 neural signature validation, and experimental control mechanisms.
 """
 
-from datetime import datetime
 import logging
+from datetime import datetime
 
 # Import from tests directory for primary falsification test
 try:
@@ -27,11 +27,13 @@ class ConsciousnessAssessment:
         forced_choice_accuracy: float = 0.5,
         confidence_rating: float = 0.5,
         response_time: float = 1.0,
+        metacognitive_sensitivity: float = 0.5,
     ):
         self.subjective_report = subjective_report
         self.forced_choice_accuracy = forced_choice_accuracy
         self.confidence_rating = confidence_rating
         self.response_time = response_time
+        self.metacognitive_sensitivity = metacognitive_sensitivity
         self.timestamp = datetime.now()
 
 
@@ -73,9 +75,9 @@ class ConsciousnessValidator:
 
 
 from .ai_acc_validation import AIACCValidator
+from .edge_case_interpreter import EdgeCaseInterpreter, EdgeCaseType, FrameworkBoundary
 from .experimental_control import ExperimentalControlValidator
 from .result_interpretation import FalsificationInterpreter, ResultLogger
-from .edge_case_interpreter import EdgeCaseInterpreter, EdgeCaseType, FrameworkBoundary
 
 
 # Additional falsification test classes
@@ -114,8 +116,9 @@ class ConsciousnessWithoutIgnitionTest:
         Returns:
             Dictionary containing test results and statistics
         """
-        import numpy as np
         from datetime import datetime
+
+        import numpy as np
 
         # Simulate trials
         consciousness_without_ignition = 0
@@ -277,8 +280,9 @@ class ThresholdInsensitivityTest:
         Returns:
             Dictionary containing test results and sensitivity analysis
         """
-        import numpy as np
         from datetime import datetime
+
+        import numpy as np
 
         # Test different threshold configurations
         threshold_configs = []
@@ -424,9 +428,10 @@ class SomaBiasTest:
         Returns:
             Dictionary containing test results and bias analysis
         """
+        from datetime import datetime
+
         import numpy as np
         from scipy import stats
-        from datetime import datetime
 
         results_by_bias = []
 
@@ -558,7 +563,6 @@ class SomaBiasTest:
 
 
 __all__ = [
-    "PrimaryFalsificationTest",  # May be None if not available
     "ConsciousnessAssessment",
     "ConsciousnessAssessmentSimulator",
     "ConsciousnessValidator",
@@ -573,3 +577,7 @@ __all__ = [
     "ThresholdInsensitivityTest",
     "SomaBiasTest",
 ]
+
+# Conditionally add PrimaryFalsificationTest if available
+if PrimaryFalsificationTest is not None:
+    __all__.append("PrimaryFalsificationTest")

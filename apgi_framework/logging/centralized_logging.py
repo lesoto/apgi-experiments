@@ -8,14 +8,14 @@ across the framework to eliminate redundancy and ensure consistency.
 import logging
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 
 class APGILogManager:
     """Centralized logging manager for APGI Framework."""
 
     _configured = False
-    _loggers = {}
+    _loggers: dict[str, logging.Logger] = {}
 
     @classmethod
     def setup_logging(
@@ -40,7 +40,7 @@ class APGILogManager:
             format_string = "%(asctime)s - %(name)s.%(funcName)s:%(lineno)d - %(levelname)s - %(message)s"
 
         # Configure root logger
-        handlers = [logging.StreamHandler(sys.stdout)]
+        handlers: List[logging.Handler] = [logging.StreamHandler(sys.stdout)]
 
         # Add file handler if specified
         if log_file:

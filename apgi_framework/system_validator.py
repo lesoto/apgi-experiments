@@ -6,26 +6,22 @@ and performance benchmarking to ensure the framework operates correctly and
 efficiently under various conditions.
 """
 
+import json
 import logging
 import time
-import traceback
-from typing import Dict, Any, List, Optional, Tuple, Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from pathlib import Path
-import json
-import numpy as np
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-from .main_controller import MainApplicationController
-from .config import ConfigManager, APGIParameters, ExperimentalConfig
+import numpy as np
+
 from .exceptions import (
-    APGIFrameworkError,
-    ValidationError,
     MathematicalError,
-    SimulationError,
+    ValidationError,
 )
+from .main_controller import MainApplicationController
 
 
 class ValidationLevel(Enum):
@@ -241,6 +237,7 @@ class SystemValidator:
 
     def _collect_system_info(self) -> None:
         """Collect system information for the report."""
+        assert self.current_report is not None
         self.current_report.system_info = {
             "controller_initialized": self.controller._initialized,
             "mathematical_engine_available": self.controller._mathematical_engine
@@ -268,6 +265,7 @@ class SystemValidator:
         suite.tests.append(self._test_sigmoid_function())
         suite.tests.append(self._test_numerical_stability())
 
+        assert self.current_report is not None
         self.current_report.suites[ValidationCategory.MATHEMATICAL_ACCURACY] = suite
 
     def _run_neural_simulation_validation(self) -> None:
@@ -284,6 +282,7 @@ class SystemValidator:
         suite.tests.append(self._test_signature_validation())
         suite.tests.append(self._test_signature_thresholds())
 
+        assert self.current_report is not None
         self.current_report.suites[ValidationCategory.NEURAL_SIMULATION] = suite
 
     def _run_falsification_logic_validation(self) -> None:
@@ -299,6 +298,7 @@ class SystemValidator:
         suite.tests.append(self._test_soma_bias_logic())
         suite.tests.append(self._test_result_interpretation())
 
+        assert self.current_report is not None
         self.current_report.suites[ValidationCategory.FALSIFICATION_LOGIC] = suite
 
     def _run_data_integrity_validation(self) -> None:
@@ -312,6 +312,7 @@ class SystemValidator:
         suite.tests.append(self._test_data_validation())
         suite.tests.append(self._test_configuration_management())
 
+        assert self.current_report is not None
         self.current_report.suites[ValidationCategory.DATA_INTEGRITY] = suite
 
     def _run_integration_validation(self) -> None:
@@ -325,6 +326,7 @@ class SystemValidator:
         suite.tests.append(self._test_component_communication())
         suite.tests.append(self._test_configuration_propagation())
 
+        assert self.current_report is not None
         self.current_report.suites[ValidationCategory.INTEGRATION] = suite
 
     def _run_error_handling_validation(self) -> None:
@@ -339,6 +341,7 @@ class SystemValidator:
         suite.tests.append(self._test_simulation_error_handling())
         suite.tests.append(self._test_graceful_degradation())
 
+        assert self.current_report is not None
         self.current_report.suites[ValidationCategory.ERROR_HANDLING] = suite
 
     def _run_performance_validation(self) -> None:
@@ -353,6 +356,7 @@ class SystemValidator:
         suite.tests.append(self._test_memory_usage())
         suite.tests.append(self._test_concurrent_execution())
 
+        assert self.current_report is not None
         self.current_report.suites[ValidationCategory.PERFORMANCE] = suite
 
     def _run_stress_tests(self) -> None:
@@ -360,6 +364,7 @@ class SystemValidator:
         self.logger.debug("Running stress tests")
 
         # Add stress test results to performance suite
+        assert self.current_report is not None
         if ValidationCategory.PERFORMANCE in self.current_report.suites:
             suite = self.current_report.suites[ValidationCategory.PERFORMANCE]
             suite.tests.append(self._test_large_dataset_handling())
@@ -1353,6 +1358,7 @@ class SystemValidator:
 
     def _calculate_overall_results(self) -> None:
         """Calculate overall validation results."""
+        assert self.current_report is not None
         total_tests = 0
         passed_tests = 0
 

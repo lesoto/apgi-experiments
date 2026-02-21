@@ -5,12 +5,13 @@ Provides comprehensive keyboard shortcut functionality for all GUI applications.
 Supports both tkinter and customtkinter applications.
 """
 
-import tkinter as tk
-from tkinter import ttk
-import customtkinter as ctk
-from typing import Dict, Callable, Any, Optional, Union
 import json
+import tkinter as tk
 from pathlib import Path
+from tkinter import ttk
+from typing import Any, Callable, Dict, Optional, Union
+
+import customtkinter as ctk
 
 
 class KeyboardManager:

@@ -5,10 +5,11 @@ This module implements the somatic marker system that modulates interoceptive
 precision based on contextual factors like emotional valence, stakes, and arousal.
 """
 
-import numpy as np
-from typing import Dict, Optional, Union
-from enum import Enum
 import warnings
+from enum import Enum
+from typing import Dict
+
+import numpy as np
 
 from ..exceptions import MathematicalError
 

@@ -5,13 +5,13 @@ Provides unified GUI for all three parameter estimation tasks (detection,
 heartbeat detection, and dual-modality oddball).
 """
 
-import tkinter as tk
-from tkinter import ttk, messagebox, scrolledtext, filedialog
-from typing import Dict, Any, Optional, Callable
-from datetime import datetime, timedelta
-from pathlib import Path
 import logging
 import threading
+import tkinter as tk
+from datetime import datetime, timedelta
+from pathlib import Path
+from tkinter import messagebox, scrolledtext, ttk
+from typing import Optional
 
 # Setup logger
 logger = logging.getLogger(__name__)
@@ -23,131 +23,170 @@ from apgi_framework.gui.progress_monitoring import RealTimeProgressMonitor
 try:
     from research.core_mechanisms.experiments.experimental.behavioral_tasks import (
         DetectionTask,
-        HeartbeatDetectionTask,
         DualModalityOddballTask,
+        HeartbeatDetectionTask,
     )
 
     logger.info("Successfully imported behavioral task classes")
 except ImportError as e:
     logger.warning(f"Failed to import behavioral tasks: {e}")
 
-    # Fallback placeholder classes
-    class DetectionTask:
-        def __init__(self, *args, **kwargs):
-            logger.warning(
-                "Using placeholder DetectionTask class - functionality limited"
-            )
-            self.task_id = kwargs.get("task_id", "placeholder")
-            self.n_trials = kwargs.get("n_trials", 0)
+    # Fallback placeholder classes only if not already imported
+    if "DetectionTask" not in globals():
 
-        def run(self):
-            logger.warning(
-                "Placeholder DetectionTask.run() called - no actual execution"
-            )
-            return False
+        class DetectionTask:  # type: ignore[no-redef]
+            def __init__(self, *args, **kwargs):
+                logger.warning(
+                    "Using placeholder DetectionTask class - functionality limited"
+                )
+                self.task_id = kwargs.get("task_id", "placeholder")
+                self.n_trials = kwargs.get("n_trials", 0)
 
-        def stop(self):
-            logger.warning(
-                "Placeholder DetectionTask.stop() called - no actual stopping"
-            )
+            def run(self):
+                logger.warning(
+                    "Placeholder DetectionTask.run() called - no actual execution"
+                )
+                return False
 
-    class HeartbeatDetectionTask:
-        def __init__(self, *args, **kwargs):
-            logger.warning(
-                "Using placeholder HeartbeatDetectionTask class - functionality limited"
-            )
-            self.task_id = kwargs.get("task_id", "placeholder")
-            self.n_trials = kwargs.get("n_trials", 0)
+            def stop(self):
+                logger.warning(
+                    "Placeholder DetectionTask.stop() called - no actual stopping"
+                )
 
-        def run(self):
-            logger.warning(
-                "Placeholder HeartbeatDetectionTask.run() called - no actual execution"
-            )
-            return False
+    if "HeartbeatDetectionTask" not in globals():
 
-        def stop(self):
-            logger.warning(
-                "Placeholder HeartbeatDetectionTask.stop() called - no actual stopping"
-            )
+        class HeartbeatDetectionTask:  # type: ignore[no-redef]
+            def __init__(self, *args, **kwargs):
+                logger.warning(
+                    "Using placeholder HeartbeatDetectionTask class - functionality limited"
+                )
+                self.task_id = kwargs.get("task_id", "placeholder")
+                self.n_trials = kwargs.get("n_trials", 0)
 
-    class DualModalityOddballTask:
-        def __init__(self, *args, **kwargs):
-            logger.warning(
-                "Using placeholder DualModalityOddballTask class - functionality limited"
-            )
-            self.task_id = kwargs.get("task_id", "placeholder")
-            self.n_trials = kwargs.get("n_trials", 0)
+            def run(self):
+                logger.warning(
+                    "Placeholder HeartbeatDetectionTask.run() called - no actual execution"
+                )
+                return False
 
-        def run(self):
-            logger.warning(
-                "Placeholder DualModalityOddballTask.run() called - no actual execution"
-            )
-            return False
+            def stop(self):
+                logger.warning(
+                    "Placeholder HeartbeatDetectionTask.stop() called - no actual stopping"
+                )
 
-        def stop(self):
-            logger.warning(
-                "Placeholder DualModalityOddballTask.stop() called - no actual stopping"
-            )
+    if "DualModalityOddballTask" not in globals():
+
+        class DualModalityOddballTask:  # type: ignore[no-redef]
+            def __init__(self, *args, **kwargs):
+                logger.warning(
+                    "Using placeholder DualModalityOddballTask class - functionality limited"
+                )
+                self.task_id = kwargs.get("task_id", "placeholder")
+                self.n_trials = kwargs.get("n_trials", 0)
+
+            def run(self):
+                logger.warning(
+                    "Placeholder DualModalityOddballTask.run() called - no actual execution"
+                )
+                return False
+
+            def stop(self):
+                logger.warning(
+                    "Placeholder DualModalityOddballTask.stop() called - no actual stopping"
+                )
+
+else:
+    # Import successful, don't define fallback classes
+    pass
 
 
 try:
     from apgi_framework.data.parameter_estimation_dao import ParameterEstimationDAO
 except ImportError:
+    if "ParameterEstimationDAO" not in globals():
 
-    class ParameterEstimationDAO:
-        def __init__(self, db_path):
-            self.db_path = db_path
+        class ParameterEstimationDAO:  # type: ignore[no-redef]
+            def __init__(self, db_path):
+                self.db_path = db_path
 
-        def list_sessions(self, limit=None):
-            """Return empty list for fallback implementation"""
-            return []
+            def list_sessions(self, limit=None):
+                """Return empty list for fallback implementation"""
+                return []
 
-        def get_session(self, session_id):
-            """Return None for fallback implementation"""
-            return None
+            def get_session(self, session_id):
+                """Return None for fallback implementation"""
+                return None
 
-        def update_session(self, session_data):
-            """No-op for fallback implementation"""
-            pass
+            def update_session(self, session_data):
+                """No-op for fallback implementation"""
+                pass
 
-        def save_session(self, session_data):
-            """No-op for fallback implementation"""
-            pass
+            def save_session(self, session_data):
+                """No-op for fallback implementation"""
+                pass
+
+else:
+    # Import successful, don't define fallback classes
+    pass
 
 
 try:
     from apgi_framework.data.parameter_estimation_models import SessionData, TaskType
 except ImportError:
+    if "SessionData" not in globals():
 
-    class SessionData:
-        def __init__(self):
-            pass
+        class SessionData:  # type: ignore[no-redef]
+            def __init__(self):
+                self.session_id = ""
+                self.participant_id = ""
+                self.start_time = datetime.now()
+                self.researcher_name = ""
+                self.task_type = ""
+                self.researcher = ""  # Add researcher attribute
 
-    class TaskType:
-        DETECTION = "detection"
-        HEARTBEAT = "heartbeat"
+    if "TaskType" not in globals():
+
+        class TaskType:  # type: ignore[no-redef]
+            DETECTION = "detection"
+            HEARTBEAT = "heartbeat"
+
+else:
+    # Import successful, don't define fallback classes
+    pass
 
 
 try:
-    from .session_management import SessionSetupManager, ParticipantManager
+    from .session_management import ParticipantManager, SessionSetupManager
 except ImportError:
+    if "SessionSetupManager" not in globals():
 
-    class SessionSetupManager:
-        def __init__(self, dao):
-            self.dao = dao
+        class SessionSetupManager:  # type: ignore[no-redef]
+            def __init__(self, dao):
+                self.dao = dao
 
-    class ParticipantManager:
-        def __init__(self, dao):
-            self.dao = dao
+    if "ParticipantManager" not in globals():
+
+        class ParticipantManager:  # type: ignore[no-redef]
+            def __init__(self, dao):
+                self.dao = dao
+
+else:
+    # Import successful, don't define fallback function
+    pass
 
 
 try:
     from .task_configuration import TaskParameterConfigurator
 except ImportError:
+    if "TaskParameterConfigurator" not in globals():
 
-    class TaskParameterConfigurator:
-        def __init__(self):
-            pass
+        class TaskParameterConfigurator:  # type: ignore[no-redef]
+            def __init__(self):
+                pass
+
+else:
+    # Import successful, don't define fallback function
+    pass
 
 
 class ParameterEstimationGUI:
@@ -196,6 +235,9 @@ class ParameterEstimationGUI:
         self.sequential_execution = False
         self.task_stop_requested = False
         self.current_session_id: Optional[str] = None
+
+        # Status variable for UI updates
+        self.status_var = tk.StringVar()
 
         # Build UI
         self._build_ui()
@@ -527,7 +569,7 @@ class ParameterEstimationGUI:
                 try:
                     session_data = self.dao.get_session(session_id)
                     if session_data:
-                        display_text = f"{session_id[:8]}... - {session_data.participant_id} - {session_data.start_time.strftime('%Y-%m-%d %H:%M')}"
+                        display_text = f"{session_id[:8]}... - {session_data.participant_id} - {session_data.start_time.strftime('%Y-%m-%d %H:%M')}"  # type: ignore
                         session_listbox.insert(tk.END, display_text)
                         session_listbox.insert(
                             tk.END, session_id
@@ -586,7 +628,7 @@ class ParameterEstimationGUI:
         try:
             # Restore basic session info
             self.participant_id_var.set(session_data.participant_id)
-            self.researcher_var.set(session_data.researcher_name)
+            self.researcher_var.set(session_data.researcher)
 
             # Restore session metadata
             self.current_session_id = session_data.session_id
@@ -598,7 +640,7 @@ class ParameterEstimationGUI:
             self._enable_task_controls()
 
             # Load task-specific data if available
-            if session_data.task_type:
+            if session_data.task_type:  # type: ignore
                 self._restore_task_data(session_data)
 
             logger.info(f"Session state restored for {session_data.session_id}")
@@ -711,6 +753,9 @@ class ParameterEstimationGUI:
     def _execute_detection_task(self) -> None:
         """Execute detection task (runs in separate thread)."""
         try:
+            if self.detection_task is None:
+                raise ValueError("Detection task not initialized")
+
             success = self.detection_task.run()
 
             if success:
@@ -724,8 +769,9 @@ class ParameterEstimationGUI:
                 self.root.after(0, lambda: self._task_failed("Detection task failed"))
 
         except Exception as e:
+            error_msg = str(e)
             self.root.after(
-                0, lambda: self._task_failed(f"Detection task error: {str(e)}")
+                0, lambda: self._task_failed(f"Detection task error: {error_msg}")
             )
             logger.error(f"Detection task error: {e}")
         finally:
@@ -771,6 +817,9 @@ class ParameterEstimationGUI:
     def _execute_heartbeat_task(self) -> None:
         """Execute heartbeat task (runs in separate thread)."""
         try:
+            if self.heartbeat_task is None:
+                raise ValueError("Heartbeat task not initialized")
+
             success = self.heartbeat_task.run()
 
             if success:
@@ -784,8 +833,9 @@ class ParameterEstimationGUI:
                 self.root.after(0, lambda: self._task_failed("Heartbeat task failed"))
 
         except Exception as e:
+            error_msg = str(e)
             self.root.after(
-                0, lambda: self._task_failed(f"Heartbeat task error: {str(e)}")
+                0, lambda: self._task_failed(f"Heartbeat task error: {error_msg}")
             )
             logger.error(f"Heartbeat task error: {e}")
         finally:
@@ -832,6 +882,9 @@ class ParameterEstimationGUI:
     def _execute_oddball_task(self) -> None:
         """Execute oddball task (runs in separate thread)."""
         try:
+            if self.oddball_task is None:
+                raise ValueError("Oddball task not initialized")
+
             success = self.oddball_task.run()
 
             if success:
@@ -843,8 +896,9 @@ class ParameterEstimationGUI:
                 self.root.after(0, lambda: self._task_failed("Oddball task failed"))
 
         except Exception as e:
+            error_msg = str(e)
             self.root.after(
-                0, lambda: self._task_failed(f"Oddball task error: {str(e)}")
+                0, lambda: self._task_failed(f"Oddball task error: {error_msg}")
             )
             logger.error(f"Oddball task error: {e}")
         finally:
@@ -942,7 +996,7 @@ class ParameterEstimationGUI:
             try:
                 logger.info(f"Starting {task_name}")
                 self.root.after(
-                    0, lambda: self.status_var.set(f"Running {task_name}...")
+                    0, lambda: self.status_var.set(f"Running {task_name}...")  # type: ignore
                 )
 
                 # Run the task
@@ -954,7 +1008,7 @@ class ParameterEstimationGUI:
 
                 logger.info(f"Completed {task_name}")
                 self.root.after(
-                    0, lambda tn=task_name: self.status_var.set(f"Completed {tn}")
+                    0, lambda tn=task_name: self.status_var.set(f"Completed {tn}")  # type: ignore
                 )
 
                 # Brief pause between tasks

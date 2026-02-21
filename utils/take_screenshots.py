@@ -12,20 +12,20 @@ Usage:
     python take_screenshots.py
 """
 
-import subprocess
-import time
-import sys
-from pathlib import Path
-from typing import List, Dict, Any, Optional
 import json
+import subprocess
+import sys
+import time
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, cast
 
 try:
-    import pyautogui
-    import pygetwindow as gw
-    from PIL import Image, ImageDraw, ImageFont
     import cv2
     import numpy as np
+    import pyautogui  # type: ignore
+    import pygetwindow as gw  # type: ignore
+    from PIL import Image, ImageDraw, ImageFont
 
     SCREENSHOT_AVAILABLE = True
     print("✅ All screenshot dependencies available")
@@ -47,10 +47,10 @@ except ImportError as e:
 
             return mock_func
 
-    pyautogui = MockModule()
-    gw = MockModule()
-    cv2 = MockModule()
-    np = MockModule()
+    pyautogui = MockModule()  # type: ignore
+    gw = MockModule()  # type: ignore
+    cv2 = MockModule()  # type: ignore
+    np = MockModule()  # type: ignore
 
     # Mock PIL classes
     class MockImage:
@@ -60,17 +60,17 @@ except ImportError as e:
         def save(self, *args, **kwargs):
             print(f"[SIMULATION] Would save image to {args[0] if args else 'unknown'}")
 
-    Image = MockModule()
-    Image.Image = MockImage
-    Image.new = MockImage
-    ImageDraw = MockModule()
-    ImageFont = MockModule()
+    Image = MockModule()  # type: ignore
+    Image.Image = MockImage  # type: ignore
+    Image.new = MockImage  # type: ignore
+    ImageDraw = MockModule()  # type: ignore
+    ImageFont = MockModule()  # type: ignore
 
 
 class APGIScreenshotDocumentation:
     """Screenshot system for Python desktop application."""
 
-    def __init__(self, base_dir: Path = None):
+    def __init__(self, base_dir: Optional[Path] = None):
         self.base_dir = base_dir or Path(__file__).parent.parent
         self.screenshots_dir = self.base_dir / "docs" / "screenshots"
         self.reports_dir = self.base_dir / "docs" / "screenshots" / "reports"
@@ -80,7 +80,7 @@ class APGIScreenshotDocumentation:
         self.reports_dir.mkdir(parents=True, exist_ok=True)
 
         # Documentation structure
-        self.doc_structure = {
+        self.doc_structure: Dict[str, Any] = {
             "timestamp": datetime.now().isoformat(),
             "screenshots": [],
             "gui_elements": [],
@@ -92,16 +92,20 @@ class APGIScreenshotDocumentation:
         self.gui_window = None
 
         # GUI element locations (will be discovered)
-        self.button_locations = {}
-        self.section_locations = {}  # APGI Framework sections instead of tabs
-        self.parameter_controls = {}  # Parameter inputs instead of sliders
-        self.menu_items = {}
-        self.dialog_locations = {}
-        self.view_toggles = {}
-        self.zoom_controls = {}
-        self.tools_actions = {}
-        self.analysis_actions = {}
-        self.help_actions = {}
+        self.button_locations: Dict[str, Dict[str, Any]] = {}
+        self.section_locations: Dict[
+            str, Dict[str, Any]
+        ] = {}  # APGI Framework sections instead of tabs
+        self.parameter_controls: Dict[
+            str, Dict[str, Any]
+        ] = {}  # Parameter inputs instead of sliders
+        self.menu_items: Dict[str, Dict[str, Any]] = {}
+        self.dialog_locations: Dict[str, Dict[str, Any]] = {}
+        self.view_toggles: Dict[str, Dict[str, Any]] = {}
+        self.zoom_controls: Dict[str, Dict[str, Any]] = {}
+        self.tools_actions: Dict[str, Dict[str, Any]] = {}
+        self.analysis_actions: Dict[str, Dict[str, Any]] = {}
+        self.help_actions: Dict[str, Dict[str, Any]] = {}
         self.speed_slider = None
         self.status_bar = None
         self.event_log = None
@@ -458,7 +462,7 @@ class APGIScreenshotDocumentation:
                 break
             else:
                 if attempt < max_attempts - 1:  # Don't wait after last attempt
-                    print(f"  ⏳ Waiting 2 seconds before retry...")
+                    print("  ⏳ Waiting 2 seconds before retry...")
                     time.sleep(2)
 
         if not self.gui_window:
@@ -502,7 +506,7 @@ class APGIScreenshotDocumentation:
 
         # Verify window is active by taking a test screenshot
         try:
-            test_screenshot = pyautogui.screenshot(
+            pyautogui.screenshot(
                 region=(
                     self.gui_window.left,
                     self.gui_window.top,
@@ -545,11 +549,6 @@ class APGIScreenshotDocumentation:
         self._discover_parameter_controls(screenshot)
         self._discover_menu_items()
 
-        total_elements = (
-            len(self.button_locations)
-            + len(self.section_locations)
-            + len(self.parameter_controls)
-        )
         print(
             f"✅ Found {len(self.button_locations)} buttons, {len(self.section_locations)} sections, {len(self.parameter_controls)} parameter controls"
         )
@@ -562,12 +561,12 @@ class APGIScreenshotDocumentation:
 
             # Method 1: Try macOS native window detection
             try:
+                from AppKit import NSWorkspace
                 from Quartz import (
                     CGWindowListCopyWindowInfo,
-                    kCGWindowListOptionOnScreenOnly,
                     kCGNullWindowID,
+                    kCGWindowListOptionOnScreenOnly,
                 )
-                from AppKit import NSWorkspace
 
                 # Get all windows
                 window_list = CGWindowListCopyWindowInfo(
@@ -615,7 +614,7 @@ class APGIScreenshotDocumentation:
                                             owner_name
                                         )
                                         return True
-                                    except:
+                                    except Exception:
                                         return False
 
                             return SimpleWindow(window_title, bounds)
@@ -655,7 +654,7 @@ class APGIScreenshotDocumentation:
                                             self.top + self.height // 2,
                                         )
                                         return True
-                                    except:
+                                    except Exception:
                                         return False
 
                             return EstimatedWindow(title)
@@ -767,7 +766,9 @@ class APGIScreenshotDocumentation:
                             # Check if this button wasn't already detected by color
                             is_duplicate = False
                             for existing in button_detections:
-                                ex, ey = existing["x"], existing["y"]
+                                existing_dict = cast(Dict[str, Any], existing)
+                                ex: int = existing_dict["x"]
+                                ey: int = existing_dict["y"]
                                 if (
                                     abs(ex - (x + w // 2)) < 20
                                     and abs(ey - (y + h // 2)) < 20
@@ -792,12 +793,13 @@ class APGIScreenshotDocumentation:
                                 )
 
             # Remove duplicates and keep best confidence for each button type
-            unique_buttons = {}
+            unique_buttons: Dict[str, Dict[str, Any]] = {}
             for detection in button_detections:
-                name = detection["name"]
+                detection_dict = cast(Dict[str, Any], detection)
+                name: str = detection_dict["name"]
                 if (
                     name not in unique_buttons
-                    or detection["confidence"] > unique_buttons[name]["confidence"]
+                    or detection_dict["confidence"] > unique_buttons[name]["confidence"]
                 ):
                     unique_buttons[name] = detection
 
@@ -819,8 +821,8 @@ class APGIScreenshotDocumentation:
     def _classify_button_by_position(self, x: int, y: int, w: int, h: int) -> str:
         """Classify button type based on its position in the window."""
         if self.gui_window:
-            rel_x = x - self.gui_window.left
-            rel_y = y - self.gui_window.top
+            rel_x = x - self.gui_window.left  # type: ignore
+            rel_y = y - self.gui_window.top  # type: ignore
 
             # Typical button layout: controls at the top or bottom
             if rel_y < 200:  # Top area
@@ -891,7 +893,7 @@ class APGIScreenshotDocumentation:
                         )
 
             # Sort by vertical position
-            section_candidates.sort(key=lambda c: c["y"])
+            section_candidates.sort(key=lambda c: c["y"])  # type: ignore
 
             # Assign section names to discovered positions
             for i, section_candidate in enumerate(
@@ -981,7 +983,10 @@ class APGIScreenshotDocumentation:
                         )
 
             # Sort by vertical position
-            parameter_candidates.sort(key=lambda c: c["y"])
+            def sort_key(c: Dict[str, Any]) -> int:
+                return cast(int, c["y"])
+
+            parameter_candidates.sort(key=sort_key)
 
             # Assign parameter names to discovered positions
             for i, param_candidate in enumerate(
@@ -1538,7 +1543,6 @@ class APGIScreenshotDocumentation:
             # Find speed slider (it's a separate slider from the parameter sliders)
             if self.gui_window:
                 # Speed slider is typically in the control panel
-                speed_y = 150  # Estimated position
                 speed_x = self.gui_window.left + 200
 
                 # Try different positions
@@ -1566,7 +1570,7 @@ class APGIScreenshotDocumentation:
                         pyautogui.click(speed_x, y)
                         time.sleep(0.5)
                         break
-                    except:
+                    except Exception:
                         continue
 
         except Exception as e:
@@ -1613,7 +1617,7 @@ class APGIScreenshotDocumentation:
             # Force window activation and verification before EVERY screenshot
             success = self._ensure_app_is_active()
             if not success:
-                print(f"    ⚠️ Could not activate app window, using full screen")
+                print("    ⚠️ Could not activate app window, using full screen")
 
             # Always try to capture the app window specifically
             if self.gui_window:
@@ -1641,7 +1645,7 @@ class APGIScreenshotDocumentation:
                             f"    📸 Captured window region: {self.gui_window.left},{self.gui_window.top} {self.gui_window.width}x{self.gui_window.height}"
                         )
                     else:
-                        print(f"    ⚠️ Invalid window coordinates, using full screen")
+                        print("    ⚠️ Invalid window coordinates, using full screen")
                         screenshot = pyautogui.screenshot()
                 except Exception as e:
                     print(f"    ⚠️ Window capture failed: {e}")
@@ -1695,7 +1699,10 @@ class APGIScreenshotDocumentation:
                 ),
             }
 
-            self.doc_structure["screenshots"].append(screenshot_info)
+            screenshots_list = cast(
+                List[Dict[str, Any]], self.doc_structure["screenshots"]
+            )
+            screenshots_list.append(screenshot_info)
             print(f"    📸 {description}")
 
             return screenshot_path
@@ -1935,11 +1942,13 @@ class APGIScreenshotDocumentation:
     def _generate_html_report(self) -> str:
         """Generate enhanced HTML documentation report with better statistics."""
         total_screenshots = len(self.doc_structure["screenshots"])
-        total_size = sum(s.get("size", 0) for s in self.doc_structure["screenshots"])
+        screenshots_list = cast(List[Dict[str, Any]], self.doc_structure["screenshots"])
+        system_info = cast(Dict[str, Any], self.doc_structure["system_info"])
+        total_size = sum(s.get("size", 0) for s in screenshots_list)
 
         # Calculate additional statistics
-        screenshots_by_type = {}
-        for screenshot in self.doc_structure["screenshots"]:
+        screenshots_by_type: Dict[str, int] = {}
+        for screenshot in screenshots_list:
             screenshot_type = screenshot.get("type", "unknown")
             screenshots_by_type[screenshot_type] = (
                 screenshots_by_type.get(screenshot_type, 0) + 1
@@ -2003,25 +2012,6 @@ class APGIScreenshotDocumentation:
                 print(f"⚠️ Error getting window info: {e}")
                 window_title = "Error retrieving title"
                 window_geometry = "Error retrieving geometry"
-
-        # Total documentation coverage
-        total_documented_screens = (
-            1  # Initial state
-            + element_stats["sections"]  # Each section
-            + element_stats["buttons"]  # Each button
-            + (
-                element_stats["parameter_controls"] * 2
-            )  # Each parameter control (min/max)
-            + len(self.menu_items)
-            + total_menu_items  # Menus and submenu items
-            + 3  # GUI states (new config, load config, save config)
-            + element_stats["dialogs"]  # Dialog windows
-            + element_stats["view_toggles"]
-            + element_stats["zoom_controls"]  # View controls
-            + 2  # Speed control (min/max)
-            + 2  # Status bar and event log
-            + 1  # Final state
-        )
 
         html = f"""
 <!DOCTYPE html>
@@ -2218,10 +2208,10 @@ class APGIScreenshotDocumentation:
                 <h2>💻 System Information</h2>
                 <div class="system-info">
                     <h3>Environment</h3>
-                    <p><strong>Platform:</strong> {self.doc_structure['system_info']['platform']} {self.doc_structure['system_info']['platform_release']}</p>
-                    <p><strong>Architecture:</strong> {self.doc_structure['system_info']['architecture']}</p>
-                    <p><strong>Python:</strong> {self.doc_structure['system_info']['python_version']}</p>
-                    <p><strong>Screen:</strong> {self.doc_structure['system_info']['screen_size']}</p>
+                    <p><strong>Platform:</strong> {system_info['platform']} {system_info['platform_release']}</p>
+                    <p><strong>Architecture:</strong> {system_info['architecture']}</p>
+                    <p><strong>Python:</strong> {system_info['python_version']}</p>
+                    <p><strong>Screen:</strong> {system_info['screen_size']}</p>
                 </div>
             </div>
 
@@ -2244,12 +2234,12 @@ class APGIScreenshotDocumentation:
 
             html += f"""
                     <div class="screenshot">
-                        <img src="../{screenshot['path']}" alt="{screenshot['description']}">
+                        <img src="../{screenshot['path'] if isinstance(screenshot, dict) else 'unknown'}" alt="{screenshot['description'] if isinstance(screenshot, dict) else 'Unknown'}">
                         <div class="screenshot-info">
-                            <h3>{screenshot['description']}</h3>
-                            <p><strong>File:</strong> {screenshot['filename']}</p>
-                            <p><strong>Size:</strong> {screenshot['size']} bytes</p>
-                            <p><strong>Captured:</strong> {screenshot['timestamp']}</p>
+                            <h3>{screenshot['description'] if isinstance(screenshot, dict) else 'Unknown'}</h3>
+                            <p><strong>File:</strong> {screenshot['filename'] if isinstance(screenshot, dict) else 'Unknown'}</p>
+                            <p><strong>Size:</strong> {screenshot['size'] if isinstance(screenshot, dict) else 'Unknown'} bytes</p>
+                            <p><strong>Captured:</strong> {screenshot['timestamp'] if isinstance(screenshot, dict) else 'Unknown'}</p>
                             <p><strong>Window:</strong> {window_title} ({window_geometry})</p>
                         </div>
                     </div>
@@ -2362,7 +2352,7 @@ class APGIScreenshotDocumentation:
             try:
                 self.gui_process.terminate()
                 self.gui_process.wait(timeout=5)
-            except:
+            except Exception:
                 self.gui_process.kill()
 
 

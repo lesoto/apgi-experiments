@@ -6,44 +6,51 @@ selection, and execution controls.
 """
 
 import sys
-from typing import Dict, List
 from pathlib import Path
+from typing import Dict, List, Optional
 
 try:
-    from PySide6.QtWidgets import (
-        QApplication,
-        QMainWindow,
-        QWidget,
-        QVBoxLayout,
-        QHBoxLayout,
-        QTreeWidget,
-        QTreeWidgetItem,
-        QPushButton,
-        QLineEdit,
-        QComboBox,
-        QCheckBox,
-        QGroupBox,
-        QSplitter,
-        QTabWidget,
-        QTextEdit,
-        QProgressBar,
-        QLabel,
-        QSpinBox,
-        QDoubleSpinBox,
-        QFrame,
-        QScrollArea,
-    )
-    from PySide6.QtCore import Qt, Signal, QTimer, QThread, pyqtSignal
-    from PySide6.QtGui import QIcon, QFont, QPixmap
+    import PySide6  # type: ignore[import]  # noqa: F401
 
     PYSIDE6_AVAILABLE = True
 except ImportError:
-    # Fallback for environments without PySide6
     PYSIDE6_AVAILABLE = False
 
-if not PYSIDE6_AVAILABLE:
-
-    class QMainWindow:  # noqa: F811
+if PYSIDE6_AVAILABLE:
+    from PySide6.QtCore import (  # type: ignore[import]
+        Qt,
+        QThread,
+        QTimer,
+        Signal,
+        pyqtSignal,
+    )
+    from PySide6.QtGui import QFont, QIcon, QPixmap  # type: ignore[import]
+    from PySide6.QtWidgets import (  # type: ignore[import]
+        QApplication,
+        QCheckBox,
+        QComboBox,
+        QDoubleSpinBox,
+        QFrame,
+        QGroupBox,
+        QHBoxLayout,
+        QLabel,
+        QLineEdit,
+        QMainWindow,
+        QProgressBar,
+        QPushButton,
+        QScrollArea,
+        QSpinBox,
+        QSplitter,
+        QTabWidget,
+        QTextEdit,
+        QTreeWidget,
+        QTreeWidgetItem,
+        QVBoxLayout,
+        QWidget,
+    )
+else:
+    # Fallback for environments without PySide6
+    class QMainWindow:  # type: ignore[no-redef]
         def __init__(self, parent=None):
             pass
 
@@ -59,14 +66,14 @@ if not PYSIDE6_AVAILABLE:
         def show(self):
             pass
 
-    class QWidget:  # noqa: F811
+    class QWidget:  # type: ignore[no-redef]
         def __init__(self, parent=None):
             pass
 
         def show(self):
             pass
 
-    class Signal:  # noqa: F811
+    class Signal:  # type: ignore[no-redef]
         def __init__(self, *args):
             self._connected_slots = []
 
@@ -79,7 +86,7 @@ if not PYSIDE6_AVAILABLE:
             for slot in self._connected_slots:
                 slot(*args)
 
-    class QTreeWidget:  # noqa: F811
+    class QTreeWidget:  # type: ignore[no-redef]
         ExtendedSelection = 3
 
         def __init__(self, parent=None):
@@ -105,7 +112,7 @@ if not PYSIDE6_AVAILABLE:
         def addChild(self, child):
             self._children.append(child)
 
-    class QTreeWidgetItemIterator:
+    class QTreeWidgetItemIterator:  # type: ignore[no-redef]
         def __init__(self, tree):
             self._tree = tree
             self._index = 0
@@ -118,7 +125,7 @@ if not PYSIDE6_AVAILABLE:
             self._index += 1
             return self
 
-    class QTreeWidgetItem:  # noqa: F811
+    class QTreeWidgetItem:  # type: ignore[no-redef]
         def __init__(self, parent=None, strings=None):
             self._parent = parent
             self._strings = strings or []
@@ -171,7 +178,7 @@ if not PYSIDE6_AVAILABLE:
         def addChild(self, child):
             self._children.append(child)
 
-    class QPushButton:  # noqa: F811
+    class QPushButton:  # type: ignore[no-redef]
         def __init__(self, text=None, parent=None):
             self.clicked = Signal()
             pass
@@ -182,7 +189,7 @@ if not PYSIDE6_AVAILABLE:
         def setEnabled(self, enabled):
             pass
 
-    class QLineEdit:  # noqa: F811
+    class QLineEdit:  # type: ignore[no-redef]
         def __init__(self, text=None, parent=None):
             self.textChanged = Signal()
             pass
@@ -193,7 +200,7 @@ if not PYSIDE6_AVAILABLE:
         def text(self):
             return ""
 
-    class QComboBox:  # noqa: F811
+    class QComboBox:  # type: ignore[no-redef]
         def __init__(self, parent=None):
             self.currentTextChanged = Signal()
             pass
@@ -216,7 +223,7 @@ if not PYSIDE6_AVAILABLE:
         def clear(self):
             pass
 
-    class QCheckBox:  # noqa: F811
+    class QCheckBox:  # type: ignore[no-redef]
         def __init__(self, text=None, parent=None):
             self.stateChanged = Signal()
             pass
@@ -230,11 +237,11 @@ if not PYSIDE6_AVAILABLE:
         def setText(self, text):
             pass
 
-    class QTextEdit:  # noqa: F811
+    class QTextEdit:  # type: ignore[no-redef]
         def __init__(self, parent=None):
             pass
 
-    class QProgressBar:  # noqa: F811
+    class QProgressBar:  # type: ignore[no-redef]
         def __init__(self, parent=None):
             pass
 
@@ -247,14 +254,14 @@ if not PYSIDE6_AVAILABLE:
         def setValue(self, value):
             pass
 
-    class QLabel:  # noqa: F811
+    class QLabel:  # type: ignore[no-redef]
         def __init__(self, text=None, parent=None):
             pass
 
         def setText(self, text):
             pass
 
-    class QSpinBox:  # noqa: F811
+    class QSpinBox:  # type: ignore[no-redef]
         def __init__(self, parent=None):
             pass
 
@@ -267,7 +274,7 @@ if not PYSIDE6_AVAILABLE:
         def value(self):
             return 0
 
-    class QDoubleSpinBox:  # noqa: F811
+    class QDoubleSpinBox:  # type: ignore[no-redef]
         def __init__(self, parent=None):
             pass
 
@@ -283,11 +290,11 @@ if not PYSIDE6_AVAILABLE:
         def value(self):
             return 0.0
 
-    class QFrame:  # noqa: F811
+    class QFrame:  # type: ignore[no-redef]
         def __init__(self, parent=None):
             pass
 
-    class QScrollArea:  # noqa: F811
+    class QScrollArea:  # type: ignore[no-redef]
         def __init__(self, parent=None):
             pass
 
@@ -300,14 +307,14 @@ if not PYSIDE6_AVAILABLE:
         def setMaximumWidth(self, width):
             pass
 
-    class QApplication:  # noqa: F811
+    class QApplication:  # type: ignore[no-redef]
         def __init__(self, *args):
             pass
 
         def exec(self):
             pass
 
-    class QVBoxLayout:  # noqa: F811
+    class QVBoxLayout:  # type: ignore[no-redef]
         def __init__(self, parent=None):
             pass
 
@@ -317,7 +324,7 @@ if not PYSIDE6_AVAILABLE:
         def addLayout(self, layout):
             pass
 
-    class QHBoxLayout:  # noqa: F811
+    class QHBoxLayout:  # type: ignore[no-redef]
         def __init__(self, parent=None):
             pass
 
@@ -330,9 +337,9 @@ if not PYSIDE6_AVAILABLE:
         def addStretch(self):
             pass
 
-    pyqtSignal = Signal  # type: ignore[no-redef]
+    pyqtSignal = Signal
 
-    class Qt:  # noqa: F811  # type: ignore[no-redef]
+    class Qt:  # type: ignore[no-redef]
         Horizontal = 1
         Vertical = 2
         ItemIsTristate = 8
@@ -342,7 +349,7 @@ if not PYSIDE6_AVAILABLE:
         PartiallyChecked = 1
         UserRole = 32
 
-    class QSplitter:  # noqa: F811  # type: ignore[no-redef]
+    class QSplitter:  # type: ignore[no-redef]
         def __init__(self, orientation=None, parent=None):
             pass
 
@@ -352,18 +359,18 @@ if not PYSIDE6_AVAILABLE:
         def setSizes(self, sizes):
             pass
 
-    class QGroupBox:  # noqa: F811  # type: ignore[no-redef]
+    class QGroupBox:  # type: ignore[no-redef]
         def __init__(self, title=None, parent=None):
             pass
 
-    class QTabWidget:  # noqa: F811  # type: ignore[no-redef]
+    class QTabWidget:  # type: ignore[no-redef]
         def __init__(self, parent=None):
             pass
 
         def addTab(self, widget, title):
             pass
 
-    class QTimer:  # noqa: F811  # type: ignore[no-redef]
+    class QTimer:  # type: ignore[no-redef]
         def __init__(self, parent=None):
             self.timeout = Signal()
             pass
@@ -377,7 +384,7 @@ if not PYSIDE6_AVAILABLE:
         def stop(self):
             pass
 
-    class QThread:  # noqa: F811  # type: ignore
+    class QThread:  # type: ignore[no-redef]
         def __init__(self, parent=None):
             pass
 
@@ -387,11 +394,11 @@ if not PYSIDE6_AVAILABLE:
         def wait(self):
             pass
 
-    class QIcon:  # noqa: F811  # type: ignore
+    class QIcon:  # type: ignore[no-redef]
         def __init__(self, filename=None):
             pass
 
-    class QFont:  # noqa: F811  # type: ignore
+    class QFont:  # type: ignore[no-redef]
         def __init__(self, family=None, pointSize=-1):
             pass
 
@@ -403,36 +410,38 @@ if not PYSIDE6_AVAILABLE:
         def setPointSize(size):
             pass
 
-    class QPixmap:  # noqa: F811  # type: ignore
+    class QPixmap:  # type: ignore[no-redef]
         def __init__(self, filename=None):
             pass
 
 
-from apgi_framework.utils.test_utils import (
-    TestDefinition,
-    TestRunCategory,
-    TestConfiguration,
-    TestResults,
+from apgi_framework.utils.framework_test_utils import (
+    FrameworkConfiguration,
+    FrameworkResults,
+    FrameworkRunCategory,
+    FrameworkTestCase,
 )
 
 
 class TestTreeWidget(QTreeWidget):
     """Custom tree widget for displaying tests with categories and modules."""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.setHeaderLabels(["Test Name", "Category", "Module", "Status", "Time"])
         self.setSelectionMode(QTreeWidget.ExtendedSelection)
         self.itemChanged.connect(self._on_item_changed)
         self._test_items: Dict[str, QTreeWidgetItem] = {}
 
-    def populate_tests(self, test_cases: List[TestDefinition]):
+    def populate_tests(self, test_cases: List[FrameworkTestCase]):
         """Populate the tree with test cases organized by category and module."""
         self.clear()
         self._test_items.clear()
 
         # Group tests by category and module
-        category_groups: Dict[TestRunCategory, Dict[str, List[TestDefinition]]] = {}
+        category_groups: Dict[
+            FrameworkRunCategory, Dict[str, List[FrameworkTestCase]]
+        ] = {}
 
         for test_case in test_cases:
             if test_case.category not in category_groups:
@@ -484,7 +493,7 @@ class TestTreeWidget(QTreeWidget):
 
         self.expandAll()
 
-    def get_selected_tests(self) -> List[TestDefinition]:
+    def get_selected_tests(self) -> List[FrameworkTestCase]:
         """Get all checked test cases."""
         selected_tests = []
 
@@ -550,7 +559,7 @@ class TestFilterWidget(QWidget):
 
     filter_changed = Signal()
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self._setup_ui()
 
@@ -574,7 +583,7 @@ class TestFilterWidget(QWidget):
         category_layout = QVBoxLayout(category_group)
 
         self.category_checkboxes = {}
-        for category in TestRunCategory:
+        for category in FrameworkRunCategory:
             checkbox = QCheckBox(category.value.title())
             checkbox.setChecked(True)
             checkbox.stateChanged.connect(self.filter_changed.emit)
@@ -646,10 +655,10 @@ class TestFilterWidget(QWidget):
         }
 
 
-class TestConfigurationWidget(QWidget):
+class FrameworkConfigurationWidget(QWidget):
     """Widget for configuring test execution parameters."""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self._setup_ui()
 
@@ -732,9 +741,9 @@ class TestConfigurationWidget(QWidget):
 
         layout.addWidget(property_group)
 
-    def get_configuration(self) -> TestConfiguration:
+    def get_configuration(self) -> FrameworkConfiguration:
         """Get the current test configuration."""
-        return TestConfiguration(
+        return FrameworkConfiguration(
             parallel=self.parallel_checkbox.isChecked(),
             max_workers=self.max_workers_spin.value(),
             timeout=self.timeout_spin.value(),
@@ -742,7 +751,7 @@ class TestConfigurationWidget(QWidget):
             coverage=self.collect_coverage_checkbox.isChecked(),
         )
 
-    def set_configuration(self, config: TestConfiguration):
+    def set_configuration(self, config: FrameworkConfiguration):
         """Set the configuration values."""
         self.parallel_checkbox.setChecked(config.parallel)
         self.max_workers_spin.setValue(config.max_workers)
@@ -755,13 +764,15 @@ class MainTestWindow(QMainWindow):
     """Main window for the test runner GUI."""
 
     # Signals
-    test_execution_requested = Signal(list, TestConfiguration)  # selected_tests, config
+    test_execution_requested = Signal(
+        list, FrameworkConfiguration
+    )  # selected_tests, config
     test_execution_cancelled = Signal()
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
-        self._test_cases: List[TestDefinition] = []
-        self._filtered_tests: List[TestDefinition] = []
+        self._test_cases: List[FrameworkTestCase] = []
+        self._filtered_tests: List[FrameworkTestCase] = []
         self._setup_ui()
         self._setup_connections()
 
@@ -840,7 +851,7 @@ class MainTestWindow(QMainWindow):
 
         # Configuration widget
         config_scroll = QScrollArea()
-        self.config_widget = TestConfigurationWidget()
+        self.config_widget = FrameworkConfigurationWidget()
         config_scroll.setWidget(self.config_widget)
         config_scroll.setWidgetResizable(True)
 
@@ -904,7 +915,7 @@ class MainTestWindow(QMainWindow):
         # Test tree changes
         self.test_tree.itemChanged.connect(self._update_test_count)
 
-    def load_test_cases(self, test_cases: List[TestDefinition]):
+    def load_test_cases(self, test_cases: List[FrameworkTestCase]):
         """Load test cases into the tree."""
         self._test_cases = test_cases
         self._filtered_tests = test_cases.copy()
@@ -1045,7 +1056,7 @@ class MainTestWindow(QMainWindow):
         """Update a test result in the tree."""
         self.test_tree.update_test_status(test_name, status, execution_time)
 
-    def execution_completed(self, results: TestResults):
+    def execution_completed(self, results: FrameworkResults):
         """Handle execution completion."""
         self._stop_execution()
 
@@ -1066,33 +1077,33 @@ def main():
 
     # Create sample test cases
     sample_tests = [
-        TestDefinition(
+        FrameworkTestCase(
             name="test_core_analysis",
             file_path=Path("tests/test_core_analysis.py"),
             module="core.analysis",
             class_name=None,
             method_name="test_core_analysis",
-            category=TestRunCategory.UNIT,
+            category=FrameworkRunCategory.UNIT,
             line_number=10,
             docstring="Test core analysis functionality",
         ),
-        TestDefinition(
+        FrameworkTestCase(
             name="test_clinical_integration",
             file_path=Path("tests/test_clinical.py"),
             module="clinical",
             class_name=None,
             method_name="test_clinical_integration",
-            category=TestRunCategory.INTEGRATION,
+            category=FrameworkRunCategory.INTEGRATION,
             line_number=20,
             docstring="Test clinical integration",
         ),
-        TestDefinition(
+        FrameworkTestCase(
             name="test_neural_processing",
             file_path=Path("tests/test_neural.py"),
             module="neural",
             class_name=None,
             method_name="test_neural_processing",
-            category=TestRunCategory.MODULE_SPECIFIC,
+            category=FrameworkRunCategory.MODULE_SPECIFIC,
             line_number=30,
             docstring="Test neural processing",
         ),

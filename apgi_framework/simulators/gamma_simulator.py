@@ -6,10 +6,11 @@ synchrony patterns with phase-locking values (PLV) for testing consciousness-rel
 neural connectivity patterns.
 """
 
-import numpy as np
-from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass
 from enum import Enum
+from typing import Dict, List, Optional, Tuple
+
+import numpy as np
 
 
 class BrainRegion(Enum):
@@ -270,7 +271,7 @@ class GammaSimulator:
         self, plv_values: Dict[str, float]
     ) -> Dict[str, List[str]]:
         """Build connectivity map from PLV values."""
-        connectivity = {}
+        connectivity: Dict[str, List[str]] = {}
 
         for connection, plv in plv_values.items():
             if plv > 0.1:  # Only include meaningful connections
@@ -361,7 +362,7 @@ class GammaSimulator:
         if not frontoparietal_plvs:
             return 0.0
 
-        return np.mean(frontoparietal_plvs)
+        return float(np.mean(frontoparietal_plvs))
 
     def simulate_gamma_synchrony(
         self, plv_range: Tuple[float, float], duration_range: Tuple[float, float]

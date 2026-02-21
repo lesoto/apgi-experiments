@@ -8,11 +8,12 @@ trial results, parameter estimates, and quality metrics for the three core tasks
 - Dual-modality oddball task (β estimation)
 """
 
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Any, Optional, Union, Tuple
 from enum import Enum
-import uuid
+from typing import Any, Dict, List, Optional, Tuple
+
 import numpy as np
 
 
@@ -420,8 +421,12 @@ class SessionData:
     notes: str = ""
 
     def get_all_trials(self) -> List[TrialData]:
-        """Get all trials from the session."""
-        return self.detection_trials + self.heartbeat_trials + self.oddball_trials
+        """Get all trials from session."""
+        all_trials: List[TrialData] = []
+        all_trials.extend(self.detection_trials)  # type: ignore
+        all_trials.extend(self.heartbeat_trials)  # type: ignore
+        all_trials.extend(self.oddball_trials)  # type: ignore
+        return all_trials
 
     def get_trial_count_by_task(self) -> Dict[str, int]:
         """Get trial counts by task type."""

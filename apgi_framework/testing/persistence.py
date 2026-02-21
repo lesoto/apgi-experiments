@@ -9,15 +9,13 @@ This module provides comprehensive test result storage, retrieval, and analysis 
 - Result aggregation and reporting
 """
 
-import sqlite3
 import json
-import os
-from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, asdict
-from datetime import datetime, timedelta
-import logging
+import sqlite3
 from contextlib import contextmanager
+from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 from ..config import ConfigManager
 from ..logging.standardized_logging import get_logger
@@ -76,9 +74,9 @@ class TestResultPersistence:
 
         if db_path is None:
             db_path = self.config_manager.get_experimental_config().output_directory
-            db_path = Path(db_path) / "test_results.db"
+            db_path = str(Path(db_path) / "test_results.db")
 
-        self.db_path = Path(db_path)
+        self.db_path: Path = Path(db_path) if db_path else Path("test_results.db")
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Initialize database
@@ -384,7 +382,7 @@ class TestResultPersistence:
                     days
                 )
 
-                params = []
+                params: List[Any] = []
                 if test_name:
                     query += " AND test_name = ?"
                     params.append(test_name)
@@ -409,7 +407,7 @@ class TestResultPersistence:
         try:
             with self.get_connection() as conn:
                 query = "SELECT * FROM test_performance"
-                params = []
+                params: List[Any] = []
 
                 if test_name or test_file:
                     conditions = []

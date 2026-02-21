@@ -6,12 +6,10 @@ provides improvement suggestions, and gives resource requirement feedback.
 """
 
 import ast
-import inspect
-from typing import Dict, List, Optional, Any, Set, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-import re
+from typing import Any, Dict, List, Optional
 
 from ..logging.standardized_logging import get_logger
 
@@ -101,15 +99,15 @@ class TestCodeAnalyzer(ast.NodeVisitor):
         self.source_code = source_code
         self.filename = filename
         self.source_lines = source_code.splitlines()
-        self.anti_patterns = []
+        self.anti_patterns: List[AntiPattern] = []
 
         # Analysis state
-        self.current_function = None
-        self.current_class = None
+        self.current_function: Optional[str] = None
+        self.current_class: Optional[str] = None
         self.assertion_count = 0
         self.function_complexity = 0
-        self.imports = set()
-        self.global_variables = set()
+        self.imports: set[str] = set()
+        self.global_variables: set[str] = set()
 
     def visit_Import(self, node: ast.Import):
         """Visit import statements."""
@@ -329,7 +327,6 @@ class TestCodeAnalyzer(ast.NodeVisitor):
             req.network_required = True
 
         # Check for file operations
-        file_indicators = ["open", "file", "Path", "os.path"]
         for child in ast.walk(node):
             if isinstance(child, ast.Call) and hasattr(child.func, "id"):
                 if child.func.id in ["open"]:
@@ -357,7 +354,10 @@ class TestCodeAnalyzer(ast.NodeVisitor):
         resource_impact: Optional[ResourceRequirement] = None,
     ):
         """Add an anti-pattern to the results."""
-        location = f"{self.filename}:{node.lineno}:{node.col_offset}"
+        if hasattr(node, "lineno") and hasattr(node, "col_offset"):
+            location = f"{self.filename}:{node.lineno}:{node.col_offset}"
+        else:
+            location = f"{self.filename}:unknown"
 
         # Extract code snippet
         if hasattr(node, "lineno") and node.lineno <= len(self.source_lines):
@@ -619,13 +619,13 @@ class AntiPatternDetector:
             }
 
         # Count by severity
-        by_severity = {}
+        by_severity: Dict[str, int] = {}
         for pattern in anti_patterns:
             severity = pattern.severity.value
             by_severity[severity] = by_severity.get(severity, 0) + 1
 
         # Count by type
-        by_type = {}
+        by_type: Dict[str, int] = {}
         for pattern in anti_patterns:
             pattern_type = pattern.pattern_type.value
             by_type[pattern_type] = by_type.get(pattern_type, 0) + 1
@@ -646,29 +646,29 @@ class AntiPatternDetector:
         recommendations = []
 
         # Count pattern types
-        type_counts = {}
+        type_counts: Dict[str, int] = {}
         for pattern in anti_patterns:
-            type_counts[pattern.pattern_type] = (
-                type_counts.get(pattern.pattern_type, 0) + 1
+            type_counts[pattern.pattern_type.value] = (
+                type_counts.get(pattern.pattern_type.value, 0) + 1
             )
 
         # Generate recommendations based on common issues
-        if type_counts.get(AntiPatternType.NO_ASSERTIONS, 0) > 3:
+        if type_counts.get(AntiPatternType.NO_ASSERTIONS.value, 0) > 3:
             recommendations.append(
                 "Consider implementing a test coverage tool to ensure all tests have assertions"
             )
 
-        if type_counts.get(AntiPatternType.SLEEP_IN_TESTS, 0) > 1:
+        if type_counts.get(AntiPatternType.SLEEP_IN_TESTS.value, 0) > 1:
             recommendations.append(
                 "Replace sleep calls with proper synchronization mechanisms"
             )
 
-        if type_counts.get(AntiPatternType.OVERLY_COMPLEX, 0) > 2:
+        if type_counts.get(AntiPatternType.OVERLY_COMPLEX.value, 0) > 2:
             recommendations.append(
                 "Break down complex tests into smaller, focused test functions"
             )
 
-        if type_counts.get(AntiPatternType.SHARED_STATE, 0) > 1:
+        if type_counts.get(AntiPatternType.SHARED_STATE.value, 0) > 1:
             recommendations.append(
                 "Implement proper test isolation using fixtures and setup/teardown methods"
             )

@@ -1,13 +1,12 @@
 """Main application module for APGI Framework GUI."""
 
-import os
 import json
 import logging
 import tkinter as tk
-from tkinter import TclError, filedialog
-from pathlib import Path
-from typing import Dict, Any, Optional, List
 from collections import deque
+from pathlib import Path
+from tkinter import TclError
+from typing import List, Optional
 
 # Import customtkinter for theme support (optional)
 try:
@@ -18,15 +17,14 @@ except ImportError:
     CUSTOMTKINTER_AVAILABLE = False
     ctk = None
     print("Warning: CustomTkinter not available. Using basic tkinter fallback.")
-from datetime import datetime
 
 # Import custom components - handle both relative and absolute imports
 try:
-    from .components.sidebar import Sidebar
     from .components.main_area import MainArea
+    from .components.sidebar import Sidebar
     from .components.status_bar import StatusBar
-    from .utils.logger import setup_logging
     from .utils.config import AppConfig
+    from .utils.logger import setup_logging
 except ImportError:
     # Fallback to absolute imports when run directly
     import sys
@@ -35,11 +33,11 @@ except ImportError:
     project_root = Path(__file__).parent.parent
     sys.path.insert(0, str(project_root))
 
-    from apgi_gui.components.sidebar import Sidebar
     from apgi_gui.components.main_area import MainArea
+    from apgi_gui.components.sidebar import Sidebar
     from apgi_gui.components.status_bar import StatusBar
-    from apgi_gui.utils.logger import setup_logging
     from apgi_gui.utils.config import AppConfig
+    from apgi_gui.utils.logger import setup_logging
 
 
 class APGIFrameworkApp(ctk.CTk if CUSTOMTKINTER_AVAILABLE else tk.Tk):
@@ -92,9 +90,6 @@ class APGIFrameworkApp(ctk.CTk if CUSTOMTKINTER_AVAILABLE else tk.Tk):
 
         self.geometry(f"{window_width}x{window_height}+{x}+{y}")
         self.minsize(min(window_width, 1200), min(window_height, 800))
-
-        # Initialize configuration
-        self.config = AppConfig()
 
         # Set appearance
         ctk.set_appearance_mode(self.config.theme)
@@ -352,29 +347,13 @@ class APGIFrameworkApp(ctk.CTk if CUSTOMTKINTER_AVAILABLE else tk.Tk):
         except Exception as e:
             self.update_status(f"Error saving file: {e}", "error")
 
-    def save_file_as(self) -> None:
-        """Save the current file with a new name."""
-        file_path = tk.filedialog.asksaveasfilename(
-            title="Save APGI Configuration",
-            defaultextension=".json",
-            filetypes=[("JSON Files", "*.json"), ("All Files", "*.*")],
-            initialdir=self.config.data_dir,
-        )
-
-        if not file_path:
-            return
-
-        file_path = Path(file_path)
-        self._save_to_file(file_path)
-        self.current_file = file_path
-
     def _get_object_size(self, obj) -> int:
         """Get approximate memory size of an object."""
         try:
             import sys
 
             return sys.getsizeof(obj)
-        except:
+        except Exception:
             return 1024  # Fallback estimate
 
     def _add_to_undo_stack(self, data):
@@ -508,8 +487,8 @@ class APGIFrameworkApp(ctk.CTk if CUSTOMTKINTER_AVAILABLE else tk.Tk):
                 try:
                     # Force widget to redraw with new theme
                     widget.update()
-                except:
-                    pass  # Some widgets might not support certain operations
+                except Exception as e:
+                    self.logger.debug(f"Error updating widget theme: {e}")
 
             # Recursively update all child widgets
             for child in widget.winfo_children():
@@ -528,10 +507,10 @@ class APGIFrameworkApp(ctk.CTk if CUSTOMTKINTER_AVAILABLE else tk.Tk):
                     # Remove widgets that no longer exist
                     self._tracked_widgets.discard(widget)
                     self._text_widgets.discard(widget)
-            except:
-                # Remove widgets that cause errors
-                self._tracked_widgets.discard(widget)
+            except Exception:
+                # Remove problematic widgets
                 self._text_widgets.discard(widget)
+                self._tracked_widgets.discard(widget)
 
     def _force_theme_refresh(self) -> None:
         """Force a complete theme refresh after a delay."""
@@ -916,6 +895,60 @@ For more information, visit the project documentation."""
 
             # Fallback to old log viewer if paginated viewer fails
             self._show_fallback_log_viewer()
+
+    def _show_fallback_log_viewer(self) -> None:
+        """Show a basic fallback log viewer with text widget."""
+        try:
+            # Create fallback log viewer window
+            log_window = ctk.CTkToplevel(self)
+            log_window.title("Application Log (Fallback)")
+            log_window.geometry("800x600")
+            log_window.transient(self)
+            log_window.grab_set()
+
+            # Configure grid
+            log_window.grid_columnconfigure(0, weight=1)
+            log_window.grid_rowconfigure(0, weight=1)
+
+            # Create text widget for log display
+            log_text = ctk.CTkTextbox(log_window, wrap="none")
+            log_text.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+
+            # Create button frame
+            button_frame = ctk.CTkFrame(log_window)
+            button_frame.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
+            button_frame.grid_columnconfigure((0, 1, 2), weight=1)
+
+            # Refresh button
+            refresh_btn = ctk.CTkButton(
+                button_frame,
+                text="Refresh",
+                command=lambda: self._refresh_log(log_text, "ALL"),
+            )
+            refresh_btn.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
+
+            # Export button
+            export_btn = ctk.CTkButton(
+                button_frame,
+                text="Export",
+                command=lambda: self._export_log(log_text),
+            )
+            export_btn.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+
+            # Close button
+            close_btn = ctk.CTkButton(
+                button_frame, text="Close", command=log_window.destroy
+            )
+            close_btn.grid(row=0, column=2, padx=5, pady=5, sticky="ew")
+
+            # Load initial log content
+            self._refresh_log(log_text, "ALL")
+
+            self.update_status("Fallback log viewer opened")
+
+        except Exception as e:
+            self.logger.error(f"Error opening fallback log viewer: {e}")
+            self.update_status("Error opening fallback log viewer", "error")
 
     def _refresh_log(self, log_text, level_filter: str, search_term: str = "") -> None:
         """Refresh log content with filtering and search."""

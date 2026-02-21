@@ -11,11 +11,12 @@ def test_imports():
     """Test all required imports."""
     print("Testing imports...")
     try:
+        import tkinter  # noqa: F401
+
+        import matplotlib  # noqa: F401
         import numpy  # noqa: F401
         import scipy  # noqa: F401 # type: ignore
-        import matplotlib  # noqa: F401
         import yaml  # noqa: F401
-        import tkinter  # noqa: F401
 
         print("✓ All core dependencies imported successfully")
         return True
@@ -28,8 +29,8 @@ def test_apgi_system():
     """Test APGI system initialization."""
     print("\nTesting APGI System...")
     try:
-        from apgi_system.system import APGISystem  # type: ignore
         from apgi_system.platform_utils import get_resource_path  # type: ignore
+        from apgi_system.system import APGISystem  # type: ignore
 
         APGISystem(config_path=str(get_resource_path("config/default.yaml")))
         print("✓ APGI System initialized successfully")
@@ -45,8 +46,8 @@ def test_system_step():
     print("\nTesting system step...")
     try:
         import numpy as np
-        from apgi_system.system import APGISystem  # type: ignore
         from apgi_system.platform_utils import get_resource_path  # type: ignore
+        from apgi_system.system import APGISystem  # type: ignore
 
         system = APGISystem(config_path=str(get_resource_path("config/default.yaml")))
         extero_input = np.random.randn(256)
@@ -88,6 +89,7 @@ def test_gui_imports():
     try:
         import tkinter as tk  # noqa: F401
         from tkinter import ttk  # noqa: F401
+
         from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg  # noqa: F401
         from matplotlib.figure import Figure  # noqa: F401
 
@@ -102,8 +104,9 @@ def test_config_file():
     """Test configuration file."""
     print("\nTesting configuration file...")
     try:
-        import yaml  # noqa: F401
         from pathlib import Path  # noqa: F401
+
+        import yaml  # noqa: F401
         from apgi_system.platform_utils import get_resource_path
 
         config_path = get_resource_path("config/default.yaml")
@@ -143,8 +146,8 @@ def test_experimental_tasks():
     try:
         from apgi_system.experiments.tasks import (  # noqa: F401 # type: ignore
             AttentionalBlinkTask,
-            ChangeBlindnessTask,
             BinocularRivalryTask,
+            ChangeBlindnessTask,
             IowaGamblingTask,
             MaskingParadigmTask,
         )
@@ -162,6 +165,7 @@ def test_gui_launch():
     print("\nTesting GUI launch...")
     try:
         import tkinter as tk
+
         from apgi_gui import APGIGui
 
         # Create root window

@@ -32,49 +32,49 @@ This directory contains comprehensive documentation for using, understanding, an
 
 ### User Guides
 
-| Document                    | Description                              | When to Use                         |
-|----------------------------|------------------------------------------|-------------------------------------|
-| [Quick Start Guide](QUICK_START_GUIDE.md) | 5-minute introduction                   | First time using the system          |
-| [User Guide](USER_GUIDE.md)              | Complete user manual                     | Comprehensive reference              |
-| [GUI Visual Guide](GUI_VISUAL_GUIDE.md) | Visual GUI walkthrough                   | Learning the GUI interface           |
-| [CLI Reference](CLI_REFERENCE.md)         | Command-line documentation              | Using CLI or automation              |
+| Document | Description | When to Use |
+| ---------- | ------------- | ------------- |
+| [Quick Start Guide](QUICK_START_GUIDE.md) | 5-minute introduction | First time using the system |
+| [User Guide](USER_GUIDE.md) | Complete user manual | Comprehensive reference |
+| [GUI Visual Guide](GUI_VISUAL_GUIDE.md) | Visual GUI walkthrough | Learning the GUI interface |
+| [CLI Reference](CLI_REFERENCE.md) | Command-line documentation | Using CLI or automation |
 
 ### Understanding Results
 
-| Document                              | Description                              | When to Use                         |
-|---------------------------------------|------------------------------------------|-------------------------------------|
-| [Results Interpretation Guide](RESULTS_INTERPRETATION_GUIDE.md) | How to interpret test results           | After running tests                  |
-| [Troubleshooting](TROUBLESHOOTING.md) | Common issues and solutions             | When encountering problems           |
+| Document | Description | When to Use |
+| ---------- | ------------- | ------------- |
+| [Results Interpretation Guide](RESULTS_INTERPRETATION_GUIDE.md) | How to interpret test results | After running tests |
+| [Troubleshooting](TROUBLESHOOTING.md) | Common issues and solutions | When encountering problems |
 
 ### Technical Documentation
 
-| Document                              | Description                              | When to Use                         |
-|---------------------------------------|------------------------------------------|-------------------------------------|
-| [Error Handling Quick Reference](ERROR_HANDLING_QUICK_REFERENCE.md) | Error handling patterns                  | Development and debugging            |
-| [Validation Quick Reference](../VALIDATION_QUICK_REFERENCE.md) | Parameter validation                    | Development and debugging            |
-| [Parameter Validation Guide](parameter_validation_guide.md) | Detailed validation docs                | Development                           |
+| Document | Description | When to Use |
+| ---------- | ------------- | ------------- |
+| [Error Handling Quick Reference](ERROR_HANDLING_QUICK_REFERENCE.md) | Error handling patterns | Development and debugging |
+| [Validation Quick Reference](../VALIDATION_QUICK_REFERENCE.md) | Parameter validation | Development and debugging |
+| [Parameter Validation Guide](parameter_validation_guide.md) | Detailed validation docs | Development |
 
 ### Theoretical Background
 
-| Document                              | Description                              | When to Use                             |
-|---------------------------------------|------------------------------------------|----------------------------------------|
-| [APGI Falsification](../APGI-Falsification.md) | Falsification theory                    | Understanding the science              |
-| [APGI Ignition Equation](../APGI-Ignition-Equation.md) | Mathematical framework                  | Understanding the math                 |
-| [APGI Testable Predictions](../APGI-Testable-Predictions.md) | Framework predictions                   | Understanding predictions               |
+| Document | Description | When to Use |
+| ---------- | ------------- | ------------- |
+| [APGI Falsification](../APGI-Falsification.md) | Falsification theory | Understanding the science |
+| [APGI Ignition Equation](../APGI-Ignition-Equation.md) | Mathematical framework | Understanding the math |
+| [APGI Testable Predictions](../APGI-Testable-Predictions.md) | Framework predictions | Understanding predictions |
 
 ### Implementation Documentation
 
-| Document                              | Description                              | When to Use                             |
-|---------------------------------------|------------------------------------------|----------------------------------------|
-| [Task 3.1 Implementation Summary](TASK_3.1_IMPLEMENTATION_SUMMARY.md) | Parameter validation implementation      | Development reference                  |
-| [Task 3.2 Error Handling Summary](TASK_3.2_ERROR_HANDLING_SUMMARY.md) | Error handling implementation            | Development reference                  |
-| [Validation and Error Handling Summary](../VALIDATION_AND_ERROR_HANDLING_SUMMARY.md) | Complete implementation summary         | Development reference                  |
+| Document | Description | When to Use |
+| ---------- | ------------- | ------------- |
+| [Task 3.1 Implementation Summary](TASK_3.1_IMPLEMENTATION_SUMMARY.md) | Parameter validation implementation | Development reference |
+| [Task 3.2 Error Handling Summary](TASK_3.2_ERROR_HANDLING_SUMMARY.md) | Error handling implementation | Development reference |
+| [Validation and Error Handling Summary](../VALIDATION_AND_ERROR_HANDLING_SUMMARY.md) | Complete implementation summary | Development reference |
 
 ### Index and Navigation
 
-| Document                              | Description                              | When to Use                             |
-|---------------------------------------|------------------------------------------|----------------------------------------|
-| [Documentation Index](DOCUMENTATION_INDEX.md) | Complete documentation index            | Finding specific information           |
+| Document | Description | When to Use |
+| ---------- | ------------- | ------------- |
+| [Documentation Index](DOCUMENTATION_INDEX.md) | Complete documentation index | Finding specific information |
 
 ## 🎯 Documentation by Task
 
@@ -213,22 +213,22 @@ python launch_gui.py
 
 ### Parameter Ranges
 
-| Parameter         | Range     | Default |
-|-------------------|:---------:|:-------:|
-| extero_precision  | 0.1-10.0  | 2.0     |
-| intero_precision  | 0.1-10.0  | 1.5     |
-| threshold         | 0.5-10.0  | 3.5     |
-| steepness         | 0.1-5.0   | 2.0     |
-| somatic_gain      | 0.1-5.0   | 1.3     |
+| Parameter | Range | Default |
+| ----------- | ------- | --------- |
+| extero_precision | 0.1-10.0 | 2.0 |
+| intero_precision | 0.1-10.0 | 1.5 |
+| threshold | 0.5-10.0 | 3.5 |
+| steepness | 0.1-5.0 | 2.0 |
+| somatic_gain | 0.1-5.0 | 1.3 |
 
 ### Statistical Thresholds
 
-| Metric       | Threshold | Interpretation    |
-|--------------|:---------:|-------------------|
-| Confidence   | ≥ 0.8     | High confidence    |
-| P-value      | < 0.05    | Significant        |
-| Effect Size  | ≥ 0.5     | Medium effect      |
-| Power        | ≥ 0.8     | Well-powered       |
+| Metric | Threshold | Interpretation |
+| -------- | ----------- | ---------------- |
+| Confidence | ≥ 0.8 | High confidence |
+| P-value | < 0.05 | Significant |
+| Effect Size | ≥ 0.5 | Medium effect |
+| Power | ≥ 0.8 | Well-powered |
 
 ## 📝 Documentation Standards
 

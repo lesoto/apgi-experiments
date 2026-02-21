@@ -6,27 +6,34 @@ Provides tabbed interface for different falsification tests, parameter configura
 progress tracking, and results visualization.
 """
 
-import customtkinter as ctk
-import tkinter as tk
-from tkinter import messagebox, filedialog
-import threading
-import queue
 import json
 import logging
+import queue
 import sys
-import os
-from pathlib import Path
-from typing import Dict, Any, Optional, List
+import threading
+import tkinter as tk
 from datetime import datetime
+from pathlib import Path
+from tkinter import filedialog, messagebox
+from typing import Any, Dict, Optional, Optional
+
+import customtkinter as ctk
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigureCanvasTk
 import numpy as np
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigureCanvasTk
 
 # Add project root to Python path for imports
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 # Import APGI Framework components with fallback handling
+logger: Any = None
+MainApplicationController: Any = None
+ConfigManager: Any = None
+APGIParameters: Any = None
+ExperimentalConfig: Any = None
+APGIFrameworkError: Any = None
+
 try:
     from apgi_framework.logging.standardized_logging import get_logger
 
@@ -36,31 +43,37 @@ except ImportError:
     logger = logging.getLogger("apgi_falsification_gui")
 
 try:
-    from apgi_framework.main_controller import MainApplicationController
-    from apgi_framework.config import ConfigManager, APGIParameters, ExperimentalConfig
+    from apgi_framework.config import APGIParameters, ConfigManager, ExperimentalConfig
     from apgi_framework.exceptions import APGIFrameworkError
+    from apgi_framework.main_controller import MainApplicationController
 except ImportError as e:
     logger.warning(f"Some APGI Framework components not available: {e}")
 
     # Create fallback classes for GUI functionality
-    class MainApplicationController:
+    class FallbackMainApplicationController:
         def __init__(self):
             pass
 
-    class ConfigManager:
+    class FallbackConfigManager:
         def __init__(self):
             pass
 
-    class APGIParameters:
+    class FallbackAPGIParameters:
         def __init__(self):
             pass
 
-    class ExperimentalConfig:
+    class FallbackExperimentalConfig:
         def __init__(self):
             pass
 
-    class APGIFrameworkError(Exception):
+    class FallbackAPGIFrameworkError(Exception):
         pass
+
+    MainApplicationController = FallbackMainApplicationController
+    ConfigManager = FallbackConfigManager
+    APGIParameters = FallbackAPGIParameters
+    ExperimentalConfig = FallbackExperimentalConfig
+    APGIFrameworkError = FallbackAPGIFrameworkError
 
 
 class LogHandler(logging.Handler):
@@ -81,12 +94,15 @@ class ParameterConfigPanel(ctk.CTkFrame):
     def __init__(self, parent, config_manager: ConfigManager):
         super().__init__(parent)
         self.config_manager = config_manager
-        self.param_vars = {}
-        self.exp_vars = {}
-        self.param_entries = {}  # Store entry widgets for validation feedback
-        self.exp_entries = {}
+        self.param_vars: Dict[str, tk.Variable] = {}
+        self.exp_vars: Dict[str, tk.Variable] = {}
+        self.param_entries: Dict[
+            str, tk.Entry
+        ] = {}  # Store entry widgets for validation feedback
+        self.exp_entries: Dict[str, tk.Entry] = {}
 
         # Import validator with error handling
+        self.validator: Optional[Any] = None
         try:
             from apgi_framework.validation import get_validator
 
@@ -334,7 +350,7 @@ class ParameterConfigPanel(ctk.CTkFrame):
         def on_enter(event):
             tooltip = tk.Toplevel()
             tooltip.wm_overrideredirect(True)
-            tooltip.wm_geometry(f"+{event.x_root+10}+{event.y_root+10}")
+            tooltip.wm_geometry(f"+{event.x_root + 10}+{event.y_root + 10}")
 
             label = tk.Label(
                 tooltip,
@@ -650,7 +666,7 @@ class ParameterConfigPanel(ctk.CTkFrame):
 
             success_msg = "Configuration updated successfully!"
             if result.suggestions:
-                success_msg += f"\n\nSuggestions:\n" + "\n".join(
+                success_msg += "\n\nSuggestions:\n" + "\n".join(
                     f"• {s}" for s in result.suggestions
                 )
 
@@ -915,20 +931,18 @@ class FalsificationTestPanel(ctk.CTkFrame):
                 if self.results_callback:
                     self.after(0, lambda: self.results_callback(result))
 
-        except Exception as e:
+        except Exception as test_error:
             import traceback
 
-            error_msg = f"Test failed: {e}\n{traceback.format_exc()}"
+            error_msg = f"Test failed: {test_error}\n{traceback.format_exc()}"
             self.log_callback(error_msg)
-            self.after(
-                0, lambda: messagebox.showerror("Test Error", f"Test failed: {e}")
-            )
+            error_message = f"Test failed: {test_error}"
+            self.after(0, lambda: messagebox.showerror("Test Error", error_message))
         finally:
             self.after(0, self._test_complete)
 
     def _run_test_with_progress(self, test_func, total_operations):
         """Run test with simulated progress tracking."""
-        import time
 
         # Start progress monitoring thread
         progress_thread = threading.Thread(
@@ -1687,12 +1701,11 @@ class APGIFalsificationGUI(ctk.CTk):
                 from apgi_framework.falsification.primary_falsification_test import (
                     PrimaryFalsificationTest,
                 )
-            except ImportError as e:
+            except ImportError as import_error:
+                error_message = f"Warning: Could not import PrimaryFalsificationTest: {import_error}"
                 self.after(
                     0,
-                    lambda: self._log_message(
-                        f"Warning: Could not import PrimaryFalsificationTest: {e}"
-                    ),
+                    lambda: self._log_message(error_message),
                 )
                 PrimaryFalsificationTest = None
 
@@ -1700,12 +1713,11 @@ class APGIFalsificationGUI(ctk.CTk):
                 from apgi_framework.falsification.consciousness_without_ignition_test import (
                     ConsciousnessWithoutIgnitionTest,
                 )
-            except ImportError as e:
+            except ImportError as import_error:
+                error_message = f"Warning: Could not import ConsciousnessWithoutIgnitionTest: {import_error}"
                 self.after(
                     0,
-                    lambda: self._log_message(
-                        f"Warning: Could not import ConsciousnessWithoutIgnitionTest: {e}"
-                    ),
+                    lambda: self._log_message(error_message),
                 )
                 ConsciousnessWithoutIgnitionTest = None
 
@@ -1713,23 +1725,23 @@ class APGIFalsificationGUI(ctk.CTk):
                 from apgi_framework.falsification.threshold_insensitivity_test import (
                     ThresholdInsensitivityTest,
                 )
-            except ImportError as e:
+            except ImportError as import_error:
+                error_message = f"Warning: Could not import ThresholdInsensitivityTest: {import_error}"
                 self.after(
                     0,
-                    lambda: self._log_message(
-                        f"Warning: Could not import ThresholdInsensitivityTest: {e}"
-                    ),
+                    lambda: self._log_message(error_message),
                 )
                 ThresholdInsensitivityTest = None
 
             try:
                 from apgi_framework.falsification.soma_bias_test import SomaBiasTest
-            except ImportError as e:
+            except ImportError as import_error:
+                error_message = (
+                    f"Warning: Could not import SomaBiasTest: {import_error}"
+                )
                 self.after(
                     0,
-                    lambda: self._log_message(
-                        f"Warning: Could not import SomaBiasTest: {e}"
-                    ),
+                    lambda: self._log_message(error_message),
                 )
                 SomaBiasTest = None
 
@@ -1792,22 +1804,22 @@ class APGIFalsificationGUI(ctk.CTk):
                 ),
             )
 
-        except Exception as e:
+        except Exception as init_error:
             import traceback
 
             error_details = traceback.format_exc()
+            error_message = (
+                f"System initialization failed: {init_error}\n{error_details}"
+            )
+            init_error_msg = f"System initialization failed: {init_error}"
             self.after(0, lambda: self.status_var.set("Initialization failed"))
             self.after(
                 0,
-                lambda: self._log_message(
-                    f"System initialization failed: {e}\n{error_details}"
-                ),
+                lambda: self._log_message(error_message),
             )
             self.after(
                 0,
-                lambda: messagebox.showerror(
-                    "Error", f"System initialization failed: {e}"
-                ),
+                lambda: messagebox.showerror("Error", init_error_msg),
             )
 
     def _create_mock_controller(self, test_name):

@@ -5,21 +5,21 @@ This test suite provides full coverage for the PharmacologicalSimulator class an
 drug simulation methods, ensuring all critical functionality is tested.
 """
 
+from datetime import datetime
+
 import pytest
-import numpy as np
-from datetime import datetime, timedelta
-from typing import Dict, List, Tuple
+
+from apgi_framework.exceptions import ValidationError
 
 # Import the modules we're testing
 from apgi_framework.simulators.pharmacological_simulator import (
-    DrugClass,
-    NeuromodulatorSystem,
-    DrugProfile,
     DrugAdministration,
+    DrugClass,
+    DrugProfile,
+    NeuromodulatorSystem,
     PharmacologicalResponse,
     PharmacologicalSimulator,
 )
-from apgi_framework.exceptions import ValidationError
 
 
 class TestDrugClass:

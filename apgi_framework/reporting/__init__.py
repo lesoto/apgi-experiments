@@ -11,10 +11,10 @@ This module provides comprehensive reporting capabilities including:
 # Import components with graceful fallback for missing dependencies
 try:
     from .pdf_generator import (
+        APGIReportTemplate,
         PDFReportGenerator,
         ReportConfig,
         ReportSection,
-        APGIReportTemplate,
         create_pdf_generator,
         generate_experiment_report,
     )
@@ -25,14 +25,14 @@ except ImportError:
 
 try:
     from .template_system import (
-        TemplateManager,
-        TemplateBuilder,
         ReportTemplate,
+        TemplateBuilder,
+        TemplateFormat,
+        TemplateManager,
         TemplateSection,
         TemplateVariable,
-        TemplateFormat,
-        create_template_manager,
         create_template_builder,
+        create_template_manager,
     )
 
     TEMPLATE_SYSTEM_AVAILABLE = True

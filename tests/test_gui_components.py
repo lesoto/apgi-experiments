@@ -7,9 +7,16 @@ These tests ensure the GUI components function correctly and handle edge cases.
 
 import unittest
 from unittest.mock import Mock
-import tkinter as tk
-import sys
+
+try:
+    import tkinter as tk
+
+    TKINTER_AVAILABLE = True
+except ImportError:
+    print("tkinter not available")
+    TKINTER_AVAILABLE = False
 import os
+import sys
 from pathlib import Path
 
 # Add the project root to the path for imports
@@ -17,8 +24,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 try:
     import customtkinter as ctk  # type: ignore
-    from apgi_gui.components.sidebar import Sidebar
+
     from apgi_gui.components.main_area import MainArea
+    from apgi_gui.components.sidebar import Sidebar
     from apgi_gui.components.status_bar import StatusBar
     from apgi_gui.config import DefaultParameters, ParameterConfig
 
@@ -28,7 +36,9 @@ except ImportError as e:
     GUI_AVAILABLE = False
 
 
-@unittest.skipUnless(GUI_AVAILABLE, "GUI components not available")
+@unittest.skipUnless(
+    TKINTER_AVAILABLE and GUI_AVAILABLE, "GUI components not available"
+)
 class TestSidebar(unittest.TestCase):
     """Test cases for the Sidebar component."""
 
@@ -52,6 +62,9 @@ class TestSidebar(unittest.TestCase):
         # Create the root window and sidebar
         self.root = ctk.CTk()
         self.sidebar = Sidebar(self.root, self.mock_app)
+
+        # Disable file monitoring to prevent threading issues in tests
+        self.sidebar.start_file_monitoring = Mock()
 
     def tearDown(self):
         """Clean up after tests."""
@@ -153,7 +166,9 @@ class TestSidebar(unittest.TestCase):
         self.sidebar.update_recent_files.assert_called_once()
 
 
-@unittest.skipUnless(GUI_AVAILABLE, "GUI components not available")
+@unittest.skipUnless(
+    TKINTER_AVAILABLE and GUI_AVAILABLE, "GUI components not available"
+)
 class TestMainArea(unittest.TestCase):
     """Test cases for the MainArea component."""
 
@@ -257,7 +272,9 @@ class TestMainArea(unittest.TestCase):
         self.mock_app.update_status.assert_called()
 
 
-@unittest.skipUnless(GUI_AVAILABLE, "GUI components not available")
+@unittest.skipUnless(
+    TKINTER_AVAILABLE and GUI_AVAILABLE, "GUI components not available"
+)
 class TestStatusBar(unittest.TestCase):
     """Test cases for the StatusBar component."""
 
@@ -365,7 +382,9 @@ class TestStatusBar(unittest.TestCase):
         self.assertIsNotNone(self.status_bar.status_label)
 
 
-@unittest.skipUnless(GUI_AVAILABLE, "GUI components not available")
+@unittest.skipUnless(
+    TKINTER_AVAILABLE and GUI_AVAILABLE, "GUI components not available"
+)
 class TestGUIIntegration(unittest.TestCase):
     """Integration tests for GUI components working together."""
 
@@ -390,6 +409,9 @@ class TestGUIIntegration(unittest.TestCase):
         self.sidebar = Sidebar(self.root, self.mock_app)
         self.main_area = MainArea(self.root, self.mock_app)
         self.status_bar = StatusBar(self.root, self.mock_app)
+
+        # Disable file monitoring to prevent threading issues in tests
+        self.sidebar.start_file_monitoring = Mock()
 
     def tearDown(self):
         """Clean up after tests."""
@@ -442,7 +464,9 @@ class TestGUIIntegration(unittest.TestCase):
         self.assertIn("experimental_settings", retrieved_data)
 
 
-@unittest.skipUnless(GUI_AVAILABLE, "GUI components not available")
+@unittest.skipUnless(
+    TKINTER_AVAILABLE and GUI_AVAILABLE, "GUI components not available"
+)
 class TestDefaultParameters(unittest.TestCase):
     """Test cases for the DefaultParameters configuration."""
 
@@ -574,7 +598,9 @@ class TestDefaultParameters(unittest.TestCase):
         self.assertIn("padding_section_y", spacing)
 
 
-@unittest.skipUnless(GUI_AVAILABLE, "GUI components not available")
+@unittest.skipUnless(
+    TKINTER_AVAILABLE and GUI_AVAILABLE, "GUI components not available"
+)
 class TestMainAreaWithConfiguration(unittest.TestCase):
     """Test MainArea component with configuration system."""
 
@@ -645,7 +671,9 @@ class TestMainAreaWithConfiguration(unittest.TestCase):
         self.assertTrue(True)  # Test passes if no exception
 
 
-@unittest.skipUnless(GUI_AVAILABLE, "GUI components not available")
+@unittest.skipUnless(
+    TKINTER_AVAILABLE and GUI_AVAILABLE, "GUI components not available"
+)
 class TestSidebarWithCustomTkinter(unittest.TestCase):
     """Test Sidebar component with CustomTkinter implementation."""
 
@@ -670,6 +698,9 @@ class TestSidebarWithCustomTkinter(unittest.TestCase):
         # Create the root window and sidebar
         self.root = ctk.CTk()
         self.sidebar = Sidebar(self.root, self.mock_app)
+
+        # Disable file monitoring to prevent threading issues in tests
+        self.sidebar.start_file_monitoring = Mock()
 
     def tearDown(self):
         """Clean up test fixtures."""

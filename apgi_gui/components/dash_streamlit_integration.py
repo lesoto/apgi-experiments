@@ -5,15 +5,11 @@ Provides web-based dashboard capabilities with interactive visualizations,
 real-time updates, and seamless integration with existing GUI components.
 """
 
-import json
+import logging
 import threading
-import time
-import queue
-from typing import Dict, List, Optional, Any, Callable
 from dataclasses import dataclass
 from datetime import datetime
-from pathlib import Path
-import logging
+from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -22,12 +18,10 @@ DASH_AVAILABLE = False
 STREAMLIT_AVAILABLE = False
 
 try:
-    import dash
-    from dash import dcc, html, Input, Output, State, callback
-    import dash_bootstrap_components as dbc
-    import plotly.graph_objs as go
-    import plotly.express as px
-    from dash.exceptions import PreventUpdate
+    import dash  # type: ignore
+    import dash_bootstrap_components as dbc  # type: ignore
+    import plotly.graph_objs as go  # type: ignore
+    from dash import Input, Output, dcc, html  # type: ignore
 
     DASH_AVAILABLE = True
 except ImportError:
@@ -36,8 +30,8 @@ except ImportError:
     )
 
 try:
-    import streamlit as st
     import pandas as pd
+    import streamlit as st
 
     STREAMLIT_AVAILABLE = True
 except ImportError:
@@ -62,7 +56,7 @@ class DashboardConfig:
 class DataProvider:
     """Base class for data providers for web dashboards."""
 
-    def __init__(self):
+    def __init__(self):  # type: ignore
         self.data_cache: Dict[str, Any] = {}
         self.last_update: Dict[str, datetime] = {}
         self.update_callbacks: List[Callable] = []
@@ -77,9 +71,9 @@ class DataProvider:
         self.last_update[data_type] = datetime.now()
 
         # Notify callbacks
-        for callback in self.update_callbacks:
+        for callback_func in self.update_callbacks:
             try:
-                callback(data_type, data)
+                callback_func(data_type, data)
             except Exception as e:
                 logger.error(f"Data provider callback error: {e}")
 

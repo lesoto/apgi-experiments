@@ -5,93 +5,84 @@ This module contains statistical analysis tools, validation frameworks,
 and reporting capabilities for comprehensive APGI falsification testing.
 """
 
-from .statistical_tester import (
-    StatisticalTester,
-    StatisticalResult,
-    TestType,
-    CorrectionMethod,
-    ClusterCorrectionResult,
+from .analysis_engine import (
+    AnalysisEngine,
+    AnalysisResult,
 )
-
-from .effect_size_calculator import (
-    EffectSizeCalculator,
-    EffectSizeResult,
-    BootstrapResult,
-    EffectSizeType,
-    ConfidenceIntervalMethod,
-    get_effect_size_guidelines,
-)
-
-from .replication_tracker import (
-    ReplicationTracker,
-    PowerAnalyzer,
-    ExperimentResult,
-    ReplicationSummary,
-    PowerAnalysisResult,
-    ReplicationStatus,
-    PowerAnalysisMethod,
-)
-
-from .sample_size_validator import (
-    SampleSizeValidator,
-    ValidationResult,
-    PowerReport,
-    ValidationStatus,
-    TestRequirement,
-    SampleSizeRequirement,
-)
-
-from .statistical_report_generator import (
-    StatisticalReportGenerator,
-    StatisticalSummary,
-    PublicationReport,
-    FalsificationAssessment,
-    FalsificationConclusion,
-    ReportFormat,
-)
-
 from .bayesian_models import (
     HierarchicalBayesianModel,
-    SurpriseAccumulator,
     IgnitionProbabilityCalculator,
-    StanModelCompiler,
     ParameterDistribution,
     ParameterEstimates,
+    StanModelCompiler,
+    SurpriseAccumulator,
 )
-
+from .effect_size_calculator import (
+    BootstrapResult,
+    ConfidenceIntervalMethod,
+    EffectSizeCalculator,
+    EffectSizeResult,
+    EffectSizeType,
+    get_effect_size_guidelines,
+)
 from .parameter_estimation import (
+    ConvergenceDiagnostics,
+    ConvergenceDiagnosticsCalculator,
+    FitResults,
+    IndividualParameterEstimator,
     JointParameterFitter,
     ParameterExtractor,
-    ConvergenceDiagnosticsCalculator,
-    IndividualParameterEstimator,
-    ConvergenceDiagnostics,
-    FitResults,
 )
-
 from .parameter_recovery import (
-    SyntheticDataGenerator,
+    GroundTruthParameters,
     ParameterRecoveryValidator,
     RecoveryAnalyzer,
-    ValidationReportGenerator,
-    GroundTruthParameters,
     RecoveryMetrics,
     RecoveryResults,
+    SyntheticDataGenerator,
+    ValidationReportGenerator,
 )
-
 from .predictive_validity import (
-    EmotionalInterferenceTask,
-    ContinuousPerformanceTask,
     BodyVigilanceScaleAnalyzer,
+    ComparativeValidityResult,
+    ContinuousPerformanceTask,
+    EmotionalInterferenceTask,
     PredictivePowerComparator,
     PredictiveValidityFramework,
     TaskPerformance,
     ValidityResult,
-    ComparativeValidityResult,
 )
-
-from .analysis_engine import (
-    AnalysisEngine,
-    AnalysisResult,
+from .replication_tracker import (
+    ExperimentResult,
+    PowerAnalysisMethod,
+    PowerAnalysisResult,
+    PowerAnalyzer,
+    ReplicationStatus,
+    ReplicationSummary,
+    ReplicationTracker,
+)
+from .sample_size_validator import (
+    PowerReport,
+    SampleSizeRequirement,
+    SampleSizeValidator,
+    TestRequirement,
+    ValidationResult,
+    ValidationStatus,
+)
+from .statistical_report_generator import (
+    FalsificationAssessment,
+    FalsificationConclusion,
+    PublicationReport,
+    ReportFormat,
+    StatisticalReportGenerator,
+    StatisticalSummary,
+)
+from .statistical_tester import (
+    ClusterCorrectionResult,
+    CorrectionMethod,
+    StatisticalResult,
+    StatisticalTester,
+    TestType,
 )
 
 __all__ = [

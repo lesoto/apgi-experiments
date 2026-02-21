@@ -5,10 +5,10 @@ Provides consistent menu structure across all GUI implementations with
 standardized actions, shortcuts, and behavior.
 """
 
-import tkinter as tk
-from typing import Dict, List, Callable, Optional, Any
-from dataclasses import dataclass
 import logging
+import tkinter as tk
+from dataclasses import dataclass
+from typing import Any, Callable, Dict, List, Optional
 
 try:
     import customtkinter as ctk
@@ -388,32 +388,44 @@ class StandardizedMenuManager:
         if item.menu_type == "separator":
             menu.add_separator()
         elif item.menu_type == "cascade" and item.submenu:
-            submenu = tk.Menu(menu, tearoff=item.submenu.tearoff)
+            submenu = tk.Menu(menu, tearoff=bool(item.submenu.tearoff))
             menu.add_cascade(label=item.label, menu=submenu)
             for subitem in item.submenu.items:
                 self._add_menu_item(submenu, subitem)
-        elif item.menu_type == "checkbutton":
-            menu.add_checkbutton(
-                label=item.label,
-                command=item.command,
-                variable=item.variable,
-                state=item.state,
-            )
-        elif item.menu_type == "radiobutton":
-            menu.add_radiobutton(
-                label=item.label,
-                command=item.command,
-                variable=item.variable,
-                state=item.state,
-            )
-        else:  # command
-            menu.add_command(
-                label=item.label,
-                command=item.command,
-                accelerator=item.accelerator,
-                underline=item.underline,
-                state=item.state,
-            )
+        else:
+            kwargs: Dict[str, Any] = {}
+            kwargs["label"] = item.label
+            if item.command is not None:
+                kwargs["command"] = item.command  # type: ignore
+            if item.menu_type == "checkbutton":
+                if item.variable is not None:
+                    kwargs["variable"] = item.variable  # type: ignore
+                kwargs["state"] = (
+                    item.state
+                    if item.state in ("normal", "active", "disabled")
+                    else "normal"
+                )
+                menu.add_checkbutton(**kwargs)
+            elif item.menu_type == "radiobutton":
+                if item.variable is not None:
+                    kwargs["variable"] = item.variable  # type: ignore
+                kwargs["state"] = (
+                    item.state
+                    if item.state in ("normal", "active", "disabled")
+                    else "normal"
+                )
+                menu.add_radiobutton(**kwargs)
+            else:  # command
+                if item.accelerator is not None:
+                    kwargs["accelerator"] = item.accelerator
+                if item.underline is not None:
+                    kwargs["underline"] = item.underline  # type: ignore
+                kwargs["state"] = (
+                    item.state
+                    if item.state in ("normal", "active", "disabled")
+                    else "normal"
+                )
+                menu.add_command(**kwargs)
 
     def register_callback(self, action_name: str, callback: Callable):
         """

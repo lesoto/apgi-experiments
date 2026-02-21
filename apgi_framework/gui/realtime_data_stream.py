@@ -6,21 +6,23 @@ Provides WebSocket-based streaming for EEG, pupillometry, cardiac, and parameter
 
 import asyncio
 import json
-import time
-import threading
-from typing import Dict, List, Optional, Callable, Any
-from dataclasses import dataclass, asdict
-from datetime import datetime
-import logging
 import queue
+import threading
+import time
+from dataclasses import asdict, dataclass, field
+from typing import Any, Callable, Dict, List, Optional
 
 try:
-    import websockets
-    import numpy as np
     from dataclasses import dataclass
+
+    import numpy as np
+    import websockets
+
+    _websockets_available = True
 except ImportError:
     # Fallback for environments without websockets
-    websockets = None
+    websockets = None  # type: ignore
+    _websockets_available = False
 
 from ..logging.standardized_logging import get_logger
 
@@ -35,7 +37,7 @@ class StreamDataPoint:
     source: str  # 'eeg', 'pupil', 'cardiac', 'parameters'
     channel: str
     value: float
-    metadata: Dict[str, Any] = None
+    metadata: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -116,10 +118,12 @@ class RealTimeDataStreamer:
         self.pupil_buffer: queue.Queue = queue.Queue(maxsize=1000)
         self.cardiac_buffer: queue.Queue = queue.Queue(maxsize=1000)
         self.parameter_buffer: queue.Queue = queue.Queue(maxsize=1000)
+        self.data_buffer: Dict[str, Any] = {}
 
         # Streaming thread
         self._stream_thread: Optional[threading.Thread] = None
         self._stop_event = threading.Event()
+        self._stream_active = False
 
         # Data generators for simulation
         self._data_generators: Dict[str, Callable] = {}

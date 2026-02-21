@@ -61,3 +61,7 @@ test_storage/
 tmp/
 temp/
 *.tmp
+.env
+cache/
+backups/
+.mypy_cache/

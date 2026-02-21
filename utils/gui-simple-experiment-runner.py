@@ -6,46 +6,38 @@ This is a streamlined version of the GUI.py that provides
 a basic interface for the APGI Framework experiments.
 """
 
-import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
-import sys
-import os
-from pathlib import Path
-import logging
 import json
+import logging
+import os
 import subprocess
+import sys
 import threading
-import importlib
-from typing import List, Dict, Any, Optional, Union
+import tkinter as tk
+from pathlib import Path
+from tkinter import filedialog, messagebox, ttk
+from typing import Any, Dict, List, Optional, Union
+from tkinter import Menu
 
 # Add project root to path for tooltip import
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
-# Import customtkinter for theme support (optional)
-ctk = None
+# CustomTkinter not used in this simplified version
 CUSTOMTKINTER_AVAILABLE = False
-try:
-    import customtkinter as ctk
-
-    CUSTOMTKINTER_AVAILABLE = True
-except ImportError:
-    CUSTOMTKINTER_AVAILABLE = False
-    ctk = None
 
 # Import tooltip manager
 try:
-    from apgi_gui.utils.tooltip_manager import add_tooltip, add_parameter_tooltips
+    from apgi_gui.utils.tooltip_manager import add_parameter_tooltips, add_tooltip
 
     TOOLTIPS_AVAILABLE = True
 except ImportError:
     # Fallback tooltip implementation
     TOOLTIPS_AVAILABLE = False
 
-    def add_tooltip(widget, param_name):
+    def add_tooltip(widget: Any, param_name: str) -> None:
         pass
 
-    def add_parameter_tooltips(widgets):
+    def add_parameter_tooltips(parameter_widgets: Dict[str, Any]) -> None:
         pass
 
 
@@ -61,14 +53,16 @@ except ImportError:
     # Fallback keyboard implementation
     KEYBOARD_SHORTCUTS_AVAILABLE = False
 
-    class KeyboardManager:
+    class _KeyboardManager:
         def __init__(self, root):
             pass
 
         def bind_shortcut(self, *args, **kwargs):
             pass
 
-    def setup_standard_shortcuts(*args, **kwargs):
+    def setup_standard_shortcuts(
+        app_instance: Any, keyboard_manager: KeyboardManager
+    ) -> None:
         pass
 
 
@@ -85,7 +79,7 @@ except ImportError:
     # Fallback undo/redo implementation
     UNDO_REDO_AVAILABLE = False
 
-    class UndoRedoManager:
+    class _UndoRedoManager:
         def __init__(self, *args, **kwargs):
             pass
 
@@ -101,14 +95,14 @@ except ImportError:
         def can_redo(self):
             return False
 
-    class WidgetTracker:
+    class _WidgetTracker:
         def __init__(self, *args, **kwargs):
             pass
 
         def track_widget(self, *args, **kwargs):
             pass
 
-    def create_undo_redo_menu(*args, **kwargs):
+    def create_undo_redo_menu(menu_bar: Menu, undo_manager: UndoRedoManager) -> None:
         pass
 
 
@@ -121,7 +115,7 @@ except ImportError:
     # Fallback theme implementation
     THEME_AVAILABLE = False
 
-    class ThemeManager:
+    class _ThemeManager:
         def __init__(self, *args, **kwargs):
             pass
 
@@ -131,15 +125,16 @@ except ImportError:
         def toggle_dark_mode(self):
             pass
 
-    def get_system_theme_preference():
+    def get_system_theme_preference() -> str:
         return "light"
 
 
 # Import Excel export manager
 try:
     from apgi_gui.utils.excel_export_manager import (
-        get_excel_export_manager,
         create_excel_export_dialog,
+        get_excel_export_manager,
+        ExcelExportManager,
     )
 
     EXCEL_EXPORT_AVAILABLE = True
@@ -147,10 +142,10 @@ except ImportError:
     # Fallback Excel export implementation
     EXCEL_EXPORT_AVAILABLE = False
 
-    def get_excel_export_manager():
+    def get_excel_export_manager() -> Optional[ExcelExportManager]:  # type: ignore[misc]
         return None
 
-    def create_excel_export_dialog(*args, **kwargs):
+    def create_excel_export_dialog(parent: Any, export_callback: Any) -> None:
         pass
 
 
@@ -160,6 +155,7 @@ import matplotlib
 matplotlib.use("Agg")  # Use non-interactive backend to prevent GUI conflicts
 
 # Set up logging with standardized system
+logger: Union[Any, logging.Logger]
 try:
     from apgi_framework.logging.standardized_logging import get_logger
 
@@ -179,8 +175,10 @@ sys.path.insert(0, str(project_root))
 # Import experiment runner
 try:
     # type: ignore[attr-defined]
-    from tools.run_experiments import (  # noqa: F401
+    from tools.run_experiments import (
         get_available_experiments,
+    )
+    from tools.run_experiments import (  # noqa: F401
         run_experiment as run_tools_experiment,
     )
 
@@ -211,15 +209,25 @@ class TemplateGUI:
             self.keyboard_manager = KeyboardManager(self.root)
             setup_standard_shortcuts(self, self.keyboard_manager)
         else:
-            self.keyboard_manager = None
+            self.keyboard_manager = (
+                _KeyboardManager(self.root) if "_KeyboardManager" in locals() else None
+            )
 
         # Initialize undo/redo functionality
         if UNDO_REDO_AVAILABLE:
             self.undo_manager = UndoRedoManager(max_history=50)
             self.widget_tracker = WidgetTracker(self.undo_manager)
         else:
-            self.undo_manager = None
-            self.widget_tracker = None
+            self.undo_manager = (
+                _UndoRedoManager(max_history=50)
+                if "_UndoRedoManager" in locals()
+                else None
+            )
+            self.widget_tracker = (
+                _WidgetTracker(self.undo_manager)
+                if "_WidgetTracker" in locals() and self.undo_manager
+                else None
+            )
 
         # Initialize theme manager
         if THEME_AVAILABLE and CUSTOMTKINTER_AVAILABLE:
@@ -228,7 +236,9 @@ class TemplateGUI:
             system_theme = get_system_theme_preference()
             self.theme_manager.set_theme(system_theme)
         else:
-            self.theme_manager = None
+            self.theme_manager = (
+                _ThemeManager(self.root) if "_ThemeManager" in locals() else None
+            )
 
         # Initialize Excel export manager
         if EXCEL_EXPORT_AVAILABLE:
@@ -466,9 +476,13 @@ class TemplateGUI:
         self.status_label.config(text=f"Running {experiment}...")
         self.results_text.delete(1.0, tk.END)
         self.results_text.insert(tk.END, f"Running Experiment: {experiment}\n")
-        self.results_text.insert(tk.END, f"Parameters:\n")
-        self.results_text.insert(tk.END, f"  - Participants: {int(threshold)}\n")
-        self.results_text.insert(tk.END, f"  - Trials per condition: {simulations}\n\n")
+        self.results_text.insert(tk.END, "Parameters:\n")
+        self.results_text.insert(
+            tk.END, "  - Participants: {}\n".format(int(threshold))
+        )
+        self.results_text.insert(
+            tk.END, "  - Trials per condition: {}\n\n".format(simulations)
+        )
 
         # Run experiment in separate thread to avoid GUI freezing
         thread = threading.Thread(
@@ -486,10 +500,7 @@ class TemplateGUI:
         try:
             if EXPERIMENTS_AVAILABLE:
                 # Use subprocess isolation to prevent GUI crashes
-                experiment_params = {
-                    "n_participants": int(threshold),
-                    "n_trials_per_condition": simulations,
-                }
+                # experiment_params will be used when running actual experiments
 
                 # Create a simple Python script to run the experiment
                 script_content = f"""
@@ -582,8 +593,7 @@ except Exception as e:
                     # Clean up temporary script
                     try:
                         os.unlink(script_path)
-                    except Exception as e:
-                        # Ignore cleanup errors - temp file will be cleaned by OS
+                    except Exception:
                         pass
 
             else:
@@ -663,51 +673,52 @@ except Exception as e:
 
             # Simulate some results based on experiment type
             if "interoceptive" in experiment:
-                self.results_text.insert(tk.END, f"Interoceptive Gating Results:\n")
+                self.results_text.insert(tk.END, "Interoceptive Gating Results:\n")
                 self.results_text.insert(
-                    tk.END, f"  - Gating threshold: {threshold:.2f}\n"
+                    tk.END, "  - Gating threshold: {:.2f}\n".format(threshold)
                 )
                 self.results_text.insert(
-                    tk.END, f"  - Success rate: {75 + (threshold/20)*100:.1f}%\n"
+                    tk.END,
+                    "  - Success rate: {:.1f}%\n".format(75 + (threshold / 20) * 100),
                 )
                 self.results_text.insert(
-                    tk.END, f"  - Processing time: {2.5 + (simulations/50):.2f}s\n"
+                    tk.END, f"  - Processing time: {2.5 + (simulations / 50):.2f}s\n"
                 )
             elif "somatic" in experiment:
-                self.results_text.insert(tk.END, f"Somatic Marker Results:\n")
+                self.results_text.insert(tk.END, "Somatic Marker Results:\n")
                 self.results_text.insert(
-                    tk.END, f"  - Marker influence: {0.3 + (threshold/15):.3f}\n"
+                    tk.END, f"  - Marker influence: {0.3 + (threshold / 15):.3f}\n"
                 )
                 self.results_text.insert(
-                    tk.END, f"  - Modulation effect: {0.6 + (simulations/200):.3f}\n"
+                    tk.END, f"  - Modulation effect: {0.6 + (simulations / 200):.3f}\n"
                 )
                 self.results_text.insert(
                     tk.END, f"  - Response latency: {80 + threshold:.0f} ms\n"
                 )
             elif "metabolic" in experiment:
-                self.results_text.insert(tk.END, f"Metabolic Cost Results:\n")
+                self.results_text.insert(tk.END, "Metabolic Cost Results:\n")
                 self.results_text.insert(
                     tk.END, f"  - Energy consumption: {threshold * 10:.1f} units\n"
                 )
                 self.results_text.insert(
-                    tk.END, f"  - Efficiency score: {85 + (simulations/10):.1f}%\n"
+                    tk.END, f"  - Efficiency score: {85 + (simulations / 10):.1f}%\n"
                 )
                 self.results_text.insert(
-                    tk.END, f"  - Cost-benefit ratio: {1.2 - (threshold/50):.2f}\n"
+                    tk.END, f"  - Cost-benefit ratio: {1.2 - (threshold / 50):.2f}\n"
                 )
             else:
-                self.results_text.insert(tk.END, f"General Experiment Results:\n")
+                self.results_text.insert(tk.END, "General Experiment Results:\n")
                 self.results_text.insert(
                     tk.END, f"  - Data points processed: {simulations * 100}\n"
                 )
                 self.results_text.insert(
-                    tk.END, f"  - Success rate: {85 + (threshold/2):.1f}%\n"
+                    tk.END, f"  - Success rate: {85 + (threshold / 2):.1f}%\n"
                 )
                 self.results_text.insert(
-                    tk.END, f"  - Processing time: {2.5 + (simulations/50):.2f}s\n"
+                    tk.END, f"  - Processing time: {2.5 + (simulations / 50):.2f}s\n"
                 )
 
-            self.results_text.insert(tk.END, f"\nExperiment completed successfully!\n")
+            self.results_text.insert(tk.END, "\nExperiment completed successfully!\n")
             self.results_text.see(tk.END)
 
             messagebox.showinfo(
@@ -852,7 +863,6 @@ except Exception as e:
 
         # Extract experiment info
         experiment_info: Dict[str, Union[str, int]] = {}
-        current_section = None
 
         for line in lines:
             line = line.strip()

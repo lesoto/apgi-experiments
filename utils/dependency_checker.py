@@ -11,13 +11,12 @@ Usage:
     python dependency_checker.py --core-only
 """
 
-import sys
 import importlib
 import importlib.metadata
 import subprocess
-import platform
-from pathlib import Path
-from typing import Dict, List, Tuple, Optional
+import sys
+from typing import Any, Dict, Optional, Tuple
+
 from packaging import version
 
 # Core dependencies with version requirements
@@ -124,13 +123,13 @@ def install_package(package_name: str, min_version: Optional[str] = None) -> boo
         # If all methods failed, provide guidance
         print(f"❌ Failed to install {package_name}")
         print("\n💡 Installation Options:")
-        print(f"   1. Create virtual environment:")
-        print(f"      python3 -m venv venv")
-        print(f"      source venv/bin/activate")
+        print("   1. Create virtual environment:")
+        print("      python3 -m venv venv")
+        print("      source venv/bin/activate")
         print(f"      pip install {package_spec}")
-        print(f"   2. Use Homebrew (if available):")
+        print("   2. Use Homebrew (if available):")
         print(f"      brew install {package_name}")
-        print(f"   3. Use pipx (for Python applications):")
+        print("   3. Use pipx (for Python applications):")
         print(f"      pipx install {package_name}")
 
         return False
@@ -159,9 +158,9 @@ def check_version_compatibility(
                 f"Version {installed_version} is below minimum {min_version}",
             )
     except importlib.metadata.PackageNotFoundError:
-        return False, None, f"Package not installed"
+        return False, "", "Package not installed"
     except Exception as e:
-        return False, None, f"Error checking version: {e}"
+        return False, "", f"Error checking version: {e}"
 
 
 def check_import(package_name: str) -> Tuple[bool, Optional[str]]:
@@ -235,7 +234,7 @@ def check_optional_dependencies() -> (
 def generate_summary(
     core_results: Dict[str, Tuple[bool, str, Optional[str], Optional[str]]],
     optional_results: Dict[str, Tuple[bool, str, Optional[str], Optional[str]]],
-) -> Dict[str, any]:
+) -> Dict[str, Any]:
     """Generate a summary of dependency check results."""
     core_available = sum(
         1 for is_available, _, _, _ in core_results.values() if is_available
@@ -281,7 +280,7 @@ def generate_summary(
     }
 
 
-def check_dependencies(install_missing=False, core_only=False) -> Dict[str, any]:
+def check_dependencies(install_missing=False, core_only=False) -> Dict[str, Any]:
     """Check all dependencies and return results."""
     core_results = check_core_dependencies()
 
@@ -313,21 +312,23 @@ def check_dependencies(install_missing=False, core_only=False) -> Dict[str, any]
         print("\n" + "=" * 60)
         print("DEPENDENCY CHECK SUMMARY")
         print("=" * 60)
-        print(
-            f"Core dependencies: {summary['core_dependencies']['available']}/{summary['core_dependencies']['total']} ({summary['core_dependencies']['percentage']:.1f}%)"
-        )
-        print(
-            f"Optional dependencies: {summary['optional_dependencies']['available']}/{summary['optional_dependencies']['total']} ({summary['optional_dependencies']['percentage']:.1f}%)"
-        )
-        print(f"Overall status: {summary['overall_status']}")
 
-        if summary["version_issues"]:
+        # Type ignore for dynamic dictionary access
+        print(
+            f"Core dependencies: {summary['core_dependencies']['available']}/{summary['core_dependencies']['total']} ({summary['core_dependencies']['percentage']:.1f}%)"  # type: ignore[index]
+        )
+        print(
+            f"Optional dependencies: {summary['optional_dependencies']['available']}/{summary['optional_dependencies']['total']} ({summary['optional_dependencies']['percentage']:.1f}%)"  # type: ignore[index]
+        )
+        print(f"Overall status: {summary['overall_status']}")  # type: ignore[index]
+
+        if summary["version_issues"]:  # type: ignore[index]
             print("\n⚠️  Version Issues Found:")
-            for issue in summary["version_issues"]:
-                print(f"  • {issue['package']}: {issue['error']}")
-                print(f"    Current: {issue['current_version']}, Update required")
+            for issue in summary["version_issues"]:  # type: ignore[index]
+                print(f"  • {issue['package']}: {issue['error']}")  # type: ignore[index]
+                print(f"    Current: {issue['current_version']}, Update required")  # type: ignore[index]
 
-        if summary["overall_status"] == "ready":
+        if summary["overall_status"] == "ready":  # type: ignore[index]
             print("\n🎉 All dependencies are satisfied!")
         else:
             print("\n⚠️  Some dependencies need attention.")

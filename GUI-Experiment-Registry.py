@@ -2,21 +2,23 @@
 """
 APGI Experiment Registry GUI
 
-A simple GUI to display and run all 24 experiments from the experiment registry.
+A GUI to display and run all experiments from the experiment registry.
 Provides an easy interface to view experiment details and execute experiments.
 """
 
-import tkinter as tk
-from tkinter import ttk, scrolledtext, messagebox, filedialog
-import threading
-import sys
-import os
-from pathlib import Path
-import time
-from typing import Dict, Any
 import logging
+import os
 import subprocess
+import sys
 import tempfile
+import threading
+import time
+import tkinter as tk
+from pathlib import Path
+from tkinter import filedialog, messagebox, scrolledtext, ttk
+from typing import Any, Dict, Union
+from tkinter import Menu
+import logging as logging_lib
 
 # Set matplotlib backend before importing to avoid threading issues
 import matplotlib
@@ -28,21 +30,21 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 # Import experiment runner
-from tools.run_experiments import EXPERIMENTS, run_experiment
+from run_experiments import EXPERIMENTS
 
 # Import tooltip manager
 try:
-    from apgi_gui.utils.tooltip_manager import add_tooltip, add_parameter_tooltips
+    from apgi_gui.utils.tooltip_manager import add_parameter_tooltips, add_tooltip
 
     TOOLTIPS_AVAILABLE = True
 except ImportError:
     # Fallback tooltip implementation
     TOOLTIPS_AVAILABLE = False
 
-    def add_tooltip(widget, param_name):
+    def add_tooltip(widget: Any, param_name: str) -> None:
         pass
 
-    def add_parameter_tooltips(widgets):
+    def add_parameter_tooltips(parameter_widgets: Dict[str, Any]) -> None:
         pass
 
 
@@ -58,14 +60,16 @@ except ImportError:
     # Fallback keyboard implementation
     KEYBOARD_SHORTCUTS_AVAILABLE = False
 
-    class KeyboardManager:
+    class _KeyboardManager:
         def __init__(self, root):
             pass
 
         def bind_shortcut(self, *args, **kwargs):
             pass
 
-    def setup_standard_shortcuts(*args, **kwargs):
+    def setup_standard_shortcuts(
+        app_instance: Any, keyboard_manager: KeyboardManager
+    ) -> None:
         pass
 
 
@@ -82,7 +86,7 @@ except ImportError:
     # Fallback undo/redo implementation
     UNDO_REDO_AVAILABLE = False
 
-    class UndoRedoManager:
+    class _UndoRedoManager:
         def __init__(self, *args, **kwargs):
             pass
 
@@ -98,14 +102,14 @@ except ImportError:
         def can_redo(self):
             return False
 
-    class WidgetTracker:
+    class _WidgetTracker:
         def __init__(self, *args, **kwargs):
             pass
 
         def track_widget(self, *args, **kwargs):
             pass
 
-    def create_undo_redo_menu(*args, **kwargs):
+    def create_undo_redo_menu(menu_bar: Menu, undo_manager: UndoRedoManager) -> None:
         pass
 
 
@@ -118,7 +122,7 @@ except ImportError:
     # Fallback theme implementation
     THEME_AVAILABLE = False
 
-    class ThemeManager:
+    class _ThemeManager:
         def __init__(self, *args, **kwargs):
             pass
 
@@ -128,22 +132,23 @@ except ImportError:
         def toggle_dark_mode(self):
             pass
 
-    def get_system_theme_preference():
+    def get_system_theme_preference() -> str:
         return "light"
 
 
 # Set up logging with standardized system
+logger: Union[Any, logging_lib.Logger]
 try:
     from apgi_framework.logging.standardized_logging import get_logger
 
     logger = get_logger("gui_experiment_registry")
 except ImportError:
     # Fallback to basic logging
-    logging.basicConfig(
-        level=logging.INFO,
+    logging_lib.basicConfig(
+        level=logging_lib.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
-    logger = logging.getLogger("gui_experiment_registry")
+    logger = logging_lib.getLogger("gui_experiment_registry")
 
 
 class ExperimentRegistryGUI:
@@ -176,15 +181,25 @@ class ExperimentRegistryGUI:
             # Add custom shortcuts for this GUI
             self._setup_custom_shortcuts()
         else:
-            self.keyboard_manager = None
+            self.keyboard_manager = (
+                _KeyboardManager(self.root) if "_KeyboardManager" in locals() else None
+            )
 
         # Initialize undo/redo functionality
         if UNDO_REDO_AVAILABLE:
             self.undo_manager = UndoRedoManager(max_history=50)
             self.widget_tracker = WidgetTracker(self.undo_manager)
         else:
-            self.undo_manager = None
-            self.widget_tracker = None
+            self.undo_manager = (
+                _UndoRedoManager(max_history=50)
+                if "_UndoRedoManager" in locals()
+                else None
+            )
+            self.widget_tracker = (
+                _WidgetTracker(self.undo_manager)
+                if "_WidgetTracker" in locals() and self.undo_manager
+                else None
+            )
 
         # Initialize theme manager
         if THEME_AVAILABLE:
@@ -193,7 +208,9 @@ class ExperimentRegistryGUI:
             system_theme = get_system_theme_preference()
             self.theme_manager.set_theme(system_theme)
         else:
-            self.theme_manager = None
+            self.theme_manager = (
+                _ThemeManager(self.root) if "_ThemeManager" in locals() else None
+            )
 
         # Create GUI
         self.create_widgets()
@@ -427,13 +444,12 @@ class ExperimentRegistryGUI:
                 lines = content.split("\n")
                 docstring_lines = []
                 in_docstring = False
-                docstring_start = False
+                in_docstring = not in_docstring
 
                 for line in lines:
                     if '"""' in line:
                         if not in_docstring:
                             in_docstring = True
-                            docstring_start = True
                             # Extract content after the opening """
                             cleaned_line = line.replace('"""', "").strip()
                             if cleaned_line:
@@ -448,10 +464,10 @@ class ExperimentRegistryGUI:
                 if not docstring_lines:
                     docstring_lines = [
                         "No description available.",
-                        f"This experiment implements the {exp_name} paradigm.",
+                        "This experiment implements the {} paradigm.".format(exp_name),
                         "\nParameters:",
-                        f"- n_participants: Number of participants (default: 5)",
-                        f"- n_trials_per_condition: Number of trials per condition (default: 20)",
+                        "- n_participants: Number of participants (default: 5)",
+                        "- n_trials_per_condition: Number of trials per condition (default: 20)",
                     ]
 
                 docstring = "\n".join(docstring_lines[:25])  # Limit to first 25 lines
@@ -462,7 +478,7 @@ class ExperimentRegistryGUI:
                 details += (
                     f"Status: {self.experiment_status.get(exp_name, 'Not Run')}\n"
                 )
-                details += f"\n{'='*50}\n\n"
+                details += f"\n{'=' * 50}\n\n"
                 details += docstring
 
                 self.details_text.delete(1.0, tk.END)
@@ -474,7 +490,7 @@ class ExperimentRegistryGUI:
                 details += (
                     f"Status: {self.experiment_status.get(exp_name, 'Not Run')}\n"
                 )
-                details += f"\n{'='*50}\n\n"
+                details += "\n{}\n\n".format("=" * 50)
                 details += "Source file not found.\n\n"
                 details += "This experiment is registered but the source file may be missing.\n"
                 details += f"Expected location: {full_path}\n\n"
@@ -491,8 +507,8 @@ class ExperimentRegistryGUI:
             details = f"Experiment: {exp_name}\n"
             details += f"Module: {module_path}\n"
             details += f"Status: {self.experiment_status.get(exp_name, 'Not Run')}\n"
-            details += f"\n{'='*50}\n\n"
-            details += f"Error loading details: {str(e)}\n\n"
+            details += "\n{}\n\n".format("=" * 50)
+            details += "Error loading details: {}\n\n".format(str(e))
             details += "This experiment is registered but could not be loaded.\n\n"
             details += "Parameters:\n"
             details += "- n_participants: Number of participants\n"
@@ -584,7 +600,7 @@ project_root = Path("{project_root}")
 sys.path.insert(0, str(project_root))
 
 try:
-    from tools.run_experiments import run_experiment
+    from run_experiments import run_experiment
     result = run_experiment("{exp_name}", n_participants={params["n_participants"]}, n_trials_per_condition={params["n_trials_per_condition"]})
     print("SUCCESS: Experiment completed")
     print(f"RESULT: {{result}}")
@@ -658,7 +674,7 @@ except Exception as e:
                 # Clean up temporary script
                 try:
                     os.unlink(script_path)
-                except Exception as e:
+                except Exception:
                     # Ignore cleanup errors - temp file will be cleaned by OS
                     pass
 
@@ -710,7 +726,7 @@ project_root = Path("{project_root}")
 sys.path.insert(0, str(project_root))
 
 try:
-    from tools.run_experiments import run_experiment
+    from run_experiments import run_experiment
     result = run_experiment("{exp_name}", n_participants={params["n_participants"]}, n_trials_per_condition={params["n_trials_per_condition"]})
     print("SUCCESS: Experiment completed")
     print(f"RESULT: {{result}}")
@@ -783,7 +799,7 @@ except Exception as e:
                     # Clean up temporary script
                     try:
                         os.unlink(script_path)
-                    except Exception as e:
+                    except Exception:
                         # Ignore cleanup errors - temp file will be cleaned by OS
                         pass
 
@@ -794,7 +810,7 @@ except Exception as e:
 
             # Final update
             self.progress_var.set(100)
-            self.log_output(f"\nAll experiments completed!")
+            self.log_output("\nAll experiments completed!")
 
             # Summary
             successful = sum(
@@ -804,13 +820,12 @@ except Exception as e:
             self.log_output(f"Summary: {successful} successful, {failed} failed")
 
         except Exception as e:
-            self.log_output(f"Error running all experiments: {e}")
+            error_msg = f"Error running all experiments: {e}"
+            self.log_output(error_msg)
             logger.error(f"Error in batch experiment run: {e}")
             self.root.after(
                 0,
-                lambda: messagebox.showerror(
-                    "Error", f"Error running all experiments: {e}"
-                ),
+                lambda msg=error_msg: messagebox.showerror("Error", msg),
             )
 
         finally:
@@ -847,16 +862,13 @@ except Exception as e:
 def main():
     """Main function to run the GUI."""
     root = tk.Tk()
-    app = ExperimentRegistryGUI(root)
-
-    # Center window on screen
+    ExperimentRegistryGUI(root)
     root.update_idletasks()
     width = root.winfo_width()
     height = root.winfo_height()
     x = (root.winfo_screenwidth() // 2) - (width // 2)
     y = (root.winfo_screenheight() // 2) - (height // 2)
     root.geometry(f"{width}x{height}+{x}+{y}")
-
     root.mainloop()
 
 

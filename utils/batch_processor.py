@@ -31,14 +31,17 @@ try:
         "SurpriseIgnitionSystem",
         PROJECT_ROOT / "Falsification" / "Falsification-Protocol-4.py",
     )
-    formal_model_module = importlib.util.module_from_spec(formal_model_spec)
-    formal_model_spec.loader.exec_module(formal_model_module)
-    SurpriseIgnitionSystem = formal_model_module.SurpriseIgnitionSystem
+    if formal_model_spec is not None and formal_model_spec.loader is not None:
+        formal_model_module = importlib.util.module_from_spec(formal_model_spec)
+        formal_model_spec.loader.exec_module(formal_model_module)
+        SurpriseIgnitionSystem = formal_model_module.SurpriseIgnitionSystem
+    else:
+        raise ImportError("Could not load SurpriseIgnitionSystem module")
 except (FileNotFoundError, ImportError, AttributeError) as e:
     print(f"Warning: Could not load SurpriseIgnitionSystem: {e}")
 
     # Create fallback class for testing
-    class SurpriseIgnitionSystem:
+    class SurpriseIgnitionSystemFallback:
         def __init__(self):
             pass
 
@@ -53,11 +56,17 @@ except (FileNotFoundError, ImportError, AttributeError) as e:
                 "B": np.random.randint(0, 2, steps),
             }
 
+    SurpriseIgnitionSystem = SurpriseIgnitionSystemFallback
+
 
 try:
-    from .logging_config import apgi_logger  # type: ignore
+    from apgi_framework.logging.standardized_logging import get_logger
+
+    apgi_logger = get_logger(__name__)  # type: ignore
 except ImportError:
-    from utils.logging_config import apgi_logger
+    import logging
+
+    apgi_logger = logging.getLogger(__name__)  # type: ignore
 
 
 def load_validation_module(protocol):
@@ -161,7 +170,7 @@ class BatchProcessor:
         job_id: str,
         analysis_type: str,
         input_file: str,
-        parameters: Dict[str, Any] = None,
+        parameters: Optional[Dict[str, Any]] = None,
         output_file: Optional[str] = None,
     ) -> str:
         """Add an analysis job to the batch."""
@@ -311,7 +320,7 @@ class BatchProcessor:
             for i in range(len(correlation_matrix.columns)):
                 for j in range(i + 1, len(correlation_matrix.columns)):
                     corr_val = correlation_matrix.iloc[i, j]
-                    if abs(corr_val) > 0.7:
+                    if isinstance(corr_val, (int, float)) and abs(corr_val) > 0.7:
                         result["strong_correlations"].append(
                             {
                                 "var1": correlation_matrix.columns[i],
@@ -327,16 +336,19 @@ class BatchProcessor:
 
     def _save_result(self, job: BatchJob):
         """Save job result to file."""
+        if not job.output_file:
+            return
+
         output_path = Path(job.output_file)
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        if job.output_file.endswith(".json"):
+        if job.output_file and job.output_file.endswith(".json"):
             with open(output_path, "w") as f:
                 json.dump(job.result, f, indent=2, default=str)
-        elif job.output_file.endswith(".pkl"):
+        elif job.output_file and job.output_file.endswith(".pkl"):
             with open(output_path, "wb") as f:
                 pickle.dump(job.result, f)
-        elif job.output_file.endswith(".csv"):
+        elif job.output_file and job.output_file.endswith(".csv"):
             if isinstance(job.result, dict) and "results" in job.result:
                 # Save simulation results as CSV
                 df = pd.DataFrame(job.result["results"])

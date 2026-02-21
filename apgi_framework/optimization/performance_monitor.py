@@ -5,18 +5,17 @@ Real-time performance monitoring with GUI integration for tracking
 system resources, operation performance, and optimization opportunities.
 """
 
-import time
-import threading
-import psutil
-from typing import Dict, List, Optional, Any, Callable
-from dataclasses import dataclass, field
-from collections import deque
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
-import tkinter as tk
-from tkinter import ttk
 import queue
+import threading
+import time
+import tkinter as tk
+from collections import deque
+from dataclasses import dataclass
+from tkinter import ttk
+from typing import Any, Callable, Dict, List, Optional
+
+import numpy as np
+import psutil
 
 from ..logging.standardized_logging import get_logger
 from .performance_profiler import get_profiler
@@ -74,7 +73,7 @@ class SystemMonitor:
         self.monitor_thread = None
 
         # Metrics history
-        self.metrics_history = deque(maxlen=history_size)
+        self.metrics_history: deque = deque(maxlen=history_size)
 
         # Alert thresholds
         self.alert_thresholds = {
@@ -90,9 +89,9 @@ class SystemMonitor:
         self.alert_callbacks: List[Callable[[PerformanceAlert], None]] = []
 
         # Previous values for rate calculations
-        self._prev_disk_io = None
-        self._prev_network_io = None
-        self._prev_timestamp = None
+        self._prev_disk_io: Optional[Any] = None
+        self._prev_network_io: Optional[Any] = None
+        self._prev_timestamp: Optional[float] = None
 
         self._lock = threading.Lock()
 
@@ -159,35 +158,46 @@ class SystemMonitor:
         cpu_percent = psutil.cpu_percent()
         memory = psutil.virtual_memory()
 
+        # Calculate time delta if timestamp available
+        time_delta: Optional[float] = None
+        if self._prev_timestamp is not None:
+            time_delta = current_time - self._prev_timestamp
+
         # Disk I/O
         disk_io = psutil.disk_io_counters()
         disk_read_mb = 0.0
         disk_write_mb = 0.0
 
-        if disk_io and self._prev_disk_io and self._prev_timestamp:
-            time_delta = current_time - self._prev_timestamp
-            if time_delta > 0:
-                read_delta = disk_io.read_bytes - self._prev_disk_io.read_bytes
-                write_delta = disk_io.write_bytes - self._prev_disk_io.write_bytes
-                disk_read_mb = (read_delta / time_delta) / (1024 * 1024)
-                disk_write_mb = (write_delta / time_delta) / (1024 * 1024)
+        if (
+            disk_io
+            and self._prev_disk_io is not None
+            and time_delta is not None
+            and time_delta > 0
+        ):
+            read_delta: int = disk_io.read_bytes - self._prev_disk_io.read_bytes
+            write_delta: int = disk_io.write_bytes - self._prev_disk_io.write_bytes
+            disk_read_mb = (read_delta / time_delta) / (1024 * 1024)
+            disk_write_mb = (write_delta / time_delta) / (1024 * 1024)
 
-        self._prev_disk_io = disk_io
+        self._prev_disk_io = psutil.disk_io_counters() if disk_io else None
 
         # Network I/O
         network_io = psutil.net_io_counters()
         network_sent_mb = 0.0
         network_recv_mb = 0.0
 
-        if network_io and self._prev_network_io and self._prev_timestamp:
-            time_delta = current_time - self._prev_timestamp
-            if time_delta > 0:
-                sent_delta = network_io.bytes_sent - self._prev_network_io.bytes_sent
-                recv_delta = network_io.bytes_recv - self._prev_network_io.bytes_recv
-                network_sent_mb = (sent_delta / time_delta) / (1024 * 1024)
-                network_recv_mb = (recv_delta / time_delta) / (1024 * 1024)
+        if (
+            network_io
+            and self._prev_network_io is not None
+            and time_delta is not None
+            and time_delta > 0
+        ):
+            sent_delta: int = network_io.bytes_sent - self._prev_network_io.bytes_sent
+            recv_delta: int = network_io.bytes_recv - self._prev_network_io.bytes_recv
+            network_sent_mb = (sent_delta / time_delta) / (1024 * 1024)
+            network_recv_mb = (recv_delta / time_delta) / (1024 * 1024)
 
-        self._prev_network_io = network_io
+        self._prev_network_io = psutil.net_io_counters() if network_io else None
         self._prev_timestamp = current_time
 
         return SystemMetrics(
@@ -294,7 +304,7 @@ class PerformanceMonitorGUI:
     def __init__(self, parent, monitor: Optional[SystemMonitor] = None):
         self.parent = parent
         self.monitor = monitor or SystemMonitor()
-        self.update_queue = queue.Queue()
+        self.update_queue: queue.Queue = queue.Queue()
 
         # Create GUI
         self.frame = ttk.LabelFrame(parent, text="Performance Monitor", padding=10)
@@ -510,8 +520,8 @@ Profiler Statistics:
 
     def _export_data(self):
         """Export performance data."""
-        from tkinter import filedialog
         import json
+        from tkinter import filedialog
 
         filename = filedialog.asksaveasfilename(
             title="Export Performance Data",

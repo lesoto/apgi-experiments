@@ -5,15 +5,11 @@ This test suite provides coverage for key utility functions that are available
 and working in the utils directory.
 """
 
-import pytest
-import tempfile
-import shutil
-import json
-import os
 import sys
+import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
-from datetime import datetime
+
+import pytest
 
 # Add project root to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -119,9 +115,8 @@ class TestErrorHandler:
         try:
             from utils.error_handler import ErrorHandler
 
-            with tempfile.TemporaryDirectory() as temp_dir:
-                log_file = Path(temp_dir) / "test_errors.log"
-                handler = ErrorHandler(str(log_file))
+            with tempfile.TemporaryDirectory():
+                handler = ErrorHandler()
 
                 # Check that required methods exist
                 assert hasattr(handler, "log_error")
@@ -245,8 +240,8 @@ class TestDataValidation:
             validator = DataValidator()
 
             # Check that validation methods exist
-            assert hasattr(validator, "validate_type")
-            assert hasattr(validator, "validate_structure")
+            assert hasattr(validator, "validate_file_format")
+            assert hasattr(validator, "validate_dataset_structure")
             assert hasattr(validator, "assess_data_quality")
         except ImportError as e:
             pytest.skip(f"DataValidator not available: {e}")

@@ -2,33 +2,23 @@
 Tests for clinical modules.
 """
 
-import pytest
 import numpy as np
-from unittest.mock import Mock, patch
-import sys
-import os
+import pytest
 
-# Add clinical modules to path
-sys.path.append(
-    os.path.join(os.path.dirname(__file__), "..", "apgi_framework", "clinical")
-)
-
-from disorder_classification import (
+from apgi_framework.clinical.disorder_classification import (
+    ClassificationResult,
+    DisorderClassification,
     DisorderType,
     NeuralSignatureProfile,
-    DisorderClassification,
-    ClassificationResult,
 )
-from parameter_extraction import (
+from apgi_framework.clinical.parameter_extraction import (
     ClinicalParameterExtractor,
-    ClinicalParameters,
-    AssessmentTask,
 )
-from treatment_prediction import (
-    TreatmentPredictor,
-    TreatmentPrediction,
-    TreatmentType,
+from apgi_framework.clinical.treatment_prediction import (
     BaselineParameters,
+    TreatmentPrediction,
+    TreatmentPredictor,
+    TreatmentType,
 )
 
 

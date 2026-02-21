@@ -5,19 +5,15 @@ Tests the accuracy and completeness of anti-pattern detection in test code,
 including AST-based analysis and improvement suggestion generation.
 """
 
-import pytest
-from hypothesis import given, strategies as st, assume, settings
-import ast
-import textwrap
-from typing import List, Dict, Any
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from apgi_framework.testing.anti_pattern_detector import (
+    AntiPattern,
     AntiPatternDetector,
     AntiPatternType,
-    Severity,
-    AntiPattern,
     ImprovementSuggestion,
-    ResourceRequirement,
+    Severity,
 )
 
 

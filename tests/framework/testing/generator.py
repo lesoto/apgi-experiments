@@ -10,15 +10,10 @@ This module provides automated test suite generation capabilities including:
 """
 
 import ast
-import inspect
-import os
-import sys
-from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple, Set
 from dataclasses import dataclass
 from datetime import datetime
-import importlib.util
-import logging
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 from apgi_framework.config import ConfigManager
 from apgi_framework.logging.standardized_logging import get_logger
@@ -100,13 +95,13 @@ class Test{class_name}:
     {test_methods}
 '''
 
-    def analyze_codebase(self, root_path: str = None) -> Dict[str, Any]:
+    def analyze_codebase(self, root_path: Optional[Path] = None) -> Dict[str, Any]:
         """Analyze the codebase for test coverage gaps."""
         if root_path is None:
             root_path = Path.cwd()
 
-        root_path = Path(root_path)
-        codebase_analysis = {
+        self.root_path: Path = root_path or Path.cwd()
+        self.codebase_analysis: Dict[str, Any] = {
             "modules": {},
             "coverage_gaps": [],
             "metrics": None,
@@ -114,24 +109,32 @@ class Test{class_name}:
         }
 
         # Discover Python modules
-        python_modules = self._discover_python_modules(root_path)
+        modules = self._discover_python_modules(self.root_path)
 
-        for module_path in python_modules:
+        for module_path in modules:
             try:
                 module_analysis = self._analyze_module(module_path)
-                codebase_analysis["modules"][str(module_path)] = module_analysis
+                if self.codebase_analysis is None:
+                    self.codebase_analysis = {}
+                if not isinstance(self.codebase_analysis, dict):
+                    self.codebase_analysis = {}
+                self.codebase_analysis.setdefault("modules", {})[
+                    str(module_path)
+                ] = module_analysis
 
                 # Identify coverage gaps
                 gaps = self._identify_coverage_gaps(module_analysis)
-                codebase_analysis["coverage_gaps"].extend(gaps)
+                self.codebase_analysis["coverage_gaps"].extend(gaps)
 
             except Exception as e:
                 self.logger.warning(f"Failed to analyze module {module_path}: {e}")
 
         # Calculate overall metrics
-        codebase_analysis["metrics"] = self._calculate_suite_metrics(codebase_analysis)
+        self.codebase_analysis["coverage_metrics"] = self._calculate_suite_metrics(
+            self.codebase_analysis
+        )
 
-        return codebase_analysis
+        return self.codebase_analysis
 
     def _discover_python_modules(self, root_path: Path) -> List[Path]:
         """Discover all Python modules in the codebase."""
@@ -167,7 +170,7 @@ class Test{class_name}:
 
             tree = ast.parse(content)
 
-            analysis = {
+            analysis: Dict[str, Any] = {
                 "path": str(module_path),
                 "module_name": self._get_module_name(module_path),
                 "functions": [],
@@ -266,6 +269,13 @@ class Test{class_name}:
                 "names": [alias.name for alias in node.names],
                 "line_number": node.lineno,
             }
+
+        # Default case for unsupported import types
+
+        return {
+            "type": "unknown_import",
+            "line_number": getattr(node, "lineno", 0),
+        }
 
     def _calculate_complexity(self, node) -> int:
         """Calculate cyclomatic complexity of a node."""
@@ -366,7 +376,7 @@ class Test{class_name}:
         self, module_analysis: Dict[str, Any]
     ) -> List[CoverageGap]:
         """Identify test coverage gaps in a module."""
-        gaps = []
+        gaps: List[CoverageGap] = []
 
         # Skip modules that have errors
         if "error" in module_analysis:
@@ -515,20 +525,20 @@ class Test{class_name}:
 
         # Edge cases based on arguments
         if func["args_count"] > 0:
-            suggestions.append(f"Test with valid arguments")
-            suggestions.append(f"Test with invalid/None arguments")
+            suggestions.append("Test with valid arguments")
+            suggestions.append("Test with invalid/None arguments")
 
         # Exception handling
         if func.get("has_exceptions"):
-            suggestions.append(f"Test exception handling scenarios")
+            suggestions.append("Test exception handling scenarios")
 
         # Return value testing
         if func.get("has_return"):
-            suggestions.append(f"Test return value validation")
+            suggestions.append("Test return value validation")
 
         # Async functions
         if func.get("is_async"):
-            suggestions.append(f"Test async execution")
+            suggestions.append("Test async execution")
 
         return suggestions
 
@@ -536,12 +546,12 @@ class Test{class_name}:
         """Suggest test cases for a class."""
         suggestions = []
 
-        suggestions.append(f"Test class instantiation")
-        suggestions.append(f"Test class initialization parameters")
+        suggestions.append("Test class instantiation")
+        suggestions.append("Test class initialization parameters")
 
         if cls.get("has_init"):
-            suggestions.append(f"Test __init__ method with valid parameters")
-            suggestions.append(f"Test __init__ method with invalid parameters")
+            suggestions.append("Test __init__ method with valid parameters")
+            suggestions.append("Test __init__ method with invalid parameters")
 
         # Test key methods
         for method in cls.get("methods", []):
@@ -633,7 +643,7 @@ class Test{class_name}:
         generated_files = {}
 
         # Group gaps by module
-        gaps_by_module = {}
+        gaps_by_module: Dict[str, List[CoverageGap]] = {}
         for gap in codebase_analysis["coverage_gaps"]:
             module_name = gap.module_name
             if module_name not in gaps_by_module:
@@ -761,7 +771,7 @@ except ImportError as e:
             assert self.test_instance is not None, "Class should instantiate successfully"
             assert isinstance(self.test_instance, {gap.function_name}), "Instance should be of correct type"
         except Exception as e:
-            assert False, f"Class instantiation failed: {e}"
+            assert False, f"Class instantiation failed: {{e}}"
     
     def test_initialization_parameters(self):
         """Test initialization with various parameters."""
@@ -773,15 +783,15 @@ except ImportError as e:
         for params in valid_params:
             try:
                 instance = {gap.function_name}(**params)
-                assert instance is not None, f"Should instantiate with params: {params}"
+                assert instance is not None, f"Should instantiate with params: {{params}}"
             except Exception as e:
-                assert False, f"Valid params failed: {params}, error: {e}"
+                assert False, f"Valid params failed: {{params}}, error: {{e}}"
         
         # Test invalid parameters
         for params in invalid_params:
             try:
                 instance = {gap.function_name}(**params)
-                assert False, f"Should raise exception with invalid params: {params}"
+                assert False, f"Should raise exception with invalid params: {{params}}"
             except (ValueError, TypeError, AssertionError):
                 pass  # Expected to fail'''
 
@@ -840,7 +850,7 @@ Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 ## Coverage Breakdown
 
 ### Module Coverage
-{metrics.tested_modules}/{metrics.total_modules} modules ({(metrics.tested_modules/metrics.total_modules*100):.1f}%) have test files
+{metrics.tested_modules}/{metrics.total_modules} modules ({(metrics.tested_modules / metrics.total_modules * 100):.1f}%) have test files
 
 ### Function/Method Coverage
 {metrics.tested_functions}/{metrics.total_functions} functions and methods ({metrics.coverage_percentage:.1f}%) are tested
@@ -858,7 +868,7 @@ Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
   - Suggested tests: {len(gap.suggested_test_cases)}
 """
 
-        report += f"""
+        report += """
 ### Medium Priority Gaps (Complexity 5-9)
 """
 
@@ -870,7 +880,7 @@ Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
   - Suggested tests: {len(gap.suggested_test_cases)}
 """
 
-        report += f"""
+        report += """
 ### Low Priority Gaps (Complexity < 5)
 """
 
@@ -882,7 +892,7 @@ Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
   - Suggested tests: {len(gap.suggested_test_cases)}
 """
 
-        report += f"""
+        report += """
 ## Recommendations
 
 1. **Immediate Actions** (High Priority):
@@ -922,21 +932,21 @@ python -m apgi_framework.cli batch-test --test-paths generated_tests/
 
 
 # Convenience functions
-def analyze_test_coverage(root_path: str = None) -> Dict[str, Any]:
+def analyze_test_coverage(root_path: Optional[Path] = None) -> Dict[str, Any]:
     """Analyze test coverage for the codebase."""
-    generator = TestSuiteGenerator()
+    generator = SuiteGenerator()
     return generator.analyze_codebase(root_path)
 
 
 def generate_missing_tests(output_dir: str = "generated_tests") -> Dict[str, str]:
     """Generate tests for missing coverage."""
-    generator = TestSuiteGenerator()
+    generator = SuiteGenerator()
     analysis = generator.analyze_codebase()
     return generator.generate_missing_tests(analysis, output_dir)
 
 
 def create_coverage_report(output_file: str = "coverage_report.md") -> str:
     """Create a comprehensive coverage report."""
-    generator = TestSuiteGenerator()
+    generator = SuiteGenerator()
     analysis = generator.analyze_codebase()
     return generator.generate_coverage_report(analysis, output_file)

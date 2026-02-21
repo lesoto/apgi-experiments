@@ -2,8 +2,9 @@
 Tests for adaptive module components.
 """
 
-import pytest
 from datetime import datetime
+
+import pytest
 
 from apgi_framework.adaptive.quest_plus_staircase import (
     QuestPlusParameters,
@@ -11,20 +12,19 @@ from apgi_framework.adaptive.quest_plus_staircase import (
     StaircaseState,
 )
 from apgi_framework.adaptive.stimulus_generators import (
-    StimulusType,
-    StimulusParameters,
-    GaborParameters,
-    ToneParameters,
     CO2PuffParameters,
+    GaborParameters,
     GaborPatchGenerator,
+    StimulusParameters,
+    StimulusType,
     ToneGenerator,
+    ToneParameters,
 )
 from apgi_framework.adaptive.task_control import (
-    TaskState,
-    SessionManager,
     SessionConfiguration,
+    SessionManager,
+    TaskState,
 )
-from apgi_framework.adaptive.quest_plus_staircase import QuestPlusParameters
 
 
 class TestQuestPlusParameters:

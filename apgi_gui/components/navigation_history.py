@@ -5,15 +5,15 @@ Provides comprehensive navigation tracking, breadcrumb navigation,
 back/forward functionality, and navigation state management.
 """
 
+import json
+import logging
 import tkinter as tk
-from tkinter import ttk
-from typing import Dict, List, Optional, Any, Callable
 from dataclasses import dataclass, field
 from datetime import datetime
-import json
-from pathlib import Path
-import logging
 from enum import Enum
+from pathlib import Path
+from tkinter import ttk
+from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -260,7 +260,8 @@ class NavigationHistory:
 
             # Find parent
             if state.parent_id:
-                state = next((s for s in self.history if s.id == state.parent_id), None)
+                parent_states = [s for s in self.history if s.id == state.parent_id]
+                state = parent_states[0] if parent_states else None  # type: ignore[assignment]
             else:
                 break
 
@@ -389,7 +390,7 @@ class NavigationWidget:
 
         logger.info("Navigation widget created")
 
-    def _create_ui(self):
+    def _create_ui(self) -> None:
         """Create the navigation UI."""
         # Main frame
         main_frame = ttk.Frame(self.parent)
@@ -619,9 +620,8 @@ class NavigationWidget:
             if selection:
                 item = tree.item(selection[0])
                 state_id = item["tags"][0]
-                state = next(
-                    (s for s in self.nav_history.history if s.id == state_id), None
-                )
+                states = [s for s in self.nav_history.history if s.id == state_id]
+                state = states[0] if states else None
                 if state:
                     self._navigate_to_state(state)
                     dialog.destroy()

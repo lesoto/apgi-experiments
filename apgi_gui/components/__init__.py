@@ -11,8 +11,8 @@ This package contains reusable GUI components for the APGI Framework including:
 # Import main components with graceful fallback for missing dependencies
 try:
     from .theme_toggle import (
-        ThemeToggleWidget,
         ThemeToggleDialog,
+        ThemeToggleWidget,
         create_theme_toggle,
         show_theme_dialog,
     )
@@ -30,9 +30,9 @@ except ImportError:
 
 try:
     from .help_system import (
-        HelpSystemUI,
         FeatureTourManager,
         HelpContent,
+        HelpSystemUI,
         create_help_system,
         show_quick_help,
     )

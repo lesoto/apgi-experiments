@@ -20,7 +20,7 @@ The framework uses Python's built-in `logging` module with standardized configur
 The framework uses standard Python logging levels:
 
 | Level | Numeric Value | When to Use |
-|-------|---------------|-------------|
+| ------- | --------------- | ------------- |
 | `DEBUG` | 10 | Detailed diagnostic information |
 | `INFO` | 20 | General information about program execution |
 | `WARNING` | 30 | Something unexpected happened, but the program continues |

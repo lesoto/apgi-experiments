@@ -58,6 +58,7 @@ behavioral_data = load_example_data('behavioral', subject_id='subject_001')
 ## Data Quality
 
 All data is simulated but designed to be realistic for:
+
 - Testing analysis pipelines
 - Developing new features
 - Demonstrating framework capabilities
@@ -66,21 +67,27 @@ All data is simulated but designed to be realistic for:
 ## Data Categories
 
 ### Standard Datasets (`examples/data/{modality}/`)
+
 Basic simulated datasets for each modality:
+
 - **EEG Data**: Clean recordings with normal patterns
 - **Pupillometry Data**: Normal pupil responses
 - **Cardiac Data**: Regular heart rate and HRV
 - **Behavioral Data**: Standard reaction time tasks
 
 ### Multimodal Datasets (`examples/data/multimodal/{modality}/`)
+
 Synchronized multimodal recordings with event-related responses:
+
 - **Synchronized Events**: Cross-modality stimulus responses at 30s, 60s, and 90s
 - **Event-Related Potentials**: P300-like responses in EEG
 - **Task-Evoked Dilation**: Pupil responses synchronized with stimuli
 - **Behavioral Correlates**: Reaction time data linked to physiological events
 
 ### Pathological Datasets (`examples/data/pathological/{modality}/`)
+
 Simulated pathological patterns for testing detection algorithms:
+
 - **EEG Abnormalities**: Spike-and-wave discharges (epileptiform activity)
 - **Pupillometry Abnormalities**: Unusual dilation episodes
 - **Cardiac Abnormalities**: Tachycardia episodes and arrhythmia
@@ -89,12 +96,15 @@ Simulated pathological patterns for testing detection algorithms:
 ## Subjects
 
 ### Standard Datasets
+
 - subject_001, subject_002, subject_003
 
 ### Multimodal Datasets
+
 - multimodal_001, multimodal_002, multimodal_003
 
 ### Pathological Datasets
+
 - pathological_001, pathological_002
 
 Each subject has complete data for all modalities within their category.

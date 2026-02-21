@@ -5,11 +5,11 @@ Provides cross-frequency coupling, frontal-posterior coherence,
 and phase-amplitude coupling detection for APGI framework validation.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
+
 import numpy as np
 from scipy import signal
-from scipy.stats import pearsonr
 
 
 @dataclass
@@ -387,7 +387,7 @@ class GammaSynchronyAnalysis:
                 metrics = self.compute_gamma_coherence(data[f_ch], data[p_ch])
                 coherences.append(metrics.gamma_coherence)
 
-        return np.mean(coherences)
+        return float(np.mean(coherences))
 
     def compute_connectivity_matrix(
         self, data: np.ndarray, channel_names: Optional[List[str]] = None
@@ -520,15 +520,15 @@ class GammaSynchronyAnalysis:
             # Count connections among neighbors
             neighbor_connections = 0
             for j in range(len(neighbors)):
-                for l in range(j + 1, len(neighbors)):
-                    if binary_net[neighbors[j], neighbors[l]] > 0:
+                for neighbor_idx in range(j + 1, len(neighbors)):
+                    if binary_net[neighbors[j], neighbors[neighbor_idx]] > 0:
                         neighbor_connections += 1
 
             # Clustering coefficient for node i
             cc = (2 * neighbor_connections) / (k * (k - 1))
             clustering_coeffs.append(cc)
 
-        return np.mean(clustering_coeffs) if clustering_coeffs else 0.0
+        return float(np.mean(clustering_coeffs)) if clustering_coeffs else 0.0
 
     def _compute_path_length(
         self, connectivity: np.ndarray, threshold: float = 0.5
@@ -598,7 +598,6 @@ class GammaSynchronyAnalysis:
         burst_start = 0
 
         dt = 1000.0 / self.sampling_rate  # ms per sample
-        min_samples = int(min_duration / dt)
 
         for i in range(len(above_threshold)):
             if above_threshold[i] and not in_burst:

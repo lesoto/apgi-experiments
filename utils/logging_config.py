@@ -41,8 +41,8 @@ class LogEntry:
     module: str
     function: str
     line: int
-    thread: str = None
-    exception: str = None
+    thread: Optional[str] = None
+    exception: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -62,11 +62,11 @@ class LogEntry:
 class SearchQuery:
     """Log search query parameters."""
 
-    text: str = None
-    level: str = None
-    module: str = None
-    start_time: str = None
-    end_time: str = None
+    text: Optional[str] = None
+    level: Optional[str] = None
+    module: Optional[str] = None
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
     regex: bool = False
     max_results: int = 1000
     offset: int = 0
@@ -84,8 +84,8 @@ class LogStreamer:
     def subscribe(
         self,
         callback: Callable[[LogEntry], None],
-        level_filter: str = None,
-        module_filter: str = None,
+        level_filter: Optional[str] = None,
+        module_filter: Optional[str] = None,
     ) -> str:
         """Subscribe to log stream with filters."""
         subscriber_id = f"sub_{int(time.time() * 1000)}"
@@ -154,9 +154,9 @@ class APGILogger:
         enable_console: bool = True,
         queue_size: int = 10000,
     ):
-        self.log_files = {}
-        self.performance_metrics = {}
-        self.error_counts = {}
+        self.log_files: Dict[str, Path] = {}
+        self.performance_metrics: Dict[str, List[Dict[str, Any]]] = {}
+        self.error_counts: Dict[str, int] = {}
         self.logger = logger  # Expose the loguru logger
         self.streamer = LogStreamer()
 
@@ -205,7 +205,10 @@ class APGILogger:
         self.queue_size = queue_size
 
     def update_logging_config(
-        self, log_level: str = None, enable_console: bool = None, queue_size: int = None
+        self,
+        log_level: Optional[str] = None,
+        enable_console: Optional[bool] = None,
+        queue_size: Optional[int] = None,
     ):
         """Update logging configuration with validation and fallbacks."""
         config_changed = False
@@ -563,15 +566,16 @@ class APGILogger:
 
     def _extract_log_fields(self, groups: tuple) -> tuple:
         """Extract timestamp, level, location, and message from regex groups."""
-        if len(groups) >= 3:
+        if len(groups) >= 4:
             timestamp_str, level, location, message = (
                 groups[0],
                 groups[1],
                 groups[2],
+                groups[3],
             )
-            if len(groups) == 3:
-                location = "unknown"
-                message = groups[2]
+        elif len(groups) == 3:
+            timestamp_str, level, location = groups[0], groups[1], groups[2]
+            message = ""
         else:
             timestamp_str, level, message = groups[0], groups[1], groups[2]
             location = "unknown"
@@ -759,7 +763,6 @@ class APGILogger:
             FileNotFoundError,
             PermissionError,
             ValueError,
-            json.JSONEncodeError,
             OSError,
         ) as e:
             logger.error(f"Error exporting logs: {e}")
@@ -786,7 +789,7 @@ class APGILogger:
     # Log Search and Streaming Methods
     def search_logs(self, query: SearchQuery) -> List[LogEntry]:
         """Search logs based on query parameters."""
-        results = []
+        results: List[LogEntry] = []
 
         # Get log files to search
         log_files = list(LOGS_DIR.glob("*.log"))
@@ -894,8 +897,8 @@ class APGILogger:
     def stream_logs(
         self,
         callback: Callable[[LogEntry], None],
-        level_filter: str = None,
-        module_filter: str = None,
+        level_filter: Optional[str] = None,
+        module_filter: Optional[str] = None,
     ) -> str:
         """Subscribe to real-time log streaming."""
         return self.streamer.subscribe(callback, level_filter, module_filter)
@@ -906,7 +909,7 @@ class APGILogger:
 
     def get_log_stats(self) -> Dict[str, Any]:
         """Get statistics about log files."""
-        stats = {
+        stats: Dict[str, Any] = {
             "total_files": 0,
             "total_size": 0,
             "by_level": {},
@@ -1060,7 +1063,9 @@ def log_function_call(level: str = "DEBUG"):
 
 if __name__ == "__main__":
     # Test logging system
-    apgi_logger.log_system_info()
+    test_logger: APGILogger = APGILogger()
+
+    test_logger.log_system_info()
 
     # Test different log levels
     logger.debug("This is a debug message")
@@ -1069,19 +1074,17 @@ if __name__ == "__main__":
     logger.error("This is an error message")
 
     # Test performance logging
-    apgi_logger.log_performance_metric("test_metric", 1.23, "seconds")
+    test_logger.log_performance_metric("test_metric", 1.23, "seconds")
 
     # Test error logging with context
     try:
         raise ValueError("Test error for logging")
     except Exception as e:
-        apgi_logger.log_error_with_context(
-            e, {"operation": "test", "user": "test_user"}
-        )
+        test_logger.log_error_with_context(e, {"test": "logging"})
 
     # Test simulation logging
-    apgi_logger.log_simulation_start("test_simulation", {"param1": 1.0, "param2": 2.0})
-    apgi_logger.log_simulation_end(
+    test_logger.log_simulation_start("test_simulation", {"param1": 1.0, "param2": 2.0})
+    test_logger.log_simulation_end(
         "test_simulation", 5.5, {"result1": 10, "result2": 20}
     )
 

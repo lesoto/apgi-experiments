@@ -5,13 +5,14 @@ Provides heart rate, skin conductance, respiratory monitoring,
 and synchronized physiological data streaming for APGI experiments.
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Callable, Any
-from enum import Enum
-import numpy as np
-from collections import deque
 import threading
 import time
+from collections import deque
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any, Callable, Dict, List, Optional, Tuple
+
+import numpy as np
 
 from ..logging.standardized_logging import get_logger
 
@@ -466,11 +467,11 @@ class RespirationMonitor:
                 trough_idx = troughs_between[0]
 
                 # Compute cycle parameters
-                inspiration_time = (
-                    timestamps[peak_idx] - timestamps[trough_idx]
-                    if i > 0 and troughs_between
-                    else 0
-                )
+                if i > 0 and troughs_between:
+                    inspiration_time = timestamps[peak_idx] - timestamps[trough_idx]
+                else:
+                    inspiration_time = 0
+
                 expiration_time = timestamps[trough_idx] - timestamps[peak_idx]
                 cycle_time = timestamps[next_peak_idx] - timestamps[peak_idx]
 
@@ -483,6 +484,8 @@ class RespirationMonitor:
                         ),
                         "inspiration_peak": timestamps[peak_idx],
                         "expiration_end": timestamps[trough_idx],
+                        "inspiration_time": inspiration_time,
+                        "expiration_time": expiration_time,
                         "cycle_duration": cycle_time,
                         "amplitude": amplitude,
                     }
@@ -894,7 +897,9 @@ class PhysiologicalMonitoring:
             metrics["heart_rate"] = self.heart_rate_monitor.compute_heart_rate(
                 rr_intervals
             )
-            metrics["hrv"] = self.heart_rate_monitor.compute_hrv_metrics(rr_intervals)
+            metrics["hrv"] = self.heart_rate_monitor.compute_hrv_metrics(
+                rr_intervals
+            ).get("rmssd", 0.0)
 
         # SCR metrics
         if self.config.enable_scr and len(self.scr_buffer) > 0:
@@ -918,9 +923,16 @@ class PhysiologicalMonitoring:
                     "respiration_rate"
                 ] = self.respiration_monitor.compute_respiration_rate(cycles)
                 metrics["breath_cycles"] = len(cycles)
-                metrics["current_phase"] = self.respiration_monitor.get_current_phase(
+                phase_enum = self.respiration_monitor.get_current_phase(
                     resp_data, timestamps, time.time()
-                ).value
+                )
+                # Convert enum to integer for metrics compatibility
+                phase_mapping = {
+                    RespirationPhase.INSPIRATION: 0,
+                    RespirationPhase.EXPIRATION: 1,
+                    RespirationPhase.PAUSE: 2,
+                }
+                metrics["current_phase"] = phase_mapping.get(phase_enum, 0)
 
         return metrics
 
@@ -1067,7 +1079,7 @@ class PhysiologicalMonitoring:
                 ),
                 "sampling_rate": self.config.sampling_rate,
             }
-            np.savez(filename, **data_dict)
+            np.savez(filename, **data_dict)  # type: ignore
 
         elif format == "csv":
             import csv

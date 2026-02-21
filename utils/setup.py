@@ -5,12 +5,14 @@ This setup script provides modern Python packaging with pyproject.toml support.
 Uses current best practices and avoids deprecated setuptools parameters.
 """
 
-import os
 import sys
-import subprocess
-import platform
 from pathlib import Path
-from setuptools import setup, find_packages
+
+from setuptools import find_packages, setup  # type: ignore
+
+# Handle --auto flag for compatibility with automated scripts
+if "--auto" in sys.argv:
+    sys.argv.remove("--auto")
 
 # Modern packaging - check for pyproject.toml first
 PYPROJECT_TOML = Path(__file__).parent / "pyproject.toml"
@@ -31,7 +33,7 @@ def get_version():
     """Get version from pyproject.toml or VERSION file."""
     if PYPROJECT_TOML.exists():
         try:
-            import toml
+            import toml  # type: ignore
 
             config = toml.load(PYPROJECT_TOML)
             return config.get("project", {}).get("version", "0.1.0")

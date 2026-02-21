@@ -5,19 +5,18 @@ This module provides safe file operations with comprehensive error handling,
 path manipulation and validation utilities, and temporary file management.
 """
 
+import hashlib
+import json
+import logging
 import os
 import shutil
 import tempfile
-import json
-import pickle
-import hashlib
-from pathlib import Path
-from typing import Union, List, Optional, Dict, Any, Iterator, BinaryIO, TextIO
 from contextlib import contextmanager
-import logging
 from datetime import datetime
+from pathlib import Path
+from typing import Any, BinaryIO, Dict, Iterator, List, Optional, TextIO, Union
 
-from .path_utils import get_path_manager, PathManager
+from .path_utils import get_path_manager
 
 
 class FileOperationError(Exception):
@@ -272,7 +271,10 @@ class FileUtils:
             raise FileOperationError(f"Failed to copy {src_path} to {dst_path}: {e}")
 
     def safe_move(
-        self, src: Union[str, Path], dst: Union[str, Path], create_dirs: bool = True
+        self,
+        src: Union[str, Path],
+        dst: Union[str, Path],
+        create_dirs: bool = True,
     ) -> Path:
         """
         Safely move file with error handling.
@@ -346,7 +348,9 @@ class FileUtils:
             raise FileOperationError(f"Failed to delete {resolved_path}: {e}")
 
     def create_backup(
-        self, file_path: Union[str, Path], backup_dir: Optional[Union[str, Path]] = None
+        self,
+        file_path: Union[str, Path],
+        backup_dir: Optional[Union[str, Path]] = None,
     ) -> Path:
         """
         Create backup of file with timestamp.
@@ -558,7 +562,10 @@ class FileUtils:
 
     @contextmanager
     def temporary_file(
-        self, suffix: str = "", prefix: str = "apgi_test_", text_mode: bool = True
+        self,
+        suffix: str = "",
+        prefix: str = "apgi_test_",
+        text_mode: bool = True,
     ) -> Iterator[Union[TextIO, BinaryIO]]:
         """
         Context manager for temporary file.
@@ -576,16 +583,26 @@ class FileUtils:
         mode = "w+" if text_mode else "w+b"
 
         with tempfile.NamedTemporaryFile(
-            mode=mode, suffix=suffix, prefix=prefix, dir=temp_dir, delete=False
+            mode=mode,
+            suffix=suffix,
+            prefix=prefix,
+            dir=temp_dir,
+            delete=False,
         ) as temp_file:
             temp_path = Path(temp_file.name)
             try:
-                yield temp_file
+                # Cast to expected type for compatibility
+                if text_mode:
+                    import typing
+
+                    yield typing.cast(TextIO, temp_file)
+                else:
+                    yield typing.cast(BinaryIO, temp_file)
             finally:
                 # Ensure file is closed before cleanup
                 try:
                     temp_file.close()
-                except:
+                except Exception:
                     pass
                 # Clean up
                 try:
@@ -669,7 +686,7 @@ class FileUtils:
                     content = self.safe_read_text(resolved_path)
                     stats["line_count"] = len(content.splitlines())
                     stats["char_count"] = len(content)
-                except:
+                except Exception:
                     stats["line_count"] = None
                     stats["char_count"] = None
 

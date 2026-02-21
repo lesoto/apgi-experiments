@@ -4,11 +4,12 @@ Comprehensive test suite for new APGI Framework components.
 Tests for Cross-Species Validation, Clinical Biomarkers, and Threshold Detection Paradigm.
 """
 
-import pytest
-import numpy as np
+import sys
 from datetime import datetime
 from pathlib import Path
-import sys
+
+import numpy as np
+import pytest
 
 # Add project root to path
 sys.path.append(str(Path(__file__).parent.parent))
@@ -16,10 +17,10 @@ sys.path.append(str(Path(__file__).parent.parent))
 # Import components to test
 try:
     from apgi_framework.research.cross_species_validation import (
-        CrossSpeciesValidator,
-        Species,
-        NeuralSignatureType,
         CrossSpeciesSignature,
+        CrossSpeciesValidator,
+        NeuralSignatureType,
+        Species,
         ValidationResult,
     )
 
@@ -29,12 +30,12 @@ except ImportError as e:
     print(f"Warning: Could not import cross-species validation: {e}")
 
 try:
-    from research.clinical_biomarkers.experiments.biomarker_analysis import (
+    from research.clinical_biomarkers.experiments.biomarker_analysis import (  # type: ignore
         BiomarkerAnalyzer,
-        ClinicalCondition,
         BiomarkerType,
-        PatientProfile,
         ClinicalBiomarker,
+        ClinicalCondition,
+        PatientProfile,
     )
 
     CLINICAL_BIOMARKERS_AVAILABLE = True
@@ -44,10 +45,10 @@ except ImportError as e:
 
 try:
     from apgi_framework.research.threshold_detection_paradigm import (
-        ThresholdDetectionSystem,
         ModalityType,
-        ThresholdMethod,
         StimulusParameters,
+        ThresholdDetectionSystem,
+        ThresholdMethod,
         TrialResponse,
     )
 
@@ -199,7 +200,7 @@ class TestCrossSpeciesValidation:
             significance_threshold=0.05,
         )
 
-        assert result.is_significant == True
+        assert result.is_significant
         assert result.signature_type == NeuralSignatureType.P3B
         assert result.species_comparison == (Species.HUMAN, Species.RODENT)
         assert result.validation_score == 0.8
@@ -520,13 +521,14 @@ class TestThresholdDetectionParadigm:
             pupil_dilation=0.3,
         )
 
-        assert trial.detection == True
+        assert trial.detection
         assert trial.confidence == 0.8
         assert trial.p3b_amplitude == 5.2
         assert trial.gamma_power == 1.8
 
     def test_psychometric_function_fitting(self):
         """Test psychometric function fitting."""
+        system = ThresholdDetectionSystem()
         psych_func = system.psychometric_functions["cumulative_gaussian"]
 
         # Generate test data
@@ -571,7 +573,7 @@ class TestThresholdDetectionParadigm:
 
         # Test staircase updates
         for i in range(10):
-            intensity = staircase.get_next_intensity()
+            _ = staircase.get_next_intensity()
             response = i < 5  # First 5 are correct, last 5 are incorrect
             staircase.update_staircase(response)
 

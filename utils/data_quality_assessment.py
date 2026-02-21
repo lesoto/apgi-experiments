@@ -6,13 +6,14 @@ Comprehensive data quality assessment and anomaly detection system for APGI fram
 Provides quality scoring, anomaly detection, and data validation insights.
 """
 
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 # APGI imports
 from logging_config import apgi_logger
@@ -269,9 +270,9 @@ class DataQualityAssessment:
                     pd.to_datetime(col_data, errors="raise")
                 except Exception:
                     consistency_issues += col_data.notna().sum()
-                    consistency_details[
-                        f"{col}_date_format"
-                    ] = "Inconsistent date formats"
+                    consistency_details[f"{col}_date_format"] = [
+                        "Inconsistent date formats"
+                    ]
 
         # Calculate consistency score
         if total_checks > 0:
@@ -428,8 +429,6 @@ class DataQualityAssessment:
                     if p_value < 0.001:  # Not normally distributed
                         # Check for multimodality using Hartigan's dip test
                         try:
-                            from scipy.stats import kstest
-
                             # Simple multimodality check using kernel density
                             values = np.asarray(col_data.values, dtype=float)
                             if len(values) > 50:
@@ -471,7 +470,7 @@ class DataQualityAssessment:
         self, data: pd.DataFrame, timestamp_col: Optional[str] = None
     ) -> List[AnomalyDetection]:
         """Detect temporal anomalies in time series data."""
-        anomalies = []
+        anomalies: List[AnomalyDetection] = []
 
         if timestamp_col is None:
             # Try to find timestamp column
@@ -699,7 +698,10 @@ class DataQualityAssessment:
         ax1.set_title(f"Overall Score: {report.overall_score:.2f} ({report.grade})")
         ax1.set_yticks([])
         ax1.axvline(
-            x=report.overall_score, color="darkblue", linestyle="--", linewidth=2
+            x=report.overall_score,
+            color="darkblue",
+            linestyle="--",
+            linewidth=2,
         )
 
         # 2. Metrics breakdown

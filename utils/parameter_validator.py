@@ -170,7 +170,7 @@ class APGIParameterValidator:
                 }
 
             errors = []
-            warnings = []
+            warnings: List[str] = []
 
             # Check each parameter
             for key, value in parameters.items():

@@ -13,7 +13,7 @@ import sys
 import threading
 import tkinter as tk
 from pathlib import Path
-from tkinter import scrolledtext, ttk, simpledialog
+from tkinter import scrolledtext, simpledialog, ttk
 from typing import Dict, List, Optional
 
 

@@ -5,9 +5,10 @@ This module implements validation tasks to test whether estimated parameters
 (θ₀, Πᵢ, β) predict performance on independent behavioral measures.
 """
 
-import numpy as np
-from typing import Dict, List, Optional, Tuple, Union
 from dataclasses import dataclass
+from typing import Dict, List, Optional, Tuple, Union
+
+import numpy as np
 from scipy import stats  # type: ignore
 
 from .bayesian_models import ParameterEstimates
@@ -305,7 +306,9 @@ class BodyVigilanceScaleAnalyzer:
             item: np.random.uniform(0, 10) for item in self.scale_items
         }
         responses["participant_id"] = participant_id
-        responses["total_score"] = self.compute_bvs_score(responses)
+        responses["total_score"] = self.compute_bvs_score(
+            {k: float(v) for k, v in responses.items() if k in self.scale_items}
+        )
 
         return responses  # type: ignore
 

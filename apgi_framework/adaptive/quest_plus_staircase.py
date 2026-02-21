@@ -5,14 +5,15 @@ Implements the QUEST+ algorithm for efficient threshold estimation in
 detection tasks, with state management and convergence monitoring.
 """
 
-import numpy as np
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any, Callable
-from datetime import datetime
-from ..logging.standardized_logging import get_logger
-from scipy.stats import norm
-from scipy.optimize import minimize_scalar
 import json
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
+
+import numpy as np
+from scipy.stats import norm
+
+from ..logging.standardized_logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -265,41 +266,27 @@ class QuestPlusStaircase:
         # Iterate over all parameter combinations
         for i, threshold in enumerate(self.threshold_space):
             for j, slope in enumerate(self.slope_space):
-                prior_prob = self.state.posterior[i, j]
+                if self.state.posterior is not None:
+                    prior_prob = self.state.posterior[i, j]
 
-                if prior_prob > 1e-10:  # Skip negligible probabilities
-                    # Probability of detection for this parameter combination
-                    p_detect = self._psychometric_function(intensity, threshold, slope)
+                    if prior_prob > 1e-10:  # Skip negligible probabilities
+                        # Probability of detection for this parameter combination
+                        p_detect = self._psychometric_function(
+                            intensity, threshold, slope
+                        )
+                        posterior_detected = prior_prob * p_detect
+                        posterior_not_detected = prior_prob * (1 - p_detect)
 
-                    # Update expected probability of detection
-                    p_detected_total += prior_prob * p_detect
-
-                    # Calculate posterior for each response
-                    # Response: detected
-                    likelihood_detected = self._likelihood(
-                        intensity, True, threshold, slope
-                    )
-                    posterior_detected = prior_prob * likelihood_detected
-
-                    # Response: not detected
-                    likelihood_not_detected = self._likelihood(
-                        intensity, False, threshold, slope
-                    )
-                    posterior_not_detected = prior_prob * likelihood_not_detected
-
-                    # Add to entropy calculations (will normalize later)
-                    if posterior_detected > 1e-10:
+                        p_detected_total += posterior_detected
                         entropy_detected += posterior_detected * np.log(
                             posterior_detected
                         )
-                    if posterior_not_detected > 1e-10:
                         entropy_not_detected += posterior_not_detected * np.log(
                             posterior_not_detected
                         )
 
         # Normalize posteriors and calculate entropies
-        p_not_detected_total = 1 - p_detected_total
-
+        p_not_detected_total = 1.0 - p_detected_total
         if p_detected_total > 1e-10:
             entropy_detected = -entropy_detected / p_detected_total
         else:
@@ -379,23 +366,28 @@ class QuestPlusStaircase:
     def _update_posterior(self, intensity: float, response: bool) -> None:
         """Update posterior distribution using Bayes' rule."""
         # Calculate likelihood for each parameter combination
+        if self.state.posterior is None:
+            return
         for i, threshold in enumerate(self.threshold_space):
             for j, slope in enumerate(self.slope_space):
                 likelihood = self._likelihood(intensity, response, threshold, slope)
                 self.state.posterior[i, j] *= likelihood
 
         # Normalize posterior
-        posterior_sum = np.sum(self.state.posterior)
-        if posterior_sum > 1e-10:
-            self.state.posterior /= posterior_sum
-        else:
-            # Reset to prior if posterior becomes degenerate
-            self.state.posterior = self.prior.copy()
-            logger.warning("Posterior became degenerate, reset to prior")
+        if self.state.posterior is not None:
+            posterior_sum = np.sum(self.state.posterior)
+            if posterior_sum > 1e-10:
+                self.state.posterior /= posterior_sum
+            else:
+                # Reset to prior if posterior becomes degenerate
+                self.state.posterior = self.prior.copy()
+                logger.warning("Posterior became degenerate, reset to prior")
 
     def _update_threshold_estimate(self) -> None:
         """Update threshold estimate from posterior distribution."""
         # Calculate marginal distribution over thresholds
+        if self.state.posterior is None:
+            return
         threshold_marginal = np.sum(self.state.posterior, axis=1)
 
         # Calculate mean and standard deviation
@@ -531,9 +523,12 @@ class QuestPlusStaircase:
             prob_sum = 0.0
             for i, threshold in enumerate(self.threshold_space):
                 for j, slope in enumerate(self.slope_space):
-                    posterior_prob = self.state.posterior[i, j]
-                    p_detect = self._psychometric_function(intensity, threshold, slope)
-                    prob_sum += posterior_prob * p_detect
+                    if self.state.posterior is not None:
+                        posterior_prob = self.state.posterior[i, j]
+                        p_detect = self._psychometric_function(
+                            intensity, threshold, slope
+                        )
+                        prob_sum += posterior_prob * p_detect
 
             detection_probs[k] = prob_sum
 

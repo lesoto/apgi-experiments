@@ -6,27 +6,35 @@ between the GUI and backend components, with real-time progress monitoring
 and execution cancellation capabilities.
 """
 
-import threading
 import time
 import uuid
 from datetime import datetime
-from typing import List, Optional, Dict, Any, Callable
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 try:
-    from PySide6.QtCore import QObject, Signal, QTimer, QThread, pyqtSignal
-    from PySide6.QtWidgets import QApplication
+    import PySide6  # type: ignore[import]  # noqa: F401
 
     PYSIDE6_AVAILABLE = True
 except ImportError:
-    # Fallback for environments without PySide6
     PYSIDE6_AVAILABLE = False
 
-    class QObject:
+if PYSIDE6_AVAILABLE:
+    from PySide6.QtCore import (  # type: ignore[import]
+        QObject,
+        QThread,
+        QTimer,
+        Signal,
+        pyqtSignal,
+    )
+    from PySide6.QtWidgets import QApplication  # type: ignore[import]
+else:
+    # Fallback for environments without PySide6
+    class QObject:  # type: ignore[no-redef]
         def __init__(self, parent=None):
             pass
 
-    class Signal:
+    class Signal:  # type: ignore[no-redef]
         def __init__(self, *args):
             self._connected_slots = []
 
@@ -39,7 +47,7 @@ except ImportError:
             for slot in self._connected_slots:
                 slot(*args)
 
-    class QTimer:
+    class QTimer:  # type: ignore[no-redef]
         def start(self, *args):
             pass
 
@@ -48,7 +56,7 @@ except ImportError:
 
         timeout = Signal()
 
-    class QThread:
+    class QThread:  # type: ignore[no-redef]
         def start(self):
             pass
 
@@ -58,20 +66,20 @@ except ImportError:
         def isRunning(self):
             return False
 
-    class QApplication:
+    class QApplication:  # type: ignore[no-redef]
         pass
 
     pyqtSignal = Signal
 
-from apgi_framework.utils.test_utils import (
-    FrameworkTestDefinition,
-    FrameworkTestConfiguration,
-    FrameworkTestRunExecution,
-    FrameworkTestResults,
-    FrameworkTestRunStatus,
-    FrameworkTestFailure,
+from apgi_framework.utils.framework_test_utils import (
+    FrameworkConfiguration,
+    FrameworkExecution,
+    FrameworkFailure,
     FrameworkFailureCategory,
-    FrameworkTestRunCategory,
+    FrameworkResults,
+    FrameworkRunCategory,
+    FrameworkRunStatus,
+    FrameworkTestCase,
 )
 
 
@@ -81,13 +89,13 @@ class TestExecutionWorker(QThread):
     # Signals for communication with GUI
     progress_updated = Signal(int, int, str)  # current, total, current_test
     test_completed = Signal(str, str, float)  # test_name, status, execution_time
-    execution_finished = Signal(object)  # FrameworkTestResults
+    execution_finished = Signal(object)  # FrameworkResults
     execution_error = Signal(str)  # error_message
 
     def __init__(
         self,
-        selected_tests: List[FrameworkTestDefinition],
-        config: FrameworkTestConfiguration,
+        selected_tests: List[FrameworkTestCase],
+        config: FrameworkConfiguration,
         parent=None,
     ):
         super().__init__(parent)
@@ -120,9 +128,8 @@ class TestExecutionWorker(QThread):
         """Resume test execution."""
         self._paused = False
 
-    def _execute_tests(self) -> FrameworkTestResults:
+    def _execute_tests(self) -> FrameworkResults:
         """Execute the selected tests and return results."""
-        start_time = datetime.now()
         total_tests = len(self.selected_tests)
         passed_tests = 0
         failed_tests = 0
@@ -155,12 +162,12 @@ class TestExecutionWorker(QThread):
                 # Update test status based on result
                 if result["status"] == "passed":
                     passed_tests += 1
-                    status = FrameworkTestRunStatus.PASSED
+                    status = FrameworkRunStatus.PASSED
                 elif result["status"] == "failed":
                     failed_tests += 1
-                    status = FrameworkTestRunStatus.FAILED
+                    status = FrameworkRunStatus.FAILED
                     # Create failure record
-                    failure = FrameworkTestFailure(
+                    failure = FrameworkFailure(
                         test_name=test_case.name,
                         failure_category=FrameworkFailureCategory.ASSERTION_ERROR,
                         error_message=result.get("error_message", ""),
@@ -171,10 +178,10 @@ class TestExecutionWorker(QThread):
                     failures.append(failure)
                 elif result["status"] == "skipped":
                     skipped_tests += 1
-                    status = FrameworkTestRunStatus.SKIPPED
+                    status = FrameworkRunStatus.SKIPPED
                 else:
                     error_tests += 1
-                    status = FrameworkTestRunStatus.ERROR
+                    status = FrameworkRunStatus.ERROR
 
                 # Emit test completion
                 self.test_completed.emit(
@@ -187,7 +194,7 @@ class TestExecutionWorker(QThread):
                 total_execution_time += test_execution_time
 
                 # Create error failure record
-                failure = FrameworkTestFailure(
+                failure = FrameworkFailure(
                     test_name=test_case.name,
                     failure_category=FrameworkFailureCategory.FRAMEWORK_ERROR,
                     error_message=str(e),
@@ -199,13 +206,13 @@ class TestExecutionWorker(QThread):
 
                 self.test_completed.emit(
                     test_case.name,
-                    FrameworkTestRunStatus.ERROR.value,
+                    FrameworkRunStatus.ERROR.value,
                     test_execution_time,
                 )
 
         # Create test results
         end_time = datetime.now()
-        results = FrameworkTestResults(
+        results = FrameworkResults(
             total_tests=total_tests,
             passed_tests=passed_tests,
             failed_tests=failed_tests,
@@ -223,7 +230,7 @@ class MockTestExecutor:
     """Mock test executor for demonstration purposes."""
 
     def execute_test(
-        self, test_case: FrameworkTestDefinition, config: FrameworkTestConfiguration
+        self, test_case: FrameworkTestCase, config: FrameworkConfiguration
     ) -> Dict[str, Any]:
         """Execute a single test case (mock implementation)."""
         # Simulate test execution time
@@ -260,15 +267,15 @@ class TestExecutionController(QObject):
     execution_started = Signal(str)  # execution_id
     progress_updated = Signal(int, int, str)  # current, total, current_test
     test_completed = Signal(str, str, float)  # test_name, status, execution_time
-    execution_finished = Signal(object)  # FrameworkTestResults
+    execution_finished = Signal(object)  # FrameworkResults
     execution_cancelled = Signal()
     execution_error = Signal(str)  # error_message
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
-        self._current_execution: Optional[FrameworkTestRunExecution] = None
+        self._current_execution: Optional[FrameworkExecution] = None
         self._worker_thread: Optional[TestExecutionWorker] = None
-        self._execution_history: List[FrameworkTestRunExecution] = []
+        self._execution_history: List[FrameworkExecution] = []
         self._is_executing = False
         self._is_paused = False
 
@@ -278,8 +285,8 @@ class TestExecutionController(QObject):
 
     def start_execution(
         self,
-        selected_tests: List[FrameworkTestDefinition],
-        config: FrameworkTestConfiguration,
+        selected_tests: List[FrameworkTestCase],
+        config: FrameworkConfiguration,
     ) -> str:
         """Start test execution with the given tests and configuration."""
         if self._is_executing:
@@ -290,7 +297,7 @@ class TestExecutionController(QObject):
 
         # Create execution record
         execution_id = str(uuid.uuid4())
-        self._current_execution = FrameworkTestRunExecution(
+        self._current_execution = FrameworkExecution(
             execution_id=execution_id,
             test_suites=[],  # Will be populated during execution
             start_time=datetime.now(),
@@ -352,11 +359,11 @@ class TestExecutionController(QObject):
         if self._current_execution:
             self._current_execution.status = "running"
 
-    def get_current_execution(self) -> Optional[FrameworkTestRunExecution]:
+    def get_current_execution(self) -> Optional[FrameworkExecution]:
         """Get the current execution information."""
         return self._current_execution
 
-    def get_execution_history(self) -> List[FrameworkTestRunExecution]:
+    def get_execution_history(self) -> List[FrameworkExecution]:
         """Get the history of test executions."""
         return self._execution_history.copy()
 
@@ -386,7 +393,7 @@ class TestExecutionController(QObject):
         """Handle test completion from worker thread."""
         self.test_completed.emit(test_name, status, execution_time)
 
-    def _on_execution_finished(self, results: FrameworkTestResults):
+    def _on_execution_finished(self, results: FrameworkResults):
         """Handle execution completion from worker thread."""
         if self._current_execution:
             self._current_execution.end_time = datetime.now()
@@ -520,7 +527,7 @@ class ExecutionMonitor(QObject):
         except ImportError:
             # psutil not available, skip resource monitoring
             pass
-        except Exception as e:
+        except Exception:
             # Log error but don't stop monitoring
             pass
 
@@ -532,34 +539,32 @@ def create_test_execution_controller() -> TestExecutionController:
 
 # Example usage and testing
 if __name__ == "__main__":
-    import sys
-
     # Create sample test cases for testing
     sample_tests = [
-        FrameworkTestDefinition(
+        FrameworkTestCase(
             name="test_example_1",
             file_path=Path("tests/test_example.py"),
             module="example",
             class_name=None,
             method_name="test_example_1",
-            category=FrameworkTestRunCategory.UNIT,
+            category=FrameworkRunCategory.UNIT,
             line_number=10,
             docstring="Example test 1",
         ),
-        FrameworkTestDefinition(
+        FrameworkTestCase(
             name="test_example_2",
             file_path=Path("tests/test_example.py"),
             module="example",
             class_name=None,
             method_name="test_example_2",
-            category=FrameworkTestRunCategory.UNIT,
+            category=FrameworkRunCategory.UNIT,
             line_number=20,
             docstring="Example test 2",
         ),
     ]
 
     # Create configuration
-    config = FrameworkTestConfiguration(parallel=False, max_workers=1, timeout=30)
+    config = FrameworkConfiguration(parallel=False, max_workers=1, timeout=30)
 
     # Test the controller (basic functionality)
     controller = TestExecutionController()

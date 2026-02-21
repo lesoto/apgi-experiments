@@ -13,12 +13,13 @@ Key components:
 - Metacognitive sensitivity assessment
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any
-from enum import Enum
-import numpy as np
 import random
+from dataclasses import dataclass, field
 from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional
+
+import numpy as np
 
 from apgi_framework.exceptions import ValidationError
 
@@ -448,7 +449,7 @@ class ConsciousnessValidator:
                 "Number of assessments must match expected consciousness states"
             )
 
-        results = {
+        results: Dict[str, Any] = {
             "total_trials": len(assessments),
             "correct_classifications": 0,
             "false_positives": 0,  # Reported conscious when unconscious

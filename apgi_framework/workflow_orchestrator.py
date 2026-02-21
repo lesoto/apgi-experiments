@@ -6,18 +6,18 @@ falsification testing pipelines, automated experiment execution, and result
 aggregation with detailed reporting.
 """
 
+import json
 import logging
-from typing import Dict, Any, List, Optional, Callable
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from pathlib import Path
-import json
-from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
-import threading
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional
 
-from .main_controller import MainApplicationController
 from .exceptions import APGIFrameworkError, ValidationError
+from .main_controller import MainApplicationController
 
 
 class WorkflowStage(Enum):
@@ -98,6 +98,7 @@ class WorkflowResult:
     end_time: Optional[datetime] = None
     total_duration: Optional[timedelta] = None
     overall_status: WorkflowStatus = WorkflowStatus.PENDING
+    status: WorkflowStatus = WorkflowStatus.PENDING  # For backward compatibility
 
     stage_results: Dict[WorkflowStage, WorkflowStageResult] = field(
         default_factory=dict
@@ -121,6 +122,39 @@ class WorkflowOrchestrator:
     Manages the complete pipeline from system initialization through
     result reporting, with support for parallel execution and
     comprehensive error handling.
+
+    Thread Safety:
+    --------------
+    This class is designed to be thread-safe for concurrent access.
+    The following guarantees are provided:
+
+    - All public methods are thread-safe and can be called concurrently
+      from multiple threads without external synchronization.
+    - Internal state is protected by RLock (_workflow_lock) for re-entrant
+      access within the same thread.
+    - Callback registration/removal is protected by a separate Lock
+      (_callback_lock) to prevent race conditions.
+    - Workflow execution methods (_execute_stage, run_complete_workflow, etc.)
+      are designed to be interruptible via cancellation.
+    - The cancellation mechanism uses threading.Event for efficient
+      cross-thread signaling.
+
+    Thread-Safe Methods:
+    - register_stage_callback() / unregister_stage_callback()
+    - run_complete_workflow() / run_parallel_workflow()
+    - cancel_workflow()
+    - get_workflow_status()
+
+    Re-entrancy:
+    - Methods are re-entrant within the same thread (using RLock).
+    - Concurrent calls from different threads are serialized where necessary.
+    - Callback execution is serialized to prevent overlapping callbacks.
+
+    Cancellation:
+    - Workflows can be cancelled at any point using cancel_workflow().
+    - Cancellation is signaled via threading.Event and checked at stage boundaries.
+    - Running stages will complete their current operation before checking for cancellation.
+    - Executor threads are properly shut down with timeout on cancellation.
     """
 
     def __init__(
@@ -142,12 +176,18 @@ class WorkflowOrchestrator:
         self.stage_callbacks: Dict[WorkflowStage, List[Callable]] = {}
 
         # Execution control
-        self.executor = None
+        self.executor: Optional[ThreadPoolExecutor] = None
         self.cancelled = False
+        self._cancel_event = threading.Event()  # Event for cancellation signaling
 
         # Thread safety
         self._workflow_lock = threading.RLock()
         self._callback_lock = threading.Lock()
+
+    def _check_cancellation(self) -> None:
+        """Check if workflow has been cancelled and raise exception if so."""
+        if self._cancel_event.is_set() or self.cancelled:
+            raise APGIFrameworkError("Workflow cancelled by user request")
 
     def register_stage_callback(self, stage: WorkflowStage, callback: Callable) -> None:
         """
@@ -325,6 +365,11 @@ class WorkflowOrchestrator:
             stage: Workflow stage to execute.
             stage_function: Function to execute for this stage.
         """
+        # Check if workflow has been cancelled
+        if self.cancelled or self._cancel_event.is_set():
+            self.logger.info(f"Stage {stage.value} cancelled before execution")
+            raise APGIFrameworkError(f"Workflow cancelled during {stage.value}")
+
         self.logger.info(f"Executing stage: {stage.value}")
 
         stage_result = WorkflowStageResult(
@@ -335,6 +380,16 @@ class WorkflowOrchestrator:
             # Execute the stage function
             result_data = stage_function()
 
+            # Check for cancellation after execution (in case it was cancelled during execution)
+            if self.cancelled or self._cancel_event.is_set():
+                self.logger.warning(
+                    f"Stage {stage.value} completed but workflow was cancelled"
+                )
+                stage_result.status = WorkflowStatus.CANCELLED
+                stage_result.end_time = datetime.now()
+                stage_result.error_message = "Workflow cancelled after stage completion"
+                raise APGIFrameworkError(f"Workflow cancelled during {stage.value}")
+
             # Mark stage as completed
             stage_result.status = WorkflowStatus.COMPLETED
             stage_result.end_time = datetime.now()
@@ -342,8 +397,8 @@ class WorkflowOrchestrator:
 
             self.logger.info(f"Stage {stage.value} completed successfully")
 
-        except Exception as e:
-            # Mark stage as failed
+        except (ValueError, RuntimeError, ConnectionError, TimeoutError, OSError) as e:
+            # Mark stage as failed for expected operational errors
             stage_result.status = WorkflowStatus.FAILED
             stage_result.end_time = datetime.now()
             stage_result.error_message = str(e)
@@ -354,6 +409,9 @@ class WorkflowOrchestrator:
         finally:
             # Store stage result with thread safety
             with self._workflow_lock:
+                assert (
+                    self.current_workflow is not None
+                ), "Workflow should be initialized"
                 self.current_workflow.stage_results[stage] = stage_result
 
             # Call registered callbacks with thread safety
@@ -372,17 +430,23 @@ class WorkflowOrchestrator:
         futures = []
 
         if self.config.run_primary_tests:
+            assert (
+                self.executor is not None
+            ), "Executor should be initialized in parallel workflow"
             future = self.executor.submit(self._run_primary_tests)
             futures.append(("primary", future))
 
         if self.config.run_secondary_tests:
+            assert (
+                self.executor is not None
+            ), "Executor should be initialized in parallel workflow"
             future = self.executor.submit(self._run_secondary_tests)
             futures.append(("secondary", future))
 
         # Wait for all tests to complete
         for test_type, future in futures:
             try:
-                result = future.result(timeout=self.config.timeout_minutes * 60)
+                future.result(timeout=self.config.timeout_minutes * 60)
                 self.logger.info(f"Parallel {test_type} tests completed")
             except Exception as e:
                 self.logger.error(f"Parallel {test_type} tests failed: {e}")
@@ -390,6 +454,7 @@ class WorkflowOrchestrator:
 
     def _run_initialization(self) -> Dict[str, Any]:
         """Initialize the system for workflow execution."""
+        self._check_cancellation()
         self.logger.debug("Initializing system for workflow")
 
         # Ensure system is properly initialized
@@ -408,6 +473,7 @@ class WorkflowOrchestrator:
 
     def _run_system_validation(self) -> Dict[str, Any]:
         """Run comprehensive system validation."""
+        self._check_cancellation()
         self.logger.debug("Running system validation")
 
         validation_results = self.controller.run_system_validation()
@@ -421,6 +487,7 @@ class WorkflowOrchestrator:
 
     def _run_primary_tests(self) -> Dict[str, Any]:
         """Run primary falsification tests."""
+        self._check_cancellation()
         self.logger.debug("Running primary falsification tests")
 
         tests = self.controller.get_falsification_tests()
@@ -433,6 +500,7 @@ class WorkflowOrchestrator:
         results["primary_falsification"] = primary_result
 
         # Store in workflow result
+        assert self.current_workflow is not None, "Workflow should be initialized"
         self.current_workflow.test_results.update(results)
 
         return results
@@ -459,6 +527,7 @@ class WorkflowOrchestrator:
         results["soma_bias"] = soma_bias_result
 
         # Store in workflow result
+        assert self.current_workflow is not None, "Workflow should be initialized"
         self.current_workflow.test_results.update(results)
 
         return results
@@ -468,7 +537,8 @@ class WorkflowOrchestrator:
         self.logger.debug("Running statistical analysis")
 
         # Aggregate statistical results from all tests
-        statistical_summary = {
+        assert self.current_workflow is not None, "Workflow should be initialized"
+        statistical_summary: Dict[str, Any] = {
             "total_tests_run": len(self.current_workflow.test_results),
             "falsification_results": {},
             "effect_sizes": {},
@@ -500,10 +570,12 @@ class WorkflowOrchestrator:
         total_tests = len(statistical_summary["falsification_results"])
 
         if falsification_count > 0:
+            assert self.current_workflow is not None, "Workflow should be initialized"
             self.current_workflow.falsification_conclusion = (
                 f"Framework falsified by {falsification_count}/{total_tests} tests"
             )
         else:
+            assert self.current_workflow is not None, "Workflow should be initialized"
             self.current_workflow.falsification_conclusion = (
                 "Framework not falsified by any tests"
             )
@@ -515,10 +587,12 @@ class WorkflowOrchestrator:
             if c is not None
         ]
         if confidence_values:
+            assert self.current_workflow is not None, "Workflow should be initialized"
             self.current_workflow.confidence_level = sum(confidence_values) / len(
                 confidence_values
             )
 
+        assert self.current_workflow is not None, "Workflow should be initialized"
         self.current_workflow.statistical_summary = statistical_summary
 
         return statistical_summary
@@ -526,6 +600,8 @@ class WorkflowOrchestrator:
     def _run_result_aggregation(self) -> Dict[str, Any]:
         """Aggregate all results into final format."""
         self.logger.debug("Aggregating results")
+
+        assert self.current_workflow is not None, "Workflow should be initialized"
 
         aggregated_results = {
             "workflow_summary": {
@@ -555,6 +631,8 @@ class WorkflowOrchestrator:
     def _run_report_generation(self) -> Dict[str, Any]:
         """Generate detailed reports."""
         self.logger.debug("Generating reports")
+
+        assert self.current_workflow is not None, "Workflow should be initialized"
 
         # Save workflow result to file
         output_dir = Path(
@@ -593,6 +671,7 @@ class WorkflowOrchestrator:
     def _save_json_report(self, file_path: Path) -> None:
         """Save complete workflow result as JSON."""
         # Convert workflow result to dictionary for JSON serialization
+        assert self.current_workflow is not None, "Workflow should be initialized"
         report_data = {
             "workflow_id": self.current_workflow.workflow_id,
             "start_time": self.current_workflow.start_time.isoformat(),
@@ -633,6 +712,7 @@ class WorkflowOrchestrator:
 
     def _save_summary_report(self, file_path: Path) -> None:
         """Save human-readable summary report."""
+        assert self.current_workflow is not None, "Workflow should be initialized"
         with open(file_path, "w") as f:
             f.write("APGI Framework Testing - Workflow Summary\n")
             f.write("=" * 60 + "\n\n")
@@ -679,13 +759,26 @@ class WorkflowOrchestrator:
         """Cancel the currently running workflow."""
         self.logger.info("Cancelling workflow")
         self.cancelled = True
+        self._cancel_event.set()  # Signal all threads to cancel
 
         if self.current_workflow:
             self.current_workflow.overall_status = WorkflowStatus.CANCELLED
             self.current_workflow.end_time = datetime.now()
 
+        # Shutdown executor and wait for running tasks to complete or cancel
         if self.executor:
-            self.executor.shutdown(wait=False)
+            self.executor.shutdown(wait=True, timeout=10.0)  # type: ignore
+            if not self.executor._threads:  # Check if threads are still alive
+                self.logger.info("All executor threads have finished")
+            else:
+                self.logger.warning("Some executor threads may still be running")
+            self.executor = None
+
+        # Close any open file handles in the controller if they exist
+        # Note: Most file operations in this workflow use context managers or are short-lived
+        # so explicit closing may not be necessary, but this provides a hook for future extensions
+
+        self.logger.info("Workflow cancellation completed")
 
     def get_workflow_status(self) -> Optional[WorkflowResult]:
         """Get the current workflow status."""

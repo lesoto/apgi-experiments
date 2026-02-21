@@ -5,18 +5,20 @@ This script demonstrates the functionality of the PupillometryInterface
 and PhysiologicalMonitoring classes.
 """
 
-import numpy as np
 import time
-from apgi_framework.neural.pupillometry_interface import (
-    PupillometryInterface,
-    PupillometryConfig,
-    EyeType,
-    BlinkDetectionMethod,
-)
+
+import numpy as np
+
 from apgi_framework.neural.physiological_monitoring import (
-    PhysiologicalMonitoring,
     PhysiologicalConfig,
+    PhysiologicalMonitoring,
     SignalType,
+)
+from apgi_framework.neural.pupillometry_interface import (
+    BlinkDetectionMethod,
+    EyeType,
+    PupillometryConfig,
+    PupillometryInterface,
 )
 
 
@@ -247,9 +249,9 @@ def test_integration():
         synced_physio = physio_monitor.synchronize_with_external(pupil_time)
 
         if synced_physio:
-            time_diff = abs(synced_physio.timestamp - pupil_time)
+            time_diff = abs(synced_physio.timestamp - pupil_time) * 1000.0
             print("✓ Synchronization successful:")
-            print(f"  - Time difference: {time_diff*1000:.2f} ms")
+            print(f"  - Time difference: {time_diff:.2f} ms")
 
     # Stop both systems
     pupil_interface.stop_streaming()

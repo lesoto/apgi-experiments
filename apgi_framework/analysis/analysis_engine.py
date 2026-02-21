@@ -7,14 +7,15 @@ Provides comprehensive analysis capabilities for experimental data including:
 - Results processing and reporting
 """
 
-from typing import Dict, List, Optional, Any, Tuple
+import logging
 from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from datetime import datetime
-import logging
-from pathlib import Path
 
 # Optional seaborn import
 try:
@@ -359,7 +360,7 @@ class AnalysisEngine:
     ]:
         """Perform regression analysis."""
         from sklearn.linear_model import LinearRegression
-        from sklearn.metrics import r2_score, mean_squared_error
+        from sklearn.metrics import mean_squared_error, r2_score
 
         numeric_data = data.select_dtypes(include=[np.number]).dropna()
         numeric_cols = numeric_data.columns

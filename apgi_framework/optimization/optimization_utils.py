@@ -6,19 +6,17 @@ parallel processing, and memory management to improve performance.
 """
 
 import functools
-import threading
+import gc
+import hashlib
 import multiprocessing as mp
-from typing import Any, Callable, Dict, List, Optional, Union, Tuple
+import threading
+import weakref
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from dataclasses import dataclass
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+
 import numpy as np
 import pandas as pd
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-import time
-import pickle
-import hashlib
-from pathlib import Path
-import weakref
-import gc
-from dataclasses import dataclass
 
 try:
     import numba
@@ -56,8 +54,8 @@ class LRUCache:
 
     def __init__(self, maxsize: int = 128):
         self.maxsize = maxsize
-        self.cache = {}
-        self.access_order = []
+        self.cache: Dict[Any, Any] = {}
+        self.access_order: List[Any] = []
         self.stats = CacheStats()
         self._lock = threading.RLock()
 
@@ -110,9 +108,9 @@ class MemoryEfficientCache:
 
     def __init__(self, maxsize: int = 128):
         self.maxsize = maxsize
-        self.cache = weakref.WeakValueDictionary()
-        self.strong_refs = {}
-        self.access_order = []
+        self.cache: weakref.WeakValueDictionary = weakref.WeakValueDictionary()
+        self.strong_refs: Dict[Any, Any] = {}
+        self.access_order: List[Any] = []
         self.stats = CacheStats()
         self._lock = threading.RLock()
 
@@ -207,10 +205,10 @@ def _make_cache_key(args: tuple, kwargs: dict, typed: bool) -> str:
     for arg in args:
         if isinstance(arg, (np.ndarray, pd.DataFrame)):
             # Use hash of array/dataframe content
-            key_parts.append(f"array_{hash(arg.tobytes())}")
+            key_parts.append(f"array_{hash(arg.tobytes())}")  # type: ignore
         elif hasattr(arg, "__dict__"):
             # Use hash of object attributes
-            key_parts.append(f"obj_{hash(str(sorted(arg.__dict__.items())))}")
+            key_parts.append(f"obj_{hash(str(sorted(list(arg.__dict__.items()))))}")
         else:
             key_parts.append(str(arg))
             if typed:
@@ -288,8 +286,10 @@ if NUMBA_AVAILABLE:
         return 1.0 / (1.0 + np.exp(-np.clip(x, -500, 500)))
 
     # Replace vectorized operations with numba versions if available
-    VectorizedOperations.compute_surprise_vectorized = _numba_surprise_computation
-    VectorizedOperations.sigmoid_vectorized = _numba_sigmoid
+    setattr(
+        VectorizedOperations, "compute_surprise_vectorized", _numba_surprise_computation
+    )
+    setattr(VectorizedOperations, "sigmoid_vectorized", _numba_sigmoid)
 
 
 class ParallelProcessor:
@@ -423,7 +423,7 @@ class MemoryManager:
                             "id": id(obj),
                         }
                     )
-            except:
+            except Exception:
                 continue
 
         return sorted(large_objects, key=lambda x: x["size_mb"], reverse=True)

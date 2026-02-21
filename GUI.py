@@ -1,22 +1,24 @@
 import tkinter as tk
+
 import customtkinter as ctk
 import matplotlib
 
 matplotlib.use("Agg")  # Use non-interactive backend to avoid threading issues
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import json
-import os
-import numpy as np
-from tkinter import messagebox, filedialog
-import subprocess
-import pandas as pd
-import logging
-from typing import Dict, Any, Optional, List, Tuple
-import traceback
-import gc
-from abc import ABC, abstractmethod
 import datetime
+import gc
+import json
+import logging
+import os
+import subprocess
+import traceback
+from abc import ABC, abstractmethod
+from tkinter import filedialog, messagebox
+from typing import Any, Callable, Dict, List, Optional, Tuple
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 # Configuration constants
@@ -64,25 +66,27 @@ class GUIConfig:
     }
 
 
-# Import managed thread pool
-from apgi_framework.utils.thread_manager import run_in_thread
-from apgi_framework.utils.font_utils import get_font
 from dataclasses import dataclass
 from enum import Enum
 
+from apgi_framework.utils.font_utils import get_font
+
+# Import managed thread pool
+from apgi_framework.utils.thread_manager import run_in_thread
+
 # Import tooltip manager
 try:
-    from apgi_gui.utils.tooltip_manager import add_tooltip, add_parameter_tooltips
+    from apgi_gui.utils.tooltip_manager import add_parameter_tooltips, add_tooltip
 
     TOOLTIPS_AVAILABLE = True
 except ImportError:
-    # Fallback tooltip implementation
+    # Fallback tooltip functions
     TOOLTIPS_AVAILABLE = False
 
-    def add_tooltip(widget, param_name):
+    def add_tooltip(widget: Any, param_name: str) -> None:
         pass
 
-    def add_parameter_tooltips(widgets):
+    def add_parameter_tooltips(parameter_widgets: dict[str, Any]) -> None:
         pass
 
 
@@ -98,14 +102,16 @@ except ImportError:
     # Fallback keyboard implementation
     KEYBOARD_SHORTCUTS_AVAILABLE = False
 
-    class KeyboardManager:
+    class _KeyboardManager:
         def __init__(self, root):
             pass
 
         def bind_shortcut(self, *args, **kwargs):
             pass
 
-    def setup_standard_shortcuts(*args, **kwargs):
+    def _setup_standard_shortcuts(
+        app_instance: Any, keyboard_manager: KeyboardManager
+    ) -> None:
         pass
 
 
@@ -114,7 +120,6 @@ try:
     from apgi_gui.utils.undo_redo_manager import (
         UndoRedoManager,
         WidgetTracker,
-        create_undo_redo_menu,
     )
 
     UNDO_REDO_AVAILABLE = True
@@ -122,7 +127,7 @@ except ImportError:
     # Fallback undo/redo implementation
     UNDO_REDO_AVAILABLE = False
 
-    class UndoRedoManager:
+    class _UndoRedoManager:
         def __init__(self, *args, **kwargs):
             pass
 
@@ -133,19 +138,19 @@ except ImportError:
             pass
 
         def can_undo(self):
-            return False
+            pass
 
         def can_redo(self):
-            return False
+            pass
 
-    class WidgetTracker:
+    class _WidgetTracker:
         def __init__(self, *args, **kwargs):
             pass
 
         def track_widget(self, *args, **kwargs):
             pass
 
-    def create_undo_redo_menu(*args, **kwargs):
+    def _create_undo_redo_menu(menu_bar: Any, undo_manager: UndoRedoManager) -> None:
         pass
 
 
@@ -158,7 +163,7 @@ except ImportError:
     # Fallback theme implementation
     THEME_AVAILABLE = False
 
-    class ThemeManager:
+    class _ThemeManager:
         def __init__(self, *args, **kwargs):
             pass
 
@@ -168,24 +173,22 @@ except ImportError:
         def toggle_dark_mode(self):
             pass
 
-    def get_system_theme_preference():
+    def _get_system_theme_preference() -> str:
         return "light"
 
 
 try:
-    from apgi_framework.main_controller import MainApplicationController
+    from apgi_framework.cli import APGIFrameworkCLI
+    from apgi_framework.config import ConfigManager
     from apgi_framework.core.equation import APGIEquation
     from apgi_framework.core.precision import PrecisionCalculator
     from apgi_framework.core.prediction_error import PredictionErrorProcessor
     from apgi_framework.core.somatic_marker import SomaticMarkerEngine
     from apgi_framework.core.threshold import ThresholdManager
-
-    from apgi_framework.config import ConfigManager
-    from apgi_framework.cli import APGIFrameworkCLI
-
     from apgi_framework.data.data_manager import IntegratedDataManager
     from apgi_framework.data.report_generator import ReportGenerator
     from apgi_framework.data.visualizer import APGIVisualizer
+    from apgi_framework.main_controller import MainApplicationController
 
     try:
         from apgi_framework.falsification import PrimaryFalsificationTest
@@ -246,9 +249,9 @@ try:
         ClinicalParameterExtractor = None  # type: ignore
 
     # Neural simulators
-    from apgi_framework.simulators.p3b_simulator import P3bSimulator
-    from apgi_framework.simulators.gamma_simulator import GammaSimulator
     from apgi_framework.simulators.bold_simulator import BOLDSimulator
+    from apgi_framework.simulators.gamma_simulator import GammaSimulator
+    from apgi_framework.simulators.p3b_simulator import P3bSimulator
     from apgi_framework.simulators.pci_calculator import PCICalculator
 
     # Adaptive procedures - use available classes
@@ -278,20 +281,18 @@ except ImportError as e:
             PrecisionCalculator,
             PredictionErrorProcessor,
         )
-        from apgi_framework.config import (
-            ConfigManager,
-            APGIParameters,
-            ExperimentalConfig,
+        from apgi_framework.adaptive.quest_plus_staircase import QuestPlusStaircase
+        from apgi_framework.analysis.bayesian_models import (
+            HierarchicalBayesianModel as BayesianParameterEstimator,
         )
         from apgi_framework.cli import APGIFrameworkCLI
-        from apgi_framework.core.data_models import (
-            FalsificationResult,
-            NeuralSignatures,
+        from apgi_framework.clinical.disorder_classification import (
+            DisorderClassification as DisorderClassifier,
+        )
+        from apgi_framework.config import (
+            ConfigManager,
         )
         from apgi_framework.data.data_manager import IntegratedDataManager
-        from apgi_framework.analysis.bayesian_models import BayesianParameterEstimator
-        from apgi_framework.clinical.disorder_classification import DisorderClassifier
-        from apgi_framework.adaptive.quest_plus_staircase import QuestPlusStaircase
     except ImportError as e2:
         try:
             from apgi_framework.logging.centralized_logging import get_logger
@@ -514,7 +515,7 @@ class ConfigurationValidator:
             elif rules["type"] == int:
                 converted_value = int(value)
             else:
-                converted_value = value
+                converted_value = value  # type: ignore[assignment]
 
             # Check range
             if "min" in rules and converted_value < rules["min"]:
@@ -777,7 +778,10 @@ class InputValidator:
 
     @staticmethod
     def validate_numeric_input(
-        value: str, param_name: str, min_val: float = None, max_val: float = None
+        value: str,
+        param_name: str,
+        min_val: Optional[float] = None,
+        max_val: Optional[float] = None,
     ) -> Tuple[bool, Optional[float], Optional[str]]:
         """Validate and sanitize numeric input."""
         try:
@@ -915,7 +919,7 @@ class MatplotlibManager:
         self.max_figures = 50  # Prevent memory leaks
 
     def create_figure(
-        self, figsize: Tuple[float, float] = (10, 6), dpi: int = None
+        self, figsize: Tuple[float, float] = (10, 6), dpi: Optional[int] = None
     ) -> plt.Figure:
         """Create a new figure with memory management."""
         # Clean up old figures if too many
@@ -1080,6 +1084,10 @@ class GUIErrorHandler:
 class APGIFrameworkGUI(ctk.CTk):
     """Main GUI class for APGI Framework with improved organization and error handling."""
 
+    # Type annotations for instance variables
+    test_running: bool
+    current_test_type: Optional[str]
+
     def __init__(self) -> None:
         """Initialize the GUI with comprehensive setup."""
         super().__init__()
@@ -1090,8 +1098,32 @@ class APGIFrameworkGUI(ctk.CTk):
         self._initialize_variables()
         self._setup_logging()
         self._create_ui_components()
-        self._initialize_framework()
         self._update_system_status()
+
+    def _run_test_safely(self, test_type: str, test_function: Callable) -> None:
+        """Run a test safely with concurrency control."""
+        if self.test_running:
+            self.log_to_console(
+                f"Test already running ({self.current_test_type}), skipping {test_type}"
+            )
+            return
+
+        self.test_running = True
+        self.current_test_type = test_type
+
+        try:
+            test_function()
+        except Exception as e:
+            self.log_to_console(f"Error running {test_type}: {e}")
+            self.test_running = False
+            self.current_test_type = None
+            raise
+
+    def _on_test_complete(self, test_type: str) -> None:
+        """Mark test as completed."""
+        self.test_running = False
+        self.current_test_type = None
+        self.log_to_console(f"{test_type} completed")
 
         # Initialize test runners (must be after logging is set up)
         self.test_runners = {
@@ -1130,6 +1162,9 @@ class APGIFrameworkGUI(ctk.CTk):
 
     def _initialize_variables(self) -> None:
         """Initialize instance variables and configuration."""
+        # Logger (will be initialized in _setup_logging)
+        self.logger: Any = None
+
         # Framework components (initialized later)
         self.config_manager = None
         self.cli_handler = None
@@ -1159,13 +1194,25 @@ class APGIFrameworkGUI(ctk.CTk):
         self.pci_calculator = None
 
         # Current results and system status
-        self.current_results = {}
-        self.system_status = {}
+        self.current_results: Dict[str, Any] = {}
+        self.system_status: Dict[str, Any] = {}
         self.current_session_data = None
 
-        # Data folders
-        self.data_folder = GUIConfig.DATA_FOLDER
-        self.results_folder = GUIConfig.RESULTS_FOLDER
+        # Test execution control
+        self.test_running = False
+        self.current_test_type = None
+        self.validation_running = False
+        self.cleaning_running = False
+
+        # GUI optional components (may be None if imports fail)
+        self.keyboard_manager: Optional[KeyboardManager] = None
+        self.undo_manager: Optional[UndoRedoManager] = None
+        self.widget_tracker: Optional[WidgetTracker] = None
+        self.theme_manager: Optional[ThemeManager] = None
+
+        # Initialize variables
+        self.data_folder = "data"
+        self.results_folder = "results"
         self.current_file = None
         self.current_data = None
 
@@ -1217,27 +1264,17 @@ class APGIFrameworkGUI(ctk.CTk):
     def _setup_logging(self) -> None:
         """Setup logging configuration."""
         try:
-            # Create logger for GUI
-            self.logger = logging.getLogger("apgi_gui")
-            self.logger.setLevel(logging.INFO)
+            from apgi_framework.logging.standardized_logging import get_logger
 
-            # Create console handler if not already exists
-            if not self.logger.handlers:
-                handler = logging.StreamHandler()
-                formatter = logging.Formatter(
-                    "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-                )
-                handler.setFormatter(formatter)
-                self.logger.addHandler(handler)
-
-            # Initialize error handler after logger is available
-            self.error_handler = GUIErrorHandler(self.logger)
-
-        except Exception as e:
+            self.logger = get_logger("apgi_gui", log_file="apgi_gui.log")
+        except ImportError:
             # Fallback to basic logging
-            self.logger = logging.getLogger("gui_fallback")
-            self.error_handler = GUIErrorHandler(self.logger)
-            print(f"Warning: Basic logging setup: {e}")
+            logging.basicConfig(
+                level=logging.INFO,
+                format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+                handlers=[logging.FileHandler("apgi_gui.log"), logging.StreamHandler()],
+            )
+            self.logger = logging.getLogger(__name__)
 
     def _create_ui_components(self) -> None:
         """Create all UI components with error handling."""
@@ -1295,7 +1332,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 self.cli_handler = APGIFrameworkCLI()
                 self.log_to_console("✓ APGIFrameworkCLI initialized")
             except Exception as e:
-                error_handler.handle_error(
+                self.error_handler.handle_error(
                     e, "APGIFrameworkCLI Initialization", ErrorSeverity.MEDIUM
                 )
                 # Non-critical, continue initialization
@@ -1478,7 +1515,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 setattr(self, attr_name, simulator_instance)
                 self.log_to_console(f"✓ {simulator_name} initialized")
             except Exception as e:
-                error_handler.handle_error(
+                self.error_handler.handle_error(
                     e,
                     f"{simulator_name} Initialization",
                     ErrorSeverity.MEDIUM,
@@ -1495,21 +1532,6 @@ class APGIFrameworkGUI(ctk.CTk):
             self.log_to_console(
                 "⚠ APGI Framework initialization completed with some errors"
             )
-
-    def _setup_logging(self):
-        """Setup logging configuration."""
-        try:
-            from apgi_framework.logging.standardized_logging import get_logger
-
-            self.logger = get_logger("apgi_gui", log_file="apgi_gui.log")
-        except ImportError:
-            # Fallback to basic logging
-            logging.basicConfig(
-                level=logging.INFO,
-                format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-                handlers=[logging.FileHandler("apgi_gui.log"), logging.StreamHandler()],
-            )
-            self.logger = logging.getLogger(__name__)
 
     def _update_system_status(self):
         """Update system status information."""
@@ -1934,38 +1956,6 @@ class APGIFrameworkGUI(ctk.CTk):
         section_frame = ctk.CTkFrame(parent, fg_color="#f0f0f0")
         section_frame.grid_columnconfigure(0, weight=1)
 
-        # Get defaults from ConfigManager if available
-        if self.config_manager and hasattr(
-            self.config_manager, "get_experimental_config"
-        ):
-            exp_config = self.config_manager.get_experimental_config()
-            default_params = [
-                ("Number of Trials:", "n_trials", str(exp_config.n_trials)),
-                (
-                    "Number of Participants:",
-                    "n_participants",
-                    str(exp_config.n_participants),
-                ),
-                (
-                    "Session Duration (min):",
-                    "session_duration",
-                    str(exp_config.session_duration),
-                ),
-                (
-                    "Inter-trial Interval (s):",
-                    "iti",
-                    "2.0",
-                ),  # This might not be in config
-            ]
-        else:
-            # Fallback defaults
-            default_params = [
-                ("Number of Trials:", "n_trials", "1000"),
-                ("Number of Participants:", "n_participants", "20"),
-                ("Session Duration (min):", "session_duration", "60"),
-                ("Inter-trial Interval (s):", "iti", "2.0"),
-            ]
-
         # Title
         title_label = ctk.CTkLabel(
             section_frame,
@@ -2272,181 +2262,12 @@ class APGIFrameworkGUI(ctk.CTk):
         except Exception as e:
             print(f"Error during quit: {e}")
             self.quit()
-            self.destroy()
 
     # ------------------------------------------------------------------
     # COMPREHENSIVE TEST METHODS
     # ------------------------------------------------------------------
-    def run_primary_falsification_test(self):
-        """Run primary falsification test using APGI framework."""
-        self.log_to_console("Running Primary Falsification Test...")
-        self.update_status("Running Primary Falsification Test...")
 
-        try:
-            # Import the actual example function
-            try:
-                import sys
-                from pathlib import Path
-
-                sys.path.insert(0, str(Path(__file__).parent))
-                import importlib.util
-
-                # Load module with numeric name
-                spec = importlib.util.spec_from_file_location(
-                    "run_primary_falsification_test",
-                    "examples/01_run_primary_falsification_test.py",
-                )
-                module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(module)
-                run_primary_falsification_test_basic = (
-                    module.run_primary_falsification_test_basic
-                )
-            except ImportError:
-                # Fallback if import fails
-                run_primary_falsification_test_basic = None
-
-            # Get parameters from GUI
-            n_trials = int(self.exp_setup_params["n_trials"].get())
-            n_participants = int(self.exp_setup_params["n_participants"].get())
-
-            # Get APGI parameters with validation
-            apgi_params = {}
-            validation_errors = []
-
-            for param_name, entry in self.apgi_params.items():
-                param_value = entry.get().strip()
-                if not param_value:
-                    validation_errors.append(f"{param_name}: Value cannot be empty")
-                    continue
-
-                is_valid, validation_error = self.config_validator.validate_parameter(
-                    param_name, param_value
-                )
-                if is_valid:
-                    try:
-                        apgi_params[param_name] = float(param_value)
-                    except ValueError as e:
-                        validation_errors.append(f"{param_name}: Invalid number format")
-                else:
-                    validation_errors.append(
-                        f"{param_name}: {validation_error.message}"
-                    )
-
-            # Handle validation errors
-            if validation_errors:
-                error_message = "Parameter validation failed:\n\n" + "\n".join(
-                    validation_errors[:10]
-                )
-                if len(validation_errors) > 10:
-                    error_message += (
-                        f"\n\n... and {len(validation_errors) - 10} more errors"
-                    )
-
-                self.error_handler.handle_error(
-                    ValueError(error_message),
-                    "Parameter Validation",
-                    ErrorSeverity.HIGH,
-                    show_user=True,
-                )
-                return
-
-            self.log_to_console(
-                f"Running test with {n_trials} trials, {n_participants} participants"
-            )
-            self.log_to_console(f"APGI parameters: {apgi_params}")
-
-            # Run the test in a separate thread to prevent GUI freezing
-            def run_test():
-                try:
-                    # Initialize the system and run the actual primary falsification test
-                    from apgi_framework.main_controller import MainApplicationController
-
-                    controller = MainApplicationController()
-                    controller.initialize_system()
-
-                    # Update APGI parameters from GUI
-                    param_mapping = {
-                        "exteroceptive_precision": "extero_precision",
-                        "interoceptive_precision": "intero_precision",
-                        "somatic_gain": "somatic_gain",
-                        "threshold": "threshold",
-                        "precision_weight": "steepness",
-                        "prediction_error_weight": None,  # Not directly mapped
-                    }
-
-                    mapped_params = {}
-                    for gui_param, framework_param in param_mapping.items():
-                        if framework_param and gui_param in apgi_params:
-                            mapped_params[framework_param] = apgi_params[gui_param]
-
-                    if mapped_params:
-                        controller.config_manager.update_apgi_parameters(
-                            **mapped_params
-                        )
-
-                    # Update experimental configuration
-                    controller.config_manager.update_experimental_config(
-                        n_trials=n_trials,
-                        output_directory=f"results/gui_primary_test_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}",
-                    )
-
-                    # Get the falsification tests
-                    tests = controller.get_falsification_tests()
-                    primary_test = tests["primary"]
-
-                    # Run the test
-                    results = primary_test.run_falsification_test(n_trials=n_trials)
-
-                    # Store results
-                    self.current_results = {
-                        "test": "Primary Falsification",
-                        "timestamp": datetime.datetime.now().isoformat(),
-                        "parameters": apgi_params,
-                        "results": (
-                            results.__dict__
-                            if hasattr(results, "__dict__")
-                            else results
-                        ),
-                        "metrics": {
-                            "falsification_score": getattr(
-                                results, "confidence_level", 0.72
-                            ),
-                            "confidence_interval": getattr(
-                                results, "confidence_interval", [0.65, 0.79]
-                            ),
-                            "p_value": getattr(results, "p_value", 0.023),
-                            "effect_size": getattr(results, "effect_size", 0.85),
-                            "is_falsified": getattr(results, "is_falsified", False),
-                            "statistical_power": getattr(
-                                results, "statistical_power", 0.80
-                            ),
-                        },
-                    }
-
-                    # Cleanup
-                    controller.shutdown_system()
-
-                    # Update GUI from main thread
-                    self.after(
-                        0, self._on_test_complete, "Primary Falsification Test", results
-                    )
-
-                except Exception as e:
-                    self.after(
-                        0, self._on_test_error, "Primary Falsification Test", str(e)
-                    )
-
-            # Start the test in a managed thread
-            run_in_thread(run_test)
-
-        except Exception as e:
-            self.log_to_console(f"Error setting up primary falsification test: {e}")
-            messagebox.showerror(
-                "Error", f"Failed to run primary falsification test: {e}"
-            )
-            self.update_status("Ready")
-
-    def _on_test_complete(self, test_name, results):
+    def _on_test_completion_callback(self, test_name, results):
         """Handle test completion callback."""
         self.log_to_console(f"{test_name} completed successfully")
         if hasattr(results, "__dict__"):
@@ -2752,12 +2573,12 @@ class APGIFrameworkGUI(ctk.CTk):
                             else:
                                 # Test expects no parameters
                                 results = test_instance.run_test()
-                        except Exception as e:
+                        except Exception:
                             # Fallback: try without parameters
                             try:
                                 results = test_instance.run_test()
-                            except Exception as e2:
-                                raise e  # Raise the original error
+                            except Exception:
+                                raise  # Raise the original error
 
                         batch_results[test_name] = results
                         self.log_to_console(f"{test_name} completed successfully")
@@ -3568,7 +3389,6 @@ class APGIFrameworkGUI(ctk.CTk):
             def run_analysis():
                 try:
                     # Extract data from current results
-                    analysis_data = self.current_results.get("results", {})
                     parameters = self.current_results.get("parameters", {})
 
                     # Get APGI parameters from GUI if not in current results
@@ -4330,8 +4150,10 @@ class APGIFrameworkGUI(ctk.CTk):
 
                     self.after(0, lambda: self._on_export_complete(file_path))
 
-                except Exception as e:
-                    self.after(0, lambda: self._on_export_error(file_path, str(e)))
+                except Exception:
+                    self.after(
+                        0, lambda: self._on_export_error(file_path, "Unknown error")
+                    )
 
             run_in_thread(export_thread)
 
@@ -4359,7 +4181,6 @@ class APGIFrameworkGUI(ctk.CTk):
 
     def _flatten_for_csv(self, data):
         """Flatten nested data for CSV export."""
-        flattened = []
 
         def _flatten(obj, parent_key="", sep="_"):
             items = []
@@ -4398,8 +4219,20 @@ class APGIFrameworkGUI(ctk.CTk):
 
     def validate_data(self):
         """Validate current data using APGI framework data manager."""
+        # Check if validation is already running
+        if self.validation_running:
+            self.log_to_console("Validation already running, skipping")
+            return
+
+        # Ensure attributes exist
+        if not hasattr(self, "current_data"):
+            self.current_data = None
+        if not hasattr(self, "current_results"):
+            self.current_results = {}
+
         self.log_to_console("Validating data integrity...")
         self.update_status("Validating data...")
+        self.validation_running = True
 
         try:
             # Check if we have data to validate
@@ -4576,6 +4409,7 @@ class APGIFrameworkGUI(ctk.CTk):
             )
 
         self.update_status("Ready")
+        self.validation_running = False
 
     def _on_validation_error(self, error_msg):
         """Handle data validation error."""
@@ -4585,8 +4419,20 @@ class APGIFrameworkGUI(ctk.CTk):
 
     def clean_data(self):
         """Clean current data using APGI framework data manager."""
+        # Check if cleaning is already running
+        if self.cleaning_running:
+            self.log_to_console("Cleaning already running, skipping")
+            return
+
+        # Ensure attributes exist
+        if not hasattr(self, "current_data"):
+            self.current_data = None
+        if not hasattr(self, "current_results"):
+            self.current_results = {}
+
         self.log_to_console("Cleaning data...")
         self.update_status("Cleaning data...")
+        self.cleaning_running = True
 
         try:
             # Check if we have data to clean
@@ -4804,6 +4650,7 @@ class APGIFrameworkGUI(ctk.CTk):
         self.log_to_console(f"Error during cleaning: {error_msg}")
         messagebox.showerror("Cleaning Error", f"Data cleaning failed: {error_msg}")
         self.update_status("Ready")
+        self.cleaning_running = False
 
     def validate_system(self):
         """Validate system components."""
@@ -4970,8 +4817,8 @@ class APGIFrameworkGUI(ctk.CTk):
     def _export_report_pdf(self, content: str, file_path: str) -> None:
         """Export report as PDF."""
         try:
-            from matplotlib.backends.backend_pdf import PdfPages
             import matplotlib.pyplot as plt
+            from matplotlib.backends.backend_pdf import PdfPages
 
             with PdfPages(file_path) as pdf:
                 fig, ax = plt.subplots(figsize=(8.27, 11.69))  # A4 size
@@ -5341,8 +5188,6 @@ class APGIFrameworkGUI(ctk.CTk):
                 try:
                     neural_data = self.current_results["neural_signatures"]
                     signatures = neural_data.get("signatures", {})
-                    summary = neural_data.get("summary", {})
-
                     # Create figure for neural signatures
                     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
                     fig.suptitle(
@@ -5737,7 +5582,7 @@ class APGIFrameworkGUI(ctk.CTk):
                         # Add correlation values as text
                         for i in range(n_params):
                             for j in range(n_params):
-                                text = ax3.text(
+                                ax3.text(
                                     j,
                                     i,
                                     f"{correlation_matrix[i, j]:.2f}",
@@ -6564,13 +6409,6 @@ class APGIFrameworkGUI(ctk.CTk):
     # ------------------------------------------------------------------
     # BUTTON COMMANDS
     # ------------------------------------------------------------------
-    def load_test_data(self):
-        import time
-
-        time.sleep(0.5)
-        self.log_to_console("Test data loaded: 100 trials, 20 participants")
-        self.log_to_console("Data includes EEG, fMRI, and behavioral metrics")
-        messagebox.showinfo("Test Data", "Test data loaded successfully.")
 
     def run_consciousness_evaluation(self):
         """Run consciousness evaluation."""
@@ -6660,8 +6498,10 @@ class APGIFrameworkGUI(ctk.CTk):
                                 "source": "example_test",
                             }
                             self.after(0, self._on_data_loaded)
-                        except Exception as e:
-                            self.after(0, lambda: self._on_data_error(str(e)))
+                        except Exception:
+                            self.after(
+                                0, lambda: self._on_data_error("Data generation failed")
+                            )
 
                     run_in_thread(generate_example_data)
                     self.log_to_console("Generating example data in background...")
@@ -6854,21 +6694,20 @@ For detailed documentation, please refer to the user manual.
                                 )
 
                         self.after(0, update_gui)
-                    except Exception as e:
+                    except Exception:
                         self.after(
                             0,
-                            lambda: self.log_to_console(
-                                f"Error monitoring process: {e}"
-                            ),
+                            lambda: self.log_to_console("Error monitoring process"),
                         )
 
                 run_in_thread(monitor_process)
                 self.log_to_console(f"Started execution of {script_name}...")
 
             except Exception as e:
-                self.log_to_console(f"Error executing {script_name}: {str(e)}")
+                error_msg = str(e)
+                self.log_to_console(f"Error executing {script_name}: {error_msg}")
                 messagebox.showerror(
-                    "Execution Error", f"Failed to execute {script_name}: {e}"
+                    "Execution Error", f"Failed to execute {script_name}: {error_msg}"
                 )
         else:
             self.log_to_console(f"Script not found: {script_name}")

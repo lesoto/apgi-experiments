@@ -6,9 +6,9 @@ Generates comprehensive user manual with detailed protocols for all three tasks
 """
 
 import logging
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
-from datetime import datetime
 
 
 class ParameterEstimationUserManual:

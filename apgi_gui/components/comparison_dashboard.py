@@ -5,18 +5,18 @@ Provides comprehensive visualization and comparison capabilities for multiple
 experiment results with interactive plots, statistical analysis, and export options.
 """
 
-import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
-import numpy as np
-import pandas as pd
-from typing import Dict, List, Optional, Any, Tuple, Union
 import json
-from pathlib import Path
 import logging
+import queue
+import tkinter as tk
 from dataclasses import dataclass
 from datetime import datetime
-import threading
-import queue
+from pathlib import Path
+from tkinter import filedialog, messagebox, ttk
+from typing import Any, Dict, List, Optional
+
+import numpy as np
+import pandas as pd
 
 try:
     import matplotlib.pyplot as plt
@@ -25,25 +25,24 @@ try:
         NavigationToolbar2Tk,
     )
     from matplotlib.figure import Figure
-    import matplotlib.patches as mpatches
 
     MATPLOTLIB_AVAILABLE = True
 except ImportError:
     MATPLOTLIB_AVAILABLE = False
-    plt = None
-    Figure = None
+    plt_type: Any = None  # type: ignore[assignment]
+    Figure_type: Any = None  # type: ignore[assignment]
 
 try:
-    import seaborn as sns
+    import seaborn as sns  # type: ignore
 
     SEABORN_AVAILABLE = True
     sns.set_style("whitegrid")
 except ImportError:
     SEABORN_AVAILABLE = False
-    sns = None
+    sns = None  # type: ignore
 
 try:
-    from scipy import stats
+    from scipy import stats  # type: ignore
 
     SCIPY_AVAILABLE = True
 except ImportError:
@@ -86,7 +85,7 @@ class ComparisonDashboard:
         self.experiments: List[ExperimentResult] = []
         self.selected_experiments: List[str] = []
         self.current_plot_type = "comparison"
-        self.plot_queue = queue.Queue()
+        self.plot_queue: queue.Queue[Any] = queue.Queue()
 
         # Check dependencies
         self._check_dependencies()
@@ -599,7 +598,7 @@ class ComparisonDashboard:
             # Add text annotations
             for i in range(len(metrics)):
                 for j in range(len(metrics)):
-                    text = ax.text(
+                    ax.text(
                         j,
                         i,
                         f"{correlation_matrix.iloc[i, j]:.2f}",
@@ -612,6 +611,7 @@ class ComparisonDashboard:
 
         ax.set_title("Correlation Matrix")
         self.figure.tight_layout()
+        self.canvas.configure(bg="white")  # fix widget configure parameters
 
     def _create_distribution_plot(
         self, experiments: List[ExperimentResult], metrics: List[str]

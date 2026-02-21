@@ -5,12 +5,12 @@ Provides user-friendly error reporting, solution suggestions, and
 feedback collection for improving error handling.
 """
 
-import tkinter as tk
-from tkinter import ttk, messagebox, scrolledtext
-from typing import Dict, List, Optional, Any, Callable
 import json
+import tkinter as tk
+from datetime import datetime
 from pathlib import Path
-import webbrowser
+from tkinter import messagebox, scrolledtext, ttk
+from typing import Optional
 
 try:
     from apgi_framework.validation.enhanced_error_handling import (
@@ -22,15 +22,18 @@ try:
     ERROR_HANDLING_AVAILABLE = True
 except ImportError:
     ERROR_HANDLING_AVAILABLE = False
-    APGIError = None
-    ErrorSolution = None
+    APGIError_type: Optional[type] = None  # type: ignore[assignment]
+    ErrorSolution_type: Optional[type] = None  # type: ignore[assignment]
 
 
 class ErrorReportDialog:
     """Dialog for displaying detailed error information and solutions."""
 
     def __init__(
-        self, parent, apgi_error: APGIError = None, simple_error: Exception = None
+        self,
+        parent,
+        apgi_error: Optional[APGIError] = None,
+        simple_error: Optional[Exception] = None,
     ):
         self.parent = parent
         self.apgi_error = apgi_error
@@ -329,6 +332,7 @@ class ErrorReportDialog:
 
     def _format_technical_details(self) -> str:
         """Format technical details for display."""
+        assert self.apgi_error is not None
         details = []
 
         details.append(f"Error ID: {self.apgi_error.error_id}")
@@ -546,7 +550,7 @@ class ErrorNotificationWidget:
 
 
 # Convenience functions
-def show_error_dialog(parent, error: Exception, user_action: str = None):
+def show_error_dialog(parent, error: Exception, user_action: Optional[str] = None):
     """Show an error dialog with enhanced information."""
     if ERROR_HANDLING_AVAILABLE:
         try:
@@ -562,6 +566,6 @@ def show_error_dialog(parent, error: Exception, user_action: str = None):
         ErrorReportDialog(parent, simple_error=error)
 
 
-def create_error_notification_widget(parent) -> ErrorNotificationWidget:
+def create_error_notification_widget(parent: tk.Widget) -> ErrorNotificationWidget:
     """Create an error notification widget."""
     return ErrorNotificationWidget(parent)

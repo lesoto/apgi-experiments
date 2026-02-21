@@ -11,7 +11,7 @@ import json
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -73,20 +73,18 @@ class ValidationConfig:
 class DataValidator:
     """Comprehensive data validation for APGI framework."""
 
-    def __init__(self, strict_mode=False, config: ValidationConfig = None):
+    def __init__(
+        self, strict_mode: bool = False, config: Optional[ValidationConfig] = None
+    ):
         self.strict_mode = strict_mode
         self.config = config or ValidationConfig()
-        self.validation_results = {}
+        self.validation_results: Dict[str, Any] = {}
 
     def validate_file_format(self, file_path: Union[str, Path]) -> Dict:
         """Validate file format and structure."""
         file_path = Path(file_path)
-        results = {
-            "file_path": str(file_path),
-            "file_exists": file_path.exists(),
-            "file_size": file_path.stat().st_size if file_path.exists() else 0,
-            "file_extension": file_path.suffix.lower(),
-            "is_readable": False,
+        results: Dict[str, Any] = {
+            "file_valid": False,
             "format_valid": False,
             "errors": [],
             "warnings": [],
@@ -131,7 +129,9 @@ class DataValidator:
 
         return results
 
-    def _validate_csv_structure(self, df: pd.DataFrame, results: Dict) -> bool:
+    def _validate_csv_structure(
+        self, df: pd.DataFrame, results: Dict[str, Any]
+    ) -> bool:
         """Validate CSV DataFrame structure."""
         required_columns = ["timestamp", "eeg_fz", "pupil_diameter", "eda"]
 
@@ -174,7 +174,7 @@ class DataValidator:
 
         return len(results["errors"]) == 0
 
-    def _validate_json_structure(self, data: Dict, results: Dict) -> bool:
+    def _validate_json_structure(self, data: Dict, results: Dict[str, Any]) -> bool:
         """Validate JSON data structure."""
         if not isinstance(data, dict):
             results["errors"].append("JSON root must be an object")
@@ -215,7 +215,7 @@ class DataValidator:
 
         return len(results["errors"]) == 0
 
-    def _validate_data_ranges(self, df: pd.DataFrame, results: Dict):
+    def _validate_data_ranges(self, df: pd.DataFrame, results: Dict[str, Any]) -> None:
         """Validate physiological data ranges."""
         # EEG ranges (microvolts)
         eeg_cols = [col for col in df.columns if col.startswith("eeg")]
@@ -273,7 +273,7 @@ class DataValidator:
 
     def validate_data_quality(self, df: pd.DataFrame) -> Dict:
         """Assess data quality metrics."""
-        quality_metrics = {
+        quality_metrics: Dict[str, Any] = {
             "total_samples": len(df),
             "missing_data": {},
             "outliers": {},
@@ -339,7 +339,7 @@ class DataValidator:
 
         return quality_metrics
 
-    def _assess_signal_quality(self, signal: pd.Series) -> Dict:
+    def _assess_signal_quality(self, signal: pd.Series) -> Dict[str, Any]:
         """Assess quality of a physiological signal."""
         signal_clean = signal.dropna()
         if len(signal_clean) == 0:
@@ -390,7 +390,7 @@ class DataValidator:
             "samples": len(signal_clean),
         }
 
-    def _assess_temporal_consistency(self, df: pd.DataFrame) -> Dict:
+    def _assess_temporal_consistency(self, df: pd.DataFrame) -> Dict[str, Any]:
         """Assess temporal consistency of the data."""
         if "timestamp" not in df.columns:
             return {"score": 0.0, "issues": ["No timestamp column"]}
@@ -480,20 +480,20 @@ class DataValidator:
 
         return max(0, score)
 
-    def generate_validation_report(self, file_path: Union[str, Path]) -> Dict:
+    def generate_validation_report(self, file_path: Union[str, Path]) -> Dict[str, Any]:
         """Generate comprehensive validation report."""
         file_path = Path(file_path)
 
-        report = {
+        report: Dict[str, Any] = {
             "file_info": self.validate_file_format(file_path),
-            "data_quality": {},
+            "data_quality": {},  # type: ignore
             "recommendations": [],
             "validation_timestamp": datetime.now().isoformat(),
             "validator_version": "1.0.0",
         }
 
         # Load data for quality assessment
-        if report["file_info"]["is_readable"]:
+        if report["file_info"]["is_readable"] and "file_info" in report:
             try:
                 if file_path.suffix.lower() == ".csv":
                     df = pd.read_csv(file_path)
@@ -516,7 +516,7 @@ class DataValidator:
                 TypeError,
                 MemoryError,
             ) as e:
-                report["data_quality"]["error"] = f"{type(e).__name__}: {e}"
+                report["data_quality"]["error"] = f"{type(e).__name__}: {e}"  # type: ignore
 
         return report
 
@@ -606,7 +606,9 @@ class DataValidator:
         except (OSError, ValueError, KeyError) as e:
             raise ValueError(f"Error reading HDF5 file: {e}")
 
-    def _validate_hdf5_structure(self, df: pd.DataFrame, results: Dict) -> bool:
+    def _validate_hdf5_structure(
+        self, df: pd.DataFrame, results: Dict[str, Any]
+    ) -> bool:
         """Validate HDF5 DataFrame structure."""
         if df.empty:
             results["errors"].append("HDF5 file contains no data")
@@ -659,6 +661,28 @@ class DataPreprocessor:
 
     def __init__(self):
         self.preprocessing_steps = []
+        self.config = ValidationConfig()
+
+    def _read_hdf5_file(self, file_path: Path) -> pd.DataFrame:
+        """Read HDF5 file and convert to DataFrame."""
+        try:
+            with h5py.File(file_path, "r") as f:
+                if "data" in f:
+                    # Standard format with data group
+                    data_dict = {}
+                    for key in f["data"].keys():
+                        if isinstance(f["data"][key], h5py.Dataset):
+                            data_dict[key] = f["data"][key][:]
+                    return pd.DataFrame(data_dict)
+                else:
+                    # Root level datasets
+                    data_dict = {}
+                    for key in f.keys():
+                        if isinstance(f[key], h5py.Dataset):
+                            data_dict[key] = f[key][:]
+                    return pd.DataFrame(data_dict)
+        except (OSError, ValueError, KeyError) as e:
+            raise ValueError(f"Error reading HDF5 file: {e}")
 
     def load_data(self, file_path: Union[str, Path]) -> pd.DataFrame:
         """Load data from various formats."""
@@ -694,9 +718,9 @@ class DataPreprocessor:
             for col in numeric_cols:
                 df_clean.loc[:, col] = df_clean[col].interpolate(method="linear")
         elif strategy == "forward_fill":
-            df_clean[numeric_cols] = df_clean[numeric_cols].fillna(method="ffill")
+            df_clean[numeric_cols] = df_clean[numeric_cols].ffill()
         elif strategy == "backward_fill":
-            df_clean[numeric_cols] = df_clean[numeric_cols].fillna(method="bfill")
+            df_clean[numeric_cols] = df_clean[numeric_cols].bfill()
         elif strategy == "mean":
             for col in numeric_cols:
                 df_clean[col] = df_clean[col].fillna(df_clean[col].mean())
@@ -750,7 +774,7 @@ class DataPreprocessor:
         self,
         df: pd.DataFrame,
         filter_type: str = "bandpass",
-        columns: List[str] = None,
+        columns: Optional[List[str]] = None,
         **filter_params,
     ) -> pd.DataFrame:
         """Apply signal filtering to specified columns."""
@@ -809,22 +833,25 @@ class DataPreprocessor:
         return df_filtered
 
     def normalize_data(
-        self, df: pd.DataFrame, method: str = "zscore", columns: List[str] = None
+        self,
+        df: pd.DataFrame,
+        method: str = "zscore",
+        columns: Optional[List[str]] = None,
     ) -> pd.DataFrame:
         """Normalize data using various methods."""
         df_normalized = df.copy()
 
         if columns is None:
-            columns = df_normalized.select_dtypes(include=[np.number]).columns
+            columns = list(df_normalized.select_dtypes(include=[np.number]).columns)
 
-        for col in columns:
+        for col in columns or []:
             if col in df_normalized.columns:
                 data = df_normalized[col]
 
                 if method == "zscore":
-                    df_normalized.loc[:, col] = (data - data.mean()) / data.std()
+                    df_normalized.loc[:, col] = (data - data.mean()) / data.std()  # type: ignore
                 elif method == "minmax":
-                    df_normalized[col] = (data - data.min()) / (data.max() - data.min())
+                    df_normalized[col] = (data - data.min()) / (data.max() - data.min())  # type: ignore
                 elif method == "robust":
                     median = data.median()
                     mad = np.median(np.abs(data - median))
@@ -909,14 +936,16 @@ def main():
         csv_files = list(data_dir.glob("*.csv"))
 
         for csv_file in csv_files[:2]:  # Validate first 2 files
-            print(f"\nValidating: {csv_file.name}")
+            print(f"Validating: {csv_file.name}")
             report = validator.generate_validation_report(csv_file)
 
             print(f"  File readable: {report['file_info']['is_readable']}")
             print(f"  Format valid: {report['file_info']['format_valid']}")
-            print(
-                f"  Overall quality: {report['data_quality'].get('overall_score', 'N/A'):.1f}"
-            )
+            overall_score = report["data_quality"].get("overall_score", "N/A")
+            if isinstance(overall_score, (int, float)):
+                print(f"  Overall quality: {overall_score:.1f}")
+            else:
+                print(f"  Overall quality: {overall_score}")
 
             if report["recommendations"]:
                 print("  Recommendations:")
@@ -924,7 +953,7 @@ def main():
                     print(f"    - {rec}")
 
     # Demonstrate preprocessing
-    print(f"\nDemonstrating preprocessing pipeline...")
+    print("\nDemonstrating preprocessing pipeline...")
 
     try:
         preprocessor = DataPreprocessor()

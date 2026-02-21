@@ -5,13 +5,13 @@ This module provides tools for managing releases, versioning, and deployment
 with automated testing integration and comprehensive validation.
 """
 
-import subprocess
 import json
-import sys
-from pathlib import Path
-from typing import List, Dict, Any, Optional
-from datetime import datetime
 import shutil
+import subprocess
+import sys
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, cast
 
 
 class ReleaseError(Exception):
@@ -23,7 +23,7 @@ class ReleaseError(Exception):
 class ReleaseManager:
     """Enhanced release manager with automated testing and deployment."""
 
-    def __init__(self, project_root: str = None):
+    def __init__(self, project_root: Optional[str] = None):
         """Initialize enhanced release manager.
 
         Parameters
@@ -56,7 +56,12 @@ class ReleaseManager:
 
     def validate_release_prerequisites(self) -> Dict[str, Any]:
         """Validate that all prerequisites for release are met."""
-        validation_results = {"valid": True, "checks": {}, "errors": [], "warnings": []}
+        validation_results: Dict[str, Any] = {
+            "valid": True,
+            "checks": {},
+            "errors": [],
+            "warnings": [],
+        }
 
         # Check if git working directory is clean
         if self.config.get("require_clean_git", True):
@@ -128,7 +133,7 @@ class ReleaseManager:
         """Run comprehensive pre-release tests."""
         print("🧪 Running pre-release tests...")
 
-        test_results = {
+        test_results: Dict[str, Any] = {
             "timestamp": datetime.now().isoformat(),
             "tests_run": [],
             "success": True,
@@ -274,12 +279,16 @@ Thank you to all contributors who made this release possible!
         self, version: str, environment: str = "staging"
     ) -> Dict[str, Any]:
         """Deploy release to specified environment."""
-        if environment not in self.config.get("deployment_environments", []):
+        deployment_environments = self.config.get("deployment_environments", [])
+        if (
+            not isinstance(deployment_environments, list)
+            or environment not in deployment_environments
+        ):
             raise ReleaseError(f"Unknown deployment environment: {environment}")
 
         print(f"🚀 Deploying version {version} to {environment}...")
 
-        deployment_results = {
+        deployment_results: Dict[str, Any] = {
             "version": version,
             "environment": environment,
             "timestamp": datetime.now().isoformat(),
@@ -372,7 +381,9 @@ Thank you to all contributors who made this release possible!
 
     def send_notifications(self, version: str, release_notes: str) -> None:
         """Send release notifications to configured webhooks."""
-        webhooks = self.config.get("notification_webhooks", [])
+        webhooks: List[str] = cast(
+            List[str], self.config.get("notification_webhooks", [])
+        )
 
         for webhook in webhooks:
             try:
@@ -384,19 +395,19 @@ Thank you to all contributors who made this release possible!
 
     def enhanced_release(
         self,
-        version: str = None,
-        changes: List[str] = None,
+        version: Optional[str] = None,
+        changes: Optional[List[str]] = None,
         bump_type: str = "patch",
         environment: str = "staging",
         skip_tests: bool = False,
-        auto_deploy: bool = None,
+        auto_deploy: Optional[bool] = None,
     ) -> Dict[str, Any]:
         """Perform enhanced release process with testing and deployment."""
 
         # Load configuration
         self.load_config()
 
-        results = {
+        results: Dict[str, Any] = {
             "version": version,
             "environment": environment,
             "success": False,
@@ -407,7 +418,7 @@ Thank you to all contributors who made this release possible!
         }
 
         try:
-            print(f"🚀 Starting enhanced release process...")
+            print("🚀 Starting enhanced release process...")
 
             # Step 1: Validate prerequisites
             print("🔍 Validating release prerequisites...")
@@ -505,7 +516,7 @@ Thank you to all contributors who made this release possible!
         pyproject_file = self.project_root / "pyproject.toml"
         if pyproject_file.exists():
             try:
-                import toml
+                import toml  # type: ignore
 
                 config = toml.load(pyproject_file)
                 return config.get("project", {}).get("version", "0.1.0")
@@ -670,8 +681,8 @@ Thank you to all contributors who made this release possible!
 
     def release(
         self,
-        version: str = None,
-        changes: List[str] = None,
+        version: Optional[str] = None,
+        changes: Optional[List[str]] = None,
         bump_type: str = "patch",
         create_tag: bool = True,
         build: bool = True,
@@ -696,7 +707,7 @@ Thank you to all contributors who made this release possible!
         Dict[str, Any]
             Release results
         """
-        results = {"version": version, "success": False, "steps": {}}
+        results: Dict[str, Any] = {"version": version, "success": False, "steps": {}}
 
         try:
             # Determine version

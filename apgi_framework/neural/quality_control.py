@@ -5,12 +5,13 @@ Integrates EEG, pupillometry, and cardiac quality monitoring with adaptive
 protocol management and operator notifications for APGI experiments.
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any, Callable
-from enum import Enum
-import numpy as np
 import time
 from collections import deque
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any, Callable, Dict, List, Optional, cast
+
+import numpy as np
 
 from ..logging.standardized_logging import get_logger
 
@@ -467,7 +468,7 @@ class ArtifactDetector:
     with cross-modal validation.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize unified artifact detector."""
         self.artifact_history: deque = deque(maxlen=1000)
 
@@ -521,7 +522,6 @@ class ArtifactDetector:
         result["combined_artifacts"] = combined
 
         # Detect correlated artifacts (artifacts present in multiple modalities)
-        correlated = np.zeros(len(timestamps), dtype=bool)
         artifact_count = np.zeros(len(timestamps), dtype=int)
 
         if eeg_artifacts is not None:
@@ -531,15 +531,15 @@ class ArtifactDetector:
         if cardiac_artifacts is not None:
             artifact_count += cardiac_artifacts.astype(int)
 
-        correlated = artifact_count >= 2  # Artifacts in 2+ modalities
-        result["correlated_artifacts"] = correlated
+        correlated_mask = artifact_count >= 2  # Artifacts in 2+ modalities
+        result["correlated_artifacts"] = correlated_mask  # type: ignore[no-redef]
 
         # Store artifact statistics
         self.artifact_history.append(
             {
                 "timestamp": time.time(),
                 "total_artifacts": np.sum(combined),
-                "correlated_artifacts": np.sum(correlated),
+                "correlated_artifacts": np.sum(correlated_mask),
                 "artifact_rate": np.sum(combined) / len(combined),
             }
         )
@@ -555,7 +555,7 @@ class AdaptiveProtocolManager:
     quality metrics to maintain data integrity.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize adaptive protocol manager."""
         self.adjustment_history: List[Dict[str, Any]] = []
         self.current_adjustments: Dict[str, Any] = {}
@@ -575,11 +575,11 @@ class AdaptiveProtocolManager:
         Returns:
             Dictionary with recommended adjustments
         """
-        adjustments = {
+        adjustments: Dict[str, Any] = {
             "timestamp": time.time(),
             "quality_level": quality_metrics.quality_level.value,
             "adjustments_needed": False,
-            "recommendations": [],
+            "recommendations": cast(List[Dict[str, Any]], []),
         }
 
         # Check if adjustments are needed
@@ -666,7 +666,7 @@ class OperatorNotificationSystem:
     to the experiment operator.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize operator notification system."""
         self.notification_callbacks: List[Callable] = []
         self.notification_history: deque = deque(maxlen=100)

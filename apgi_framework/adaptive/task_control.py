@@ -5,16 +5,16 @@ Implements precision timing, task state management, response collection,
 and session management for the three core parameter estimation tasks.
 """
 
-import time
+import json
+import queue
 import threading
+import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple, Any, Callable, Union
 from enum import Enum
-from abc import ABC, abstractmethod
-import queue
-import json
 from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Tuple
+
 from ..logging.standardized_logging import get_logger
 
 logger = get_logger(__name__)
@@ -236,8 +236,14 @@ class PrecisionTimer:
     def get_timing_statistics(self) -> Dict[str, float]:
         """Get timing performance statistics."""
         if not self.timing_errors:
-            return {"error": "No timing data available"}
-
+            return {
+                "mean_error_ms": 0.0,
+                "std_error_ms": 0.0,
+                "max_error_ms": 0.0,
+                "min_error_ms": 0.0,
+                "errors_over_threshold": 0,
+                "total_events": 0,
+            }
         errors = self.timing_errors
         return {
             "mean_error_ms": sum(errors) / len(errors),
@@ -270,7 +276,7 @@ class ResponseCollector:
         """
         self.collector_id = collector_id
         self.is_collecting = False
-        self.response_queue = queue.Queue()
+        self.response_queue: queue.Queue[Any] = queue.Queue()
 
         # Response timing
         self.stimulus_onset_time: Optional[datetime] = None
@@ -278,7 +284,7 @@ class ResponseCollector:
 
         # Input handling
         self.input_thread: Optional[threading.Thread] = None
-        self.stop_collection = threading.Event()
+        self._stop_event = threading.Event()
         self._lock = threading.Lock()  # Thread-safe access to shared data
 
         logger.info(f"Initialized ResponseCollector {collector_id}")
@@ -305,7 +311,7 @@ class ResponseCollector:
                 break
 
         # Start input monitoring thread
-        self.stop_collection.clear()
+        self._stop_event.clear()
         self.input_thread = threading.Thread(target=self._monitor_input)
         self.input_thread.daemon = True
         self.input_thread.start()
@@ -321,7 +327,7 @@ class ResponseCollector:
 
         start_time = time.time()
 
-        while not self.stop_collection.is_set():
+        while not self._stop_event.is_set():
             # Simulate response detection
             time.sleep(0.01)  # 10ms polling
 
@@ -338,13 +344,16 @@ class ResponseCollector:
 
                 if random.random() < 0.001:  # Low probability per poll
                     response_time = datetime.now()
-                    reaction_time = (
-                        response_time - self.stimulus_onset_time
-                    ).total_seconds() * 1000
+                    if self.stimulus_onset_time:
+                        reaction_time = (
+                            response_time - self.stimulus_onset_time
+                        ).total_seconds() * 1000
+                    else:
+                        reaction_time = 0.0
 
                     # Simulate response
                     response = ResponseData(
-                        response_id=f"resp_{int(time.time()*1000)}",
+                        response_id=f"resp_{int(time.time() * 1000)}",
                         response_type=ResponseType.DETECTION,
                         response_time=response_time,
                         reaction_time_ms=reaction_time,
@@ -413,7 +422,7 @@ class ResponseCollector:
     def stop_collection(self) -> None:
         """Stop response collection."""
         self.is_collecting = False
-        self.stop_collection.set()
+        self._stop_event.set()
 
         if self.input_thread and self.input_thread.is_alive():
             self.input_thread.join(timeout=0.1)
@@ -800,22 +809,13 @@ class SessionManager:
             return False
 
         try:
-            # Record session end
-            end_time = datetime.now()
-            self.session_data["end_time"] = end_time.isoformat()
-
-            if self.session_start_time:
-                duration = (end_time - self.session_start_time).total_seconds() / 60.0
-                self.session_data["duration_minutes"] = duration
-                logger.info(f"Session duration: {duration:.1f} minutes")
-
-            # Stop data backup
-            self._stop_data_backup()
-
             # Final data save
             self._save_session_data()
 
-            logger.info(f"Session completed: {self.current_session.session_id}")
+            if self.current_session:
+                logger.info(f"Session completed: {self.current_session.session_id}")
+            else:
+                logger.info("Session completed: unknown session")
             return True
 
         except Exception as e:

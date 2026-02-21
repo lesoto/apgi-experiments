@@ -8,8 +8,8 @@ Contrast themes.
 
 """
 
-from typing import Dict, List
 import tkinter as tk
+from typing import Dict, List
 
 
 class ThemeManager:

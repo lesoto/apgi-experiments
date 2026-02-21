@@ -41,21 +41,25 @@ python examples/03_custom_analysis_saved_results.py
 ## Example Categories
 
 ### 1. Basic Usage
+
 - Simple framework initialization
 - Default parameter testing
 - Result analysis
 
 ### 2. Advanced Configuration
+
 - Custom parameter sets
 - Batch processing workflows
 - Performance optimization
 
 ### 3. Analysis and Validation
+
 - Custom analysis pipelines
 - Result validation
 - Error handling patterns
 
 ### 4. Extension and Integration
+
 - Custom falsification criteria
 - Framework extension examples
 - Integration patterns

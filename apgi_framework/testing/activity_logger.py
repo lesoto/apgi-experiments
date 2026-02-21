@@ -11,21 +11,21 @@ Requirements: 10.6
 import json
 import logging
 import logging.handlers
+import os
+import sys
 import threading
 import time
-from typing import Dict, List, Any, Optional, Union, Callable
-from dataclasses import dataclass, asdict, field
-from datetime import datetime, timedelta
-from pathlib import Path
-from enum import Enum
-import uuid
 import traceback
-import sys
-import os
+import uuid
 from contextlib import contextmanager
+from dataclasses import asdict, dataclass, field
+from datetime import datetime, timedelta
+from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-from ..utils.logging_utils import get_logging_utils, LogLevel
 from ..utils.file_utils import FileUtils
+from ..utils.logging_utils import get_logging_utils
 
 
 class ActivityType(Enum):
@@ -739,7 +739,7 @@ class ActivityLogger:
             for log_file in self.config.log_directory.glob("*.log*"):
                 if log_file.is_file():
                     file_stats = log_file.stat()
-                    stats["log_files"].append(
+                    stats["log_files"].append(  # type: ignore
                         {
                             "name": log_file.name,
                             "size": file_stats.st_size,

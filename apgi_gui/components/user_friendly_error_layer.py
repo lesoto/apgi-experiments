@@ -5,19 +5,20 @@ Provides comprehensive error handling with user-friendly messages,
 technical details, error aggregation, and contextual help.
 """
 
-import tkinter as tk
-from tkinter import ttk, messagebox
-import threading
-import queue
-import time
-import traceback
+import json
 import logging
-from typing import Dict, List, Optional, Any, Callable
+import queue
+import threading
+import time
+import tkinter as tk
+import traceback
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-import json
+from functools import partial
 from pathlib import Path
+from tkinter import messagebox, ttk
+from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -156,7 +157,7 @@ class UserFriendlyErrorLayer:
 
     def __init__(self, parent: tk.Widget):
         self.parent = parent
-        self.error_queue = queue.Queue()
+        self.error_queue: queue.Queue[FriendlyError] = queue.Queue()
         self.aggregator = ErrorAggregator()
         self.error_history: List[FriendlyError] = []
         self.show_technical_details = False
@@ -367,11 +368,11 @@ class UserFriendlyErrorLayer:
         dialog.resizable(True, True)
 
         # Make dialog modal
-        dialog.transient(self.parent)
+        dialog.transient(self.parent.winfo_toplevel())
         dialog.grab_set()
 
         # Configure dialog based on severity
-        self._configure_dialog_style(dialog, error.severity)
+        self._configure_dialog_style(dialog, error.severity, error)
 
         # Create main content
         self._create_error_dialog_content(dialog, error)
@@ -385,7 +386,9 @@ class UserFriendlyErrorLayer:
         # Focus on dialog
         dialog.focus_set()
 
-    def _configure_dialog_style(self, dialog: tk.Toplevel, severity: ErrorSeverity):
+    def _configure_dialog_style(
+        self, dialog: tk.Toplevel, severity: ErrorSeverity, error: FriendlyError
+    ):
         """Configure dialog style based on severity."""
         colors = {
             ErrorSeverity.INFO: {"bg": "#e3f2fd", "fg": "#1976d2"},
@@ -549,7 +552,7 @@ class UserFriendlyErrorLayer:
                     help_frame, text=f"📚 {link}", fg="blue", cursor="hand2"
                 )
                 link_label.pack(anchor=tk.W, pady=2)
-                link_label.bind("<Button-1>", lambda e, l=link: self._open_help_link(l))
+                link_label.bind("<Button-1>", partial(self._open_help_link, link))
 
     def _create_dialog_buttons(
         self, parent: ttk.Frame, dialog: tk.Toplevel, error: FriendlyError
@@ -683,9 +686,9 @@ Suggestions:
                         "user_input": error.context.user_input,
                         "file_path": error.context.file_path,
                         "experiment_id": error.context.experiment_id,
-                    }
+                    }  # type: ignore
 
-                export_data["errors"].append(error_dict)
+                export_data["errors"].append(error_dict)  # type: ignore
 
             with open(file_path, "w") as f:
                 json.dump(export_data, f, indent=2)

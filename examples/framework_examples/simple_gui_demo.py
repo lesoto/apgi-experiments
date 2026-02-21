@@ -5,11 +5,10 @@ This example demonstrates basic GUI functionality without requiring
 all the complex dependencies that may not be available.
 """
 
-import tkinter as tk
-from tkinter import ttk, messagebox
-from pathlib import Path
 import sys
-import os
+import tkinter as tk
+from pathlib import Path
+from tkinter import messagebox, ttk
 
 # Add the parent directory to the path so we can import apgi_framework
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))

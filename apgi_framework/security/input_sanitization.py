@@ -3,11 +3,10 @@ Input Sanitization Module for APGI Framework
 Provides secure input validation and sanitization utilities.
 """
 
-import os
-import re
-from pathlib import Path, PurePath
-from typing import Union, List, Optional, Any
 import logging
+import re
+from pathlib import Path
+from typing import Any, List, Optional, Union
 from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
@@ -157,7 +156,10 @@ class InputSanitizer:
         return resolved_path
 
     def validate_file_extension(
-        self, filename: str, allowed_extensions: List[str], case_sensitive: bool = False
+        self,
+        filename: str,
+        allowed_extensions: List[str],
+        case_sensitive: bool = False,
     ) -> bool:
         """
         Validate file extension against allowed list.
@@ -295,7 +297,9 @@ class InputSanitizer:
 
         return num_value
 
-    def sanitize_url(self, url: str, allowed_schemes: List[str] = None) -> str:
+    def sanitize_url(
+        self, url: str, allowed_schemes: Optional[List[str]] = None
+    ) -> str:
         """
         Sanitize URL to prevent malicious URLs.
 
@@ -446,7 +450,7 @@ class SecureFileHandler:
         file_path: Union[str, Path],
         content: Union[str, bytes],
         base_dir: Optional[Union[str, Path]] = None,
-        allowed_extensions: List[str] = None,
+        allowed_extensions: Optional[List[str]] = None,
     ) -> Path:
         """
         Safely write file with path validation.

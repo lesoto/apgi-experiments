@@ -5,21 +5,14 @@ Provides a flexible template system for generating customized reports
 with user-defined layouts, content sections, and styling options.
 """
 
-from typing import Dict, List, Optional, Any, Union, Callable
-from pathlib import Path
 import json
-import yaml
 from dataclasses import dataclass, field
-from enum import Enum
-import jinja2
 from datetime import datetime
+from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
-try:
-    from .pdf_generator import PDFReportGenerator, ReportConfig, ReportSection
-
-    PDF_AVAILABLE = True
-except ImportError:
-    PDF_AVAILABLE = False
+import jinja2
 
 
 class TemplateFormat(Enum):
@@ -421,7 +414,7 @@ class TemplateManager:
         self, template: ReportTemplate, data: Dict[str, Any]
     ) -> Dict[str, List[str]]:
         """Validate data against template requirements."""
-        errors = {}
+        errors: Dict[str, List[str]] = {}
 
         # Validate global variables
         for var in template.global_variables:
@@ -526,11 +519,11 @@ class TemplateBuilder:
 
     def __init__(self, manager: TemplateManager):
         self.manager = manager
-        self.current_template = None
+        self.current_template: Optional[ReportTemplate] = None
 
     def start_template(
         self, name: str, description: str, format: TemplateFormat
-    ) -> ReportTemplate:
+    ) -> Optional[ReportTemplate]:
         """Start building a new template."""
         self.current_template = self.manager.create_template(name, description, format)
         return self.current_template
@@ -558,7 +551,7 @@ class TemplateBuilder:
         content_template: str,
         order: int = 0,
         optional: bool = False,
-    ) -> TemplateSection:
+    ) -> Optional[TemplateSection]:
         """Add a section to the current template."""
         if not self.current_template:
             return None

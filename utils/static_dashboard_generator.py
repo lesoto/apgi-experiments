@@ -7,9 +7,12 @@ Generates static HTML dashboards for APGI framework visualizations.
 
 from datetime import datetime
 from pathlib import Path
-from typing import List
+from typing import List, Optional, Any
 
 # APGI imports - make imports optional for testing
+apgi_logger: Any = None
+performance_profiler: Any = None
+
 try:
     from utils.logging_config import apgi_logger
     from utils.performance_profiler import performance_profiler
@@ -17,21 +20,22 @@ except ImportError:
     # Create fallback logger
     import logging
 
-    apgi_logger = logging.getLogger(__name__)
+    class FallbackLogger:
+        def __init__(self):
+            self.logger = logging.getLogger(__name__)
+
+    apgi_logger = FallbackLogger()
 
     class DummyProfiler:
         pass
 
     performance_profiler = DummyProfiler()
 
-    # Add logger attribute to match expected interface
-    apgi_logger.logger = apgi_logger
-
 
 class StaticDashboardGenerator:
     """Generates static HTML dashboards."""
 
-    def __init__(self, output_dir: str = None):
+    def __init__(self, output_dir: Optional[str] = None):
         """Initialize the dashboard generator."""
         self.output_dir = Path(output_dir or "apgi_output/dashboards")
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -380,7 +384,7 @@ class StaticDashboardGenerator:
         return generated_files
 
 
-def generate_dashboards(output_dir: str = None) -> List[str]:
+def generate_dashboards(output_dir: Optional[str] = None) -> List[str]:
     """Generate all static dashboards."""
     generator = StaticDashboardGenerator(output_dir)
     return generator.generate_all_dashboards()

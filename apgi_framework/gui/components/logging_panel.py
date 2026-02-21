@@ -5,24 +5,24 @@ Extracted from the monolithic GUI to provide a focused component
 for system logging and message display.
 """
 
-import customtkinter as ctk
-import tkinter as tk
-from tkinter import messagebox, filedialog
+import json
 import logging
 import queue
-import threading
-from typing import Dict, Any, Optional, Callable, List
-from pathlib import Path
 import sys
+import tkinter as tk
 from datetime import datetime
-import json
+from pathlib import Path
+from tkinter import filedialog, messagebox
+from typing import Callable, Dict, List, Optional, Any
+
+import customtkinter as ctk
 
 # Add project root to Python path for imports
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 try:
-    from apgi_framework.logging.standardized_logging import get_logger
+    pass  # Removed unused import
 except ImportError as e:
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger("logging_panel")
@@ -67,7 +67,7 @@ class LoggingPanel(ctk.CTkFrame):
         super().__init__(parent)
 
         self.max_log_lines = max_log_lines
-        self.log_queue = queue.Queue()
+        self.log_queue: queue.Queue[Any] = queue.Queue()
         self.log_handler = None
         self.is_polling = True
 
@@ -501,7 +501,8 @@ class LoggingPanel(ctk.CTkFrame):
         """Change logging level."""
         try:
             self.current_log_level = getattr(logging, level)
-            self.log_handler.setLevel(self.current_log_level)
+            if self.log_handler is not None:
+                self.log_handler.setLevel(self.current_log_level)
 
             # Update root logger level
             root_logger = logging.getLogger()
@@ -634,7 +635,6 @@ class LoggingPanel(ctk.CTkFrame):
     def add_message(self, message: str, level: str = "INFO"):
         """Add a message directly to the log display."""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        formatted_message = f"{timestamp} - GUI - {level} - {message}"
 
         if level.upper() in self.log_colors:
             self._append_formatted_log(timestamp, "GUI", level.upper(), message)

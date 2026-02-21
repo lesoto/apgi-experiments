@@ -2,13 +2,13 @@
 Command-line interface for deployment automation.
 """
 
-import click
-import json
 from pathlib import Path
-from typing import Optional
 
-from .automation_manager import DeploymentAutomationManager, DeploymentConfig
+import click
+
 from ..logging.standardized_logging import get_logger
+
+from .automation_manager import DeploymentAutomationManager
 
 logger = get_logger(__name__)
 

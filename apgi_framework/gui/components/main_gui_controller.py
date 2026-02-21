@@ -5,16 +5,24 @@ Orchestrates all GUI components and provides centralized management
 for the modular GUI architecture.
 """
 
-import customtkinter as ctk
-import tkinter as tk
-from tkinter import messagebox
 import logging
-from typing import Dict, Any, Optional, List, Callable
-from pathlib import Path
+import queue
 import sys
 from datetime import datetime
-import threading
-import queue
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, TypedDict
+
+
+# Type definitions
+
+
+class ValidationResult(TypedDict):
+    """Type definition for system validation results."""
+
+    valid: bool
+    issues: List[str]
+    warnings: List[str]
+
 
 # Add project root to Python path for imports
 project_root = Path(__file__).parent.parent.parent
@@ -22,10 +30,10 @@ sys.path.insert(0, str(project_root))
 
 # Import GUI components
 try:
-    from .parameter_config_panel import ParameterConfigPanel
-    from .test_execution_panel import TestExecutionPanel
-    from .results_visualization_panel import ResultsVisualizationPanel
     from .logging_panel import LoggingPanel
+    from .parameter_config_panel import ParameterConfigPanel
+    from .results_visualization_panel import ResultsVisualizationPanel
+    from .test_execution_panel import TestExecutionPanel
 
     GUI_COMPONENTS_AVAILABLE = True
 except ImportError as e:
@@ -34,121 +42,55 @@ except ImportError as e:
     logger.warning(f"Could not import GUI components: {e}")
     GUI_COMPONENTS_AVAILABLE = False
 
-    # Create fallback classes only if imports fail
-    class ParameterConfigPanel:
-        def __init__(self, parent, *args, **kwargs):
-            self.parent = parent
-            self._create_placeholder()
-
-        def _create_placeholder(self):
-            """Create placeholder UI."""
-            frame = ctk.CTkFrame(self.parent)
-            frame.pack(fill="both", expand=True, padx=10, pady=10)
-
-            ctk.CTkLabel(
-                frame,
-                text="Parameter Configuration",
-                font=ctk.CTkFont(size=16, weight="bold"),
-            ).pack(pady=10)
-            ctk.CTkLabel(
-                frame,
-                text="Parameter configuration component not available",
-                text_color="gray",
-            ).pack(pady=5)
-
-    class TestExecutionPanel:
-        def __init__(self, parent, *args, **kwargs):
-            self.parent = parent
-            self._create_placeholder()
-
-        def _create_placeholder(self):
-            """Create placeholder UI."""
-            frame = ctk.CTkFrame(self.parent)
-            frame.pack(fill="both", expand=True, padx=10, pady=10)
-
-            ctk.CTkLabel(
-                frame, text="Test Execution", font=ctk.CTkFont(size=16, weight="bold")
-            ).pack(pady=10)
-            ctk.CTkLabel(
-                frame, text="Test execution component not available", text_color="gray"
-            ).pack(pady=5)
-
-    class ResultsVisualizationPanel:
-        def __init__(self, parent, *args, **kwargs):
-            self.parent = parent
-            self._create_placeholder()
-
-        def _create_placeholder(self):
-            """Create placeholder UI."""
-            frame = ctk.CTkFrame(self.parent)
-            frame.pack(fill="both", expand=True, padx=10, pady=10)
-
-            ctk.CTkLabel(
-                frame,
-                text="Results Visualization",
-                font=ctk.CTkFont(size=16, weight="bold"),
-            ).pack(pady=10)
-            ctk.CTkLabel(
-                frame,
-                text="Results visualization component not available",
-                text_color="gray",
-            ).pack(pady=5)
-
-    class LoggingPanel:
-        def __init__(self, parent, *args, **kwargs):
-            self.parent = parent
-            self._create_placeholder()
-
-        def _create_placeholder(self):
-            """Create placeholder UI."""
-            frame = ctk.CTkFrame(self.parent)
-            frame.pack(fill="both", expand=True, padx=10, pady=10)
-
-            ctk.CTkLabel(
-                frame, text="Logging", font=ctk.CTkFont(size=16, weight="bold")
-            ).pack(pady=10)
-            ctk.CTkLabel(
-                frame, text="Logging component not available", text_color="gray"
-            ).pack(pady=5)
-
 
 # Import framework components
 try:
+    from apgi_framework.config import APGIParameters, ConfigManager, ExperimentalConfig
+    from apgi_framework.exceptions import APGIFrameworkError
     from apgi_framework.logging.standardized_logging import get_logger
     from apgi_framework.main_controller import MainApplicationController
-    from apgi_framework.config import ConfigManager, APGIParameters, ExperimentalConfig
-    from apgi_framework.exceptions import APGIFrameworkError
 except ImportError as e:
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger("main_gui_controller")
     logger.warning(f"Could not import framework components: {e}")
 
-    # Create fallback classes
-    class MainApplicationController:
-        def __init__(self):
+    # Create fallback classes only if not already imported
+    if "MainApplicationController" not in globals():
+
+        class MainApplicationController:  # type: ignore[no-redef]
+            def __init__(self):
+                pass
+
+    if "ConfigManager" not in globals():
+
+        class ConfigManager:  # type: ignore[no-redef]
+            def __init__(self):
+                pass
+
+    if "APGIParameters" not in globals():
+
+        class APGIParameters:  # type: ignore[no-redef]
+            def __init__(self):
+                pass
+
+    if "ExperimentalConfig" not in globals():
+
+        class ExperimentalConfig:  # type: ignore[no-redef]
+            def __init__(self):
+                pass
+
+    if "APGIFrameworkError" not in globals():
+
+        class APGIFrameworkError(Exception):  # type: ignore[no-redef]
             pass
 
-    class ConfigManager:
-        def __init__(self):
-            pass
 
-    class APGIParameters:
-        def __init__(self):
-            pass
-
-    class ExperimentalConfig:
-        def __init__(self):
-            pass
-
-    class APGIFrameworkError(Exception):
-        pass
-
-
-logger = (
-    get_logger("main_gui_controller")
-    if "get_logger" in globals()
-    else logging.getLogger("main_gui_controller")
-)
+if "logger" not in globals():
+    logger: logging.Logger = (  # type: ignore[no-redef]
+        get_logger("main_gui_controller")
+        if "get_logger" in globals()
+        else logging.getLogger("main_gui_controller")
+    )
 
 
 class MainGUIController:
@@ -715,45 +657,59 @@ class MainGUIController:
         except Exception as e:
             logger.error(f"Failed to refresh components: {e}")
 
-    def validate_system(self) -> Dict[str, Any]:
+    def validate_system(self) -> ValidationResult:
         """Validate system state and return validation results."""
-        validation_results = {"valid": True, "issues": [], "warnings": []}
+        issues: List[str] = []
+        warnings: List[str] = []
+        validation_results: Dict[str, Any] = {
+            "valid": True,
+            "issues": issues,
+            "warnings": warnings,
+        }
 
         try:
             # Check parameter panel
             if self.parameter_panel:
                 try:
-                    config = self.parameter_panel.get_apgi_parameters()
                     # Basic validation would go here
+                    pass
                 except Exception as e:
-                    validation_results["issues"].append(f"Parameter panel error: {e}")
+                    issues.append(f"Parameter panel error: {e}")  # type: ignore[attr-defined]
                     validation_results["valid"] = False
 
             # Check test panels
             for test_name, panel in self.test_panels.items():
-                if panel.is_test_running():
-                    validation_results["warnings"].append(
-                        f"Test {test_name} is still running"
-                    )
+                try:
+                    if hasattr(panel, "is_test_running") and panel.is_test_running():
+                        warnings.append(f"Test {test_name} is still running")
+                except Exception as e:
+                    issues.append(f"Error checking test {test_name}: {e}")  # type: ignore[attr-defined]
+                    validation_results["valid"] = False
 
             # Check results panel
             if self.results_panel:
-                results_data = self.results_panel.get_results_data()
-                if len(results_data) > 1000:
-                    validation_results["warnings"].append(
-                        "Large amount of results data may affect performance"
-                    )
+                try:
+                    results_data = self.results_panel.get_results_data()
+                    if hasattr(results_data, "__len__") and len(results_data) > 1000:
+                        warnings.append(
+                            "Large amount of results data may affect performance"
+                        )
+                except Exception as e:
+                    issues.append(f"Error checking results panel: {e}")  # type: ignore[attr-defined]
+                    validation_results["valid"] = False
 
             # Check logging panel
             if self.logging_panel:
-                stats = self.logging_panel.get_log_statistics()
-                if stats.get("ERROR", 0) > 10:
-                    validation_results["warnings"].append(
-                        "High number of error logs detected"
-                    )
+                try:
+                    stats = self.logging_panel.get_log_statistics()
+                    if isinstance(stats, dict) and stats.get("ERROR", 0) > 10:
+                        warnings.append("High number of error logs detected")
+                except Exception as e:
+                    issues.append(f"Error checking logging panel: {e}")  # type: ignore[attr-defined]
+                    validation_results["valid"] = False
 
         except Exception as e:
-            validation_results["issues"].append(f"Validation error: {e}")
+            issues.append(f"Validation error: {e}")  # type: ignore[attr-defined]
             validation_results["valid"] = False
 
         return validation_results

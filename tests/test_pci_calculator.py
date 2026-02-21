@@ -5,13 +5,13 @@ This test suite provides full coverage for the PCICalculator class and all
 PCI calculation methods, ensuring all critical functionality is tested.
 """
 
-import pytest
-import numpy as np
-from typing import Dict, Optional, List
 import warnings
 
+import numpy as np
+import pytest
+
 # Import the modules we're testing
-from apgi_framework.simulators.pci_calculator import PCISignature, PCICalculator
+from apgi_framework.simulators.pci_calculator import PCICalculator, PCISignature
 
 
 class TestPCISignature:
@@ -350,15 +350,6 @@ class TestPCICalculator:
 
     def test_validate_signature_invalid_components(self):
         """Test validating signature with invalid complexity components."""
-        signature = PCISignature(
-            pci_value=0.45,
-            complexity_components={},  # Empty components
-            connectivity_strength=0.7,
-            perturbation_response=0.8,
-            is_conscious_threshold=True,
-            state_classification="conscious",
-        )
-
         # The validate_signature method doesn't check for empty components
         # Let's test with invalid component values instead
         signature_invalid = PCISignature(

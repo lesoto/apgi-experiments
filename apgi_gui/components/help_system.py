@@ -6,14 +6,10 @@ guidance for users to discover and learn framework capabilities.
 """
 
 import tkinter as tk
-from tkinter import ttk, messagebox
-import customtkinter as ctk
-from typing import Dict, List, Optional, Any, Callable, Tuple
-from pathlib import Path
-import json
-import webbrowser
 from dataclasses import dataclass
 from enum import Enum
+from tkinter import messagebox, ttk
+from typing import Any, Dict, List, Optional, Tuple
 
 
 class TourStepType(Enum):
@@ -515,26 +511,26 @@ class FeatureTourManager:
             ttk.Button(
                 button_frame,
                 text="Previous",
-                command=lambda: [dialog.destroy(), self.prev_step()],
+                command=lambda: self._prev_and_destroy(dialog),
             ).pack(side=tk.LEFT)
 
         if step.next_step:
             ttk.Button(
                 button_frame,
                 text="Next",
-                command=lambda: [dialog.destroy(), self.next_step()],
+                command=lambda: self._next_and_destroy(dialog),
             ).pack(side=tk.RIGHT)
         else:
             ttk.Button(
                 button_frame,
                 text="Finish",
-                command=lambda: [dialog.destroy(), self._end_tour()],
+                command=lambda: self._end_and_destroy(dialog),
             ).pack(side=tk.RIGHT)
 
         ttk.Button(
             button_frame,
             text="Skip Tour",
-            command=lambda: [dialog.destroy(), self._end_tour()],
+            command=lambda: self._end_and_destroy(dialog),
         ).pack(side=tk.RIGHT, padx=(0, 10))
 
         self.tour_widgets["modal"] = dialog
@@ -615,6 +611,21 @@ class FeatureTourManager:
         self._hide_current_step()
         self.current_tour = None
         self.current_step = None
+
+    def _prev_and_destroy(self, dialog):
+        """Helper to destroy dialog and go to previous step."""
+        dialog.destroy()
+        self.prev_step()
+
+    def _next_and_destroy(self, dialog):
+        """Helper to destroy dialog and go to next step."""
+        dialog.destroy()
+        self.next_step()
+
+    def _end_and_destroy(self, dialog):
+        """Helper to destroy dialog and end tour."""
+        dialog.destroy()
+        self._end_tour()
 
 
 class HelpSystemUI:

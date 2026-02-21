@@ -5,63 +5,65 @@ Extracted from the monolithic GUI to provide a focused component
 for running and managing falsification tests.
 """
 
-import customtkinter as ctk
-import tkinter as tk
-from tkinter import messagebox
-import threading
 import logging
-from typing import Dict, Any, Optional, Callable
-from pathlib import Path
 import sys
+import threading
+import tkinter as tk
 from datetime import datetime
+from pathlib import Path
+from tkinter import messagebox
+from typing import Any, Callable, Dict, Optional
+
+import customtkinter as ctk
 
 # Add project root to Python path for imports
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 try:
-    from apgi_framework.logging.standardized_logging import get_logger
-    from apgi_framework.validation import get_validator
-    from apgi_framework.main_controller import MainApplicationController
     from apgi_framework.exceptions import APGIFrameworkError
+    from apgi_framework.logging.standardized_logging import get_logger
+    from apgi_framework.main_controller import MainApplicationController
+    from apgi_framework.validation import get_validator
 except ImportError as e:
-    logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger("test_execution_panel")
-    logger.warning(f"Some APGI Framework components not available: {e}")
+    temp_logger = logging.getLogger("test_execution_panel")
+    temp_logger.warning(f"Some APGI Framework components not available: {e}")
 
-    # Create fallback classes
-    class MainApplicationController:
-        def __init__(self):
+    # Create fallback classes only if not already imported
+    if "MainApplicationController" not in globals():
+
+        class MainApplicationController:  # type: ignore[no-redef]
+            def __init__(self):
+                pass
+
+            def run_test(self, **kwargs):
+                class MockResult:
+                    def __init__(self, test_name):
+                        self.test_id = f"mock_{test_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                        self.n_trials = kwargs.get("n_trials", 100)
+                        self.n_participants = kwargs.get("n_participants", 20)
+                        self.success_rate = 0.75
+                        self.falsification_rate = 0.25
+                        self.execution_time = 2.5
+
+                    def to_dict(self):
+                        return {
+                            "test_id": self.test_id,
+                            "n_trials": self.n_trials,
+                            "n_participants": self.n_participants,
+                            "success_rate": self.success_rate,
+                            "falsification_rate": self.falsification_rate,
+                            "execution_time": self.execution_time,
+                        }
+
+                return MockResult("test")
+
+    if "APGIFrameworkError" not in globals():
+
+        class APGIFrameworkError(Exception):  # type: ignore[no-redef]
             pass
 
-        def run_test(self, **kwargs):
-            class MockResult:
-                def __init__(self, test_name):
-                    self.test_id = (
-                        f"mock_{test_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-                    )
-                    self.n_trials = kwargs.get("n_trials", 100)
-                    self.n_participants = kwargs.get("n_participants", 20)
-                    self.success_rate = 0.75
-                    self.falsification_rate = 0.25
-                    self.execution_time = 2.5
-
-                def to_dict(self):
-                    return {
-                        "test_id": self.test_id,
-                        "n_trials": self.n_trials,
-                        "n_participants": self.n_participants,
-                        "success_rate": self.success_rate,
-                        "falsification_rate": self.falsification_rate,
-                        "execution_time": self.execution_time,
-                    }
-
-            return MockResult("test")
-
-    class APGIFrameworkError(Exception):
-        pass
-
-    def get_validator():
+    def get_validator() -> Any:  # type: ignore[no-redef,func-sig]
         class MockValidator:
             def validate_experimental_config(self, **kwargs):
                 class MockResult:
@@ -76,10 +78,14 @@ except ImportError as e:
 
         return MockValidator()
 
+else:
+    # Import successful, don't define fallback classes
+    pass
 
-logger = (
+
+logger: logging.Logger = (  # type: ignore[no-redef]
     get_logger("test_execution_panel")
-    if "get_logger" in globals()
+    if "get_logger" in globals() and get_logger is not None
     else logging.getLogger("test_execution_panel")
 )
 
@@ -127,7 +133,7 @@ class ExecutionPanel(ctk.CTkFrame):
         self.test_results = None
 
         # Test parameters
-        self.test_vars = {}
+        self.test_vars: Dict[str, Any] = {}
 
         # Callbacks for external components
         self.on_test_started: Optional[Callable] = None
@@ -194,11 +200,11 @@ class ExecutionPanel(ctk.CTkFrame):
 
     def _create_parameters_section(self):
         """Create test parameters section."""
-        params_frame = ctk.CTkFrame(self.scrollable_frame)
-        params_frame.pack(fill="x", padx=5, pady=5)
+        self.params_frame = ctk.CTkFrame(self.scrollable_frame)
+        self.params_frame.pack(fill="x", padx=5, pady=5)
 
         params_title = ctk.CTkLabel(
-            params_frame,
+            self.params_frame,
             text="Test Parameters",
             font=ctk.CTkFont(size=14, weight="bold"),
         )
@@ -206,7 +212,7 @@ class ExecutionPanel(ctk.CTkFrame):
 
         # Common parameters for all tests
         self._create_parameter_row(
-            params_frame,
+            self.params_frame,
             "n_trials",
             "Number of Trials",
             1000,
@@ -214,13 +220,9 @@ class ExecutionPanel(ctk.CTkFrame):
         )
 
         # Test-specific parameters
-        if self.test_name in [
-            "Soma-Bias",
-            "Threshold Insensitivity",
-            "Cross-Species Validation",
-        ]:
+        if self.test_name in ["Cross-Species Validation", "Clinical Biomarkers"]:
             self._create_parameter_row(
-                params_frame,
+                self.params_frame,
                 "n_participants",
                 "Number of Participants",
                 100,
@@ -229,7 +231,7 @@ class ExecutionPanel(ctk.CTkFrame):
 
         if self.test_name == "Threshold Insensitivity":
             self._create_parameter_row(
-                params_frame,
+                self.params_frame,
                 "n_drug_conditions",
                 "Drug Conditions",
                 5,
@@ -238,37 +240,70 @@ class ExecutionPanel(ctk.CTkFrame):
 
         if self.test_name == "Cross-Species Validation":
             self._create_parameter_row(
-                params_frame,
+                self.params_frame,
                 "n_species",
                 "Number of Species",
                 3,
-                "Number of species to compare",
+                "Number of species to include",
             )
 
         if self.test_name == "Clinical Biomarkers":
             self._create_parameter_row(
-                params_frame,
+                self.params_frame,
                 "clinical_condition",
                 "Clinical Condition",
                 "depression",
-                "Target clinical condition",
+                "Clinical condition to test",
             )
+
+            conditions = [
+                "depression",
+                "anxiety",
+                "schizophrenia",
+                "bipolar",
+                "adhd",
+                "autism",
+            ]
+
+            # Create dropdown for disorder selection
+            disorder_frame = ctk.CTkFrame(self.params_frame)
+            disorder_frame.pack(fill="x", pady=5)
+
+            ctk.CTkLabel(disorder_frame, text="Disorder:").pack(anchor="w")
+            disorder_var = tk.StringVar(value=conditions[0])
+            disorder_menu = ctk.CTkOptionMenu(
+                disorder_frame, variable=disorder_var, values=conditions
+            )
+            disorder_menu.pack(fill="x", pady=2)
 
         if self.test_name == "Threshold Detection":
             self._create_parameter_row(
-                params_frame,
+                self.params_frame,
                 "modality",
                 "Modality",
                 "visual",
                 "Sensory modality for threshold testing",
             )
             self._create_parameter_row(
-                params_frame,
+                self.params_frame,
                 "method",
                 "Method",
                 "adaptive_staircase",
                 "Threshold estimation method",
             )
+
+            modalities = ["visual", "auditory", "interoceptive", "somatosensory"]
+
+            # Create dropdown for modality selection
+            modality_frame = ctk.CTkFrame(self.params_frame)
+            modality_frame.pack(fill="x", pady=5)
+
+            ctk.CTkLabel(modality_frame, text="Modality:").pack(anchor="w")
+            modality_var = tk.StringVar(value=modalities[0])
+            modality_menu = ctk.CTkOptionMenu(
+                modality_frame, variable=modality_var, values=modalities
+            )
+            modality_menu.pack(fill="x", pady=2)
 
     def _create_parameter_row(
         self, parent_frame, param_name: str, label: str, default_value, tooltip: str
@@ -284,15 +319,16 @@ class ExecutionPanel(ctk.CTkFrame):
 
         # Entry widget
         if isinstance(default_value, int):
-            var = tk.IntVar(value=default_value)
+            var = ctk.IntVar(value=default_value)
             entry = ctk.CTkEntry(param_row, textvariable=var, width=15)
         elif isinstance(default_value, float):
-            var = tk.DoubleVar(value=default_value)
+            var = ctk.DoubleVar(value=default_value)
+        else:
+            var = ctk.StringVar(value=str(default_value))
             entry = ctk.CTkEntry(param_row, textvariable=var, width=15)
-        else:  # string
-            var = tk.StringVar(value=default_value)
-            entry = ctk.CTkEntry(param_row, textvariable=var, width=20)
 
+        if isinstance(default_value, float) or isinstance(default_value, int):
+            entry = ctk.CTkEntry(param_row, textvariable=var, width=15)
         entry.pack(side="left", padx=5)
         self.test_vars[param_name] = var
 
@@ -395,7 +431,7 @@ class ExecutionPanel(ctk.CTkFrame):
         def on_enter(event):
             tooltip = ctk.CTkToplevel(widget)
             tooltip.wm_overrideredirect(True)
-            tooltip.wm_geometry(f"+{event.x_root+10}+{event.y_root+10}")
+            tooltip.wm_geometry(f"+ {event.x_root + 10}+ {event.y_root + 10}")
 
             label = ctk.CTkLabel(
                 tooltip, text=text, font=ctk.CTkFont(size=10), wraplength=300
@@ -427,7 +463,7 @@ class ExecutionPanel(ctk.CTkFrame):
             ]
 
             # Create dropdown for disorder selection
-            disorder_frame = ctk.CTkFrame(params_frame)
+            disorder_frame = ctk.CTkFrame(self.params_frame)
             disorder_frame.pack(fill="x", pady=5)
 
             ctk.CTkLabel(disorder_frame, text="Disorder:").pack(anchor="w")
@@ -438,14 +474,14 @@ class ExecutionPanel(ctk.CTkFrame):
             disorder_menu.pack(fill="x", pady=2)
 
             # Store reference for later use
-            self.test_params["disorder"] = disorder_var
+            self.test_vars["disorder"] = disorder_var
 
         elif self.test_name == "Threshold Detection":
             # Add dropdown for modalities
             modalities = ["visual", "auditory", "interoceptive", "somatosensory"]
 
             # Create dropdown for modality selection
-            modality_frame = ctk.CTkFrame(params_frame)
+            modality_frame = ctk.CTkFrame(self.params_frame)
             modality_frame.pack(fill="x", pady=5)
 
             ctk.CTkLabel(modality_frame, text="Modality:").pack(anchor="w")
@@ -456,7 +492,7 @@ class ExecutionPanel(ctk.CTkFrame):
             modality_menu.pack(fill="x", pady=2)
 
             # Store reference for later use
-            self.test_params["modality"] = modality_var
+            self.test_vars["modality"] = modality_var
 
     def _run_test(self):
         """Run the falsification test in a separate thread."""
@@ -609,7 +645,9 @@ class ExecutionPanel(ctk.CTkFrame):
 
                 completed_operations = (i + 1) * (total_operations // 10)
                 self._update_progress(
-                    completed_operations, total_operations, f"Running test... {i+1}/10"
+                    completed_operations,
+                    total_operations,
+                    f"Running test... {i + 1}/10",
                 )
 
                 # Simulate work
@@ -814,7 +852,8 @@ class ExecutionPanel(ctk.CTkFrame):
             "parameters": self._get_test_parameters(),
             "results": (
                 self.test_results.to_dict()
-                if hasattr(self.test_results, "to_dict")
+                if self.test_results is not None
+                and hasattr(self.test_results, "to_dict")
                 else self.test_results
             ),
         }

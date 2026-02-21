@@ -5,12 +5,19 @@ Tests the modular GUI architecture to ensure all components work correctly
 and maintain backward compatibility.
 """
 
-import pytest
 import sys
-import os
 from pathlib import Path
 from unittest.mock import Mock, patch
-import tkinter as tk
+
+import pytest
+
+try:
+    import tkinter as tk
+
+    TKINTER_AVAILABLE = True
+except ImportError:
+    print("tkinter not available")
+    TKINTER_AVAILABLE = False
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -18,15 +25,15 @@ sys.path.insert(0, str(project_root))
 
 # Test imports
 try:
+    from apgi_framework.gui.components.logging_panel import LoggingPanel
+    from apgi_framework.gui.components.main_gui_controller import MainGUIController
     from apgi_framework.gui.components.parameter_config_panel import (
         ParameterConfigPanel,
     )
-    from apgi_framework.gui.components.test_execution_panel import TestExecutionPanel
     from apgi_framework.gui.components.results_visualization_panel import (
         ResultsVisualizationPanel,
     )
-    from apgi_framework.gui.components.logging_panel import LoggingPanel
-    from apgi_framework.gui.components.main_gui_controller import MainGUIController
+    from apgi_framework.gui.components.test_execution_panel import TestExecutionPanel
 
     GUI_COMPONENTS_AVAILABLE = True
 except ImportError as e:
@@ -34,7 +41,10 @@ except ImportError as e:
     GUI_COMPONENTS_AVAILABLE = False
 
 
-@pytest.mark.skipif(not GUI_COMPONENTS_AVAILABLE, reason="GUI components not available")
+@pytest.mark.skipif(
+    not (TKINTER_AVAILABLE and GUI_COMPONENTS_AVAILABLE),
+    reason="GUI components not available",
+)
 class TestParameterConfigPanel:
     """Test the Parameter Configuration Panel."""
 
@@ -98,7 +108,10 @@ class TestParameterConfigPanel:
         assert panel.exp_vars["n_participants"].get() == 100
 
 
-@pytest.mark.skipif(not GUI_COMPONENTS_AVAILABLE, reason="GUI components not available")
+@pytest.mark.skipif(
+    not (TKINTER_AVAILABLE and GUI_COMPONENTS_AVAILABLE),
+    reason="GUI components not available",
+)
 class TestTestExecutionPanel:
     """Test the Test Execution Panel."""
 
@@ -137,11 +150,11 @@ class TestTestExecutionPanel:
 
         # Test valid parameters
         panel.test_vars["n_trials"].set(1000)
-        assert panel._validate_parameters() == True
+        assert panel._validate_parameters()
 
         # Test invalid parameters
         panel.test_vars["n_trials"].set(-1)
-        assert panel._validate_parameters() == False
+        assert not panel._validate_parameters()
 
     def test_progress_tracking(self):
         """Test progress tracking."""
@@ -171,7 +184,10 @@ class TestTestExecutionPanel:
         assert "success_rate" in results_text.lower()
 
 
-@pytest.mark.skipif(not GUI_COMPONENTS_AVAILABLE, reason="GUI components not available")
+@pytest.mark.skipif(
+    not (TKINTER_AVAILABLE and GUI_COMPONENTS_AVAILABLE),
+    reason="GUI components not available",
+)
 class TestResultsVisualizationPanel:
     """Test the Results Visualization Panel."""
 
@@ -244,7 +260,10 @@ class TestResultsVisualizationPanel:
         assert stats["mean_effect_size"] > 0.5
 
 
-@pytest.mark.skipif(not GUI_COMPONENTS_AVAILABLE, reason="GUI components not available")
+@pytest.mark.skipif(
+    not (TKINTER_AVAILABLE and GUI_COMPONENTS_AVAILABLE),
+    reason="GUI components not available",
+)
 class TestLoggingPanel:
     """Test the Logging Panel."""
 
@@ -263,7 +282,7 @@ class TestLoggingPanel:
 
         assert panel is not None
         assert panel.max_log_lines == 1000
-        assert panel.is_polling == True
+        assert panel.is_polling
         assert panel.current_log_level == 20  # INFO level
 
     def test_log_level_change(self):
@@ -305,7 +324,10 @@ class TestLoggingPanel:
         assert stats["ERROR"] >= 1
 
 
-@pytest.mark.skipif(not GUI_COMPONENTS_AVAILABLE, reason="GUI components not available")
+@pytest.mark.skipif(
+    not (TKINTER_AVAILABLE and GUI_COMPONENTS_AVAILABLE),
+    reason="GUI components not available",
+)
 class TestMainGUIController:
     """Test the Main GUI Controller."""
 

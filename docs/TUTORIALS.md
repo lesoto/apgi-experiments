@@ -2,11 +2,11 @@
 
 ## Tutorial 1: Getting Started with Your First Experiment
 
-### Objective
+### Tutorial 1 Learning Objective
 
 Learn to set up and run a basic detection task experiment from start to finish.
 
-### Prerequisites
+### Tutorial 1 Requirements
 
 - APGI Framework installed
 - Basic understanding of experimental psychology concepts
@@ -86,11 +86,11 @@ Learn to set up and run a basic detection task experiment from start to finish.
 
 ## Tutorial 2: Data Analysis and Visualization
 
-### Objective
+### Tutorial 2 Learning Objective
 
 Learn to analyze experimental data and create meaningful visualizations.
 
-### Prerequisites
+### Tutorial 2 Requirements
 
 - Completed Tutorial 1
 - Have experimental data available
@@ -167,10 +167,12 @@ Learn to analyze experimental data and create meaningful visualizations.
 
 ## Tutorial 3: Heartbeat Detection Task
 
-### Objective
+### Tutorial 3 Learning Objective
+
 Learn to set up and run an interoceptive awareness experiment.
 
-### Prerequisites
+### Tutorial 3 Requirements
+
 - Completed Tutorials 1-2
 - Heart rate sensor (optional, can use simulation)
 - 25 minutes of time
@@ -192,6 +194,7 @@ Learn to set up and run an interoceptive awareness experiment.
 1. __File → New Experiment__
 2. __Select__: Heartbeat Detection Task
 3. __Basic Settings__:
+
    ```text
    Participant ID: P001
    Number of Trials: 60
@@ -225,6 +228,7 @@ Learn to set up and run an interoceptive awareness experiment.
    - "Respond as quickly and accurately as possible"
 
 2. __Trial Structure__:
+
    ```text
    1. Wait for tone (2-5 seconds)
    2. Hear tone (synchronous or asynchronous)
@@ -274,10 +278,12 @@ Learn to set up and run an interoceptive awareness experiment.
 
 ## Tutorial 4: Advanced Analysis with Bayesian Methods
 
-### Objective
+### Tutorial 4 Learning Objective
+
 Learn to use Bayesian parameter estimation for more sophisticated analysis.
 
-### Prerequisites
+### Tutorial 4 Requirements
+
 - Completed Tutorials 1-3
 - Basic understanding of Bayesian statistics
 - 30 minutes of time
@@ -357,10 +363,12 @@ Learn to use Bayesian parameter estimation for more sophisticated analysis.
 
 ## Tutorial 5: Real-time Monitoring and Live Experiments
 
-### Objective
+### Tutorial 5 Learning Objective
+
 Learn to set up real-time monitoring for live experiment tracking.
 
-### Prerequisites
+### Tutorial 5 Requirements
+
 - Completed previous tutorials
 - Multiple monitors (recommended)
 - 20 minutes of time
@@ -456,10 +464,12 @@ Learn to set up real-time monitoring for live experiment tracking.
 
 ## Tutorial 6: Batch Processing and Automation
 
-### Objective
+### Tutorial 6 Learning Objective
+
 Learn to automate experiment processing for large datasets.
 
-### Prerequisites
+### Tutorial 6 Requirements
+
 - Completed previous tutorials
 - Multiple experiment files
 - 25 minutes of time
@@ -530,6 +540,7 @@ Learn to automate experiment processing for large datasets.
 ### Step 5: Automation Scripting
 
 1. __Create Script__:
+
    ```python
    # Example batch processing script
    from apgi_framework import BatchProcessor
@@ -557,6 +568,7 @@ Learn to automate experiment processing for large datasets.
 ## Quick Reference Cheat Sheet
 
 ### Keyboard Shortcuts
+
 - __Ctrl+N__: New experiment
 - __Ctrl+O__: Open file
 - __Ctrl+S__: Save
@@ -572,18 +584,21 @@ Learn to automate experiment processing for large datasets.
 ### Common Workflows
 
 #### Quick Experiment Setup
+
 1. File → New → Detection Task
 2. Enter Participant ID
 3. Set Trials = 50
 4. Click Start
 
 #### Data Analysis
+
 1. File → Open → Select data
 2. Analysis Tab → Descriptive Statistics
 3. Visualization → Psychometric Curve
 4. File → Export Results
 
 #### Batch Processing
+
 1. Tools → Batch Processing
 2. Select directory
 3. Configure pipeline
@@ -591,25 +606,27 @@ Learn to automate experiment processing for large datasets.
 
 ### Troubleshooting Quick Fixes
 
-| Problem               | Solution                                  |
-|-----------------------|-------------------------------------------|
-| GUI not responding    | Check memory usage, close other apps        |
-| Can't import data     | Verify file format and permissions           |
-| Experiment crashes    | Reduce trial count, check sensors           |
-| Slow analysis         | Enable parallel processing                  |
+|Problem|Solution|
+|-------|---------|
+|GUI not responding|Check memory usage, close other apps|
+|Can't import data|Verify file format and permissions|
+|Experiment crashes|Reduce trial count, check sensors|
+|Slow analysis|Enable parallel processing|
 
 ### Default Settings
 
-| Parameter            | Default   | Recommended Range    |
-|----------------------|-----------|----------------------|
-| Trials               | 100       | 50-200               |
-| Response Window      | 2000ms    | 1000-3000ms          |
-| Stimulus Duration    | 500ms     | 100-1000ms           |
-| Inter-trial Interval | 1000ms    | 500-2000ms           |
+|Parameter|Default|Recommended Range|
+|---------|-------|-----------------|
+|Trials|100|50-200|
+|Response Window|2000ms|1000-3000ms|
+|Stimulus Duration|500ms|100-1000ms|
+|Inter-trial Interval|1000ms|500-2000ms|
 
 ---
 
-__Congratulations!__ You've completed the APGI Framework tutorial series. You now have the skills to:
+__Congratulations!__ You've completed the APGI Framework tutorial series.
+
+You now have the skills to:
 
 - Design and run sophisticated experiments
 - Analyze data using advanced statistical methods
@@ -618,7 +635,8 @@ __Congratulations!__ You've completed the APGI Framework tutorial series. You no
 - Monitor experiments in real-time
 
 For additional help and resources:
+
 - __Documentation__: `docs/` directory
-- __Community Forum__: https://forum.apgi-framework.org
-- __Video Tutorials__: https://youtube.com/apgi-framework
-- __Support__: support@apgi-framework.org
+- __Community Forum__: <https://forum.apgi-framework.org>
+- __Video Tutorials__: <https://youtube.com/apgi-framework>
+- __Support__: <support@apgi-framework.org>

@@ -2,25 +2,25 @@
 Extended tests for Clinical Biomarkers component.
 """
 
-import pytest
-import numpy as np
-from datetime import datetime
-from pathlib import Path
 import sys
+from pathlib import Path
+
+import numpy as np
+import pytest
 
 # Add project root to path
 sys.path.append(str(Path(__file__).parent.parent))
 
 # Import clinical biomarkers components
 try:
-    from research.clinical_biomarkers.experiments.biomarker_analysis import (
+    from research.clinical_biomarkers.experiments.biomarker_analysis import (  # type: ignore
         BiomarkerAnalyzer,
-        ClinicalCondition,
-        BiomarkerType,
         BiomarkerCategory,
-        PatientProfile,
-        ClinicalBiomarker,
         BiomarkerFeature,
+        BiomarkerType,
+        ClinicalBiomarker,
+        ClinicalCondition,
+        PatientProfile,
     )
 
     CLINICAL_BIOMARKERS_AVAILABLE = True
@@ -229,7 +229,7 @@ class TestClinicalBiomarkersExtended:
                 )
             else:  # Controls
                 patient = PatientProfile(
-                    patient_id=f"stat_control_{i-15}",
+                    patient_id=f"stat_control_{i - 15}",
                     age=30 + i,
                     sex="F",
                     clinical_condition=ClinicalCondition.HEALTHY_CONTROL,

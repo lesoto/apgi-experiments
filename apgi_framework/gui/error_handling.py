@@ -5,35 +5,50 @@ Provides hardware failure handling, session state management, backup systems,
 and user guidance for error recovery.
 """
 
-import tkinter as tk
-from tkinter import messagebox
-from typing import Dict, Any, Optional, List, Callable
-from pathlib import Path
-from datetime import datetime
 import json
 import logging
+import tkinter as tk
 import traceback
+from datetime import datetime
+from pathlib import Path
+from tkinter import messagebox
+from typing import Any, Callable, Dict, List, Optional
 
 try:
     from ..data.parameter_estimation_models import SessionData
     from ..data.parameter_estimation_dao import ParameterEstimationDAO
     from ..security.secure_pickle import (
         SecurePickleError,
-        safe_pickle_load,
         safe_pickle_dump,
+        safe_pickle_load,
     )
 except ImportError:
-    SessionData = None
-    ParameterEstimationDAO = None
+    # Create fallback classes only if not already imported
+    if "SessionData" not in globals():
+        SessionData: Optional[type] = None  # type: ignore[no-redef]
+    if "ParameterEstimationDAO" not in globals():
+        ParameterEstimationDAO: Optional[type] = None  # type: ignore[no-redef]
 
-    class SecurePickleError(Exception):
+    if "SecurePickleError" not in globals():
+
+        class SecurePickleError(Exception):  # type: ignore[no-redef]
+            pass
+
+    def safe_pickle_load(  # type: ignore[no-redef]
+        file_path: str | Path,
+        expected_types: set[type] | None = None,
+        verify_checksum: bool = True,
+    ) -> Any:
+        return None
+
+    def safe_pickle_dump(  # type: ignore[no-redef]
+        obj: Any, file_path: str | Path, create_checksum: bool = True, protocol: int = 4
+    ) -> None:
         pass
 
-    def safe_pickle_load(*args, **kwargs):
-        return None
-
-    def safe_pickle_dump(*args, **kwargs):
-        return None
+else:
+    # Import successful, don't define fallback classes
+    pass
 
 
 # Import error logging utilities
@@ -41,8 +56,12 @@ try:
     from .error_logging_utils import get_error_log_dir
 except ImportError:
     # Fallback if utility not available
-    def get_error_log_dir(gui_config_path=None):
+    def get_error_log_dir(gui_config_path: Path | None = None) -> Path:  # type: ignore[no-redef]
         return Path.home() / ".apgi" / "error_logs"
+
+else:
+    # Import successful, don't define fallback function
+    pass
 
 
 logger = logging.getLogger(__name__)
@@ -55,7 +74,7 @@ class HardwareFailureHandler:
     Manages EEG, eye tracker, and cardiac sensor failures with fallback strategies.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize hardware failure handler."""
         self.hardware_status = {
             "eeg": {"available": True, "last_check": None, "error": None},
@@ -222,8 +241,7 @@ class SessionStateManager:
         state_data["session_id"] = session_id
 
         # Save state
-        with open(state_file, "wb") as f:
-            safe_pickle_dump(state_data, f)
+        safe_pickle_dump(state_data, state_file)
 
         self.current_state = state_data
 
@@ -247,8 +265,7 @@ class SessionStateManager:
             return None
 
         try:
-            with open(state_file, "rb") as f:
-                state_data = safe_pickle_load(f)
+            state_data = safe_pickle_load(state_file)
 
             self.current_state = state_data
             logger.info(f"Loaded session state from {state_file}")
@@ -282,8 +299,7 @@ class SessionStateManager:
 
         for state_file in self.state_dir.glob("*_state.pkl"):
             try:
-                with open(state_file, "rb") as f:
-                    state_data = safe_pickle_load(f)
+                state_data = safe_pickle_load(state_file)
 
                 states.append(
                     {
@@ -435,7 +451,9 @@ class AutomaticBackupSystem:
             session_data = SessionData(
                 session_id=session_dict.get("session_id", ""),
                 participant_id=session_dict.get("participant_id", ""),
-                session_date=session_date,
+                session_date=session_date
+                if session_date is not None
+                else datetime.now(),
                 protocol_version=session_dict.get("protocol_version", "1.0.0"),
                 completion_status=session_dict.get("completion_status", "in_progress"),
                 total_duration_minutes=session_dict.get("total_duration_minutes"),
@@ -483,7 +501,7 @@ class AutomaticBackupSystem:
                 logger.error(f"Failed to read backup file {backup_file}: {e}")
 
         # Sort by creation time (newest first)
-        backups.sort(key=lambda x: x["created"], reverse=True)
+        backups.sort(key=lambda x: x["created"].timestamp(), reverse=True)  # type: ignore
 
         return backups
 
@@ -606,7 +624,7 @@ class UserGuidanceSystem:
         template = self.error_templates[error_type]
 
         # Build message
-        message = template["message"]
+        message = str(template["message"])
         if additional_info:
             message += f"\n\nDetails: {additional_info}"
 
@@ -616,9 +634,11 @@ class UserGuidanceSystem:
 
         # Show dialog
         if self.parent_window:
-            messagebox.showerror(template["title"], message, parent=self.parent_window)
+            messagebox.showerror(
+                str(template["title"]), message, parent=self.parent_window
+            )
         else:
-            logger.error(f"{template['title']}: {message}")
+            messagebox.showerror(str(template["title"]), message)
 
     def _show_generic_error(self, error_type: str, error_info: str) -> None:
         """Show generic error message."""

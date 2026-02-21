@@ -1,126 +1,163 @@
-import tkinter as tk
-import customtkinter as ctk
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import json
-import os
-import numpy as np
-from tkinter import messagebox, filedialog
-import subprocess
-import csv
-import pandas as pd
 import datetime
-from matplotlib.backends.backend_pdf import PdfPages
-import sys
+import json
 import logging
-from pathlib import Path
-from typing import Dict, Any, Optional, List, Union, Tuple
+import os
+import subprocess
+import sys
 import threading
-import time
+import tkinter as tk
 import traceback
 from dataclasses import dataclass
 from enum import Enum
+from pathlib import Path
+from tkinter import filedialog, messagebox
+from typing import Any, Dict, List, Optional, Tuple
+
+import customtkinter as ctk
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # APGI Framework imports
+ConfigManager: Optional[Any] = None
+APGIFrameworkCLI: Optional[Any] = None
+MainApplicationController: Optional[Any] = None
+
+# Core components
+APGIEquation: Optional[Any] = None
+PrecisionCalculator: Optional[Any] = None
+PredictionErrorProcessor: Optional[Any] = None
+
 try:
     # Add project root to Python path
     project_root = Path(__file__).parent.parent
     sys.path.insert(0, str(project_root))
 
     # Core modules - use correct import paths
+    from apgi_framework.cli import APGIFrameworkCLI
+
+    # Configuration and CLI
+    from apgi_framework.config import APGIParameters as ConfigParameters
     from apgi_framework.core import (
         APGIEquation,
         PrecisionCalculator,
         PredictionErrorProcessor,
+        SomaticMarkerEngine,
+        ThresholdManager,
     )
-    from apgi_framework.core import SomaticMarkerEngine, ThresholdManager
     from apgi_framework.core.data_models import (
-        APGIParameters,
-        NeuralSignatures,
-        ConsciousnessAssessment,
-        FalsificationResult,
+        APGIParameters as DataAPGIParameters,
     )
-
-    # Configuration and CLI
-    from apgi_framework.config import APGIParameters as ConfigParameters
-    from apgi_framework.cli import APGIFrameworkCLI
 
     # Main controller
     from apgi_framework.main_controller import MainApplicationController
 
     # Set up available components
     ConfigManager = ConfigParameters  # Alias for compatibility
-    ExperimentalConfig = APGIParameters  # Alias for compatibility
+    ExperimentalConfig = DataAPGIParameters  # Alias for compatibility
 
     # Data management - check what's available
+    IntegratedDataManager: Optional[Any] = None
     try:
-        from apgi_framework.data.data_manager import IntegratedDataManager
-    except ImportError:
-        IntegratedDataManager = None
+        from apgi_framework.data.data_manager import (
+            IntegratedDataManager as _IntegratedDataManager,
+        )
 
-    try:
-        from apgi_framework.data.report_generator import ReportGenerator
+        IntegratedDataManager = _IntegratedDataManager
     except ImportError:
-        ReportGenerator = None
+        pass
 
+    ReportGenerator: Optional[Any] = None
     try:
-        from apgi_framework.data.visualizer import APGIVisualizer
+        from apgi_framework.data.report_generator import (
+            ReportGenerator as _ReportGenerator,
+        )
+
+        ReportGenerator = _ReportGenerator
     except ImportError:
-        APGIVisualizer = None
+        pass
+
+    APGIVisualizer: Optional[Any] = None
+    try:
+        from apgi_framework.data.visualizer import APGIVisualizer as _APGIVisualizer
+
+        APGIVisualizer = _APGIVisualizer
+    except ImportError:
+        pass
 
     # Falsification tests - use available classes
+    PrimaryFalsificationTest: Optional[Any] = None
     try:
         from apgi_framework.falsification.primary_falsification_test import (
-            PrimaryFalsificationTest,
+            PrimaryFalsificationTest as _PrimaryFalsificationTest,
         )
-    except ImportError:
-        PrimaryFalsificationTest = None
 
+        PrimaryFalsificationTest = _PrimaryFalsificationTest
+    except ImportError:
+        pass
+
+    ConsciousnessWithoutIgnitionTest: Optional[Any] = None
     try:
         from apgi_framework.falsification.consciousness_without_ignition_test import (
-            ConsciousnessWithoutIgnitionTest,
+            ConsciousnessWithoutIgnitionTest as _ConsciousnessWithoutIgnitionTest,
         )
-    except ImportError:
-        ConsciousnessWithoutIgnitionTest = None
 
+        ConsciousnessWithoutIgnitionTest = _ConsciousnessWithoutIgnitionTest
+    except ImportError:
+        pass
+
+    ThresholdInsensitivityTest: Optional[Any] = None
     try:
         from apgi_framework.falsification.threshold_insensitivity_test import (
-            ThresholdInsensitivityTest,
+            ThresholdInsensitivityTest as _ThresholdInsensitivityTest,
         )
-    except ImportError:
-        ThresholdInsensitivityTest = None
 
-    try:
-        from apgi_framework.falsification.soma_bias_test import SomaBiasTest
+        ThresholdInsensitivityTest = _ThresholdInsensitivityTest
     except ImportError:
-        SomaBiasTest = None
+        pass
+
+    SomaBiasTest: Optional[Any] = None
+    try:
+        from apgi_framework.falsification.soma_bias_test import (
+            SomaBiasTest as _SomaBiasTest,
+        )
+
+        SomaBiasTest = _SomaBiasTest
+    except ImportError:
+        pass
 
     # Analysis modules - use available classes
+    BayesianParameterEstimator: Optional[Any] = None
     try:
         from apgi_framework.analysis.bayesian_models import HierarchicalBayesianModel
 
-        BayesianParameterEstimator = (
-            HierarchicalBayesianModel  # Alias for compatibility
+        BayesianParameterEstimator = HierarchicalBayesianModel
+    except ImportError:
+        pass
+
+    EffectSizeCalculator: Optional[Any] = None
+    try:
+        from apgi_framework.analysis.effect_size_calculator import (
+            EffectSizeCalculator as _EffectSizeCalculator,
         )
-    except ImportError:
-        BayesianParameterEstimator = None
 
-    try:
-        from apgi_framework.analysis.effect_size_calculator import EffectSizeCalculator
+        EffectSizeCalculator = _EffectSizeCalculator
     except ImportError:
-        EffectSizeCalculator = None
-
-    try:
-        from apgi_framework.analysis.parameter_estimation import ParameterEstimation
-    except ImportError:
-        ParameterEstimation = None
+        pass
 
     # Clinical applications - use available classes
+    DisorderClassification: Optional[Any] = None
     try:
-        from apgi_framework.clinical.disorder_classification import DisorderClassifier
-    except ImportError:
-        DisorderClassifier = None
+        from apgi_framework.clinical.disorder_classification import (
+            DisorderClassification as _DisorderClassification,
+        )
 
+        DisorderClassification = _DisorderClassification
+    except ImportError:
+        pass
+
+    ClinicalParameterExtractor: Optional[Any] = None
     try:
         from apgi_framework.clinical.parameter_extraction import (
             ClinicalParameterExtractor,
@@ -129,36 +166,66 @@ try:
         ClinicalParameterExtractor = None
 
     # Neural simulators
+    P3bSimulator: Optional[Any] = None
     try:
-        from apgi_framework.simulators.p3b_simulator import P3bSimulator
-    except ImportError:
-        P3bSimulator = None
+        from apgi_framework.simulators.p3b_simulator import (
+            P3bSimulator as _P3bSimulator,
+        )
 
-    try:
-        from apgi_framework.simulators.gamma_simulator import GammaSimulator
+        P3bSimulator = _P3bSimulator
     except ImportError:
-        GammaSimulator = None
+        pass
 
+    GammaSimulator: Optional[Any] = None
     try:
-        from apgi_framework.simulators.bold_simulator import BOLDSimulator
-    except ImportError:
-        BOLDSimulator = None
+        from apgi_framework.simulators.gamma_simulator import (
+            GammaSimulator as _GammaSimulator,
+        )
 
-    try:
-        from apgi_framework.simulators.pci_calculator import PCICalculator
+        GammaSimulator = _GammaSimulator
     except ImportError:
-        PCICalculator = None
+        pass
+
+    BOLDSimulator: Optional[Any] = None
+    try:
+        from apgi_framework.simulators.bold_simulator import (
+            BOLDSimulator as _BOLDSimulator,
+        )
+
+        BOLDSimulator = _BOLDSimulator
+    except ImportError:
+        pass
+
+    PCICalculator: Optional[Any] = None
+    try:
+        from apgi_framework.simulators.pci_calculator import (
+            PCICalculator as _PCICalculator,
+        )
+
+        PCICalculator = _PCICalculator
+    except ImportError:
+        pass
 
     # Adaptive procedures - use available classes
+    QuestPlusStaircase: Optional[Any] = None
     try:
-        from apgi_framework.adaptive.quest_plus_staircase import QuestPlusStaircase
-    except ImportError:
-        QuestPlusStaircase = None
+        from apgi_framework.adaptive.quest_plus_staircase import (
+            QuestPlusStaircase as _QuestPlusStaircase,
+        )
 
-    try:
-        from apgi_framework.adaptive.stimulus_generators import StimulusGenerator
+        QuestPlusStaircase = _QuestPlusStaircase
     except ImportError:
-        StimulusGenerator = None
+        pass
+
+    StimulusGenerator: Optional[Any] = None
+    try:
+        from apgi_framework.adaptive.stimulus_generators import (
+            StimulusGenerator as _StimulusGenerator,
+        )
+
+        StimulusGenerator = _StimulusGenerator
+    except ImportError:
+        pass
 
 except ImportError as e:
     print(f"Warning: Some APGI Framework modules not available: {e}")
@@ -173,13 +240,13 @@ except ImportError as e:
             PrecisionCalculator,
             PredictionErrorProcessor,
         )
-        from apgi_framework.core.data_models import APGIParameters, NeuralSignatures
+        from apgi_framework.config import APGIParameters as ConfigAPGIParameters
 
-        ConfigManager = APGIParameters  # Alias for compatibility
+        ConfigManager = ConfigAPGIParameters  # Alias for compatibility
         APGIFrameworkCLI = None
         IntegratedDataManager = None
         BayesianParameterEstimator = None
-        DisorderClassifier = None
+        DisorderClassification = None
         QuestPlusStaircase = None
         MainApplicationController = None
     except ImportError as e2:
@@ -250,7 +317,7 @@ class ConfigurationValidator:
             elif rules["type"] == int:
                 converted_value = int(value)
             else:
-                converted_value = value
+                converted_value = rules["type"](value)
 
             # Check range
             if "min" in rules and converted_value < rules["min"]:
@@ -596,7 +663,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 BayesianParameterEstimator,
                 "bayesian_estimator",
             ),
-            ("DisorderClassifier", DisorderClassifier, "disorder_classifier"),
+            ("DisorderClassification", DisorderClassification, "disorder_classifier"),
             (
                 "ClinicalParameterExtractor",
                 ClinicalParameterExtractor,
@@ -1140,15 +1207,6 @@ class APGIFrameworkGUI(ctk.CTk):
         self.update_status("Running Primary Falsification Test...")
 
         try:
-            # Import the actual example function
-            try:
-                from examples01_run_primary_falsification_test import (
-                    run_primary_falsification_test_basic,
-                )
-            except ImportError:
-                # Fallback if import fails
-                run_primary_falsification_test_basic = None
-
             # Get parameters from GUI
             n_trials = int(self.exp_setup_params["n_trials"].get())
             n_participants = int(self.exp_setup_params["n_participants"].get())
@@ -1169,7 +1227,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 if is_valid:
                     try:
                         apgi_params[param_name] = float(param_value)
-                    except ValueError as e:
+                    except ValueError:
                         validation_errors.append(f"{param_name}: Invalid number format")
                 else:
                     validation_errors.append(
@@ -2846,11 +2904,15 @@ class APGIFrameworkGUI(ctk.CTk):
             if not file_path:
                 return
 
-            self.log_to_console(f"Exporting data to: {file_path}")
+            # Store file_path for use in export_thread
+            selected_file_path = file_path
+
+            self.log_to_console(f"Exporting data to: {selected_file_path}")
             self.update_status("Exporting data...")
 
             # Export data in a separate thread
             def export_thread():
+                nonlocal selected_file_path
                 try:
                     export_data = {
                         "results": self.current_results,
@@ -2871,46 +2933,52 @@ class APGIFrameworkGUI(ctk.CTk):
                         # Use APGI data manager to export
                         self.data_manager.export_data(
                             data=export_data,
-                            file_path=file_path,
+                            file_path=selected_file_path,
                             format="auto",
                             include_metadata=True,
                         )
                     else:
                         # Fallback export
-                        if file_path.endswith(".json"):
+                        if selected_file_path.endswith(".json"):
                             # Convert non-serializable objects
                             serializable_data = self._make_serializable(export_data)
-                            with open(file_path, "w") as f:
+                            with open(selected_file_path, "w") as f:
                                 json.dump(serializable_data, f, indent=2, default=str)
-                        elif file_path.endswith(".csv"):
+                        elif selected_file_path.endswith(".csv"):
                             if isinstance(self.current_data, pd.DataFrame):
-                                self.current_data.to_csv(file_path, index=False)
+                                self.current_data.to_csv(
+                                    selected_file_path, index=False
+                                )
                             else:
                                 # Convert results to CSV
                                 df = pd.DataFrame([self.current_results])
-                                df.to_csv(file_path, index=False)
-                        elif file_path.endswith((".xlsx", ".xls")):
+                                df.to_csv(selected_file_path, index=False)
+                        elif selected_file_path.endswith((".xlsx", ".xls")):
                             if isinstance(self.current_data, pd.DataFrame):
-                                self.current_data.to_excel(file_path, index=False)
+                                self.current_data.to_excel(
+                                    selected_file_path, index=False
+                                )
                             else:
                                 messagebox.showwarning(
                                     "Format Warning",
                                     "Excel export requires DataFrame data. Exporting as JSON instead.",
                                 )
-                                json_path = file_path.rsplit(".", 1)[0] + ".json"
+                                json_path = (
+                                    selected_file_path.rsplit(".", 1)[0] + ".json"
+                                )
                                 serializable_data = self._make_serializable(export_data)
                                 with open(json_path, "w") as f:
                                     json.dump(
                                         serializable_data, f, indent=2, default=str
                                     )
-                                file_path = json_path
+                                selected_file_path = json_path
                         else:
                             raise ValueError("Unsupported file format")
 
-                    self.after(0, self._on_export_complete, file_path)
+                    self.after(0, self._on_export_complete, selected_file_path)
 
                 except Exception as e:
-                    self.after(0, self._on_export_error, file_path, str(e))
+                    self.after(0, self._on_export_error, selected_file_path, str(e))
 
             threading.Thread(target=export_thread, daemon=True).start()
 
@@ -2924,8 +2992,6 @@ class APGIFrameworkGUI(ctk.CTk):
         if isinstance(obj, dict):
             return {k: self._make_serializable(v) for k, v in obj.items()}
         elif isinstance(obj, list):
-            import hashlib
-
             return [self._make_serializable(item) for item in obj]
         elif isinstance(obj, (np.integer, np.floating)):
             return float(obj)
@@ -3507,7 +3573,6 @@ class APGIFrameworkGUI(ctk.CTk):
                 try:
                     neural_data = self.current_results["neural_signatures"]
                     signatures = neural_data.get("signatures", {})
-                    summary = neural_data.get("summary", {})
 
                     # Create figure for neural signatures
                     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
@@ -3903,7 +3968,7 @@ class APGIFrameworkGUI(ctk.CTk):
                         # Add correlation values as text
                         for i in range(n_params):
                             for j in range(n_params):
-                                text = ax3.text(
+                                ax3.text(
                                     j,
                                     i,
                                     f"{correlation_matrix[i, j]:.2f}",
@@ -4671,7 +4736,7 @@ class APGIFrameworkGUI(ctk.CTk):
         self.log_to_console("Combined APGI analysis completed")
         messagebox.showinfo("APGI Analysis", "Combined APGI analysis completed.")
 
-    def load_test_data(self):
+    def load_test_data_v2(self):
         """Load test data for experiments."""
         self.log_to_console("Loading test data...")
         try:
@@ -4696,11 +4761,19 @@ class APGIFrameworkGUI(ctk.CTk):
                 }
                 self.log_to_console("Sample test data generated")
             messagebox.showinfo("Data Loaded", "Test data loaded successfully.")
+
         except Exception as e:
             self.log_to_console(f"Error loading test data: {e}")
             messagebox.showerror("Error", f"Failed to load test data: {e}")
 
-    def run_surprise_dynamics_analysis(self):
+    def _on_data_error(self, error_msg):
+        """Handle data loading error."""
+        self.log_to_console(f"Error generating example data: {error_msg}")
+        messagebox.showerror(
+            "Data Error", f"Failed to generate example data: {error_msg}"
+        )
+
+    def run_surprise_dynamics_analysis_v2(self):
         """Run surprise dynamics analysis using actual framework."""
         self.log_to_console("Running Surprise Dynamics Analysis...")
         self.update_status("Running Surprise Dynamics...")
@@ -4786,7 +4859,7 @@ class APGIFrameworkGUI(ctk.CTk):
             messagebox.showerror("Error", f"Failed to run surprise dynamics: {e}")
             self.update_status("Ready")
 
-    def run_disorder_classification(self):
+    def run_disorder_classification_v2(self):
         """Run disorder classification using actual clinical framework."""
         self.log_to_console("Running Disorder Classification...")
         self.update_status("Running Disorder Classification...")
@@ -4875,145 +4948,6 @@ class APGIFrameworkGUI(ctk.CTk):
         except Exception as e:
             self.log_to_console(f"Error setting up disorder classification: {e}")
             messagebox.showerror("Error", f"Failed to run disorder classification: {e}")
-            self.update_status("Ready")
-
-    def run_clinical_parameter_extraction(self):
-        """Run clinical parameter extraction using actual framework."""
-        self.log_to_console("Running Clinical Parameter Extraction...")
-        self.update_status("Running Clinical Extraction...")
-
-        try:
-            # Check if we have current results to analyze
-            if not self.current_results:
-                self.log_to_console(
-                    "Warning: No current results available for extraction"
-                )
-                messagebox.showwarning(
-                    "No Data",
-                    "Please run a falsification test first to generate data for extraction.",
-                )
-                self.update_status("Ready")
-                return
-
-            # Run in separate thread
-            def run_extraction():
-                try:
-                    # Use clinical extractor if available
-                    if self.clinical_extractor:
-                        # Extract data from current results
-                        results_data = self.current_results.get("results", {})
-
-                        # Run parameter extraction
-                        extraction_results = self.clinical_extractor.extract_parameters(
-                            neural_data=results_data, clinical_context={}
-                        )
-
-                        # Store results
-                        self.current_results["clinical_extraction"] = {
-                            "timestamp": datetime.datetime.now().isoformat(),
-                            "parameters": (
-                                extraction_results.__dict__
-                                if hasattr(extraction_results, "__dict__")
-                                else extraction_results
-                            ),
-                            "summary": {
-                                "apgi_parameters": getattr(
-                                    extraction_results, "apgi_parameters", {}
-                                ),
-                                "clinical_indicators": getattr(
-                                    extraction_results, "clinical_indicators", []
-                                ),
-                                "severity_score": getattr(
-                                    extraction_results, "severity_score", 0.3
-                                ),
-                            },
-                        }
-
-                        self.after(
-                            0,
-                            self._on_test_complete,
-                            "Clinical Parameter Extraction",
-                            extraction_results,
-                        )
-                    else:
-                        # Fallback analysis
-                        self.log_to_console(
-                            "Clinical extractor not available, running basic analysis..."
-                        )
-                        self.current_results["clinical_extraction"] = {
-                            "timestamp": datetime.datetime.now().isoformat(),
-                            "summary": {
-                                "status": "Basic parameter extraction completed",
-                                "note": "Full clinical extractor not available",
-                            },
-                        }
-                        self.after(
-                            0,
-                            self._on_test_complete,
-                            "Clinical Parameter Extraction",
-                            "Basic analysis",
-                        )
-
-                except Exception as e:
-                    self.after(
-                        0, self._on_test_error, "Clinical Parameter Extraction", str(e)
-                    )
-
-            threading.Thread(target=run_extraction, daemon=True).start()
-
-        except Exception as e:
-            self.log_to_console(f"Error setting up clinical parameter extraction: {e}")
-            messagebox.showerror(
-                "Error", f"Failed to run clinical parameter extraction: {e}"
-            )
-            self.update_status("Ready")
-
-    def run_patient_profile_analysis(self):
-        """Run patient profile analysis."""
-        self.log_to_console("Running Patient Profile Analysis...")
-        self.update_status("Running Patient Profile...")
-
-        try:
-            # Check if we have current results to analyze
-            if not self.current_results:
-                self.log_to_console(
-                    "Warning: No current results available for profile analysis"
-                )
-                messagebox.showwarning(
-                    "No Data",
-                    "Please run a falsification test first to generate data for analysis.",
-                )
-                self.update_status("Ready")
-                return
-
-            # Basic profile analysis
-            profile_data = {
-                "timestamp": datetime.datetime.now().isoformat(),
-                "test_history": [self.current_results.get("test", "Unknown")],
-                "last_assessment": self.current_results.get(
-                    "timestamp", datetime.datetime.now().isoformat()
-                ),
-                "risk_factors": [],
-                "recommendations": [
-                    "Continue monitoring",
-                    "Follow-up assessment recommended",
-                ],
-            }
-
-            # Store profile results
-            self.current_results["patient_profile"] = profile_data
-
-            self.log_to_console("Patient profile analysis completed")
-            messagebox.showinfo(
-                "Profile Analysis", "Patient profile analysis completed successfully."
-            )
-            self.update_status("Ready")
-
-        except Exception as e:
-            self.log_to_console(f"Error in patient profile analysis: {e}")
-            messagebox.showerror(
-                "Error", f"Failed to run patient profile analysis: {e}"
-            )
             self.update_status("Ready")
 
     def show_help(self):

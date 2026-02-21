@@ -5,31 +5,27 @@ Provides intelligent test result caching, parallel execution tuning,
 performance benchmarking, and execution optimization for the APGI framework.
 """
 
-import os
-import sys
-import json
-import time
 import hashlib
-import threading
-from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple, Set
-from dataclasses import dataclass, asdict
-from datetime import datetime, timedelta
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
-import multiprocessing
-from ..security.secure_pickle import safe_pickle_load, safe_pickle_dump
+import json
+import os
+import pickle
 import sqlite3
-from contextlib import contextmanager
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import asdict, dataclass
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, cast
 
 from ..logging.standardized_logging import get_logger
-from .batch_runner import BatchTestRunner, TestResult, BatchExecutionSummary
-from ..optimization.performance_profiler import get_profiler
+from .batch_runner import BatchExecutionSummary, BatchTestRunner, TestResult
 
 logger = get_logger(__name__)
 
 
 @dataclass
-class TestCacheEntry:
+class CacheEntry:
     """Test result cache entry."""
 
     test_file: str
@@ -67,7 +63,7 @@ class ExecutionProfile:
     complexity_score: float = 0.0
 
 
-class TestResultCache:
+class ResultCache:
     """Intelligent test result caching with dependency tracking."""
 
     def __init__(self, cache_dir: Optional[str] = None):
@@ -79,7 +75,7 @@ class TestResultCache:
         self._init_database()
 
         # In-memory cache for frequently accessed entries
-        self._memory_cache: Dict[str, TestCacheEntry] = {}
+        self._memory_cache: Dict[str, CacheEntry] = {}
         self._cache_lock = threading.Lock()
 
         logger.info(f"Test cache initialized at {self.cache_dir}")
@@ -176,14 +172,14 @@ class TestResultCache:
                     self._remove_from_database(test_file)
 
             # Check database cache
-            entry = self._load_from_database(test_file)
-            if entry and self._is_cache_valid(entry):
+            db_entry: Optional[CacheEntry] = self._load_from_database(test_file)
+            if db_entry and self._is_cache_valid(db_entry):
                 # Load into memory cache
-                self._memory_cache[test_file] = entry
-                entry.cache_hits += 1
-                self._update_cache_hits(test_file, entry.cache_hits)
+                self._memory_cache[test_file] = db_entry
+                db_entry.cache_hits += 1
+                self._update_cache_hits(test_file, db_entry.cache_hits)
                 logger.debug(f"Database cache hit for {test_file}")
-                return entry.result
+                return db_entry.result
 
             return None
 
@@ -195,7 +191,7 @@ class TestResultCache:
             dependency_hashes = self._calculate_dependency_hashes(test_file)
 
             # Create cache entry
-            entry = TestCacheEntry(
+            entry = CacheEntry(
                 test_file=test_file,
                 test_hash=test_hash,
                 dependency_hashes=dependency_hashes,
@@ -216,7 +212,7 @@ class TestResultCache:
         except Exception as e:
             logger.error(f"Error caching result for {test_file}: {e}")
 
-    def _is_cache_valid(self, entry: TestCacheEntry) -> bool:
+    def _is_cache_valid(self, entry: CacheEntry) -> bool:
         """Check if cache entry is still valid."""
         try:
             # Check if test file hash matches
@@ -244,7 +240,7 @@ class TestResultCache:
             logger.warning(f"Error validating cache entry for {entry.test_file}: {e}")
             return False
 
-    def _save_to_database(self, entry: TestCacheEntry):
+    def _save_to_database(self, entry: CacheEntry):
         """Save cache entry to database."""
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
@@ -263,7 +259,7 @@ class TestResultCache:
                 ),
             )
 
-    def _load_from_database(self, test_file: str) -> Optional[TestCacheEntry]:
+    def _load_from_database(self, test_file: str) -> Optional[CacheEntry]:
         """Load cache entry from database."""
         try:
             with sqlite3.connect(self.db_path) as conn:
@@ -281,7 +277,7 @@ class TestResultCache:
 
                 test_hash, dep_hashes_json, result_data, cached_at, cache_hits = row
 
-                return TestCacheEntry(
+                return CacheEntry(
                     test_file=test_file,
                     test_hash=test_hash,
                     dependency_hashes=json.loads(dep_hashes_json),
@@ -367,7 +363,7 @@ class TestResultCache:
 class ParallelExecutionOptimizer:
     """Optimizes parallel test execution based on performance profiles."""
 
-    def __init__(self):
+    def __init__(self):  # type: ignore
         self.execution_profiles: Dict[str, ExecutionProfile] = {}
         self.benchmarks: List[PerformanceBenchmark] = []
         self._profiles_lock = threading.Lock()
@@ -503,7 +499,7 @@ class ParallelExecutionOptimizer:
         test_profiles.sort(key=lambda x: x[2], reverse=True)
 
         # Group tests into batches for optimal load balancing
-        batches = [[] for _ in range(max_workers)]
+        batches: List[List[str]] = [[] for _ in range(max_workers)]
         batch_loads = [0.0] * max_workers
 
         for test_file, exec_time, complexity in test_profiles:
@@ -617,7 +613,7 @@ class PerformanceOptimizedTestRunner(BatchTestRunner):
         self.enable_optimization = enable_optimization
 
         # Initialize components
-        self.cache = TestResultCache() if enable_caching else None
+        self.cache = ResultCache() if enable_caching else None
         self.optimizer = ParallelExecutionOptimizer() if enable_optimization else None
 
         logger.info(
@@ -804,7 +800,17 @@ class PerformanceOptimizedTestRunner(BatchTestRunner):
             report[
                 "regression_report"
             ] = self.optimizer.get_performance_regression_report()
-            report["execution_profiles"] = len(self.optimizer.execution_profiles)
+            execution_profiles = [
+                {
+                    "test_file": test_file,
+                    "avg_duration": profile.avg_execution_time,
+                    "complexity_score": profile.complexity_score,
+                }
+                for test_file, profile in self.optimizer.execution_profiles.items()
+            ]
+            report["execution_profiles"] = cast(
+                List[Dict[str, Any]], execution_profiles
+            )  # type: ignore
 
         return report
 
@@ -841,7 +847,7 @@ def benchmark_test_performance(
     benchmarks = []
 
     for i in range(iterations):
-        logger.info(f"Benchmark iteration {i+1}/{iterations}")
+        logger.info(f"Benchmark iteration {i + 1}/{iterations}")
 
         start_time = time.time()
         summary = runner.run_optimized_batch_tests(

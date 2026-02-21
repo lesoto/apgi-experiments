@@ -5,13 +5,14 @@ Provides real-time filtering, artifact detection/rejection, and ERP extraction
 for P3b and HEP components in APGI experiments.
 """
 
+import time
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any
 from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
+
 import numpy as np
 from scipy import signal
 from scipy.stats import zscore
-import time
 
 from apgi_framework.utils.progress_monitor import ProgressMonitor
 
@@ -239,7 +240,7 @@ class FASTERArtifactDetector:
                     if not np.isnan(corr):
                         correlations.append(corr)
             mean_correlation[i] = np.mean(correlations) if correlations else 0
-            progress.update(message=f"Channel {i+1}/{n_channels}")
+            progress.update(message=f"Channel {i + 1}/{n_channels}")
 
         progress.complete()
 

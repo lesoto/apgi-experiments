@@ -5,16 +5,16 @@ Provides consistent styling, window management, error handling, and cross-platfo
 compatibility across all GUI applications.
 """
 
-import tkinter as tk
-from tkinter import ttk, messagebox
-import sys
-from abc import ABC, abstractmethod
-import os
-from pathlib import Path
-from typing import Optional, Dict, Any, Callable
 import logging
+import os
+import sys
+import tkinter as tk
 import traceback
+from abc import ABC, abstractmethod
 from datetime import datetime
+from pathlib import Path
+from tkinter import messagebox, ttk
+from typing import Any, Callable, Dict, Optional
 
 # Try to import CustomTkinter, fallback to tkinter if not available
 try:

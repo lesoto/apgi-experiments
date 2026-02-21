@@ -2,20 +2,20 @@
 Tests for falsification module coverage - focuses on falsification testing framework.
 """
 
-import pytest
-import numpy as np
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
-from tests.falsification.primary_falsification import (
-    PrimaryFalsificationTest,
-)
+import pytest
+
 from tests.falsification.consciousness_without_ignition import (
     ConsciousnessWithoutIgnitionTest,
 )
+from tests.falsification.primary_falsification import (
+    PrimaryFalsificationTest,
+)
+from tests.falsification.soma_bias import SomaBiasTest
 from tests.falsification.threshold_insensitivity import (
     ThresholdInsensitivityTest,
 )
-from tests.falsification.soma_bias import SomaBiasTest
 
 
 class TestPrimaryFalsificationTest:
@@ -32,15 +32,15 @@ class TestPrimaryFalsificationTest:
         """Test basic functionality of primary falsification test."""
         test = PrimaryFalsificationTest()
 
-        # Test with mock parameters
-        params = {
-            "n_participants": 20,
-            "n_trials": 100,
-            "theta_t": 3.5,
-            "pi_e": 2.0,
-            "pi_i": 1.5,
-            "beta": 1.2,
-        }
+        # Test with mock parameters (defined but not used in current test)
+        # params = {
+        #     "n_participants": 20,
+        #     "n_trials": 100,
+        #     "theta_t": 3.5,
+        #     "pi_e": 2.0,
+        #     "pi_i": 1.5,
+        #     "beta": 1.2,
+        # }
 
         # Mock the test execution
         with patch.object(test, "run_falsification_test") as mock_run:
@@ -73,14 +73,14 @@ class TestConsciousnessWithoutIgnitionTest:
         """Test basic functionality of CWI test."""
         test = ConsciousnessWithoutIgnitionTest()
 
-        params = {
-            "n_participants": 20,
-            "n_trials": 100,
-            "theta_t": 3.5,
-            "pi_e": 2.0,
-            "pi_i": 1.5,
-            "beta": 1.2,
-        }
+        # params = {
+        #     "n_participants": 20,
+        #     "n_trials": 100,
+        #     "theta_t": 3.5,
+        #     "pi_e": 2.0,
+        #     "pi_i": 1.5,
+        #     "beta": 1.2,
+        # }
 
         with patch.object(test, "run_consciousness_without_ignition_test") as mock_run:
             mock_run.return_value = {
@@ -114,14 +114,14 @@ class TestThresholdInsensitivityTest:
         """Test basic functionality of threshold insensitivity test."""
         test = ThresholdInsensitivityTest()
 
-        params = {
-            "n_participants": 20,
-            "n_trials": 100,
-            "theta_t": 3.5,
-            "pi_e": 2.0,
-            "pi_i": 1.5,
-            "beta": 1.2,
-        }
+        # params = {
+        #     "n_participants": 20,
+        #     "n_trials": 100,
+        #     "theta_t": 3.5,
+        #     "pi_e": 2.0,
+        #     "pi_i": 1.5,
+        #     "beta": 1.2,
+        # }
 
         with patch.object(test, "run_threshold_insensitivity_test") as mock_run:
             mock_run.return_value = {
@@ -154,14 +154,14 @@ class TestSomaBiasTest:
         """Test basic functionality of soma bias test."""
         test = SomaBiasTest()
 
-        params = {
-            "n_participants": 20,
-            "n_trials": 100,
-            "theta_t": 3.5,
-            "pi_e": 2.0,
-            "pi_i": 1.5,
-            "beta": 1.2,
-        }
+        # params = {
+        #     "n_participants": 20,
+        #     "n_trials": 100,
+        #     "theta_t": 3.5,
+        #     "pi_e": 2.0,
+        #     "pi_i": 1.5,
+        #     "beta": 1.2,
+        # }
 
         with patch.object(test, "run_soma_bias_test") as mock_run:
             mock_run.return_value = {

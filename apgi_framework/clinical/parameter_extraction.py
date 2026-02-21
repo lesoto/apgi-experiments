@@ -5,15 +5,15 @@ Implements rapid 30-minute assessment battery for extracting individual APGI par
 (θₜ, Πₑ, Πᵢ, β) with reliability and validity metrics.
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any
-from enum import Enum
-import numpy as np
-from datetime import datetime, timedelta
-import logging
-from scipy.stats import pearsonr, spearmanr
-from scipy.optimize import minimize
 import json
+import logging
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
+
+import numpy as np
+from scipy.stats import pearsonr
 
 logger = logging.getLogger(__name__)
 
@@ -242,7 +242,7 @@ class AssessmentBattery:
         completed_tasks = [task for task in self.tasks if task.completed]
         if not completed_tasks:
             return 0.0
-        return np.mean([task.data_quality for task in completed_tasks])
+        return float(np.mean([task.data_quality for task in completed_tasks]))
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
@@ -825,7 +825,6 @@ class ClinicalParameterExtractor:
         if "anxiety_scale" in criterion_measures:
             # Lower threshold should correlate with higher anxiety
             # Simplified correlation calculation
-            anxiety = criterion_measures["anxiety_scale"]
 
             # Inverse relationship: lower theta_t -> higher anxiety
             corr_theta = -(params.theta_t - 3.5) / 2.0
@@ -837,7 +836,6 @@ class ClinicalParameterExtractor:
 
         if "depression_scale" in criterion_measures:
             # Higher threshold should correlate with higher depression
-            depression = criterion_measures["depression_scale"]
 
             corr_theta = (params.theta_t - 3.5) / 2.0
             correlations["theta_depression"] = corr_theta
@@ -848,7 +846,6 @@ class ClinicalParameterExtractor:
 
         if "interoceptive_awareness" in criterion_measures:
             # Interoceptive precision should correlate with awareness
-            ia = criterion_measures["interoceptive_awareness"]
 
             corr_pi_i = (params.pi_i - 1.5) / 1.0
             correlations["pi_i_awareness"] = corr_pi_i

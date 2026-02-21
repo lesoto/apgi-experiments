@@ -5,14 +5,18 @@ Implements stimulus generation and control for visual, auditory, and interocepti
 stimuli used in the three core parameter estimation tasks.
 """
 
-import numpy as np
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any, Callable
-from datetime import datetime, timedelta
-from abc import ABC, abstractmethod
-import time
 import threading
+import time
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
 from enum import Enum
+from typing import Any, Dict, List, Optional, TypeVar, Generic
+
+import numpy as np
+
+T = TypeVar("T", bound="StimulusParameters")
+
 from ..logging.standardized_logging import get_logger
 
 logger = get_logger(__name__)
@@ -133,7 +137,7 @@ class CO2PuffParameters(StimulusParameters):
         )
 
 
-class StimulusGenerator(ABC):
+class StimulusGenerator(ABC, Generic[T]):
     """Abstract base class for stimulus generators."""
 
     def __init__(self, generator_id: str = ""):
@@ -147,7 +151,7 @@ class StimulusGenerator(ABC):
         pass
 
     @abstractmethod
-    def generate_stimulus(self, parameters: StimulusParameters) -> bool:
+    def generate_stimulus(self, parameters: T) -> bool:
         """Generate and present stimulus."""
         pass
 
@@ -165,7 +169,7 @@ class StimulusGenerator(ABC):
         return elapsed >= min_interval_ms
 
 
-class GaborPatchGenerator(StimulusGenerator):
+class GaborPatchGenerator(StimulusGenerator[GaborParameters]):
     """
     Generator for Gabor patch visual stimuli.
 
@@ -226,15 +230,15 @@ class GaborPatchGenerator(StimulusGenerator):
     def _create_gabor_patch(self, parameters: GaborParameters) -> np.ndarray:
         """Create Gabor patch stimulus array."""
         # Convert size from degrees to pixels
-        size_pixels = int(parameters.size_degrees * self.pixels_per_degree)
+        if parameters.size_degrees is not None and self.pixels_per_degree is not None:
+            size_pixels = int(parameters.size_degrees * self.pixels_per_degree)
+        else:
+            size_pixels = 100  # Default size
 
         # Create coordinate grids
-        x = np.linspace(
-            -parameters.size_degrees / 2, parameters.size_degrees / 2, size_pixels
-        )
-        y = np.linspace(
-            -parameters.size_degrees / 2, parameters.size_degrees / 2, size_pixels
-        )
+        size_degrees = parameters.size_degrees or 2.0  # Default size if None
+        x = np.linspace(-size_degrees / 2, size_degrees / 2, size_pixels)
+        y = np.linspace(-size_degrees / 2, size_degrees / 2, size_pixels)
         X, Y = np.meshgrid(x, y)
 
         # Rotate coordinates
@@ -243,7 +247,7 @@ class GaborPatchGenerator(StimulusGenerator):
         Y_rot = -X * np.sin(theta) + Y * np.cos(theta)
 
         # Create Gaussian envelope
-        sigma = parameters.size_degrees / 6.0  # Standard deviation
+        sigma = size_degrees / 6.0  # Standard deviation
         gaussian = np.exp(-(X_rot**2 + Y_rot**2) / (2 * sigma**2))
 
         # Create sinusoidal grating
@@ -322,7 +326,7 @@ class GaborPatchGenerator(StimulusGenerator):
         logger.info("GaborPatchGenerator cleaned up")
 
 
-class ToneGenerator(StimulusGenerator):
+class ToneGenerator(StimulusGenerator[ToneParameters]):
     """
     Generator for auditory tone stimuli.
 
@@ -350,7 +354,7 @@ class ToneGenerator(StimulusGenerator):
 
         # Audio system
         self.audio_initialized = False
-        self.heartbeat_synchronizer = None
+        self.heartbeat_synchronizer: Optional["HeartbeatSynchronizer"] = None
 
         logger.info(f"Initialized ToneGenerator {generator_id}")
 
@@ -496,7 +500,7 @@ class ToneGenerator(StimulusGenerator):
         logger.info("ToneGenerator cleaned up")
 
 
-class CO2PuffController(StimulusGenerator):
+class CO2PuffController(StimulusGenerator[CO2PuffParameters]):
     """
     Controller for CO2 puff interoceptive stimuli.
 
@@ -517,9 +521,9 @@ class CO2PuffController(StimulusGenerator):
         self.safety_enabled = safety_enabled
 
         # Hardware interface
-        self.valve_controller = None
-        self.pressure_sensor = None
-        self.flow_meter = None
+        self.valve_controller: Optional[str] = None
+        self.pressure_sensor: Optional[str] = None
+        self.flow_meter: Optional[str] = None
 
         # Safety tracking
         self.last_puff_time: Optional[datetime] = None
@@ -721,7 +725,7 @@ class HeartbeatSynchronizer:
         self.detection_method = detection_method
 
         # Cardiac monitoring
-        self.ecg_interface = None
+        self.ecg_interface: Optional[Any] = None
         self.is_monitoring = False
         self.last_r_peak: Optional[datetime] = None
         self.r_peak_history: List[datetime] = []
@@ -851,7 +855,7 @@ class HeartbeatSynchronizer:
         if intervals:
             mean_interval_ms = np.mean(intervals)
             heart_rate_bpm = 60000.0 / mean_interval_ms  # Convert to BPM
-            return heart_rate_bpm
+            return float(heart_rate_bpm)
 
         return None
 
@@ -890,7 +894,9 @@ class HeartbeatSynchronizer:
 
         if recent_intervals:
             mean_interval = np.mean(recent_intervals)
-            predicted_time = self.r_peak_history[-1] + timedelta(seconds=mean_interval)
+            predicted_time = self.r_peak_history[-1] + timedelta(
+                seconds=float(mean_interval)
+            )
             return predicted_time
 
         return None

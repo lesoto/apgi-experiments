@@ -5,19 +5,19 @@ Provides comprehensive error handling, recovery strategies, and user-friendly
 error reporting with detailed diagnostics and suggested solutions.
 """
 
-import traceback
+import datetime
+import json
 import logging
 import sys
-from typing import Dict, List, Optional, Any, Callable, Type, Union
+import traceback
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-import json
-import datetime
-from contextlib import contextmanager
+from typing import Any, Dict, List, Optional
 
 from ..logging.standardized_logging import get_logger
-from .error_dialog_manager import show_error_dialog, ErrorDialogType
+from .error_dialog_manager import ErrorDialogType, show_error_dialog
 
 
 class ErrorSeverity(Enum):
@@ -332,15 +332,15 @@ for i in range(0, len(data), chunk_size):
         """Extract context information from exception."""
         tb = traceback.extract_tb(exception.__traceback__)
 
+        function_name = "unknown"
+        module_name = "unknown"
+        line_number: int = 0
+
         if tb:
             last_frame = tb[-1]
             function_name = last_frame.name
             module_name = last_frame.filename
-            line_number = last_frame.lineno
-        else:
-            function_name = "unknown"
-            module_name = "unknown"
-            line_number = 0
+            line_number = last_frame.lineno or 0
 
         # Get stack trace
         stack_trace = traceback.format_tb(exception.__traceback__)
@@ -349,7 +349,10 @@ for i in range(0, len(data), chunk_size):
         local_vars = {}
         if hasattr(exception, "__context__") and exception.__context__:
             # Extract some safe variable information
-            frame = sys.exc_info()[2].tb_frame if sys.exc_info()[2] else None
+            exc_info = sys.exc_info()
+            frame = None
+            if exc_info[2] is not None:
+                frame = exc_info[2].tb_frame
             if frame:
                 for key, value in frame.f_locals.items():
                     if not key.startswith("_") and isinstance(
@@ -438,7 +441,7 @@ for i in range(0, len(data), chunk_size):
         return generic_solutions.get(category, [])
 
     def handle_error(
-        self, exception: Exception, user_action: str = None, **context
+        self, exception: Exception, user_action: Optional[str] = None, **context
     ) -> APGIError:
         """Handle an error with enhanced analysis and recovery."""
         # Generate unique error ID
@@ -572,8 +575,8 @@ for i in range(0, len(data), chunk_size):
         if not self.error_history:
             return {"total_errors": 0}
 
-        category_counts = {}
-        severity_counts = {}
+        category_counts: Dict[str, int] = {}
+        severity_counts: Dict[str, int] = {}
 
         for error in self.error_history:
             category_counts[error.category.value] = (
@@ -606,7 +609,7 @@ def get_error_handler() -> EnhancedErrorHandler:
 
 
 @contextmanager
-def error_context(user_action: str = None, **context):
+def error_context(user_action: Optional[str] = None, **context):
     """Context manager for enhanced error handling."""
     try:
         yield
@@ -639,7 +642,9 @@ class APGIException(Exception):
 
 
 # Convenience functions
-def handle_error(exception: Exception, user_action: str = None, **context) -> APGIError:
+def handle_error(
+    exception: Exception, user_action: Optional[str] = None, **context
+) -> APGIError:
     """Handle an error with enhanced analysis."""
     return get_error_handler().handle_error(exception, user_action, **context)
 

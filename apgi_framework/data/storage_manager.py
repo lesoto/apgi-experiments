@@ -5,24 +5,22 @@ Provides high-level interface for data storage, retrieval, querying,
 and management operations with automatic validation and backup.
 """
 
-import shutil
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Union, Tuple
-import logging
+from typing import Any, Dict, List, Optional, Union
 
 from ..exceptions import APGIFrameworkError
 from ..logging.standardized_logging import get_logger
 from .data_models import (
+    BackupInfo,
+    DataVersion,
     ExperimentalDataset,
     ExperimentMetadata,
-    DataVersion,
-    BackupInfo,
     QueryFilter,
     StorageStats,
 )
-from .persistence_layer import PersistenceLayer, PersistenceError
 from .data_validator import DataValidator, ValidationError
+from .persistence_layer import PersistenceError, PersistenceLayer
 
 
 class StorageError(APGIFrameworkError):
@@ -68,8 +66,8 @@ class StorageManager:
         self.logger = get_logger(__name__)
 
         # Storage statistics
-        self._stats_cache = None
-        self._stats_cache_time = None
+        self._stats_cache: Optional[StorageStats] = None
+        self._stats_cache_time: Optional[datetime] = None
         self._stats_cache_duration = timedelta(minutes=5)
 
     def store_dataset(
@@ -507,7 +505,7 @@ class StorageManager:
             # Load the dataset securely
             from ..security.secure_pickle import safe_pickle_load
 
-            dataset = safe_pickle_load(dataset_files[0], expected_types={type(dataset)})
+            dataset = safe_pickle_load(dataset_files[0])
 
             return dataset
 
@@ -543,10 +541,10 @@ class StorageManager:
 
             # Calculate statistics
             total_size = 0.0
-            oldest_date = None
-            newest_date = None
-            category_counts = {}
-            category_sizes = {}
+            oldest_date: Optional[datetime] = None
+            newest_date: Optional[datetime] = None
+            category_counts: Dict[str, int] = {}
+            category_sizes: Dict[str, float] = {}
 
             for exp_id in experiment_ids:
                 try:
@@ -610,7 +608,6 @@ class StorageManager:
         """
         try:
             cleanup_count = 0
-            cutoff_date = datetime.now() - timedelta(days=retention_days)
 
             # This would query backup records and remove old ones
             # Implementation depends on backup storage format
@@ -632,7 +629,7 @@ class StorageManager:
         try:
             experiment_ids = self.persistence.list_experiments()
 
-            validation_summary = {
+            validation_summary: Dict[str, Any] = {
                 "total_datasets": len(experiment_ids),
                 "valid_datasets": 0,
                 "invalid_datasets": 0,
@@ -649,9 +646,13 @@ class StorageManager:
                     validation_result = self.validator.validate_dataset(dataset)
 
                     if validation_result["is_valid"]:
-                        validation_summary["valid_datasets"] += 1
+                        validation_summary["valid_datasets"] = (
+                            validation_summary["valid_datasets"] + 1
+                        )
                     else:
-                        validation_summary["invalid_datasets"] += 1
+                        validation_summary["invalid_datasets"] = (
+                            validation_summary["invalid_datasets"] + 1
+                        )
                         validation_summary["validation_errors"][
                             exp_id
                         ] = validation_result["errors"]
@@ -664,7 +665,9 @@ class StorageManager:
                     total_quality += validation_result["quality_score"]
 
                 except Exception as e:
-                    validation_summary["invalid_datasets"] += 1
+                    validation_summary["invalid_datasets"] = (
+                        validation_summary["invalid_datasets"] + 1
+                    )
                     validation_summary["validation_errors"][exp_id] = [
                         f"Failed to validate: {str(e)}"
                     ]

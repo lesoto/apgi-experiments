@@ -5,12 +5,12 @@ Provides comprehensive zoom functionality with widget tracking,
 keyboard shortcuts, and consistent zoom behavior across all widgets.
 """
 
-import tkinter as tk
-from tkinter import ttk
-from typing import Dict, List, Optional, Any, Callable
-from dataclasses import dataclass
 import logging
+import tkinter as tk
+from dataclasses import dataclass
 from enum import Enum
+from tkinter import ttk
+from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -273,11 +273,13 @@ class WidgetZoomManager:
             new_scale = 1.0
         elif direction == "in":
             new_scale = min(
-                zoom_state.max_scale, zoom_state.current_scale + zoom_state.scale_step
+                zoom_state.max_scale,
+                zoom_state.current_scale + zoom_state.scale_step,
             )
         elif direction == "out":
             new_scale = max(
-                zoom_state.min_scale, zoom_state.current_scale - zoom_state.scale_step
+                zoom_state.min_scale,
+                zoom_state.current_scale - zoom_state.scale_step,
             )
         else:
             return
@@ -293,9 +295,11 @@ class WidgetZoomManager:
 
         try:
             new_font_size = int(zoom_state.original_font_size * scale)
-            new_font_size = max(
-                self.default_settings["min_font_size"],
-                min(self.default_settings["max_font_size"], new_font_size),
+            new_font_size = int(
+                max(
+                    self.default_settings["min_font_size"],
+                    min(self.default_settings["max_font_size"], new_font_size),
+                )
             )
 
             if hasattr(widget, "configure"):
@@ -318,7 +322,7 @@ class WidgetZoomManager:
                 else:
                     new_font = ("TkDefaultFont", new_font_size)
 
-                widget.configure(font=new_font)
+                widget.configure(font=new_font)  # type: ignore
 
         except Exception as e:
             logger.warning(f"Failed to apply font zoom: {e}")
@@ -345,7 +349,7 @@ class WidgetZoomManager:
                         new_width = int(orig_width * scale)
                         new_height = int(orig_height * scale)
 
-                        widget.configure(width=new_width, height=new_height)
+                        widget.configure(width=new_width, height=new_height)  # type: ignore
 
         except Exception as e:
             logger.warning(f"Failed to apply widget scale: {e}")
@@ -468,7 +472,10 @@ class WidgetZoomManager:
 
         # Zoom out button
         zoom_out_btn = ttk.Button(
-            control_frame, text="➖", width=3, command=lambda: self.zoom_out(widget_id)
+            control_frame,
+            text="➖",
+            width=3,
+            command=lambda: self.zoom_out(widget_id),
         )
         zoom_out_btn.pack(side=tk.LEFT, padx=2)
 
@@ -479,7 +486,10 @@ class WidgetZoomManager:
 
         # Zoom in button
         zoom_in_btn = ttk.Button(
-            control_frame, text="➕", width=3, command=lambda: self.zoom_in(widget_id)
+            control_frame,
+            text="➕",
+            width=3,
+            command=lambda: self.zoom_in(widget_id),
         )
         zoom_in_btn.pack(side=tk.LEFT, padx=2)
 

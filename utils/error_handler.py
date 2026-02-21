@@ -8,12 +8,13 @@ error handling with proper logging and user-friendly messages.
 """
 
 import functools
-import sys
 import traceback
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type
+
+apgi_logger: Any = None
 
 try:
     from utils.logging_config import apgi_logger
@@ -65,12 +66,22 @@ class ErrorInfo:
     code: str
     message: str
     details: Optional[Dict[str, Any]] = None
-    suggestions: Optional[list] = None
+    suggestions: Optional[List[str]] = None
     user_action: Optional[str] = None
 
 
 class APGIError(Exception):
     """Base exception class for APGI framework."""
+
+    error_info: Optional[ErrorInfo]
+    message: str
+    severity: ErrorSeverity
+    category: ErrorCategory
+    context: Dict[str, Any]
+    suggestions: Optional[List[str]]
+    original_error: Optional[Exception]
+    error_code: Optional[str]
+    timestamp: datetime
 
     def __init__(
         self,
@@ -79,7 +90,7 @@ class APGIError(Exception):
         severity: ErrorSeverity = ErrorSeverity.MEDIUM,
         category: ErrorCategory = ErrorCategory.VALIDATION,
         context: Optional[Dict[str, Any]] = None,
-        suggestion: Optional[str] = None,
+        suggestions: Optional[List[str]] = None,
         original_error: Optional[Exception] = None,
         error_code: Optional[str] = None,
         timestamp: Optional[datetime] = None,
@@ -90,7 +101,7 @@ class APGIError(Exception):
             self.severity = error_info.severity
             self.category = error_info.category
             self.context = error_info.details or {}
-            self.suggestion = error_info.user_action
+            self.suggestions = error_info.suggestions
             self.original_error = original_error
             self.error_code = error_info.code
             self.timestamp = timestamp or datetime.now()
@@ -100,7 +111,7 @@ class APGIError(Exception):
             self.severity = severity
             self.category = category
             self.context = context or {}
-            self.suggestion = suggestion
+            self.suggestions = suggestions
             self.original_error = original_error
             self.error_code = error_code
             self.timestamp = timestamp or datetime.now()
@@ -115,8 +126,8 @@ class APGIError(Exception):
             base_msg = f"[{self.severity.value.upper()}] {self.message}"
             if self.error_code:
                 base_msg = f"[{self.error_code}] {base_msg}"
-            if self.suggestion:
-                base_msg += f"\n💡 Suggestion: {self.suggestion}"
+            if self.suggestions:
+                base_msg += f"\n💡 Suggestions: {', '.join(self.suggestions)}"
             if self.context:
                 context_str = ", ".join(f"{k}={v}" for k, v in self.context.items())
                 base_msg += f"\n📍 Context: {context_str}"
@@ -130,7 +141,7 @@ class APGIError(Exception):
             "category": self.category.value,
             "error_code": self.error_code,
             "context": self.context,
-            "suggestion": self.suggestion,
+            "suggestions": self.suggestions,
             "timestamp": self.timestamp.isoformat(),
             "traceback": self.traceback,
         }
@@ -371,7 +382,7 @@ class ErrorHandler:
         severity: ErrorSeverity,
         code: str,
         details: Optional[str] = None,
-        suggestions: Optional[list] = None,
+        suggestions: Optional[List[str]] = None,
         user_action: Optional[str] = None,
         **format_kwargs,
     ) -> APGIError:
@@ -545,12 +556,15 @@ def format_user_message(error: APGIError) -> str:
     """Format error message for user display."""
     info = error.error_info
 
+    if not info:
+        return f"❌ {error.message}"
+
     # Base message
     message = f"❌ {info.message}"
 
     # Add suggestions if available
     if info.suggestions:
-        message += f"\n\n💡 Suggestions:"
+        message += "\n\n💡 Suggestions:"
         for suggestion in info.suggestions:
             message += f"\n   • {suggestion}"
 
@@ -591,7 +605,7 @@ RECOVERY_SUGGESTIONS = {
 }
 
 
-def get_recovery_suggestions(error_code: str) -> list:
+def get_recovery_suggestions(error_code: str) -> List[str]:
     """Get recovery suggestions for error code."""
     return RECOVERY_SUGGESTIONS.get(error_code, ["Contact support if issue persists"])
 

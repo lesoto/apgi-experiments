@@ -2,12 +2,9 @@
 Tests for CLI module coverage - focuses on actual execution paths.
 """
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-import tempfile
-import subprocess
-import sys
-from pathlib import Path
-from unittest.mock import patch, MagicMock
 
 from apgi_framework.cli import APGIFrameworkCLI
 
@@ -197,7 +194,7 @@ class TestCLIExecution:
 
             with patch.object(cli.logger, "error") as mock_error:
                 with pytest.raises(SystemExit) as exc_info:
-                    result = cli.run()
+                    cli.run()
                 assert exc_info.value.code == 1
                 mock_error.assert_called_with("Unknown command: unknown-command")
 
@@ -226,7 +223,7 @@ class TestCLIExecution:
 
                     with patch.object(cli.logger, "error") as mock_error:
                         with pytest.raises(SystemExit) as exc_info:
-                            result = cli.run()
+                            cli.run()
                         assert exc_info.value.code == 1
                         mock_error.assert_called_with("Unexpected error: Test error")
 

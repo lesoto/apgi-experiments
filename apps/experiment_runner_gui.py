@@ -2,15 +2,15 @@ import os
 
 os.environ.setdefault("MPLBACKEND", "Agg")
 
-import tkinter as tk
-from tkinter import ttk, messagebox
-import threading
-import inspect
 import importlib
-import sys
+import inspect
 import queue
-from typing import Any, Dict
+import sys
+import threading
+import tkinter as tk
 from pathlib import Path
+from tkinter import messagebox, ttk
+from typing import Any, Dict
 
 import matplotlib
 

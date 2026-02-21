@@ -4,15 +4,16 @@ Provides detailed profiling of key functions and methods.
 """
 
 import cProfile
-import pstats
 import io
+import json
+import pstats
 import time
+from pathlib import Path
+from typing import Any, Callable, Dict, List
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from pathlib import Path
-from typing import Dict, List, Callable, Any
-import json
-import matplotlib.pyplot as plt
 
 
 class CriticalPathProfiler:

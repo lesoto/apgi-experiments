@@ -5,11 +5,11 @@ Defines the core data structures for experimental datasets, metadata,
 versioning, and backup information.
 """
 
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Any, Optional, Union
 from pathlib import Path
-import uuid
+from typing import Any, Dict, List, Optional
 
 
 @dataclass

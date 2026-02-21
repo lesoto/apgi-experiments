@@ -5,24 +5,30 @@ Provides comprehensive diagnostic capture, error categorization, and resolution
 guidance for test execution errors, framework issues, and environmental problems.
 """
 
+import json
+import os
+import platform
 import sys
 import traceback
-import logging
-import platform
-import psutil
-import os
-import subprocess
-from datetime import datetime
-from typing import Dict, List, Optional, Any, Union, Tuple
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
-from pathlib import Path
-import json
+from typing import Any, Dict, List, Optional, Tuple
+
+# Declare psutil for conditional import
+psutil: Optional[Any] = None
+
+try:
+    import psutil
+
+    HAS_PSUTIL = True
+except ImportError:
+    HAS_PSUTIL = False
 
 from ..logging.standardized_logging import get_logger
 
 
-class TestErrorCategory(Enum):
+class ErrorCategory(Enum):
     """Categories for test execution errors."""
 
     TEST_FAILURE = "test_failure"
@@ -63,22 +69,39 @@ class SystemState:
     @classmethod
     def capture_current(cls) -> "SystemState":
         """Capture current system state."""
-        # Memory usage
-        memory = psutil.virtual_memory()
-        memory_usage = {
-            "total_gb": memory.total / (1024**3),
-            "available_gb": memory.available / (1024**3),
-            "percent_used": memory.percent,
-            "free_gb": memory.free / (1024**3),
-        }
+        if HAS_PSUTIL:
+            # Memory usage
+            memory_info = psutil.virtual_memory()  # type: ignore
+            memory_usage = {
+                "total_gb": memory_info.total / (1024**3),
+                "available_gb": memory_info.available / (1024**3),
+                "percent_used": memory_info.percent,
+                "free_gb": memory_info.free / (1024**3),
+            }
 
-        # Disk usage
-        disk = psutil.disk_usage("/")
-        disk_usage = {
-            "total_gb": disk.total / (1024**3),
-            "free_gb": disk.free / (1024**3),
-            "percent_used": (disk.used / disk.total) * 100,
-        }
+            # Disk usage
+            disk = psutil.disk_usage("/")  # type: ignore
+            disk_usage = {
+                "total_gb": disk.total / (1024**3),
+                "free_gb": disk.free / (1024**3),
+                "percent_used": (disk.used / disk.total) * 100,
+            }
+
+            cpu_usage = psutil.cpu_percent(interval=1)  # type: ignore
+        else:
+            # Dummy values when psutil not available
+            memory_usage = {
+                "total_gb": 8.0,
+                "available_gb": 4.0,
+                "percent_used": 50.0,
+                "free_gb": 4.0,
+            }
+            disk_usage = {
+                "total_gb": 256.0,
+                "free_gb": 128.0,
+                "percent_used": 50.0,
+            }
+            cpu_usage = 50.0
 
         # Environment variables (filtered for security)
         safe_env_vars = {}
@@ -95,7 +118,7 @@ class SystemState:
             platform_info=platform.platform(),
             memory_usage=memory_usage,
             disk_usage=disk_usage,
-            cpu_usage=psutil.cpu_percent(interval=1),
+            cpu_usage=cpu_usage,
             environment_variables=safe_env_vars,
             working_directory=os.getcwd(),
             process_id=os.getpid(),
@@ -103,7 +126,7 @@ class SystemState:
 
 
 @dataclass
-class TestContext:
+class Context:
     """Context information for test execution."""
 
     test_name: Optional[str] = None
@@ -135,14 +158,14 @@ class DiagnosticInfo:
     """Comprehensive diagnostic information for an error."""
 
     error_id: str
-    category: TestErrorCategory
+    category: ErrorCategory
     severity: ErrorSeverity
     original_exception: Exception
     message: str
     user_friendly_message: str
     stack_trace: List[str]
     system_state: SystemState
-    test_context: TestContext
+    test_context: Context
     resolution_guidance: List[ResolutionGuidance]
     metadata: Dict[str, Any] = field(default_factory=dict)
 
@@ -187,56 +210,56 @@ class ErrorHandler:
         return {
             # Test failure patterns
             "AssertionError": {
-                "category": TestErrorCategory.TEST_FAILURE,
+                "category": ErrorCategory.TEST_FAILURE,
                 "severity": ErrorSeverity.MEDIUM,
                 "keywords": ["assert", "expected", "actual"],
             },
             "ValueError": {
-                "category": TestErrorCategory.TEST_FAILURE,
+                "category": ErrorCategory.TEST_FAILURE,
                 "severity": ErrorSeverity.MEDIUM,
                 "keywords": ["invalid", "value", "range"],
             },
             # Framework issue patterns
             "ImportError": {
-                "category": TestErrorCategory.FRAMEWORK_ISSUE,
+                "category": ErrorCategory.FRAMEWORK_ISSUE,
                 "severity": ErrorSeverity.HIGH,
                 "keywords": ["import", "module", "package"],
             },
             "ModuleNotFoundError": {
-                "category": TestErrorCategory.DEPENDENCY_MISSING,
+                "category": ErrorCategory.DEPENDENCY_MISSING,
                 "severity": ErrorSeverity.HIGH,
                 "keywords": ["module", "found", "install"],
             },
             # Environmental patterns
             "FileNotFoundError": {
-                "category": TestErrorCategory.ENVIRONMENTAL,
+                "category": ErrorCategory.ENVIRONMENTAL,
                 "severity": ErrorSeverity.MEDIUM,
                 "keywords": ["file", "directory", "path"],
             },
             "PermissionError": {
-                "category": TestErrorCategory.ENVIRONMENTAL,
+                "category": ErrorCategory.ENVIRONMENTAL,
                 "severity": ErrorSeverity.MEDIUM,
                 "keywords": ["permission", "access", "denied"],
             },
             # Resource patterns
             "MemoryError": {
-                "category": TestErrorCategory.RESOURCE_EXHAUSTION,
+                "category": ErrorCategory.RESOURCE_EXHAUSTION,
                 "severity": ErrorSeverity.CRITICAL,
                 "keywords": ["memory", "allocation", "out of memory"],
             },
             "TimeoutError": {
-                "category": TestErrorCategory.TIMEOUT_ERROR,
+                "category": ErrorCategory.TIMEOUT_ERROR,
                 "severity": ErrorSeverity.MEDIUM,
                 "keywords": ["timeout", "time", "exceeded"],
             },
             # Configuration patterns
             "ConfigurationError": {
-                "category": TestErrorCategory.CONFIGURATION_ERROR,
+                "category": ErrorCategory.CONFIGURATION_ERROR,
                 "severity": ErrorSeverity.MEDIUM,
                 "keywords": ["config", "configuration", "setting"],
             },
             "SyntaxError": {
-                "category": TestErrorCategory.SYNTAX_ERROR,
+                "category": ErrorCategory.SYNTAX_ERROR,
                 "severity": ErrorSeverity.HIGH,
                 "keywords": ["syntax", "invalid", "parsing"],
             },
@@ -244,10 +267,10 @@ class ErrorHandler:
 
     def _build_resolution_database(
         self,
-    ) -> Dict[TestErrorCategory, List[ResolutionGuidance]]:
+    ) -> Dict[ErrorCategory, List[ResolutionGuidance]]:
         """Build database of resolution guidance for different error categories."""
         return {
-            TestErrorCategory.TEST_FAILURE: [
+            ErrorCategory.TEST_FAILURE: [
                 ResolutionGuidance(
                     title="Review Test Logic",
                     description="Check test assertions and expected values",
@@ -273,7 +296,7 @@ class ErrorHandler:
                     success_probability=0.7,
                 ),
             ],
-            TestErrorCategory.FRAMEWORK_ISSUE: [
+            ErrorCategory.FRAMEWORK_ISSUE: [
                 ResolutionGuidance(
                     title="Check Framework Installation",
                     description="Verify test framework is properly installed",
@@ -300,7 +323,7 @@ class ErrorHandler:
                     success_probability=0.8,
                 ),
             ],
-            TestErrorCategory.ENVIRONMENTAL: [
+            ErrorCategory.ENVIRONMENTAL: [
                 ResolutionGuidance(
                     title="Check File System",
                     description="Verify file and directory permissions",
@@ -326,7 +349,7 @@ class ErrorHandler:
                     success_probability=0.8,
                 ),
             ],
-            TestErrorCategory.DEPENDENCY_MISSING: [
+            ErrorCategory.DEPENDENCY_MISSING: [
                 ResolutionGuidance(
                     title="Install Missing Dependencies",
                     description="Install required packages and modules",
@@ -342,7 +365,7 @@ class ErrorHandler:
                     success_probability=0.95,
                 )
             ],
-            TestErrorCategory.RESOURCE_EXHAUSTION: [
+            ErrorCategory.RESOURCE_EXHAUSTION: [
                 ResolutionGuidance(
                     title="Optimize Memory Usage",
                     description="Reduce memory consumption during tests",
@@ -369,7 +392,7 @@ class ErrorHandler:
                     success_probability=0.8,
                 ),
             ],
-            TestErrorCategory.TIMEOUT_ERROR: [
+            ErrorCategory.TIMEOUT_ERROR: [
                 ResolutionGuidance(
                     title="Adjust Timeout Settings",
                     description="Increase timeout values for slow operations",
@@ -384,7 +407,7 @@ class ErrorHandler:
                     success_probability=0.9,
                 )
             ],
-            TestErrorCategory.CONFIGURATION_ERROR: [
+            ErrorCategory.CONFIGURATION_ERROR: [
                 ResolutionGuidance(
                     title="Fix Configuration",
                     description="Correct configuration file errors",
@@ -403,7 +426,7 @@ class ErrorHandler:
     def handle_error(
         self,
         exception: Exception,
-        test_context: Optional[TestContext] = None,
+        test_context: Optional[Context] = None,
         **metadata,
     ) -> DiagnosticInfo:
         """
@@ -449,7 +472,7 @@ class ErrorHandler:
             user_friendly_message=user_friendly_message,
             stack_trace=stack_trace,
             system_state=system_state,
-            test_context=test_context or TestContext(),
+            test_context=test_context or Context(),
             resolution_guidance=resolution_guidance,
             metadata=metadata,
         )
@@ -461,7 +484,7 @@ class ErrorHandler:
 
     def _categorize_error(
         self, exception: Exception
-    ) -> Tuple[TestErrorCategory, ErrorSeverity]:
+    ) -> Tuple[ErrorCategory, ErrorSeverity]:
         """Categorize error and determine severity."""
         exception_name = type(exception).__name__
         exception_message = str(exception).lower()
@@ -479,29 +502,29 @@ class ErrorHandler:
 
         # Default categorization
         if "test" in exception_message or "assert" in exception_message:
-            return TestErrorCategory.TEST_FAILURE, ErrorSeverity.MEDIUM
+            return ErrorCategory.TEST_FAILURE, ErrorSeverity.MEDIUM
         elif "import" in exception_message or "module" in exception_message:
-            return TestErrorCategory.FRAMEWORK_ISSUE, ErrorSeverity.HIGH
+            return ErrorCategory.FRAMEWORK_ISSUE, ErrorSeverity.HIGH
         elif "file" in exception_message or "directory" in exception_message:
-            return TestErrorCategory.ENVIRONMENTAL, ErrorSeverity.MEDIUM
+            return ErrorCategory.ENVIRONMENTAL, ErrorSeverity.MEDIUM
         else:
-            return TestErrorCategory.FRAMEWORK_ISSUE, ErrorSeverity.MEDIUM
+            return ErrorCategory.FRAMEWORK_ISSUE, ErrorSeverity.MEDIUM
 
     def _generate_user_message(
-        self, exception: Exception, category: TestErrorCategory
+        self, exception: Exception, category: ErrorCategory
     ) -> str:
         """Generate user-friendly error message."""
         category_messages = {
-            TestErrorCategory.TEST_FAILURE: "A test failed due to an assertion or logic error.",
-            TestErrorCategory.FRAMEWORK_ISSUE: "There's an issue with the test framework or its configuration.",
-            TestErrorCategory.ENVIRONMENTAL: "There's a problem with the test environment or file system.",
-            TestErrorCategory.DEPENDENCY_MISSING: "A required dependency or module is missing.",
-            TestErrorCategory.CONFIGURATION_ERROR: "There's an error in the test configuration.",
-            TestErrorCategory.RESOURCE_EXHAUSTION: "The system has run out of available resources.",
-            TestErrorCategory.TIMEOUT_ERROR: "A test operation has exceeded its timeout limit.",
-            TestErrorCategory.IMPORT_ERROR: "There's a problem importing a required module.",
-            TestErrorCategory.SYNTAX_ERROR: "There's a syntax error in the test code.",
-            TestErrorCategory.ASSERTION_ERROR: "A test assertion has failed.",
+            ErrorCategory.TEST_FAILURE: "A test failed due to an assertion or logic error.",
+            ErrorCategory.FRAMEWORK_ISSUE: "There's an issue with the test framework or its configuration.",
+            ErrorCategory.ENVIRONMENTAL: "There's a problem with the test environment or file system.",
+            ErrorCategory.DEPENDENCY_MISSING: "A required dependency or module is missing.",
+            ErrorCategory.CONFIGURATION_ERROR: "There's an error in the test configuration.",
+            ErrorCategory.RESOURCE_EXHAUSTION: "The system has run out of available resources.",
+            ErrorCategory.TIMEOUT_ERROR: "A test operation has exceeded its timeout limit.",
+            ErrorCategory.IMPORT_ERROR: "There's a problem importing a required module.",
+            ErrorCategory.SYNTAX_ERROR: "There's a syntax error in the test code.",
+            ErrorCategory.ASSERTION_ERROR: "A test assertion has failed.",
         }
 
         base_message = category_messages.get(
@@ -510,7 +533,7 @@ class ErrorHandler:
         return f"{base_message} Error details: {str(exception)}"
 
     def _get_resolution_guidance(
-        self, category: TestErrorCategory, exception: Exception
+        self, category: ErrorCategory, exception: Exception
     ) -> List[ResolutionGuidance]:
         """Get resolution guidance for the error category."""
         guidance_list = self.resolution_database.get(category, [])
@@ -518,7 +541,7 @@ class ErrorHandler:
         # Add specific guidance based on exception details
         exception_message = str(exception).lower()
 
-        if category == TestErrorCategory.DEPENDENCY_MISSING:
+        if category == ErrorCategory.DEPENDENCY_MISSING:
             # Try to extract package name
             if "no module named" in exception_message:
                 module_name = (
@@ -582,25 +605,25 @@ class ErrorHandler:
         suggestions = []
 
         # Analyze error patterns
-        category_counts = {}
+        category_counts: Dict[ErrorCategory, int] = {}
         for error in error_history:
             category_counts[error.category] = category_counts.get(error.category, 0) + 1
 
         # Generate suggestions based on frequent error types
-        if category_counts.get(TestErrorCategory.DEPENDENCY_MISSING, 0) > 2:
+        if category_counts.get(ErrorCategory.DEPENDENCY_MISSING, 0) > 2:
             suggestions.append(
                 "Consider using a requirements.txt file and virtual environment"
             )
 
-        if category_counts.get(TestErrorCategory.RESOURCE_EXHAUSTION, 0) > 1:
+        if category_counts.get(ErrorCategory.RESOURCE_EXHAUSTION, 0) > 1:
             suggestions.append(
                 "Consider running tests in smaller batches or on more powerful hardware"
             )
 
-        if category_counts.get(TestErrorCategory.TIMEOUT_ERROR, 0) > 2:
+        if category_counts.get(ErrorCategory.TIMEOUT_ERROR, 0) > 2:
             suggestions.append("Review and optimize slow test operations")
 
-        if category_counts.get(TestErrorCategory.ENVIRONMENTAL, 0) > 3:
+        if category_counts.get(ErrorCategory.ENVIRONMENTAL, 0) > 3:
             suggestions.append(
                 "Standardize test environment setup with configuration management"
             )

@@ -6,16 +6,13 @@ automatic state saving, recovery, and synchronization.
 """
 
 import json
-import threading
-import time
-import uuid
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Callable
-from dataclasses import dataclass, asdict
-from pathlib import Path
 import logging
-import pickle
-import hashlib
+import threading
+import uuid
+from dataclasses import asdict, dataclass
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -119,7 +116,7 @@ class SessionManager:
             custom_data={},
         )
 
-        self._save_session()
+        self.save_session()
         logger.info(f"Created new session: {self.current_session.session_id}")
 
     def _start_auto_save(self):
@@ -307,7 +304,7 @@ class SessionManager:
             for session in history:
                 if session.session_id == session_id:
                     self.current_session = session
-                    self._save_session()
+                    self.save_session()
 
                     # Notify callbacks
                     for callback in self.session_callbacks:
@@ -367,7 +364,7 @@ class SessionManager:
 
             session_data = import_data["session"]
             self.current_session = SessionState.from_dict(session_data)
-            self._save_session()
+            self.save_session()
 
             # Notify callbacks
             for callback in self.session_callbacks:
@@ -439,7 +436,7 @@ class MultiGUISessionManager:
     Provides synchronization and coordination between different GUI types.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.session_managers: Dict[str, SessionManager] = {}
         self.global_callbacks: List[Callable] = []
         self.lock = threading.Lock()

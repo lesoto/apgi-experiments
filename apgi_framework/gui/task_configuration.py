@@ -5,51 +5,12 @@ Provides configuration interface for detection and heartbeat tasks with standard
 UI components and error handling.
 """
 
-import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
-from typing import Dict, Any, Optional
-from pathlib import Path
-import json
 import logging
+import tkinter as tk
+from tkinter import ttk
+from typing import Any, Dict
 
-# Import standardized GUI utilities
-try:
-    from ..utils.standard_gui import (
-        StandardWindow,
-        StandardMenuBar,
-        GUIStyleManager,
-        ErrorHandler,
-        PathManager,
-        create_standard_notebook,
-        create_standard_button_frame,
-        create_standard_button,
-        show_info_dialog,
-        show_warning_dialog,
-        show_error_dialog,
-        ask_yes_no_dialog,
-    )
-except ImportError:
-    # Fallback for direct execution
-    import sys
-    import os
-
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
-    from apgi_framework.gui.utils.standard_gui import (
-        StandardWindow,
-        StandardMenuBar,
-        GUIStyleManager,
-        ErrorHandler,
-        PathManager,
-        create_standard_notebook,
-        create_standard_button_frame,
-        create_standard_button,
-        show_info_dialog,
-        show_warning_dialog,
-        show_error_dialog,
-        ask_yes_no_dialog,
-    )
-
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
@@ -240,7 +201,7 @@ class TaskParameterConfigurator:
 if __name__ == "__main__":
     """Simple GUI for task configuration."""
     import tkinter as tk
-    from tkinter import ttk, messagebox
+    from tkinter import messagebox, ttk
 
     class TaskConfigurationGUI:
         def __init__(self):

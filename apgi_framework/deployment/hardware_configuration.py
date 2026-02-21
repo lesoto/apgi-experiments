@@ -5,12 +5,12 @@ Provides unified interface for configuring and managing various hardware devices
 used in the APGI Framework parameter estimation system.
 """
 
+import json
 import logging
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-import json
+from typing import Any, Dict, List, Optional
 
 
 class HardwareType(Enum):
@@ -274,15 +274,15 @@ class HardwareConfigurationManager:
         """Generate BioSemi channel names."""
         # Simplified - actual BioSemi has specific naming
         return (
-            [f"A{i+1}" for i in range(min(32, n_channels))]
-            + [f"B{i+1}" for i in range(min(32, max(0, n_channels - 32)))]
-            + [f"C{i+1}" for i in range(min(32, max(0, n_channels - 64)))]
-            + [f"D{i+1}" for i in range(min(32, max(0, n_channels - 96)))]
+            [f"A{i + 1}" for i in range(min(32, n_channels))]
+            + [f"B{i + 1}" for i in range(min(32, max(0, n_channels - 32)))]
+            + [f"C{i + 1}" for i in range(min(32, max(0, n_channels - 64)))]
+            + [f"D{i + 1}" for i in range(min(32, max(0, n_channels - 96)))]
         )
 
     def _generate_egi_channel_names(self, n_channels: int) -> List[str]:
         """Generate EGI channel names."""
-        return [f"E{i+1}" for i in range(n_channels)]
+        return [f"E{i + 1}" for i in range(n_channels)]
 
     def _generate_standard_10_20_names(self, n_channels: int) -> List[str]:
         """Generate standard 10-20 system channel names."""
@@ -327,7 +327,7 @@ class HardwareConfigurationManager:
             return standard_names[:n_channels]
         else:
             # Add extra channels
-            extra = [f"EX{i+1}" for i in range(n_channels - len(standard_names))]
+            extra = [f"EX{i + 1}" for i in range(n_channels - len(standard_names))]
             return standard_names + extra
 
     def configure_eeg_system(

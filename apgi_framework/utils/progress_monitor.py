@@ -5,11 +5,11 @@ This module provides progress bars and status updates for operations
 that may take more than 2 seconds to complete.
 """
 
-import time
 import threading
-from typing import Optional, Callable, Any
+import time
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Callable, Optional
 
 
 class ProgressStatus(Enum):
@@ -26,9 +26,9 @@ class ProgressStatus(Enum):
 class ProgressCallback:
     """Callback configuration for progress updates."""
 
-    on_progress: Optional[Callable[[float, str], None]] = None
-    on_complete: Optional[Callable[[], None]] = None
-    on_error: Optional[Callable[[Exception], None]] = None
+    on_complete: Optional[Callable] = None
+    on_error: Optional[Callable] = None
+    on_progress: Optional[Callable] = None
 
 
 class ProgressMonitor:
@@ -170,7 +170,7 @@ class ProgressMonitor:
 
 def with_progress(
     total_steps: int,
-    operation_name: str = "Operation",
+    operation_name: str,
     show_percentage: bool = True,
     show_time_remaining: bool = True,
     callback: Optional[ProgressCallback] = None,
@@ -185,10 +185,11 @@ def with_progress(
                 time.sleep(0.1)
             progress.complete()
     """
-    return ProgressMonitor(
+    monitor = ProgressMonitor(
         total_steps=total_steps,
         operation_name=operation_name,
         show_percentage=show_percentage,
         show_time_remaining=show_time_remaining,
         callback=callback,
     )
+    return monitor

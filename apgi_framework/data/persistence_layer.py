@@ -4,28 +4,28 @@ Persistence layer for the APGI Framework data management system.
 Provides unified interface for data storage using SQLite and HDF5 backends.
 """
 
-import sqlite3
-import h5py
-import json
 import hashlib
+import json
 import shutil
-from pathlib import Path
+import sqlite3
 from datetime import datetime
-from typing import Dict, List, Any, Optional, Union, Tuple
-import pandas as pd
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
+
+import h5py
 import numpy as np
+import pandas as pd
 
 from ..exceptions import APGIFrameworkError
+from ..security.secure_pickle import (
+    safe_pickle_dump,
+    safe_pickle_load,
+)
 from .data_models import (
+    BackupInfo,
+    DataVersion,
     ExperimentalDataset,
     ExperimentMetadata,
-    DataVersion,
-    BackupInfo,
-)
-from ..security.secure_pickle import (
-    safe_pickle_load,
-    safe_pickle_dump,
-    SecurePickleError,
 )
 
 
@@ -429,8 +429,7 @@ class PersistenceLayer:
             "analysis_results": dataset.analysis_results,
         }
 
-        with open(data_file, "wb") as f:
-            safe_pickle_dump(data_to_store, f)
+        safe_pickle_dump(data_to_store, data_file)
 
     def _load_data_sqlite(
         self, experiment_id: str, version: Optional[str] = None
@@ -441,8 +440,7 @@ class PersistenceLayer:
         if not data_file.exists():
             return {}
 
-        with open(data_file, "rb") as f:
-            return safe_pickle_load(f)
+        return safe_pickle_load(data_file)
 
     def _store_version(self, experiment_id: str, version: DataVersion):
         """Store version information."""
@@ -510,7 +508,7 @@ class PersistenceLayer:
         """Create backup of experimental dataset."""
         try:
             # Load dataset
-            dataset = self.load_dataset(experiment_id)
+            # dataset = self.load_dataset(experiment_id)
 
             # Create backup directory
             backup_dir = (
@@ -634,6 +632,11 @@ class PersistenceLayer:
                     if experiment_id in f:
                         del f[experiment_id]
 
+            # Delete pickle file
+            data_file = self.data_path / f"{experiment_id}.pkl"
+            if data_file.exists():
+                data_file.unlink()
+
         except Exception as e:
             raise PersistenceError(
                 f"Failed to delete experiment {experiment_id}: {str(e)}"
@@ -661,13 +664,3 @@ class PersistenceLayer:
 
         except Exception as e:
             raise PersistenceError(f"Failed to flush persistence layer: {str(e)}")
-
-            # Delete pickle file
-            data_file = self.data_path / f"{experiment_id}.pkl"
-            if data_file.exists():
-                data_file.unlink()
-
-        except Exception as e:
-            raise PersistenceError(
-                f"Failed to delete experiment {experiment_id}: {str(e)}"
-            )

@@ -4,9 +4,9 @@ Test Generator Module
 Provides functionality for generating test coverage reports and missing tests.
 """
 
-from typing import Dict, List, Any, Optional
-from pathlib import Path
 import json
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 
 class SuiteGenerator:

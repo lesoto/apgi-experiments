@@ -8,19 +8,19 @@ This module tests that for any code change, the system correctly identifies
 and executes only the relevant test subset based on accurate impact analysis.
 """
 
-import pytest
-import tempfile
 import shutil
+import tempfile
 from pathlib import Path
-from typing import List, Set
-from hypothesis import given, strategies as st, assume, settings
-from datetime import datetime
+from typing import List
+
+import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from apgi_framework.testing.ci_integrator import (
-    CIIntegrator,
-    CIConfiguration,
     ChangeAnalyzer,
-    ChangeImpact,
+    CIConfiguration,
+    CIIntegrator,
 )
 
 
@@ -240,7 +240,7 @@ class TestCIIntegrationProperties:
         test_files = ["test_core.py", "test_analysis.py", "test_clinical.py"]
         for test_file in test_files:
             (self.project_root / "tests" / test_file).write_text(
-                f"def test_example():\n    pass\n", encoding="utf-8"
+                "def test_example():\n    pass\n", encoding="utf-8"
             )
 
     def teardown_method(self):

@@ -7,25 +7,21 @@ and reporting with full feature parity to the GUI interface.
 Requirements: 9.6
 """
 
-import sys
-import os
-import logging
-from typing import Dict, List, Optional, Any, Set
-from pathlib import Path
-from datetime import datetime
 import json
-import subprocess
-import time
+import logging
+import sys
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List
 
 # Add the project root to Python path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from apgi_framework.testing.batch_runner import BatchTestRunner
 from apgi_framework.testing.activity_logger import (
-    get_activity_logger,
-    ActivityType,
     ActivityLevel,
+    ActivityType,
+    get_activity_logger,
 )
 
 
@@ -76,7 +72,7 @@ class CLITestRunner:
 
             # Log completion
             self.activity_logger.log_activity(
-                ActivityType.TEST_EXECUTION_COMPLETE,
+                ActivityType.TEST_EXECUTION_END,
                 ActivityLevel.INFO,
                 "Full test suite execution completed",
                 data={
@@ -92,7 +88,7 @@ class CLITestRunner:
         except Exception as e:
             self.logger.error(f"Error running all tests: {e}")
             self.activity_logger.log_activity(
-                ActivityType.TEST_EXECUTION_ERROR,
+                ActivityType.ERROR_OCCURRED,
                 ActivityLevel.ERROR,
                 f"Test execution failed: {str(e)}",
                 data={"error_type": type(e).__name__},
@@ -217,7 +213,7 @@ class CLITestRunner:
 
         try:
             self.activity_logger.log_activity(
-                ActivityType.COVERAGE_ANALYSIS_START,
+                ActivityType.COVERAGE_COLLECTION_START,
                 ActivityLevel.INFO,
                 "Starting coverage report generation",
                 data={"mode": "cli"},
@@ -319,7 +315,7 @@ class CLITestRunner:
     ) -> List[Path]:
         """Discover test files matching the given pattern."""
         project_root = Path(self.config.project_root)
-        test_files = []
+        test_files: List[Path] = []
 
         # Search in tests directory
         tests_dir = project_root / "tests"
@@ -412,7 +408,7 @@ class CLITestRunner:
         if coverage:
             line_coverage = coverage.get("line_coverage", 0)
             branch_coverage = coverage.get("branch_coverage", 0)
-            print(f"\nCoverage:")
+            print("\nCoverage:")
             print(f"Lines:        {line_coverage:.1f}%")
             print(f"Branches:     {branch_coverage:.1f}%")
 
@@ -441,7 +437,7 @@ class CLITestRunner:
         branch_coverage = overall.get("branch_coverage", 0)
         function_coverage = overall.get("function_coverage", 0)
 
-        print(f"Overall Coverage:")
+        print("Overall Coverage:")
         print(f"Lines:        {line_coverage:.1f}%")
         print(f"Branches:     {branch_coverage:.1f}%")
         print(f"Functions:    {function_coverage:.1f}%")
@@ -449,7 +445,7 @@ class CLITestRunner:
         # Show module breakdown
         modules = coverage_report.get("modules", {})
         if modules:
-            print(f"\nModule Coverage:")
+            print("Module Coverage:")
             for module, data in sorted(modules.items()):
                 module_coverage = data.get("line_coverage", 0)
                 status = (
@@ -505,11 +501,11 @@ class CLITestRunner:
                     status = "PASS" if failed == 0 else "FAIL"
 
                     print(
-                        f"{i+1:2d}. {timestamp[:19]} | {report_name:<15} | {status:<4} | {passed}/{total} | {duration}"
+                        f"{i + 1:2d}. {timestamp[:19]} | {report_name:<15} | {status:<4} | {passed}/{total} | {duration}"
                     )
 
                 except Exception as e:
-                    print(f"{i+1:2d}. {report_file.name} - Error reading report: {e}")
+                    print(f"{i + 1:2d}. {report_file.name} - Error reading report: {e}")
 
             print("=" * 60)
 

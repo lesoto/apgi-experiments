@@ -6,18 +6,19 @@ parameter estimation of θ₀ (baseline ignition threshold), Πᵢ (interoceptiv
 and β (somatic bias) using Stan/PyMC3.
 """
 
-import numpy as np
-from typing import Dict, Tuple, Optional, Any, List, Union
-import os
-from pathlib import Path
 import hashlib
+import os
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import numpy as np
 
 # Import standardized logging and security
 from ..logging.standardized_logging import get_logger
 from ..security.secure_pickle import (
-    safe_pickle_load,
     safe_pickle_dump,
+    safe_pickle_load,
 )
 
 # Initialize logger

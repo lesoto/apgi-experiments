@@ -5,13 +5,11 @@ Provides visual feedback for long-running operations with progress bars,
 spinners, and status messages.
 """
 
-import tkinter as tk
-from tkinter import ttk
-import threading
-import time
-from typing import Optional, Callable, Dict, Any
-from datetime import datetime
 import logging
+import tkinter as tk
+from datetime import datetime
+from tkinter import ttk
+from typing import Callable, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +76,7 @@ class LoadingIndicator:
         self.window.resizable(False, False)
 
         # Center the window
-        self.window.transient(self.parent)
+        self.window.transient(self.parent)  # type: ignore
         self.window.grab_set()
 
         # Calculate center position
@@ -313,7 +311,7 @@ class LoadingIndicator:
         try:
             self.window.grab_release()
             self.window.destroy()
-        except:
+        except Exception:
             pass
 
 

@@ -7,48 +7,91 @@ visualization with delta display.
 """
 
 import sys
-import math
-from typing import Dict, List, Optional, Tuple, Any
 from datetime import datetime, timedelta
-from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
+
+# Data classes for coverage information
+class CoverageData:
+    def __init__(
+        self,
+        line_coverage=None,
+        branch_coverage=None,
+        function_coverage=None,
+        module_coverage=None,
+        overall_coverage=0.0,
+        timestamp=None,
+    ):
+        self.line_coverage = line_coverage or {}
+        self.branch_coverage = branch_coverage or {}
+        self.function_coverage = function_coverage or {}
+        self.module_coverage = module_coverage or {}
+        self.overall_coverage = overall_coverage
+        self.timestamp = timestamp or datetime.now()
+
+
+class ModuleCoverage:
+    def __init__(
+        self,
+        module_name="",
+        line_coverage=0.0,
+        branch_coverage=0.0,
+        function_coverage=0.0,
+        total_lines=0,
+        covered_lines=0,
+        total_branches=0,
+        covered_branches=0,
+        total_functions=0,
+        covered_functions=0,
+        uncovered_lines=None,
+    ):
+        self.module_name = module_name
+        self.line_coverage = line_coverage
+        self.branch_coverage = branch_coverage
+        self.function_coverage = function_coverage
+        self.total_lines = total_lines
+        self.covered_lines = covered_lines
+        self.total_branches = total_branches
+        self.covered_branches = covered_branches
+        self.total_functions = total_functions
+        self.covered_functions = covered_functions
+        self.uncovered_lines = uncovered_lines or []
+
 
 try:
+    from PySide6.QtCore import QRect, Qt, Signal
+    from PySide6.QtGui import (
+        QBrush,
+        QColor,
+        QFont,
+        QPainter,
+        QPaintEvent,
+        QPen,
+        QSyntaxHighlighter,
+    )
     from PySide6.QtWidgets import (
-        QWidget,
-        QVBoxLayout,
-        QHBoxLayout,
-        QTreeWidget,
-        QTreeWidgetItem,
-        QTextEdit,
-        QSplitter,
-        QTabWidget,
-        QLabel,
-        QPushButton,
-        QGroupBox,
-        QScrollArea,
-        QFrame,
-        QLineEdit,
-        QComboBox,
-        QProgressBar,
-        QTableWidget,
-        QTableWidgetItem,
-        QHeaderView,
         QApplication,
+        QComboBox,
+        QFrame,
+        QGroupBox,
+        QHBoxLayout,
+        QHeaderView,
+        QLabel,
+        QLineEdit,
+        QProgressBar,
+        QPushButton,
+        QScrollArea,
         QSlider,
         QSpinBox,
-    )
-    from PySide6.QtCore import Qt, Signal, QTimer, QRect
-    from PySide6.QtGui import (
-        QFont,
-        QColor,
-        QPalette,
-        QPainter,
-        QPen,
-        QBrush,
-        QPixmap,
-        QTextCharFormat,
-        QSyntaxHighlighter,
-        QPaintEvent,
+        QSplitter,
+        QTableWidget,
+        QTableWidgetItem,
+        QTabWidget,
+        QTextEdit,
+        QTreeWidget,
+        QTreeWidgetItem,
+        QVBoxLayout,
+        QWidget,
     )
 
     PYSIDE6_AVAILABLE = True
@@ -56,102 +99,102 @@ except ImportError:
     # Fallback for environments without PySide6
     PYSIDE6_AVAILABLE = False
 
-    class QWidget:
+    class FallbackQWidget:
         pass
 
-    class QVBoxLayout:
+    class FallbackQVBoxLayout:
         pass
 
-    class QHBoxLayout:
+    class FallbackQHBoxLayout:
         pass
 
-    class QTreeWidget:
+    class FallbackQTreeWidget:
         pass
 
-    class QTreeWidgetItem:
+    class FallbackQTreeWidgetItem:
         pass
 
-    class QTextEdit:
+    class FallbackQTextEdit:
         pass
 
-    class QSplitter:
+    class FallbackQSplitter:
         pass
 
-    class QTabWidget:
+    class FallbackQTabWidget:
         pass
 
-    class QLabel:
+    class FallbackQLabel:
         pass
 
-    class QPushButton:
+    class FallbackQPushButton:
         pass
 
-    class QGroupBox:
+    class FallbackQGroupBox:
         pass
 
-    class QScrollArea:
+    class FallbackQScrollArea:
         pass
 
-    class QFrame:
+    class FallbackQFrame:
         pass
 
-    class QLineEdit:
+    class FallbackQLineEdit:
         pass
 
-    class QComboBox:
+    class FallbackQComboBox:
         pass
 
-    class QProgressBar:
+    class FallbackQProgressBar:
         pass
 
-    class QTableWidget:
+    class FallbackQTableWidget:
         pass
 
-    class QTableWidgetItem:
+    class FallbackQTableWidgetItem:
         pass
 
-    class QHeaderView:
+    class FallbackQHeaderView:
         Stretch = 1
         ResizeToContents = 2
 
-    class QApplication:
+    class FallbackQApplication:
         pass
 
-    class QSlider:
+    class FallbackQSlider:
         pass
 
-    class QSpinBox:
+    class FallbackQSpinBox:
         pass
 
-    class Signal:
+    class FallbackSignal:
         def __init__(self, *args):
             pass
 
-    class QSyntaxHighlighter:
+    class FallbackQSyntaxHighlighter:
         pass
 
-    class QPaintEvent:
+    class FallbackQPaintEvent:
         pass
 
-    class QFont:
+    class FallbackQFont:
         Bold = 1
 
-    class QColor:
+    class FallbackQColor:
         def __init__(self, *args):
             pass
 
         def name(self):
             return "#000000"
 
-    class Qt:
+    class FallbackQt:
         Horizontal = 1
         UserRole = 256
 
-    class QRect:
+    class FallbackQRect:
         def __init__(self, *args):
             pass
 
-    class QPainter:
+    class FallbackQPainter:
         Antialiasing = 1
 
         def __init__(self, *args):
@@ -178,16 +221,47 @@ except ImportError:
         def drawEllipse(self, *args):
             pass
 
-    class QPen:
+    class FallbackQPen:
         def __init__(self, *args):
             pass
 
-    class QBrush:
+    class FallbackQBrush:
         def __init__(self, *args):
             pass
 
-
-from ..test_enhancement.models import CoverageData, ModuleCoverage
+    # Assign fallback classes to expected names
+    QWidget = FallbackQWidget  # type: ignore[no-redef]
+    QVBoxLayout = FallbackQVBoxLayout  # type: ignore[no-redef]
+    QHBoxLayout = FallbackQHBoxLayout  # type: ignore[no-redef]
+    QTreeWidget = FallbackQTreeWidget  # type: ignore[no-redef]
+    QTreeWidgetItem = FallbackQTreeWidgetItem  # type: ignore[no-redef]
+    QTextEdit = FallbackQTextEdit  # type: ignore[no-redef]
+    QSplitter = FallbackQSplitter  # type: ignore[no-redef]
+    QTabWidget = FallbackQTabWidget  # type: ignore[no-redef]
+    QLabel = FallbackQLabel  # type: ignore[no-redef]
+    QPushButton = FallbackQPushButton  # type: ignore[no-redef]
+    QGroupBox = FallbackQGroupBox  # type: ignore[no-redef]
+    QScrollArea = FallbackQScrollArea  # type: ignore[no-redef]
+    QFrame = FallbackQFrame  # type: ignore[no-redef]
+    QLineEdit = FallbackQLineEdit  # type: ignore[no-redef]
+    QComboBox = FallbackQComboBox  # type: ignore[no-redef]
+    QProgressBar = FallbackQProgressBar  # type: ignore[no-redef]
+    QTableWidget = FallbackQTableWidget  # type: ignore[no-redef]
+    QTableWidgetItem = FallbackQTableWidgetItem  # type: ignore[no-redef]
+    QHeaderView = FallbackQHeaderView  # type: ignore[no-redef]
+    QApplication = FallbackQApplication  # type: ignore[no-redef]
+    QSlider = FallbackQSlider  # type: ignore[no-redef]
+    QSpinBox = FallbackQSpinBox  # type: ignore[no-redef]
+    Signal = FallbackSignal  # type: ignore[no-redef]
+    QSyntaxHighlighter = FallbackQSyntaxHighlighter  # type: ignore[no-redef]
+    QPaintEvent = FallbackQPaintEvent  # type: ignore[no-redef]
+    QFont = FallbackQFont  # type: ignore[no-redef]
+    QColor = FallbackQColor  # type: ignore[no-redef]
+    Qt = FallbackQt  # type: ignore[no-redef]
+    QRect = FallbackQRect  # type: ignore[no-redef]
+    QPainter = FallbackQPainter  # type: ignore[no-redef]
+    QPen = FallbackQPen  # type: ignore[no-redef]
+    QBrush = FallbackQBrush  # type: ignore[no-redef]
 
 
 class CoverageProgressBar(QProgressBar):
@@ -265,7 +339,7 @@ class CoverageTreeWidget(QTreeWidget):
         # Connect selection changes
         self.itemSelectionChanged.connect(self._on_selection_changed)
 
-    def populate_coverage(self, coverage_data: CoverageData):
+    def populate_coverage(self, coverage_data: CoverageData) -> None:
         """Populate the tree with coverage data."""
         self.clear()
         self._coverage_items.clear()
@@ -436,7 +510,9 @@ class CoverageDetailWidget(QWidget):
         actions_layout.addStretch()
         layout.addLayout(actions_layout)
 
-    def display_coverage(self, module_name: str, coverage: Optional[ModuleCoverage]):
+    def display_coverage(
+        self, module_name: str, coverage: Optional[ModuleCoverage]
+    ) -> None:
         """Display coverage details for a module."""
         self._current_coverage = coverage
 
@@ -524,7 +600,9 @@ class CoverageTrendWidget(QWidget):
         self.time_range_combo.currentTextChanged.connect(self._update_trend_display)
         self.metric_combo.currentTextChanged.connect(self._update_trend_display)
 
-    def add_coverage_data(self, timestamp: datetime, coverage_data: CoverageData):
+    def add_coverage_data(
+        self, timestamp: datetime, coverage_data: CoverageData
+    ) -> None:
         """Add coverage data to the trend history."""
         self._coverage_history.append((timestamp, coverage_data))
         self._coverage_history.sort(key=lambda x: x[0])  # Sort by timestamp
@@ -609,7 +687,7 @@ class CoverageTrendChart(QWidget):
         self._data_points = data_points
         self.update()
 
-    def paintEvent(self, event: QPaintEvent):
+    def paintEvent(self, event: QPaintEvent) -> None:
         """Paint the trend chart."""
         if not self._data_points:
             return
@@ -685,7 +763,7 @@ class CoverageVisualization(QWidget):
         self._setup_connections()
         self._current_coverage: Optional[CoverageData] = None
 
-    def _setup_ui(self):
+    def _setup_ui(self) -> None:
         """Set up the coverage visualization UI."""
         layout = QVBoxLayout(self)
 

@@ -56,6 +56,7 @@ research/cognitive_tasks/experiments/
 ### CognitiveTaskExperiment
 
 The foundational base class for all cognitive experiments, providing:
+
 - APGI model integration
 - Trial data management
 - Response simulation for testing
@@ -71,12 +72,12 @@ The foundational base class for all cognitive experiments, providing:
 
 Each experiment maps cognitive processes to APGI parameters:
 
-| Parameter                | Cognitive Interpretation                 | Measurement                      |
-|--------------------------|------------------------------------------|----------------------------------|
-| **θₜ** (threshold)       | Decision/attention threshold             | Response criteria                 |
-| **π** (precision)         | Confidence/certainty                      | Response confidence               |
-| **ε** (prediction error)  | Unexpected events                         | Conflict/surprise                 |
-| **β** (inverse temperature) | Response consistency                     | Choice variability                |
+| Parameter | Cognitive Interpretation | Measurement |
+| --- | --- | --- |
+| **theta** (threshold) | Decision/attention threshold | Response criteria |
+| **pi** (precision) | Confidence/certainty | Response confidence |
+| **epsilon** (prediction error) | Unexpected events | Conflict/surprise |
+| **beta** (inverse temperature) | Response consistency | Choice variability |  
 
 ## Implemented Experiments
 
@@ -240,6 +241,7 @@ class ExperimentConfig:
 ### Trial Data
 
 Each trial includes:
+
 - Basic trial information (ID, participant, condition)
 - Stimulus parameters
 - Response data (accuracy, RT, confidence)
@@ -248,6 +250,7 @@ Each trial includes:
 ### Summary Statistics
 
 Comprehensive summaries include:
+
 - Overall performance metrics
 - Condition-specific effects
 - Learning curves and adaptation effects

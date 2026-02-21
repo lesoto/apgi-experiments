@@ -5,23 +5,21 @@ Tests comprehensive error handling capabilities including error categorization,
 diagnostic capture, and resolution guidance generation.
 """
 
-import pytest
-from hypothesis import given, strategies as st, assume, settings
-from hypothesis.stateful import RuleBasedStateMachine, rule, initialize
-import sys
-import traceback
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, List
+
+from hypothesis import given, settings
+from hypothesis import strategies as st
+from hypothesis.stateful import RuleBasedStateMachine, initialize, rule
 
 from apgi_framework.testing.error_handler import (
-    ErrorHandler,
-    TestErrorCategory,
-    ErrorSeverity,
-    TestContext,
+    Context,
     DiagnosticInfo,
-    SystemState,
+    ErrorCategory,
+    ErrorHandler,
+    ErrorSeverity,
     ResolutionGuidance,
+    SystemState,
 )
 
 
@@ -63,7 +61,7 @@ def exception_generator(draw):
 @st.composite
 def context_generator_strategy(draw):
     """Generate test context information."""
-    return TestContext(
+    return Context(
         test_name=draw(
             st.one_of(
                 st.none(),
@@ -228,29 +226,29 @@ class TestErrorHandlerProperties:
         assert diagnostic_info.metadata == metadata
 
         # Verify error categorization (Requirement 10.2)
-        assert isinstance(diagnostic_info.category, TestErrorCategory)
+        assert isinstance(diagnostic_info.category, ErrorCategory)
         assert isinstance(diagnostic_info.severity, ErrorSeverity)
 
         # Category should be appropriate for exception type
         exception_name = type(exception).__name__
         if exception_name == "AssertionError":
             assert diagnostic_info.category in [
-                TestErrorCategory.TEST_FAILURE,
-                TestErrorCategory.ASSERTION_ERROR,
+                ErrorCategory.TEST_FAILURE,
+                ErrorCategory.ASSERTION_ERROR,
             ]
         elif exception_name in ["ImportError", "ModuleNotFoundError"]:
             assert diagnostic_info.category in [
-                TestErrorCategory.FRAMEWORK_ISSUE,
-                TestErrorCategory.DEPENDENCY_MISSING,
+                ErrorCategory.FRAMEWORK_ISSUE,
+                ErrorCategory.DEPENDENCY_MISSING,
             ]
         elif exception_name in ["FileNotFoundError", "PermissionError"]:
-            assert diagnostic_info.category == TestErrorCategory.ENVIRONMENTAL
+            assert diagnostic_info.category == ErrorCategory.ENVIRONMENTAL
         elif exception_name == "MemoryError":
-            assert diagnostic_info.category == TestErrorCategory.RESOURCE_EXHAUSTION
+            assert diagnostic_info.category == ErrorCategory.RESOURCE_EXHAUSTION
         elif exception_name == "TimeoutError":
-            assert diagnostic_info.category == TestErrorCategory.TIMEOUT_ERROR
+            assert diagnostic_info.category == ErrorCategory.TIMEOUT_ERROR
         elif exception_name == "SyntaxError":
-            assert diagnostic_info.category == TestErrorCategory.SYNTAX_ERROR
+            assert diagnostic_info.category == ErrorCategory.SYNTAX_ERROR
 
         # Verify user-friendly message generation
         assert diagnostic_info.user_friendly_message is not None
@@ -265,9 +263,9 @@ class TestErrorHandlerProperties:
         assert isinstance(diagnostic_info.resolution_guidance, list)
         # Should have at least some guidance for known error categories
         if diagnostic_info.category in [
-            TestErrorCategory.DEPENDENCY_MISSING,
-            TestErrorCategory.ENVIRONMENTAL,
-            TestErrorCategory.RESOURCE_EXHAUSTION,
+            ErrorCategory.DEPENDENCY_MISSING,
+            ErrorCategory.ENVIRONMENTAL,
+            ErrorCategory.RESOURCE_EXHAUSTION,
         ]:
             assert len(diagnostic_info.resolution_guidance) > 0
 
@@ -410,7 +408,7 @@ class TestErrorHandlerProperties:
         dependency_errors = [
             d
             for d in diagnostic_infos
-            if d.category == TestErrorCategory.DEPENDENCY_MISSING
+            if d.category == ErrorCategory.DEPENDENCY_MISSING
         ]
         if len(dependency_errors) > 2:
             suggestion_text = " ".join(suggestions).lower()
@@ -423,7 +421,7 @@ class TestErrorHandlerProperties:
         resource_errors = [
             d
             for d in diagnostic_infos
-            if d.category == TestErrorCategory.RESOURCE_EXHAUSTION
+            if d.category == ErrorCategory.RESOURCE_EXHAUSTION
         ]
         if len(resource_errors) > 1:
             suggestion_text = " ".join(suggestions).lower()
@@ -538,7 +536,7 @@ class ErrorHandlerStateMachine(RuleBasedStateMachine):
             dependency_count = sum(
                 1
                 for error in self.handled_errors
-                if error.category == TestErrorCategory.DEPENDENCY_MISSING
+                if error.category == ErrorCategory.DEPENDENCY_MISSING
             )
 
             if dependency_count > 2:

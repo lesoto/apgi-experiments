@@ -14,7 +14,7 @@ import threading
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, Union, List
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import joblib
 import numpy as np
@@ -239,14 +239,14 @@ class CacheManager:
         try:
             from rich.console import Console
 
-            console = Console()
+            console: Any = Console()
         except ImportError:
             # Fallback to print if rich not available
-            class Console:
+            class FallbackConsole:
                 def print(self, text, style=None):
                     print(text)
 
-            console = Console()
+            console = FallbackConsole()
 
         console.print(
             f"[blue]Warming up cache with {len(data_sources)} data sources...[/blue]"

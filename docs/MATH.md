@@ -9,17 +9,25 @@ This document provides a complete mathematical formalization of the Allostatic P
 Key achievements:
 
 - ✓ Dimensional consistency through information-theoretic formulation
+
 - ✓ Discrete-continuous unification via stochastic differential equations
+
 - ✓ Complete state dynamics with explicit equations for all variables
+
 - ✓ Full parameter specification for all 15 system parameters
+
 - ✓ Biological grounding mapping equations to neural circuits
+
 - ✓ Quantitative predictions with falsification criteria and effect sizes
 
 ## Future Work
 
 - Computational implementation and validation
+
 - Empirical parameter estimation from existing datasets
+
 - Clinical translation protocols
+
 - Developmental/learning extensions
 
 ## I. DIMENSIONAL ANALYSIS: INFORMATION-THEORETIC FORMULATION
@@ -37,8 +45,11 @@ $$z^e(t) = \frac{y(t) - \hat{y}(t)}{\sigma_{\text{noise}}^e(t)}$$
 where:
 
 - $y(t)$ = sensory observation [physical units]
+
 - $\hat{y}(t)$ = predicted observation [physical units]
+
 - $\sigma_{\text{noise}}^e(t)$ = estimated observation noise [physical units]
+
 - $z^e(t)$ = normalized error [dimensionless]
 
 Similarly for interoceptive channel:
@@ -72,7 +83,8 @@ $$\Pi^e_{\text{eff}}(t), \Pi^i_{\text{eff}}(t) \in [0, \infty) \quad \text{[dime
 All variables are now dimensionless (or time in milliseconds):
 
 | Variable | Symbol | Units | Interpretation |
-|---|---|---|---|
+| --- | --- | --- | --- |
+
 | Accumulated surprise | $S(t)$ | nats | Total accumulated information |
 | Threshold | $\theta_t$ | nats | Required information for ignition |
 | Normalized error | $z^e(t), z^i(t)$ | dimensionless | Standardized prediction errors |
@@ -88,12 +100,14 @@ $$\frac{dS}{dt} = -\frac{S(t)}{\tau_S} + \frac{1}{2}\left[\Pi^e_{\text{eff}}(t) 
 **Dimensional verification:**
 
 - Left side: $\frac{dS}{dt}$ has units [nats/ms]
+
 - Decay term: $\frac{S}{\tau_S} = \frac{[\text{nats}]}{[\text{ms}]} = [\text{nats/ms}]$ ✓
+
 - Input term: [dimensionless] × [dimensionless]² = [dimensionless] → represents information rate when divided by characteristic timescale (implicitly $\tau_S$)
+
 - Noise term: $\sqrt{[\text{nats}^2/\text{ms}]}\cdot[\text{ms}^{-1/2}] = [\text{nats/ms}^{1/2}]$ → standard Wiener process noise ✓
 
 **Note on timescale interpretation:** The input term represents information accumulation rate. The factor $1/2$ comes from information theory (Gaussian surprise formula). The effective rate is $(1/2)\Pi z^2 / \tau_S$ [nats/ms], where $\tau_S$ sets the integration window.
-
 
 ## II. DISCRETE-CONTINUOUS UNIFICATION ✓
 
@@ -116,7 +130,9 @@ where $\sigma(x) = 1/(1 + e^{-x})$ is the logistic sigmoid, and $\alpha_B$ [1/na
 **Limiting cases:**
 
 - As $\alpha_B \to \infty$: Transition becomes step function (all-or-none ignition)
+
 - As $\alpha_B \to 0$: Transition becomes gradual ramp (continuous probability)
+
 - Empirically: $\alpha_B \approx 5-20$ nats$^{-1}$ (moderately steep transition)
 
 ### C. Relationship to Discrete Formulation
@@ -130,39 +146,57 @@ In practice, the continuous formulation with moderate noise and finite $\alpha_B
 
 This resolves the discrete-continuous mismatch. ✓
 
-III. COMPLETE STATE DYNAMICS
-A. Full System of Coupled Equations
-The APGI framework is defined by 8 coupled stochastic differential equations:
-1. Surprise Accumulation
-dSdt=−SτS+12[Πeffe(ze)2+Πeffi(zi)2]+2DSτS ξS(t)\frac{dS}{dt} = -\frac{S}{\tau_S} + \frac{1}{2}\left[\Pi^e_{\text{eff}} (z^e)^2 + \Pi^i_{\text{eff}} (z^i)^2\right] + \sqrt{\frac{2D_S}{\tau_S}}\,\xi_S(t)dtdS​=−τS​S​+21​[Πeffe​(ze)2+Πeffi​(zi)2]+τS​2DS​​​ξS​(t)
-2. Threshold Dynamics
-dθtdt=θ0−θtτθ+γMM(t)+γAA(t)+λS(t)+2Dθτθ ξθ(t)\frac{d\theta_t}{dt} = \frac{\theta_0 - \theta_t}{\tau_\theta} + \gamma_M M(t) + \gamma_A A(t) + \lambda S(t) + \sqrt{\frac{2D_\theta}{\tau_\theta}}\,\xi_\theta(t)dtdθt​​=τθ​θ0​−θt​​+γM​M(t)+γA​A(t)+λS(t)+τθ​2Dθ​​​ξθ​(t)
-3. Somatic Marker Dynamics
-dMdt=M∗(t)−M(t)τM+2DMτM ξM(t)\frac{dM}{dt} = \frac{M^*(t) - M(t)}{\tau_M} + \sqrt{\frac{2D_M}{\tau_M}}\,\xi_M(t)dtdM​=τM​M∗(t)−M(t)​+τM​2DM​​​ξM​(t)
-where the target somatic marker is:
-M∗(t)=tanh⁡(βM⋅zi(t))M^*(t) = \tanh(\beta_M \cdot z^i(t))M∗(t)=tanh(βM​⋅zi(t))
-4. Arousal Dynamics
-dAdt=Abaseline(t)−A(t)τA+gstim(ze(t))+2DAτA ξA(t)\frac{dA}{dt} = \frac{A_{\text{baseline}}(t) - A(t)}{\tau_A} + g_{\text{stim}}(z^e(t)) + \sqrt{\frac{2D_A}{\tau_A}}\,\xi_A(t)dtdA​=τA​Abaseline​(t)−A(t)​+gstim​(ze(t))+τA​2DA​​​ξA​(t)
-where:
-Abaseline(t)=Acirc(t)−H(t)A_{\text{baseline}}(t) = A_{\text{circ}}(t) - H(t)Abaseline​(t)=Acirc​(t)−H(t)
-gstim(ze)=kstim⋅max⁡(0,∣ze(t)∣−2.0)g_{\text{stim}}(z^e) = k_{\text{stim}} \cdot \max(0, |z^e(t)| - 2.0)gstim​(ze)=kstim​⋅max(0,∣ze(t)∣−2.0)
-5-6. Running Mean Estimates
-dμεedt=αμ(εe(t)−μεe(t))\frac{d\mu_{\varepsilon^e}}{dt} = \alpha_\mu (\varepsilon^e(t) - \mu_{\varepsilon^e}(t))dtdμεe​​=αμ​(εe(t)−μεe​(t))
-dμεidt=αμ(εi(t)−μεi(t))\frac{d\mu_{\varepsilon^i}}{dt} = \alpha_\mu (\varepsilon^i(t) - \mu_{\varepsilon^i}(t))dtdμεi​​=αμ​(εi(t)−μεi​(t))
-7-8. Running Variance Estimates
-dσεedt=ασ(∣εe(t)−μεe(t)∣−σεe(t))\frac{d\sigma_{\varepsilon^e}}{dt} = \alpha_\sigma (|\varepsilon^e(t) - \mu_{\varepsilon^e}(t)| - \sigma_{\varepsilon^e}(t))dtdσεe​​=ασ​(∣εe(t)−μεe​(t)∣−σεe​(t))
-dσεidt=ασ(∣εi(t)−μεi(t)∣−σεi(t))\frac{d\sigma_{\varepsilon^i}}{dt} = \alpha_\sigma (|\varepsilon^i(t) - \mu_{\varepsilon^i}(t)| - \sigma_{\varepsilon^i}(t))dtdσεi​​=ασ​(∣εi(t)−μεi​(t)∣−σεi​(t))
-B. Derived Quantities
-Effective Interoceptive Precision (Somatic Modulation)
-Πeffi(t)=Πbaselinei⋅σsig(β⋅M(t))\Pi^i_{\text{eff}}(t) = \Pi^i_{\text{baseline}} \cdot \sigma_{\text{sig}}(\beta \cdot M(t))Πeffi​(t)=Πbaselinei​⋅σsig​(β⋅M(t))
-where σsig(x)=1/(1+e−x)\sigma_{\text{sig}}(x) = 1/(1 + e^{-x})
-σsig​(x)=1/(1+e−x) ensures bounded modulation [0, 1].
+### III. COMPLETE STATE DYNAMICS
 
-Z-Score Normalization
-ze(t)=εe(t)−μεe(t)σεe(t)z^e(t) = \frac{\varepsilon^e(t) - \mu_{\varepsilon^e}(t)}{\sigma_{\varepsilon^e}(t)}ze(t)=σεe​(t)εe(t)−μεe​(t)​
-zi(t)=εi(t)−μεi(t)σεi(t)z^i(t) = \frac{\varepsilon^i(t) - \mu_{\varepsilon^i}(t)}{\sigma_{\varepsilon^i}(t)}zi(t)=σεi​(t)εi(t)−μεi​(t)​
-Ignition State
-Bt=σ(αB(S(t)−θt(t)))B_t = \sigma(\alpha_B(S(t) - \theta_t(t)))Bt​=σ(αB​(S(t)−θt​(t)))
+#### A. Full System of Coupled Equations
+
+The APGI framework is defined by 8 coupled stochastic differential equations:
+
+**1. Surprise Accumulation**
+$$\frac{dS}{dt} = -\frac{S}{\tau_S} + \frac{1}{2}\left[\Pi^e_{\text{eff}} (z^e)^2 + \Pi^i_{\text{eff}} (z^i)^2\right] + \sqrt{\frac{2D_S}{\tau_S}}\,\xi_S(t)$$
+
+**2. Threshold Dynamics**
+$$\frac{d\theta_t}{dt} = \frac{\theta_0 - \theta_t}{\tau_\theta} + \gamma_M M(t) + \gamma_A A(t) + \lambda S(t) + \sqrt{\frac{2D_\theta}{\tau_\theta}}\,\xi_\theta(t)$$
+
+**3. Somatic Marker Dynamics**
+$$\frac{dM}{dt} = \frac{M^*(t) - M(t)}{\tau_M} + \sqrt{\frac{2D_M}{\tau_M}}\,\xi_M(t)$$
+
+where the target somatic marker is:
+$$M^*(t) = \tanh(\beta_M \cdot z^i(t))$$
+
+**4. Arousal Dynamics**
+$$\frac{dA}{dt} = \frac{A_{\text{baseline}}(t) - A(t)}{\tau_A} + g_{\text{stim}}(z^e(t)) + \sqrt{\frac{2D_A}{\tau_A}}\,\xi_A(t)$$
+
+where:
+$$A_{\text{baseline}}(t) = A_{\text{circ}}(t) - H(t)$$
+
+$$g_{\text{stim}}(z^e) = k_{\text{stim}} \cdot \max(0, |z^e(t)| - 2.0)$$
+
+**5-6. Running Mean Estimates**
+$$\frac{d\mu_{\varepsilon^e}}{dt} = \alpha_\mu (\varepsilon^e(t) - \mu_{\varepsilon^e}(t))$$
+
+$$\frac{d\mu_{\varepsilon^i}}{dt} = \alpha_\mu (\varepsilon^i(t) - \mu_{\varepsilon^i}(t))$$
+
+**7-8. Running Variance Estimates**
+$$\frac{d\sigma_{\varepsilon^e}}{dt} = \alpha_\sigma (|\varepsilon^e(t) - \mu_{\varepsilon^e}(t)| - \sigma_{\varepsilon^e}(t))$$
+
+$$\frac{d\sigma_{\varepsilon^i}}{dt} = \alpha_\sigma (|\varepsilon^i(t) - \mu_{\varepsilon^i}(t)| - \sigma_{\varepsilon^i}(t))$$
+
+#### B. Derived Quantities
+
+**Effective Interoceptive Precision (Somatic Modulation)**
+$$\Pi^i_{\text{eff}}(t) = \Pi^i_{\text{baseline}} \cdot \sigma_{\text{sig}}(\beta \cdot M(t))$$
+
+where $\sigma_{\text{sig}}(x) = 1/(1 + e^{-x})$ ensures bounded modulation [0, 1].
+
+**Z-Score Normalization**
+$$z^e(t) = \frac{\varepsilon^e(t) - \mu_{\varepsilon^e}(t)}{\sigma_{\varepsilon^e}(t)}$$
+
+$$z^i(t) = \frac{\varepsilon^i(t) - \mu_{\varepsilon^i}(t)}{\sigma_{\varepsilon^i}(t)}$$
+
+**Ignition State**
+$$B_t = \sigma(\alpha_B(S(t) - \theta_t(t)))$$
+
 C. Biological Implementation of Each Variable
 VariableNeural SubstrateMeasurement ApproachS(t)S(t)
 S(t)Frontoparietal P3b amplitudeEEG P3b componentθt(t)\theta_t(t)
@@ -222,8 +256,6 @@ P(detect)∝exp(−SOA/τS​)
 Extract τS\tau_S
 τS​ from decay constant
 
-
-
 P3b latency analysis:
 
 Oddball task with rare targets (20% frequency)
@@ -234,16 +266,12 @@ Peak latency ≈2−3×τS\approx 2-3 \times \tau_S
 Extract τS=P3b latency/2.5\tau_S = \text{P3b latency} / 2.5
 τS​=P3b latency/2.5
 
-
 Model fitting to detection curves:
 
 Measure detection probability as function of stimulus strength
 Fit APGI model to data
 Estimate τS\tau_S
 τS​ as free parameter maximizing likelihood
-
-
-
 
 Individual variation:
 
@@ -257,7 +285,6 @@ Literature estimates:
 EEG integration windows: 100-300 ms (Varela et al., 2001)
 P3b latency / 2.5: 120-200 ms (Polich, 2007)
 Backward masking decay: 100-200 ms (Breitmeyer & Öğmen, 2006)
-
 
 Parameter: τθ\tau_\theta
 τθ​ (Threshold adaptation timescale)
@@ -281,13 +308,11 @@ Measure threshold shift as function of time since last detection
 Fit exponential recovery: θ(t)=θ0+Δθ⋅exp⁡(−t/τθ)\theta(t) = \theta_0 + \Delta\theta \cdot \exp(-t/\tau_\theta)
 θ(t)=θ0​+Δθ⋅exp(−t/τθ​)
 
-
 Post-saccadic threshold elevation:
 
 Measure detection threshold immediately after saccade
 Track recovery time course (typically 300-800 ms)
 Reflects thalamic inhibition reset
-
 
 Pharmacological manipulation:
 
@@ -296,14 +321,11 @@ GABA_B agonist (baclofen) → increased τθ\tau_\theta
 GABA_B antagonist → decreased τθ\tau_\theta
 τθ​
 
-
-
 Individual variation:
 
 ±200 ms across healthy adults
 Faster in anxiety (hypervigilant threshold: 200-400 ms)
 Slower in depression (elevated threshold maintenance: 800-1500 ms)
-
 
 Parameter: τM\tau_M
 τM​ (Somatic marker integration timescale)
@@ -327,8 +349,6 @@ Measure error as function of interval length
 Longer intervals → errors reflect τM\tau_M
 τM​ (how long body state estimates maintained)
 
-
-
 vmPFC BOLD lag analysis:
 
 Induce interoceptive perturbation (cold pressor, exercise)
@@ -336,14 +356,11 @@ Measure vmPFC BOLD response lag
 Lag duration estimates τM\tau_M
 τM​
 
-
-
 Individual variation:
 
 High interoceptive awareness: faster (1000-2000 ms)
 Low interoceptive awareness: slower (3000-5000 ms)
 Anxiety disorders: faster reactivity (500-1500 ms)
-
 
 Parameter: τA\tau_A
 τA​ (Arousal adjustment timescale)
@@ -368,19 +385,15 @@ d(t)∝exp(−t/τA​)
 Decay constant estimates τA\tau_A
 τA​
 
-
 Vigilance recovery after startle:
 
 Measure reaction time (RT) as function of time after startle
 RT recovery reflects arousal return to baseline
 
-
-
 Individual variation:
 
 High baseline arousal (anxiety): faster recovery (500-800 ms)
 Low baseline arousal (depression): slower recovery (1500-2500 ms)
-
 
 CATEGORY 2: BASELINE VALUES
 Parameter: θ0\theta_0
@@ -404,7 +417,6 @@ Convert to information units: θ0=−log⁡P(detect at threshold)\theta_0 = -\
 θ0​=−logP(detect at threshold)
 Typically yields 3-6 nats
 
-
 Model inversion from behavior:
 
 Fit APGI model to psychophysical detection curves
@@ -413,14 +425,11 @@ Estimate θ0\theta_0
 
 Validate across multiple paradigms
 
-
-
 Individual variation:
 
 Low threshold (high sensitivity): 3-4 nats
 High threshold (low sensitivity): 6-8 nats
 State-dependent: increases with fatigue, decreases with stimulants
-
 
 Parameter: Πbaselinee\Pi^e_{\text{baseline}}
 Πbaselinee​ (Exteroceptive precision baseline)
@@ -442,20 +451,16 @@ Measure fMRI BOLD response to stimuli of varying contrast/intensity
 Slope of response vs. stimulus strength = precision
 Compare across subjects
 
-
 Psychophysical precision estimate:
 
 Signal detection theory analysis
 Precision = d′/stimulus strengthd'/\text{stimulus strength}
 d′/stimulus strength
 
-
-
 Individual variation:
 
 Sensory processing sensitivity: 1.5-2.0 (high precision)
 Sensory defensiveness: 0.5-0.8 (low precision, high noise)
-
 
 Parameter: Πbaselinei\Pi^i_{\text{baseline}}
 Πbaselinei​ (Interoceptive precision baseline)
@@ -477,20 +482,16 @@ Precision = accuracy in counting heartbeats
 Higher accuracy → higher Πi\Pi^i
 Πi
 
-
 Heartbeat-evoked potential (HEP) amplitude:
 
 Larger HEP → higher interoceptive precision
 Measured via EEG locked to R-wave
-
-
 
 Individual variation:
 
 High interoceptive awareness: 1.0-1.5
 Low interoceptive awareness: 0.3-0.6
 Panic disorder: elevated (1.2-1.8) due to hypervigilance
-
 
 CATEGORY 3: MODULATION GAINS
 Parameter: β\beta
@@ -513,21 +514,16 @@ Measure detection advantage for stimuli paired with body-state changes
 Advantage magnitude reflects β\beta
 β
 
-
 Model fitting:
 
 Fit APGI to interoceptive vs. exteroceptive detection data
 β\beta
 β determines how much body state modulates interoceptive precision
 
-
-
-
 Individual variation:
 
 Alexithymia (low body awareness): 0.5-1.0
 Somatic symptom disorder: 3.0-5.0 (excessive somatic focus)
-
 
 Parameter: βM\beta_M
 βM​ (Somatic marker sensitivity to interoceptive error)
@@ -549,13 +545,10 @@ Measure vmPFC response magnitude
 Response slope = βM\beta_M
 βM​
 
-
-
 Individual variation:
 
 High interoceptive sensitivity: 2.0-3.0
 Low interoceptive sensitivity: 0.5-1.0
-
 
 Parameter: γM\gamma_M
 γM​ (Somatic marker → threshold modulation)
@@ -577,8 +570,6 @@ Measure detection threshold during interoceptive manipulation
 Change in threshold / change in body state = γM\gamma_M
 γM​
 
-
-
 Individual variation:
 
 Panic disorder: high γM\gamma_M
@@ -586,8 +577,6 @@ Panic disorder: high γM\gamma_M
 
 Alexithymia: low γM\gamma_M
 γM​ (0.2-0.5) → minimal body-mind coupling
-
-
 
 Parameter: γA\gamma_A
 γA​ (Arousal → threshold modulation)
@@ -609,20 +598,16 @@ Measure detection threshold before/after caffeine (200 mg)
 Caffeine increases arousal → threshold shift estimates γA\gamma_A
 γA​
 
-
 Sleep deprivation threshold elevation:
 
 Reduced arousal → threshold increases
 Change in threshold / change in arousal = γA\gamma_A
 γA​
 
-
-
 Individual variation:
 
 High arousal baseline: smaller magnitude (threshold already low)
 Low arousal baseline: larger magnitude (threshold more responsive)
-
 
 CATEGORY 4: FEEDBACK & TRANSITION
 Parameter: λ\lambda
@@ -646,16 +631,11 @@ Measure threshold increase as function of time-on-task
 Slope = λ\lambda
 λ (how much accumulated activity raises threshold)
 
-
-
 Model fitting to vigilance decrement:
 
 Fit APGI to reaction time increase over sustained vigilance task
 λ\lambda
 λ determines threshold drift rate
-
-
-
 
 Individual variation:
 
@@ -667,7 +647,6 @@ Literature support:
 
 Vigilance decrement: ~5-10% performance drop over 30 min (Warm et al., 2008)
 Adenosine accumulation rate during wakefulness (Porkka-Heiskanen et al., 1997)
-
 
 Parameter: αB\alpha_B
 αB​ (Ignition transition steepness)
@@ -689,11 +668,11 @@ Psychometric function steepness:
 
 Measure detection probability vs. stimulus strength
 Fit logistic: P=σ(α(stimulus−threshold))P = \sigma(\alpha(\text{stimulus} - \text{threshold}))
+
 P=σ(α(stimulus−threshold))
 Steepness parameter α\alpha
 α estimates αB\alpha_B
 αB​
-
 
 All-or-none vs. graded awareness:
 
@@ -703,15 +682,12 @@ Bimodal distribution → high αB\alpha_B
 Unimodal distribution → low αB\alpha_B
 αB​
 
-
-
 Individual variation:
 
 Clear all-or-none detection: 15-20 nats−1^{-1}
 −1
 Graded partial awareness: 5-10 nats−1^{-1}
 −1
-
 
 CATEGORY 5: LEARNING/ADAPTATION
 Parameter: αμ\alpha_\mu
@@ -729,7 +705,6 @@ Sliding threshold in adaptation circuits
 Time constant = 1/αμ≈2001/\alpha_\mu \approx 200
 1/αμ​≈200 ms
 
-
 Measurement protocols:
 
 Adaptation aftereffects:
@@ -740,15 +715,12 @@ Timescale−1^{-1}
 −1 = αμ\alpha_\mu
 αμ​
 
-
-
 Individual variation:
 
 Fast adapters: 0.008-0.01 ms−1^{-1}
 −1
 Slow adapters: 0.001-0.003 ms−1^{-1}
 −1
-
 
 Parameter: ασ\alpha_\sigma
 ασ​ (Variance tracking learning rate)
@@ -772,14 +744,10 @@ Measure contrast discrimination after adaptation to high/low contrast
 Adaptation speed estimates ασ\alpha_\sigma
 ασ​
 
-
-
 Individual variation:
 
 Similar to αμ\alpha_\mu
 αμ​ but ~30% slower on average
-
-
 
 CATEGORY 6: NOISE AMPLITUDES
 Parameter: DS,Dθ,DM,DAD_S, D_\theta, D_M, D_A
@@ -815,7 +783,6 @@ DM​: 0.0005-0.005
 DAD_A
 DA​: 0.001-0.01
 
-
 Biological implementation:
 
 Stochastic ion channel opening
@@ -831,25 +798,22 @@ Measure detection probability variance across repeated identical trials
 Variance magnitude reflects total noise DS+DθD_S + D_\theta
 DS​+Dθ​
 
-
 Model-based inference:
 
 Fit APGI to behavioral data
 Estimate noise parameters to match trial-to-trial variability
-
-
 
 Individual variation:
 
 High neural noise (older adults, psychiatric conditions): upper range
 Low neural noise (young healthy adults): lower range
 
-
 CATEGORY 7: AROUSAL COMPONENTS
 Parameter: Acirc(t)A_{\text{circ}}(t)
 Acirc​(t) (Circadian arousal component)
 
 Functional form: Acirc(t)=0.5+0.3cos⁡(2π(t−tpeak)/Tcirc)A_{\text{circ}}(t) = 0.5 + 0.3\cos(2\pi(t - t_{\text{peak}})/T_{\text{circ}})
+
 Acirc​(t)=0.5+0.3cos(2π(t−tpeak​)/Tcirc​)
 Parameters:
 
@@ -866,7 +830,6 @@ Biological implementation:
 Suprachiasmatic nucleus (SCN) master clock
 SCN → DMH → LC/DR/LH pathways
 Cortisol rhythm, core body temperature rhythm
-
 
 Parameter: H(t)H(t)
 H(t) (Homeostatic sleep pressure)
@@ -888,7 +851,6 @@ Biological implementation:
 Adenosine accumulation in basal forebrain
 Process S in two-process model (Borbély)
 
-
 Parameter: kstimk_{\text{stim}}
 kstim​ (Stimulus-evoked arousal gain)
 
@@ -901,7 +863,6 @@ Superior colliculus → LC pathway
 Novelty/surprise → phasic NE release
 Amygdala → LC pathway for salient stimuli
 
-
 C. Parameter Interdependencies
 Key relationships:
 
@@ -912,14 +873,12 @@ Integration-threshold balance:
 
 Ratio typically 0.2-0.5 (threshold slower than surprise)
 
-
 Precision-threshold tradeoff:
 
 Π⋅θ0\Pi \cdot \theta_0
 Π⋅θ0​ determines overall sensitivity
 
 Higher precision allows lower threshold (maintains fixed false alarm rate)
-
 
 Noise-steepness tradeoff:
 
@@ -929,17 +888,12 @@ Noise-steepness tradeoff:
 High noise requires shallow sigmoid (low αB\alpha_B
 αB​)
 
-
-
 Metabolic sustainability:
 
 λ⋅θ0/τθ\lambda \cdot \theta_0 / \tau_\theta
 λ⋅θ0​/τθ​ determines steady-state threshold elevation
 
 Constrains maximum sustained attention duration
-
-
-
 
 V. SECONDARY IMPROVEMENTS
 A. Smoothness: Squared vs. Absolute Errors ✓
@@ -956,7 +910,6 @@ Smooth everywhere (differentiable at all points)
 Standard in information theory (Gaussian surprise)
 Enables gradient-based optimization for parameter fitting
 Matches squared-error loss in Bayesian inference
-
 
 B. Bounded Precision Modulation ✓
 Original formulation:
@@ -986,7 +939,6 @@ M=+2 (strong demand): Πeffi≈0.98Πbaselinei\Pi^i_{\text{eff}} \approx 0.98 \P
 When M=−2M = -2
 M=−2 (satiation): Πeffi≈0.02Πbaselinei\Pi^i_{\text{eff}} \approx 0.02 \Pi^i_{\text{baseline}}
 Πeffi​≈0.02Πbaselinei​ (near zero)
-
 
 This implements the key insight: body-state demands increase interoceptive priority, but with saturation.
 
@@ -1022,7 +974,6 @@ T=600 s (10 min):
 This is a massive threshold increase (baseline θ0≈5\theta_0 \approx 5
 θ0​≈5 nats), explaining performance collapse in sustained vigilance tasks.
 
-
 D. Complete Latency Formula ✓
 For step input I(t)=I0I(t) = I_0
 I(t)=I0​ (constant stimulus):
@@ -1034,10 +985,12 @@ Starting from S(0)=0S(0) = 0
 S(0)=0, surprise accumulates as:
 
 S(t)=I0τS(1−e−t/τS)S(t) = I_0 \tau_S (1 - e^{-t/\tau_S})S(t)=I0​τS​(1−e−t/τS​)
+
 Threshold is reached when S(tignition)=θtS(t_{\text{ignition}}) = \theta_t
 S(tignition​)=θt​:
 
 tignition=τSln⁡(I0τSI0τS−θt)t_{\text{ignition}} = \tau_S \ln\left(\frac{I_0 \tau_S}{I_0 \tau_S - \theta_t}\right)tignition​=τS​ln(I0​τS​−θt​I0​τS​​)
+
 Case 2: Suprathreshold input (I0τS>θtI_0 \tau_S > \theta_t
 I0​τS​>θt​)
 
@@ -1058,23 +1011,30 @@ Surprise dynamics:
 Sn+1=Sn+Δt[−SnτS+12[Πeffe(zne)2+Πeffi(zni)2]]+2DSΔt ηn(S)S_{n+1} = S_n + \Delta t\left[-\frac{S_n}{\tau_S} + \frac{1}{2}[\Pi^e_{\text{eff}} (z^e_n)^2 + \Pi^i_{\text{eff}} (z^i_n)^2]\right] + \sqrt{2D_S \Delta t}\,\eta_n^{(S)}Sn+1​=Sn​+Δt[−τS​Sn​​+21​[Πeffe​(zne​)2+Πeffi​(zni​)2]]+2DS​Δt​ηn(S)​
 Threshold dynamics:
 θn+1=θn+Δt[θ0−θnτθ+γMMn+γAAn+λSn]+2DθΔt ηn(θ)\theta_{n+1} = \theta_n + \Delta t\left[\frac{\theta_0 - \theta_n}{\tau_\theta} + \gamma_M M_n + \gamma_A A_n + \lambda S_n\right] + \sqrt{2D_\theta \Delta t}\,\eta_n^{(\theta)}θn+1​=θn​+Δt[τθ​θ0​−θn​​+γM​Mn​+γA​An​+λSn​]+2Dθ​Δt​ηn(θ)​
+
 Somatic marker:
 Mn+1=Mn+Δt[tanh⁡(βMzni)−MnτM]+2DMΔt ηn(M)M_{n+1} = M_n + \Delta t\left[\frac{\tanh(\beta_M z^i_n) - M_n}{\tau_M}\right] + \sqrt{2D_M \Delta t}\,\eta_n^{(M)}Mn+1​=Mn​+Δt[τM​tanh(βM​zni​)−Mn​​]+2DM​Δt​ηn(M)​
+
 Arousal:
 An+1=An+Δt[Abaseline,n−AnτA+kstimmax⁡(0,∣zne∣−2)]+2DAΔt ηn(A)A_{n+1} = A_n + \Delta t\left[\frac{A_{\text{baseline},n} - A_n}{\tau_A} + k_{\text{stim}} \max(0, |z^e_n| - 2)\right] + \sqrt{2D_A \Delta t}\,\eta_n^{(A)}An+1​=An​+Δt[τA​Abaseline,n​−An​​+kstim​max(0,∣zne​∣−2)]+2DA​Δt​ηn(A)​
+
 Running statistics:
 μn+1e=μne+Δt⋅αμ(εne−μne)\mu^e_{n+1} = \mu^e_n + \Delta t \cdot \alpha_\mu (\varepsilon^e_n - \mu^e_n)μn+1e​=μne​+Δt⋅αμ​(εne​−μne​)
+
 σn+1e=σne+Δt⋅ασ(∣εne−μne∣−σne)\sigma^e_{n+1} = \sigma^e_n + \Delta t \cdot \alpha_\sigma (|\varepsilon^e_n - \mu^e_n| - \sigma^e_n)σn+1e​=σne​+Δt⋅ασ​(∣εne​−μne​∣−σne​)
+
 (similarly for interoceptive channel)
 Ignition probability:
 Bn=σ(αB(Sn−θn))B_n = \sigma(\alpha_B(S_n - \theta_n))Bn​=σ(αB​(Sn​−θn​))
+
 where ηn(X)∼N(0,1)\eta_n^{(X)} \sim \mathcal{N}(0, 1)
 ηn(X)​∼N(0,1) are independent standard normal random variables.
 
 B. Implementation Pseudocode
 pythonimport numpy as np
 
-# Parameters (example values)
+## Parameters (example values)
+
 params = {
     'tau_S': 150,      # ms
     'tau_theta': 500,  # ms
@@ -1098,12 +1058,14 @@ params = {
     'k_stim': 0.2
 }
 
-# Initialize state
+## Initialize state
+
 dt = 1.0  # ms
 T_total = 5000  # ms (5 seconds)
 n_steps = int(T_total / dt)
 
-# State vectors
+## State vectors
+
 S = np.zeros(n_steps)
 theta = np.zeros(n_steps)
 M = np.zeros(n_steps)
@@ -1112,12 +1074,15 @@ mu_e = np.zeros(n_steps)
 sigma_e = np.ones(n_steps)  # Initialize variance to 1
 B = np.zeros(n_steps)
 
-# Initial conditions
+## Initial conditions
+
 theta[0] = params['theta_0']
 A[0] = 0.5  # Mid-level arousal
 
-# Simulation loop
+## Simulation loop
+
 for n in range(n_steps - 1):
+
     # External inputs (example: stimulus at t=1000ms)
     if 1000 <= n*dt <= 1100:
         eps_e = 3.0  # Strong exteroceptive input
@@ -1128,6 +1093,7 @@ for n in range(n_steps - 1):
     
     # Z-score normalization
     z_e = (eps_e - mu_e[n]) / sigma_e[n]
+
     z_i = eps_i  # Simplified; could also normalize
     
     # Effective precision
@@ -1139,6 +1105,7 @@ for n in range(n_steps - 1):
     # Arousal baseline (simplified: constant here)
     A_baseline = 0.5
     g_stim = params['k_stim'] * max(0, abs(z_e) - 2.0)
+
     
     # Update equations
     S[n+1] = S[n] + dt * (
@@ -1148,6 +1115,7 @@ for n in range(n_steps - 1):
     
     theta[n+1] = theta[n] + dt * (
         (params['theta_0'] - theta[n])/params['tau_theta'] +
+
         params['gamma_M'] * M[n] +
         params['gamma_A'] * A[n] +
         params['lambda'] * S[n]
@@ -1155,25 +1123,31 @@ for n in range(n_steps - 1):
     
     M[n+1] = M[n] + dt * (
         (M_star - M[n])/params['tau_M']
+
     ) + np.sqrt(2 * params['D_M'] * dt) * np.random.randn()
     
     A[n+1] = A[n] + dt * (
         (A_baseline - A[n])/params['tau_A'] + g_stim
+
     ) + np.sqrt(2 * params['D_A'] * dt) * np.random.randn()
     
     mu_e[n+1] = mu_e[n] + dt * params['alpha_mu'] * (eps_e - mu_e[n])
+
     sigma_e[n+1] = sigma_e[n] + dt * params['alpha_sigma'] * (abs(eps_e - mu_e[n]) - sigma_e[n])
+
     
     # Ignition probability
     B[n+1] = 1 / (1 + np.exp(-params['alpha_B'] * (S[n+1] - theta[n+1])))
 
-# Analysis
+## Analysis
+
 ignition_time = np.argmax(B > 0.5)  # First crossing of 50% probability
 print(f"Ignition occurred at {ignition_time} ms")
 This provides a complete, runnable implementation for testing predictions.
 
 VII. BIOLOGICAL IMPLEMENTATION MAPPING
 A. Neural Circuits for Each Component
+
 1. Surprise Accumulation (S) → P3b Component
 Circuit:
 
@@ -1197,8 +1171,7 @@ P3b amplitude correlates with subjective visibility (Del Cul et al., 2007)
 P3b latency predicts reaction time (r = 0.7-0.9)
 Frontal lesions abolish P3b and impair conscious report
 
-
-2. Threshold (θ) → Thalamic Gating
+1. Threshold (θ) → Thalamic Gating
 Circuit:
 
 Location: Mediodorsal thalamus (MD) + Thalamic Reticular Nucleus (TRN)
@@ -1222,15 +1195,13 @@ Parameter mapping:
 γM,γA\gamma_M, \gamma_A
 γM​,γA​: Neuromodulatory input strength
 
-
 Validation:
 
 Thalamic lesions impair conscious access (Schiff, 2008)
 TRN stimulation raises detection thresholds in animals
 Anesthetics (propofol) enhance GABA_A → raise threshold
 
-
-3. Somatic Marker (M) → vmPFC Representation
+1. Somatic Marker (M) → vmPFC Representation
 Circuit:
 
 Input: Insula → vmPFC interoceptive errors
@@ -1250,8 +1221,7 @@ vmPFC lesions impair Iowa Gambling Task (Bechara et al., 1994)
 vmPFC BOLD correlates with autonomic responses (Critchley et al., 2004)
 vmPFC damage eliminates somatic bias in decision-making
 
-
-4. Arousal (A) → Neuromodulatory Systems
+1. Arousal (A) → Neuromodulatory Systems
 Circuit:
 
 Locus Coeruleus (LC): Norepinephrine → cortical & thalamic gain
@@ -1276,15 +1246,13 @@ Abaseline​: Tonic LC firing rate
 γA\gamma_A
 γA​: Strength of NE → thalamic modulation
 
-
 Validation:
 
 LC lesions impair vigilance (Aston-Jones & Cohen, 2005)
 Stimulants (amphetamine) increase A → lower threshold
 Sleep deprivation (↑H, ↓A) → impaired detection
 
-
-5. Precision Weighting (Π) → Gain Modulation
+1. Precision Weighting (Π) → Gain Modulation
 Circuit:
 
 Exteroceptive: Sensory cortex (V1, A1, S1) gain
@@ -1292,13 +1260,10 @@ Exteroceptive: Sensory cortex (V1, A1, S1) gain
 Top-down: FEF/IPS → sensory cortex (attention)
 Neuromodulation: BF (ACh) → sensory cortex
 
-
 Interoceptive: Insular cortex gain
 
 vmPFC → insula (prediction)
 Insula → ACC (monitoring)
-
-
 
 Cellular implementation:
 
@@ -1312,13 +1277,13 @@ Attention increases V1 response gain (Reynolds & Heeger, 2009)
 Insular lesions impair interoceptive accuracy
 Pharmacological ACh enhancement increases precision
 
-
 B. Complete Circuit Diagram (Verbal)
 Information flow:
 
 Sensory input → Sensory cortex generates predictions y^\hat{y}
 y^​
 Prediction errors ε=y−y^\varepsilon = y - \hat{y}
+
 ε=y−y^​ computed locally
 
 Precision weighting Π⋅ε2\Pi \cdot \varepsilon^2
@@ -1345,9 +1310,6 @@ M → θ\theta
 AA
 A → θ\theta
 θ (arousal modulation via LC→thalamus)
-
-
-
 
 This creates a closed-loop system where conscious access is dynamically regulated by body state, arousal, and metabolic constraints.
 
@@ -1407,7 +1369,6 @@ If decay is non-exponential (e.g., power-law)
 If timescale differs by >2× from P3b dynamics
 This would refute the integration mechanism
 
-
 Prediction 3: Metabolic feedback increases threshold
 Mechanism: Sustained ignition increases SS
 S → adenosine accumulates → threshold θ\theta
@@ -1460,7 +1421,6 @@ If body-state manipulation has no effect on interoceptive precision
 If exteroceptive and interoceptive detection equally affected
 This would refute somatic prioritization mechanism
 
-
 Prediction 5: Arousal modulates threshold and broadcast
 Mechanism: Higher arousal AA
 A → lower threshold (via γA<0\gamma_A < 0
@@ -1484,7 +1444,6 @@ If arousal and threshold uncorrelated
 If pharmacological arousal manipulation has no effect
 This would challenge the arousal-threshold coupling
 
-
 Prediction 6: Ignition produces bimodal firing patterns
 Mechanism: When BtB_t
 Bt​ crosses 0.5 (ignition), cortical populations transition from baseline to high firing rate.
@@ -1507,7 +1466,6 @@ If firing rate distributions are unimodal
 If no clear transition point between detected/missed trials
 This would challenge the all-or-none ignition aspect
 
-
 C. Medium-Priority Predictions (Refinable Extensions)
 Prediction 7: vmPFC activity correlates with somatic marker state
 Empirical test:
@@ -1522,7 +1480,6 @@ M(t)
 Falsification: If correlation near zero, suggests MM
 M is not vmPFC-specific (could be other regions)
 
-
 Prediction 8: Circadian/sleep factors predict consciousness accessibility
 Empirical test:
 
@@ -1533,14 +1490,15 @@ Prediction: Threshold follows circadian + homeostatic pattern (two-process model
 Falsification: If threshold shows no circadian variation (suggests AcircA_{\text{circ}}
 Acirc​ term unnecessary)
 
-
 D. Falsification Hierarchy Summary
 PriorityPredictionEffect SizeConsequence if FalsifiedCRITICALPrecision-weighted surprise → accessR2>0.60R^2 > 0.60
 R2>0.60Core mechanism refutedCRITICALExponential decay τ_S = 150 msd > 1.0Integration model refutedCRITICALMetabolic feedback → threshold driftd > 0.8Allostatic core refutedHIGHSomatic prioritizationd > 0.6Somatic modulation questionedHIGHArousal-threshold couplingr < -0.5Arousal mechanism challengedHIGHBimodal firing (ignition)d > 2.0All-or-none aspect questionedMEDIUMvmPFC ~ M correlationr > 0.5Anatomical specificity refinedMEDIUMCircadian modulationVariesSleep factor importance unclear
 Key insight: APGI makes strong, quantitative, falsifiable predictions across multiple levels of analysis. This distinguishes it from unfalsifiable frameworks.
 
 IX. LIMITATIONS AND FUTURE WORK
+
 A. Current Limitations (Honest Assessment)
+
 1. No computational validation yet
 
 The framework is mathematically complete and simulation-ready
@@ -1548,14 +1506,14 @@ However, we have not yet implemented full computational tests
 Next step: Implement in Python, simulate attentional blink / masking / bistability
 Timeline: 2-4 weeks for initial implementation
 
-2. Parameters estimated from literature, not fitted to data
+1. Parameters estimated from literature, not fitted to data
 
 Current parameter values are informed guesses from published studies
 Not yet optimized via Bayesian model fitting to empirical datasets
 Next step: Fit to existing EEG/behavior datasets (Del Cul et al., Sergent et al.)
 Timeline: 1-2 months for comprehensive parameter estimation
 
-3. Liquid State Machine (LSM) implementation hypothesis only
+1. Liquid State Machine (LSM) implementation hypothesis only
 
 We propose APGI could be implemented in reservoir computing architectures
 No explicit demonstration of LSM implementation yet
@@ -1563,27 +1521,27 @@ Claim status: Theoretical hypothesis requiring future validation
 Next step: Map APGI variables to LSM state vectors, train readout weights
 Timeline: 2-3 months for LSM implementation and testing
 
-4. No developmental or learning equations
+1. No developmental or learning equations
 
 Current framework assumes static parameters
 Does not explain how τ_S, θ_0, Π values change with experience
 Future work: Add Hebbian learning rules for precision estimates
 Future work: Bayesian belief updating for thresholds
 
-5. Single-region approximation
+1. Single-region approximation
 
 Framework treats cortex as single dynamical system
 Does not model hierarchical organization (V1 → V4 → IT → PFC)
 Future work: Multi-level APGI with different timescales per level
 
-6. No explicit content representation
+1. No explicit content representation
 
 Framework explains access (whether content becomes conscious)
 Does not explain what content is represented (feature binding)
 Future work: Couple APGI to content representation layer (e.g., attractor networks)
 
-
 B. Extensions for Future Development
+
 1. Hierarchical APGI
 Extend to multiple cortical levels:
 
@@ -1596,15 +1554,15 @@ Intermediate: moderate timescale (τSIT∼150\tau_S^{\text{IT}} \sim 150
 High-level: slow integration (τSPFC∼500\tau_S^{\text{PFC}} \sim 500
 τSPFC​∼500 ms)
 
-
 Each level has own threshold; ignition cascades upward.
-2. Predictive coding integration
+
+1. Predictive coding integration
 Formalize relationship between prediction errors in predictive coding and APGI surprise:
 
 APGI operates on precision-weighted prediction errors from hierarchical predictive coding
 Provides explicit link to active inference / free energy frameworks
 
-3. Clinical translation
+1. Clinical translation
 Apply parameter fitting to clinical populations:
 
 Anxiety: Estimate whether Πi\Pi^i
@@ -1619,17 +1577,17 @@ A chronically low
 Schizophrenia: Test whether precision weighting disrupted (Π\Pi
 Π unstable)
 
-
 Use parameter profiles to guide treatment selection.
 4. Learning and plasticity
 Add equations for parameter updates:
 
 Precision learning: dΠdt=η(surprise−expected surprise)\frac{d\Pi}{dt} = \eta(\text{surprise} - \text{expected surprise})
+
 dtdΠ​=η(surprise−expected surprise)
 Threshold adaptation: dθ0dt=η′(false alarm rate−target rate)\frac{d\theta_0}{dt} = \eta'(\text{false alarm rate} - \text{target rate})
+
 dtdθ0​​=η′(false alarm rate−target rate)
 Enables lifelong optimization of detection sensitivity
-
 
 C. What Would Bring Framework to 95/100
 Required:
@@ -1638,12 +1596,15 @@ Required:
 ✓ Complete parameter table (DONE for all 15 parameters)
 ✓ Quantify falsification criteria (DONE with effect sizes)
 Computational implementation (IN PROGRESS - code provided, needs full validation)
+
 Fit to empirical data (PLANNED - next 2 months)
 
 Strongly recommended:
 6. LSM demonstration (FUTURE WORK - explicitly caveated as hypothesis)
-7. Hierarchical extension (FUTURE WORK)
-8. Clinical parameter estimation (FUTURE WORK - 6-12 months)
+
+1. Hierarchical extension (FUTURE WORK)
+1. Clinical parameter estimation (FUTURE WORK - 6-12 months)
+
 Realistic assessment: With items 1-5 complete, framework quality = 85-90/100. Items 6-8 would bring to 95-100/100.
 
 X. REALISTIC QUALITY ASSESSMENT
@@ -1702,7 +1663,6 @@ High contrast (C = 10%): εe=5.0\varepsilon^e = 5.0
 εe=5.0 cd/m² → ze=2.5z^e = 2.5
 ze=2.5
 
-
 Surprise accumulation:
 
 Low: Smax⁡=12×1.0×(0.5)2×150 ms=18.75S_{\max} = \frac{1}{2} \times 1.0 \times (0.5)^2 \times 150 \text{ ms} = 18.75
@@ -1710,7 +1670,6 @@ Smax​=21​×1.0×(0.5)2×150 ms=18.75 nats (accumulated over τ_S)
 
 High: Smax⁡=12×1.0×(2.5)2×150=468.75S_{\max} = \frac{1}{2} \times 1.0 \times (2.5)^2 \times 150 = 468.75
 Smax​=21​×1.0×(2.5)2×150=468.75 nats
-
 
 (Note: This is simplified; actual integration depends on temporal dynamics)
 Threshold comparison:
@@ -1725,17 +1684,14 @@ High contrast: S>θS > \theta
 S>θ →
 detected
 
-
 Ignition probability:
 
 At threshold: B=σ(10×(5.0−5.0))=0.5B = \sigma(10 \times (5.0 - 5.0)) = 0.5
+
 B=σ(10×(5.0−5.0))=0.5 (50% detection)
 
 Above threshold (S = 7): B=σ(10×2)=0.9999B = \sigma(10 \times 2) = 0.9999
 B=σ(10×2)=0.9999 (nearly certain detection)
-
-
-
 
 Quantitative prediction:
 
@@ -1747,12 +1703,9 @@ For θ0=5.0\theta_0 = 5.0
 Πe=1.0, τS=150\tau_S = 150
 τS​=150 ms:
 
-
 Required ze=2θ0/(ΠeτS)=10/150≈0.26z^e = \sqrt{2\theta_0/(\Pi^e \tau_S)} = \sqrt{10/150} \approx 0.26
 ze=2θ0​/(ΠeτS​)​=10/150​≈0.26
 This corresponds to ~5% contrast (matches empirical data)
-
-
 
 Experimental validation:
 
@@ -1761,7 +1714,6 @@ Fit psychometric function
 Extract threshold and slope
 Compare to APGI predictions
 
-
 Example 2: Panic Attack (Interoceptive Intrusion)
 Scenario: Person experiences unexpected heartbeat acceleration. Consciousness suddenly dominated by body sensations.
 Physiological state:
@@ -1769,8 +1721,8 @@ Physiological state:
 Heart rate jumps from 70 → 120 bpm (acute stress response)
 Predicted heart rate (based on current context): 75 bpm
 Interoceptive error: εi=120−75=45\varepsilon^i = 120 - 75 = 45
-εi=120−75=45 bpm
 
+εi=120−75=45 bpm
 
 APGI dynamics:
 
@@ -1778,8 +1730,6 @@ Large interoceptive error:
 
 zi=45/σHR≈45/10=4.5z^i = 45 / \sigma_{\text{HR}} \approx 45/10 = 4.5
 zi=45/σHR​≈45/10=4.5 (very large z-score)
-
-
 
 Somatic marker activation:
 
@@ -1789,14 +1739,11 @@ M∗=tanh(1.5×4.5)=tanh(6.75)≈0.99 (maximum demand signal)
 MM
 M evolves toward 0.99 over ~2 seconds (τ_M = 2000 ms)
 
-
-
 Interoceptive precision boost:
 
 Πeffi=0.8×σ(2.0×0.99)=0.8×0.88=0.70\Pi^i_{\text{eff}} = 0.8 \times \sigma(2.0 \times 0.99) = 0.8 \times 0.88 = 0.70
 Πeffi​=0.8×σ(2.0×0.99)=0.8×0.88=0.70
 (Baseline was 0.8 × 0.5 = 0.40, so this is 75% increase)
-
 
 Surprise accumulation:
 
@@ -1805,8 +1752,6 @@ Interoceptive contribution: 12×0.70×(4.5)2=7.09\frac{1}{2} \times 0.70 \times 
 
 This alone exceeds threshold (θ0=5.0\theta_0 = 5.0
 θ0​=5.0)!
-
-
 
 Threshold lowering (panic state):
 
@@ -1818,14 +1763,11 @@ A=0.9 (elevated)
 
 Lower threshold + elevated surprise = certain ignition
 
-
 Conscious experience:
 
 Interoceptive content dominates awareness
 Exteroceptive inputs (surroundings) suppressed or ignored
 Attention captured by body state
-
-
 
 Clinical implication:
 
@@ -1834,7 +1776,6 @@ Panic attacks involve dual mechanism:
 Elevated interoceptive precision (via somatic marker)
 Lowered threshold (via arousal)
 
-
 Treatment targets:
 
 SSRIs reduce γA\gamma_A
@@ -1842,10 +1783,6 @@ SSRIs reduce γA\gamma_A
 
 CBT teaches reappraisal (reduces βM\beta_M
 βM​, weakening somatic marker reactivity)
-
-
-
-
 
 Example 3: Vigilance Decrement (Metabolic Fatigue)
 Scenario: Air traffic controller monitoring radar for 60 minutes. Performance degrades over time.
@@ -1857,7 +1794,6 @@ Arousal: $A = 0.7$ (alert)
 
 Adjusted threshold: $\theta_t = 5.0 - 1.5(0.7) = 3.95$ nats
 
-
 Dynamics over time:
 
 Surprise accumulation (intermittent targets):
@@ -1866,8 +1802,6 @@ Average surprise when target appears: $\langle S \rangle = 6.0$ nats
 
 Target frequency: ~5 per minute
 Total accumulated surprise over 60 min: $\int_0^{3600} S(t) dt \approx 5 \times 60 \times 6 = 1800$ nats·s
-
-
 
 Metabolic feedback:
 
@@ -1878,8 +1812,6 @@ Threshold increases: $\Delta\theta = \lambda \langle S \rangle t = 0.05 \times 6
 More realistically, with continuous relaxation:
 
 Equilibrium threshold shift: $\Delta\theta_{\text{eq}} = \lambda \langle S \rangle \tau_\theta \approx 0.05 \times 6 \times 0.5 = 0.15$ nats
-
-
 
 Arousal decline:
 
@@ -1897,18 +1829,14 @@ $\theta_t \approx 5.0 + 0.15 + 0.075 = 5.225$ nats
 
 Increase of 5% from baseline 5.0 nats
 
-
 Performance impact:
 
 Targets near threshold (S ≈ 5.0-5.5 nats) now have lower detection probability
 Detection probability drops from 80% → 65% (estimated via sigmoid)
 Corresponds to ~15% performance decrement (matches empirical data!)
 
-
-
 Intervention prediction:
 
 Caffeine (increases A by 0.2): compensates for arousal decline, maintains performance
 Break (allows θ to relax back toward θ_0): resets metabolic feedback
 Stimulant tasks: increase arousal via external surprise, counteracts decrement
-

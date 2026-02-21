@@ -4,35 +4,29 @@ Property-Based Tests for Performance Optimization
 Tests for memory efficiency and execution time optimization properties.
 """
 
-import os
 import sys
-import time
-import psutil
 import tempfile
-import threading
+import time
 from pathlib import Path
-from datetime import datetime
 
 import pytest
-from hypothesis import given, strategies as st, settings, assume, example
+from hypothesis import assume, given, settings
+from hypothesis import strategies as st
 
 # Add the project root to the path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from apgi_framework.testing.batch_runner import TestResult
 from apgi_framework.testing.memory_efficient_runner import (
     MemoryEfficientTestRunner,
-    MemoryMonitor,
     MemoryStats,
-    MemoryCheckpoint,
 )
 from apgi_framework.testing.performance_optimizer import (
-    PerformanceOptimizedTestRunner,
-    TestResultCache,
-    ParallelExecutionOptimizer,
-    TestCacheEntry,
     ExecutionProfile,
+    ParallelExecutionOptimizer,
+    PerformanceOptimizedTestRunner,
+    ResultCache,
 )
-from apgi_framework.testing.batch_runner import TestResult, BatchExecutionSummary
 
 
 # Test data generators
@@ -146,7 +140,7 @@ class TestMemoryEfficiency:
             )
 
             # Mock the test execution to avoid actual pytest runs
-            original_run_single_test = runner._run_single_test
+            _original_run_single_test = runner._run_single_test  # noqa: F841
 
             def mock_run_single_test(test_file, timeout):
                 # Simulate memory usage
@@ -226,7 +220,7 @@ class TestMemoryEfficiency:
         **Validates: Requirements 6.5**
         """
         with tempfile.TemporaryDirectory() as temp_dir:
-            runner = MemoryEfficientTestRunner(
+            _runner = MemoryEfficientTestRunner(  # noqa: F841
                 checkpoint_dir=temp_dir, checkpoint_interval=checkpoint_interval
             )
 
@@ -271,17 +265,17 @@ class TestExecutionTimeOptimization:
         # Add some execution profiles
         for i, test_file in enumerate(test_files):
             execution_time = 1.0 + (i % 5)  # Vary execution times
-            complexity = execution_time * 2
+            _complexity = execution_time * 2  # noqa: F841
             optimizer.update_profile(test_file, execution_time)
 
         # Optimize parallel execution
-        optimal_workers, test_batches = optimizer.optimize_parallel_execution(
+        _optimal_workers, test_batches = optimizer.optimize_parallel_execution(
             test_files, max_workers
         )
 
         # Verify optimization properties
-        assert 1 <= optimal_workers <= max_workers
-        assert len(test_batches) == optimal_workers
+        assert 1 <= _optimal_workers <= max_workers
+        assert len(test_batches) == _optimal_workers
 
         # All tests should be assigned to batches
         all_assigned_tests = []
@@ -353,7 +347,7 @@ class TestExecutionTimeOptimization:
                 test_path.write_text("def test_dummy(): pass")
 
             if cache_enabled:
-                cache = TestResultCache(cache_dir=temp_dir + "/cache")
+                cache = ResultCache(cache_dir=temp_dir + "/cache")
 
                 # Test cache operations
                 for test_file in test_files:
@@ -435,12 +429,15 @@ class TestExecutionTimeOptimization:
         if abs(change_percent) > 20:
             if change_percent > 20:
                 # Should be in regressions
-                regression_files = [r["test_file"] for r in report["regressions"]]
-                # Note: This might not always trigger due to the 7-day window in the implementation
+                # _regression_files = [r["test_file"] for r in report["regressions"]]
+                # Should be in improvements
+                # _improvement_files = [r["test_file"] for r in report["improvements"]]
+                pass
             elif change_percent < -20:
                 # Should be in improvements
-                improvement_files = [r["test_file"] for r in report["improvements"]]
+                # _improvement_files = [r["test_file"] for r in report["improvements"]]
                 # Note: This might not always trigger due to the 7-day window in the implementation
+                pass
 
 
 class TestPerformanceStateMachine:
@@ -449,7 +446,7 @@ class TestPerformanceStateMachine:
     def test_cache_operations(self):
         """Test basic cache operations."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            cache = TestResultCache(cache_dir=temp_dir + "/cache")
+            cache = ResultCache(cache_dir=temp_dir + "/cache")
 
             test_file = "test_example.py"
             result = TestResult(

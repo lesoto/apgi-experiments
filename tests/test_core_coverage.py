@@ -2,10 +2,10 @@
 Tests for core modules coverage - focuses on APGI agent and equation modules.
 """
 
-import pytest
-import numpy as np
 import warnings
-from unittest.mock import patch, MagicMock
+
+import numpy as np
+import pytest
 
 from apgi_framework.core.equation import APGIEquation
 

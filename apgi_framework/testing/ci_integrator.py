@@ -7,20 +7,19 @@ including change impact analysis, pre-commit hooks, and pipeline integration.
 Requirements: 8.1, 8.2, 8.6
 """
 
+import hashlib
+import json
+import logging
 import os
 import subprocess
-import json
-import hashlib
-from typing import List, Dict, Set, Optional, Tuple, Any
-from pathlib import Path
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from datetime import datetime
-import ast
-import logging
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set
 
-from ..utils.file_utils import FileUtils
 from ..utils.ast_analyzer import ASTAnalyzer
-from .activity_logger import get_activity_logger, ActivityType, ActivityLevel
+from ..utils.file_utils import FileUtils
+from .activity_logger import ActivityLevel, ActivityType, get_activity_logger
 
 
 @dataclass
@@ -44,9 +43,9 @@ class CIConfiguration:
     max_workers: int = 4
     timeout_minutes: int = 30
     coverage_threshold: float = 0.8
-    critical_test_patterns: List[str] = None
+    critical_test_patterns: Optional[List[str]] = None
     pre_commit_enabled: bool = True
-    notification_channels: List[str] = None
+    notification_channels: Optional[List[str]] = None
 
     def __post_init__(self):
         if self.critical_test_patterns is None:
@@ -60,7 +59,7 @@ class CIConfiguration:
 
 
 @dataclass
-class TestExecutionResult:
+class ExecutionResult:
     """Result of CI test execution."""
 
     execution_id: str
@@ -200,7 +199,7 @@ class ChangeAnalyzer:
 
     def _find_module_tests(self, module_name: str) -> Set[str]:
         """Find all tests for a specific module."""
-        tests = set()
+        tests: Set[str] = set()
         tests_dir = self.project_root / "tests"
 
         if not tests_dir.exists():
@@ -213,7 +212,7 @@ class ChangeAnalyzer:
 
     def _find_integration_tests(self, file_path: str) -> Set[str]:
         """Find integration tests that might be affected by file changes."""
-        integration_tests = set()
+        integration_tests: Set[str] = set()
         tests_dir = self.project_root / "tests"
 
         if not tests_dir.exists():
@@ -328,7 +327,7 @@ echo "Running APGI Framework pre-commit tests..."
 cd "{self.project_root}"
 
 # Run critical tests
-python -m pytest {' '.join(self.config.critical_test_patterns)} \\
+python -m pytest {' '.join(self.config.critical_test_patterns or [])} \\
     --tb=short \\
     --maxfail=5 \\
     --timeout={self.config.timeout_minutes * 60} \\
@@ -343,7 +342,9 @@ class CIIntegrator:
 
     def __init__(self, project_root: str, config: Optional[CIConfiguration] = None):
         self.project_root = Path(project_root)
-        self.config = config or CIConfiguration(pipeline_type="generic")
+        self.config = config or CIConfiguration(
+            pipeline_type="generic", test_subset_strategy="all"
+        )
         self.change_analyzer = ChangeAnalyzer(project_root)
         self.hook_manager = PreCommitHookManager(project_root, self.config)
         self.logger = logging.getLogger(__name__)
@@ -368,7 +369,7 @@ class CIIntegrator:
 
     def execute_ci_tests(
         self, change_impact: Optional[ChangeImpact] = None
-    ) -> TestExecutionResult:
+    ) -> ExecutionResult:
         """Execute tests based on CI configuration and change impact."""
         execution_id = self._generate_execution_id()
         start_time = datetime.now()
@@ -490,10 +491,10 @@ class CIIntegrator:
 
     def _get_critical_tests(self) -> List[str]:
         """Get list of critical test files."""
-        critical_tests = []
+        critical_tests: List[str] = []
         tests_dir = self.project_root / "tests"
 
-        for pattern in self.config.critical_test_patterns:
+        for pattern in self.config.critical_test_patterns or []:
             critical_tests.extend(str(p) for p in tests_dir.glob(pattern))
 
         return critical_tests
@@ -503,9 +504,7 @@ class CIIntegrator:
         tests_dir = self.project_root / "tests"
         return [str(p) for p in tests_dir.glob("test_*.py")]
 
-    def _run_pytest(
-        self, test_files: List[str], execution_id: str
-    ) -> TestExecutionResult:
+    def _run_pytest(self, test_files: List[str], execution_id: str) -> ExecutionResult:
         """Run pytest on specified test files."""
         start_time = datetime.now()
 
@@ -560,8 +559,8 @@ class CIIntegrator:
         start_time: datetime,
         end_time: datetime,
         execution_time: float,
-    ) -> TestExecutionResult:
-        """Parse pytest results into TestExecutionResult."""
+    ) -> ExecutionResult:
+        """Parse pytest results into ExecutionResult."""
 
         # Try to load JSON report
         report_file = (
@@ -612,7 +611,7 @@ class CIIntegrator:
         except Exception as e:
             self.logger.warning(f"Failed to parse coverage report: {e}")
 
-        return TestExecutionResult(
+        return ExecutionResult(
             execution_id=execution_id,
             start_time=start_time,
             end_time=end_time,
@@ -656,9 +655,9 @@ class CIIntegrator:
 
     def _create_empty_result(
         self, execution_id: str, start_time: datetime
-    ) -> TestExecutionResult:
+    ) -> ExecutionResult:
         """Create empty test result."""
-        return TestExecutionResult(
+        return ExecutionResult(
             execution_id=execution_id,
             start_time=start_time,
             end_time=datetime.now(),
@@ -674,9 +673,9 @@ class CIIntegrator:
 
     def _create_error_result(
         self, execution_id: str, start_time: datetime, error: str
-    ) -> TestExecutionResult:
+    ) -> ExecutionResult:
         """Create error test result."""
-        return TestExecutionResult(
+        return ExecutionResult(
             execution_id=execution_id,
             start_time=start_time,
             end_time=datetime.now(),
@@ -692,7 +691,7 @@ class CIIntegrator:
             pipeline_context=self._get_pipeline_context(),
         )
 
-    def _generate_ci_reports(self, result: TestExecutionResult, execution_id: str):
+    def _generate_ci_reports(self, result: ExecutionResult, execution_id: str):
         """Generate CI-specific reports."""
         reports_dir = self.project_root / ".ci" / "reports"
 

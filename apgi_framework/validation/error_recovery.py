@@ -4,12 +4,12 @@ Error Recovery Module
 Provides automatic error recovery mechanisms and retry logic for transient failures.
 """
 
-from typing import Callable, Any, Optional, List, Type
-from functools import wraps
 import time
 from datetime import datetime
+from functools import wraps
+from typing import Any, Callable, Dict, List, Optional, Type
 
-from ..exceptions import APGIFrameworkError, SimulationError, DataError
+from ..exceptions import DataError, SimulationError
 from ..logging.standardized_logging import get_logger
 
 logger = get_logger(__name__)
@@ -94,7 +94,12 @@ def with_retry(config: Optional[RetryConfig] = None):
                     raise
 
             # All retries exhausted
-            raise last_exception
+            if last_exception is not None:
+                raise last_exception
+            else:
+                raise RuntimeError(
+                    f"All {config.max_attempts} attempts failed but no exception was captured"
+                )
 
         return wrapper
 
@@ -107,10 +112,12 @@ class ErrorRecoveryManager:
     """
 
     def __init__(self):
-        self.error_log: List[dict] = []
-        self.recovery_strategies: dict = {}
+        self.error_log: List[Dict[str, Any]] = []  # type: ignore
+        self.recovery_strategies: Dict[  # type: ignore
+            Type[Exception], Callable[[Exception, Dict[str, Any]], Dict[str, Any]]
+        ] = {}
 
-    def log_error(self, error: Exception, context: dict):
+    def log_error(self, error: Exception, context: Dict[str, Any]):
         """
         Log error with context information.
 
@@ -140,7 +147,9 @@ class ErrorRecoveryManager:
         self.recovery_strategies[error_type] = strategy
         logger.info(f"Registered recovery strategy for {error_type.__name__}")
 
-    def attempt_recovery(self, error: Exception, context: dict) -> Optional[Any]:
+    def attempt_recovery(
+        self, error: Exception, context: Dict[str, Any]
+    ) -> Optional[Any]:
         """
         Attempt to recover from an error using registered strategies.
 
@@ -184,12 +193,12 @@ class ErrorRecoveryManager:
         logger.warning(f"No recovery strategy found for {error_type.__name__}")
         return None
 
-    def get_error_statistics(self) -> dict:
+    def get_error_statistics(self) -> Dict[str, Any]:
         """Get statistics about logged errors"""
         if not self.error_log:
             return {"total_errors": 0}
 
-        error_types = {}
+        error_types: Dict[str, int] = {}
         for entry in self.error_log:
             error_type = entry["error_type"]
             error_types[error_type] = error_types.get(error_type, 0) + 1
@@ -285,7 +294,9 @@ def get_recovery_manager() -> ErrorRecoveryManager:
 # Default recovery strategies
 
 
-def recover_from_simulation_error(error: SimulationError, context: dict) -> Any:
+def recover_from_simulation_error(
+    error: SimulationError, context: Dict[str, Any]
+) -> Dict[str, Any]:
     """Default recovery strategy for simulation errors"""
     logger.info(
         "Attempting to recover from simulation error by regenerating with different seed"
@@ -297,17 +308,19 @@ def recover_from_simulation_error(error: SimulationError, context: dict) -> Any:
     new_seed = np.random.randint(0, 1000000)
     np.random.seed(new_seed)
 
-    return None  # Signal to retry
+    return {"action": "retry"}
 
 
-def recover_from_data_error(error: DataError, context: dict) -> Any:
+def recover_from_data_error(
+    error: DataError, context: Dict[str, Any]
+) -> Dict[str, Any]:
     """Default recovery strategy for data errors"""
     logger.info(
         "Attempting to recover from data error by using backup or default values"
     )
 
     # Return default/empty data structure
-    return {}
+    return {"action": "return", "result": {}}
 
 
 # Register default strategies
@@ -331,7 +344,9 @@ def initialize_default_recovery_strategies():
     logger.info("Registered recovery strategy for DataError")
 
     # Register I/O error recovery
-    def recover_from_io_error(error: Exception, context: dict) -> Any:
+    def recover_from_io_error(
+        error: Exception, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Recovery strategy for I/O errors"""
         logger.info("Attempting to recover from I/O error")
 
@@ -345,11 +360,11 @@ def initialize_default_recovery_strategies():
                 if directory:
                     os.makedirs(directory, exist_ok=True)
                     logger.info(f"Created directory: {directory}")
-                    return None  # Signal to retry
+                    return {"action": "retry"}
             except Exception as e:
                 logger.error(f"Failed to create directory: {e}")
 
-        return None
+        return {"action": "fail"}
 
     manager.register_recovery_strategy(IOError, recover_from_io_error)
     manager.register_recovery_strategy(OSError, recover_from_io_error)

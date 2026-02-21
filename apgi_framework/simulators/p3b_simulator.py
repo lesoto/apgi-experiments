@@ -6,9 +6,10 @@ with configurable amplitude and latency parameters for testing consciousness-rel
 neural activity patterns.
 """
 
-import numpy as np
-from typing import Tuple, Optional
 from dataclasses import dataclass
+from typing import Optional, Tuple
+
+import numpy as np
 
 
 @dataclass

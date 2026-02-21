@@ -5,35 +5,31 @@ Tests comprehensive activity logging capabilities including structured logging,
 log rotation, retention management, and integration with test execution components.
 """
 
-import pytest
-from hypothesis import given, strategies as st, assume, settings
-from hypothesis.stateful import RuleBasedStateMachine, rule, initialize
 import json
 import tempfile
 import threading
 import time
-from datetime import datetime, timedelta
-from pathlib import Path
-from typing import Dict, Any, List, Optional
 import uuid
+from datetime import datetime
+from pathlib import Path
+
+from hypothesis import given, settings
+from hypothesis import strategies as st
+from hypothesis.stateful import RuleBasedStateMachine, initialize, rule
 
 from apgi_framework.testing.activity_logger import (
+    ActivityContext,
+    ActivityLevel,
     ActivityLogger,
     ActivityType,
-    ActivityLevel,
-    ActivityContext,
-    ActivityEntry,
     LoggingConfiguration,
     get_activity_logger,
     initialize_activity_logging,
-    shutdown_activity_logging,
-    log_test_execution_start,
-    log_test_execution_end,
-    log_test_case_start,
     log_test_case_end,
-    log_coverage_collection,
-    log_error,
-    activity_span,
+    log_test_case_start,
+    log_test_execution_end,
+    log_test_execution_start,
+    shutdown_activity_logging,
 )
 
 
@@ -672,7 +668,7 @@ class TestActivityLoggingProperties:
                     try:
                         logger.log_activity(activity_type, level, message)
                         thread_results.append(True)
-                    except Exception as e:
+                    except Exception:
                         thread_results.append(False)
                 results.append(thread_results)
 

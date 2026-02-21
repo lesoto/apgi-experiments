@@ -1,10 +1,10 @@
 """Thread pool manager for APGI Framework to control resource usage."""
 
 import concurrent.futures
-import threading
 import logging
-from typing import Callable, Any, Optional
+import threading
 from contextlib import contextmanager
+from typing import Callable, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -73,10 +73,9 @@ class ThreadPoolManager:
     ) -> concurrent.futures.Future:
         """Wrap a future with timeout functionality."""
         import threading
-        import time
 
         timeout_event = threading.Event()
-        timeout_future = concurrent.futures.Future()
+        timeout_future: concurrent.futures.Future = concurrent.futures.Future()
 
         def timeout_monitor():
             if not timeout_event.wait(timeout):

@@ -6,13 +6,13 @@ transition probability estimation, and temporal dynamics analysis
 for APGI framework validation.
 """
 
+from collections import Counter
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
+
 import numpy as np
 from scipy import signal
-from scipy.spatial.distance import cdist
 from sklearn.cluster import KMeans
-from collections import Counter
 
 from apgi_framework.utils.progress_monitor import ProgressMonitor
 
@@ -183,21 +183,30 @@ class MicrostateAnalysis:
         progress.complete()
 
         # Transpose back (n_states x channels)
+        if best_templates is None:
+            raise ValueError("Failed to find valid templates during clustering")
         self.templates = best_templates.T
+
+        return self.normalize_templates()
+
+    def normalize_templates(self) -> np.ndarray:
+        """Normalize fitted microstate templates to unit length."""
+        if self.templates is None:
+            raise ValueError("Must fit templates first")
+
+        # Use a local variable to avoid None type issues
+        templates: np.ndarray = self.templates
 
         # Normalize templates with progress tracking
         norm_progress = ProgressMonitor(self.n_states, "Normalizing templates")
         norm_progress.start()
 
         for i in range(self.n_states):
-            self.templates[:, i] = self.templates[:, i] / np.linalg.norm(
-                self.templates[:, i]
-            )
-            norm_progress.update(message=f"Template {i + 1}/{self.n_states}")
+            templates[:, i] = templates[:, i] / np.linalg.norm(templates[:, i])
+            norm_progress.update(i + 1)
 
         norm_progress.complete()
-
-        return self.templates
+        return templates
 
     def assign_microstates(
         self,
@@ -225,6 +234,15 @@ class MicrostateAnalysis:
         # Normalize data
         normalized_data = self.normalize_topography(data)
 
+        # Check templates
+        if templates is None:
+            if self.templates is None:
+                raise ValueError("Must fit templates first or provide templates")
+            templates = self.templates
+
+        if templates is None:
+            raise ValueError("Templates cannot be None")
+
         # Compute spatial correlation with each template
         n_channels, n_timepoints = normalized_data.shape
         n_states = templates.shape[1]
@@ -248,7 +266,7 @@ class MicrostateAnalysis:
                 if computation_count % 1000 == 0:  # Update every 1000 computations
                     progress.set_step(
                         computation_count,
-                        f"State {i+1}/{n_states}, Time {t+1}/{n_timepoints}",
+                        f"State {i + 1}/{n_states}, Time {t + 1}/{n_timepoints}",
                     )
 
                 if polarity_invariant:
@@ -304,7 +322,7 @@ class MicrostateAnalysis:
 
         return smoothed
 
-    def compute_temporal_metrics(self, labels: np.ndarray) -> Dict[str, any]:
+    def compute_temporal_metrics(self, labels: np.ndarray) -> Dict[str, Any]:
         """
         Compute temporal metrics for microstate sequence.
 
@@ -336,7 +354,9 @@ class MicrostateAnalysis:
         # Compute metrics per state
         occurrences = Counter(labels)
 
-        durations_per_state = {i: [] for i in range(self.n_states)}
+        durations_per_state: Dict[int, List[float]] = {
+            i: [] for i in range(self.n_states)
+        }
         for seg in segments:
             durations_per_state[seg["label"]].append(seg["duration"])
 
@@ -421,6 +441,13 @@ class MicrostateAnalysis:
         # Create timestamps
         timestamps = np.arange(len(labels)) * self.dt
 
+        # Ensure templates is not None
+        final_templates = self.templates if templates is None else templates
+        if final_templates is None:
+            raise ValueError(
+                "Templates cannot be None when creating MicrostateSequence"
+            )
+
         # Extract transition probabilities
         transition_probs = {}
         for i in range(self.n_states):
@@ -430,7 +457,7 @@ class MicrostateAnalysis:
 
         return MicrostateSequence(
             labels=labels,
-            templates=self.templates if templates is None else templates,
+            templates=final_templates,
             gfp=gfp,
             timestamps=timestamps,
             durations=[seg["duration"] for seg in temporal_metrics["segments"]],
@@ -467,12 +494,12 @@ class MicrostateAnalysis:
             centroid = np.sum(channel_positions * weights[:, np.newaxis], axis=0)
             centroids.append(centroid)
 
-        centroids = np.array(centroids)
+        centroid_array = np.array(centroids)
 
         # Classify states as posterior or anterior based on y-coordinate
         # (assuming standard coordinate system)
-        posterior_states = np.where(centroids[:, 1] < 0)[0]
-        anterior_states = np.where(centroids[:, 1] > 0)[0]
+        posterior_states = np.where(centroid_array[:, 1] < 0)[0]
+        anterior_states = np.where(centroid_array[:, 1] > 0)[0]
 
         # Find transitions
         transitions = []
@@ -488,8 +515,8 @@ class MicrostateAnalysis:
                         "time": sequence.timestamps[i],
                         "from_state": int(from_state),
                         "to_state": int(to_state),
-                        "from_centroid": centroids[from_state],
-                        "to_centroid": centroids[to_state],
+                        "from_centroid": centroid_array[from_state],
+                        "to_centroid": centroid_array[to_state],
                     }
                 )
 
@@ -516,22 +543,24 @@ class MicrostateAnalysis:
         # Coverage similarity
         coverage_diff = np.mean(
             [
-                abs(seq1.coverage.get(i, 0) - seq2.coverage.get(i, 0))
+                abs(float(seq1.coverage.get(i, 0)) - float(seq2.coverage.get(i, 0)))
                 for i in range(self.n_states)
             ]
         )
 
         # Transition matrix similarity
         if seq1.transition_matrix is not None and seq2.transition_matrix is not None:
-            transition_diff = np.mean(
-                np.abs(seq1.transition_matrix - seq2.transition_matrix)
+            transition_diff: float = float(
+                np.mean(np.abs(seq1.transition_matrix - seq2.transition_matrix))
             )
         else:
-            transition_diff = None
+            transition_diff: float = (
+                0.0  # Default value when matrices are not available
+            )
 
         return {
             "template_correlation": template_corr,
-            "coverage_difference": coverage_diff,
+            "coverage_difference": float(coverage_diff),
             "transition_difference": transition_diff,
         }
 

@@ -7,11 +7,11 @@ statistical computations and error handling.
 import numpy as np
 import pytest
 
-from apgi_framework.analysis.effect_size_calculator import (
-    EffectSizeCalculator,
-    ConfidenceIntervalMethod,
-)
 from apgi_framework.analysis.bayesian_models import SurpriseAccumulator
+from apgi_framework.analysis.effect_size_calculator import (
+    ConfidenceIntervalMethod,
+    EffectSizeCalculator,
+)
 
 
 class TestEffectSizeCalculatorValidation:

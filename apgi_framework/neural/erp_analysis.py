@@ -5,11 +5,11 @@ Provides P3b peak detection, early component extraction (N1, P1, N170),
 and single-trial ERP estimation for APGI framework validation.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
+
 import numpy as np
-from scipy import signal, stats
-from scipy.interpolate import interp1d
+from scipy import signal
 
 
 @dataclass
@@ -187,7 +187,7 @@ class ERPAnalysis:
         abs_idx = start_idx + peak_idx
         latency = abs_idx * self.dt
 
-        return amplitude, latency, abs_idx
+        return float(amplitude), float(latency), int(abs_idx)
 
     def extract_p3b(
         self,
@@ -216,11 +216,10 @@ class ERPAnalysis:
         # Compute area under curve
         start_idx = int(search_window[0] / self.dt)
         end_idx = int(search_window[1] / self.dt)
-        area = np.trapz(data[start_idx:end_idx], dx=self.dt)
+        area = float(np.trapz(data[start_idx:end_idx], dx=self.dt))
 
         # Estimate peak width at half maximum
         half_max = amplitude / 2.0
-        above_half = data > half_max
 
         # Find onset and offset
         onset_idx = peak_idx
@@ -238,8 +237,8 @@ class ERPAnalysis:
         # Fractional area latency (50% of total area)
         cumulative_area = np.cumsum(data[start_idx:end_idx]) * self.dt
         half_area = area / 2.0
-        fal_idx = np.argmin(np.abs(cumulative_area - half_area))
-        fractional_area_latency = (start_idx + fal_idx) * self.dt
+        fal_idx = int(np.argmin(np.abs(cumulative_area - half_area)))
+        fractional_area_latency = float((start_idx + fal_idx) * self.dt)
 
         # Estimate SNR
         baseline_std = np.std(data[: int(100 / self.dt)])  # First 100ms as baseline
@@ -255,7 +254,7 @@ class ERPAnalysis:
         return P3bMetrics(
             amplitude=amplitude,
             latency=latency,
-            area_under_curve=area,
+            area_under_curve=float(area),
             peak_width=peak_width,
             onset_latency=onset_latency,
             offset_latency=offset_latency,
@@ -495,8 +494,7 @@ class ERPAnalysis:
         n_trials = len(trials)
         trials_array = np.array(trials)
 
-        bootstrap_averages = []
-
+        bootstrap_averages: List[np.ndarray] = []
         for _ in range(n_bootstrap):
             # Resample with replacement
             indices = np.random.choice(n_trials, size=n_trials, replace=True)
@@ -504,14 +502,14 @@ class ERPAnalysis:
             bootstrap_avg = np.mean(bootstrap_sample, axis=0)
             bootstrap_averages.append(bootstrap_avg)
 
-        bootstrap_averages = np.array(bootstrap_averages)
+        bootstrap_averages_array = np.array(bootstrap_averages)
 
         # Compute percentiles
         alpha = 1 - confidence
         lower_percentile = (alpha / 2) * 100
         upper_percentile = (1 - alpha / 2) * 100
 
-        lower_bound = np.percentile(bootstrap_averages, lower_percentile, axis=0)
-        upper_bound = np.percentile(bootstrap_averages, upper_percentile, axis=0)
+        lower_bound = np.percentile(bootstrap_averages_array, lower_percentile, axis=0)
+        upper_bound = np.percentile(bootstrap_averages_array, upper_percentile, axis=0)
 
         return lower_bound, upper_bound

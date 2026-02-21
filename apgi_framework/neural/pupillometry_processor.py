@@ -5,17 +5,16 @@ Provides pupil feature extraction, quality assessment, and metrics calculation
 for interoceptive precision estimation in APGI experiments.
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple
+
 import numpy as np
-from scipy import signal
 
 try:
     from scipy.integrate import trapz
 except ImportError:
     # Fallback for newer scipy versions where trapz was moved
     from scipy.integrate import trapezoid as trapz
-import time
 
 
 @dataclass

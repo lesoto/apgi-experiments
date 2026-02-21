@@ -5,24 +5,24 @@ This test suite provides full coverage for the WorkflowOrchestrator class and al
 its workflow management methods, ensuring all critical functionality is tested.
 """
 
-import pytest
+import json
+import tempfile
 import unittest.mock as mock
 from datetime import datetime, timedelta
 from pathlib import Path
-import tempfile
-import json
-import asyncio
+
+import pytest
 
 # Import the modules we're testing
 from apgi_framework.workflow_orchestrator import (
-    WorkflowOrchestrator,
-    WorkflowStage,
-    WorkflowStatus,
-    WorkflowStageResult,
-    WorkflowResult,
     WorkflowConfiguration,
-    run_standard_falsification_workflow,
+    WorkflowOrchestrator,
+    WorkflowResult,
+    WorkflowStage,
+    WorkflowStageResult,
+    WorkflowStatus,
     run_quick_validation_workflow,
+    run_standard_falsification_workflow,
 )
 
 
@@ -332,7 +332,9 @@ class TestWorkflowOrchestrator:
             return {"result": "success"}
 
         self.orchestrator.current_workflow = WorkflowResult(
-            workflow_id="test", start_time=datetime.now(), status=WorkflowStatus.RUNNING
+            workflow_id="test",
+            start_time=datetime.now(),
+            overall_status=WorkflowStatus.RUNNING,
         )
 
         self.orchestrator._execute_stage(
@@ -531,7 +533,7 @@ class TestModuleFunctions:
             mock_orchestrator.run_complete_workflow.return_value = WorkflowResult(
                 workflow_id="standard_test",
                 start_time=datetime.now(),
-                status=WorkflowStatus.COMPLETED,
+                overall_status=WorkflowStatus.COMPLETED,
             )
 
             result = run_standard_falsification_workflow(mock_controller)
@@ -541,7 +543,6 @@ class TestModuleFunctions:
 
     def test_run_quick_validation_workflow(self):
         """Test run_quick_validation_workflow function."""
-        mock_controller = MockController()
 
         with mock.patch(
             "apgi_framework.workflow_orchestrator.WorkflowOrchestrator"
@@ -551,7 +552,7 @@ class TestModuleFunctions:
             mock_orchestrator.run_complete_workflow.return_value = WorkflowResult(
                 workflow_id="quick_test",
                 start_time=datetime.now(),
-                status=WorkflowStatus.COMPLETED,
+                overall_status=WorkflowStatus.COMPLETED,
             )
 
             result = run_quick_validation_workflow()

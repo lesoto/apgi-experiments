@@ -6,75 +6,77 @@ neural signature extraction including ERPs, microstates, and gamma synchrony,
 pupillometry, and multi-modal physiological monitoring.
 """
 
+from .cardiac_processor import (
+    CardiacProcessor,
+    CardiacQualityAssessor,
+    CardiacQualityMetrics,
+    HEPExtractor,
+    HRVAnalyzer,
+    HRVMetrics,
+    RPeakAlgorithm,
+)
 from .eeg_interface import (
-    EEGInterface,
-    EEGConfig,
     ArtifactDetector,
     ChannelInfo,
     ChannelType,
-)
-from .erp_analysis import ERPAnalysis, ERPComponents, P3bMetrics
-from .microstate_analysis import MicrostateAnalysis, MicrostateSequence
-from .gamma_synchrony import (
-    GammaSynchronyAnalysis,
-    CoherenceMetrics,
-    NetworkConnectivity,
-)
-from .pupillometry_interface import (
-    PupillometryInterface,
-    PupillometryConfig,
-    PupilSample,
-    EyeType,
-    BlinkDetectionMethod,
-)
-from .physiological_monitoring import (
-    PhysiologicalMonitoring,
-    PhysiologicalConfig,
-    PhysiologicalSample,
-    SignalType,
-    RespirationPhase,
-    HeartRateMonitor,
-    SkinConductanceMonitor,
-    RespirationMonitor,
+    EEGConfig,
+    EEGInterface,
 )
 
 # Signal processing components
 from .eeg_processor import (
-    EEGProcessor,
-    FASTERArtifactDetector,
-    EpochExtractor,
     BaselineCorrector,
+    EEGProcessor,
+    EpochExtractor,
     ERPExtractor,
-    ProcessedEEG,
     ERPFeatures,
+    FASTERArtifactDetector,
     FilterType,
+    ProcessedEEG,
+)
+from .erp_analysis import ERPAnalysis, ERPComponents, P3bMetrics
+from .gamma_synchrony import (
+    CoherenceMetrics,
+    GammaSynchronyAnalysis,
+    NetworkConnectivity,
+)
+from .microstate_analysis import MicrostateAnalysis, MicrostateSequence
+from .physiological_monitoring import (
+    HeartRateMonitor,
+    PhysiologicalConfig,
+    PhysiologicalMonitoring,
+    PhysiologicalSample,
+    RespirationMonitor,
+    RespirationPhase,
+    SignalType,
+    SkinConductanceMonitor,
+)
+from .pupillometry_interface import (
+    BlinkDetectionMethod,
+    EyeType,
+    PupillometryConfig,
+    PupillometryInterface,
+    PupilSample,
 )
 from .pupillometry_processor import (
-    PupillometryProcessor,
     PupilFeatureExtractor,
-    PupilMetricsCalculator,
-    PupilQualityScorer,
     PupilFeatures,
+    PupillometryProcessor,
+    PupilMetricsCalculator,
     PupilQualityMetrics,
-)
-from .cardiac_processor import (
-    CardiacProcessor,
-    HRVAnalyzer,
-    HEPExtractor,
-    CardiacQualityAssessor,
-    HRVMetrics,
-    CardiacQualityMetrics,
-    RPeakAlgorithm,
+    PupilQualityScorer,
 )
 from .quality_control import (
-    SignalQualityMonitor,
-    ArtifactDetector as UnifiedArtifactDetector,
     AdaptiveProtocolManager,
-    OperatorNotificationSystem,
+    AlertSeverity,
+)
+from .quality_control import ArtifactDetector as UnifiedArtifactDetector
+from .quality_control import (
     MultiModalQualityMetrics,
+    OperatorNotificationSystem,
     QualityAlert,
     QualityLevel,
-    AlertSeverity,
+    SignalQualityMonitor,
 )
 
 __all__ = [

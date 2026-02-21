@@ -9,8 +9,8 @@ from .input_sanitization import (
     SecurityError,
     sanitize_filename,
     sanitize_path,
-    validate_file_extension,
     sanitize_text_input,
+    validate_file_extension,
 )
 
 __all__ = [

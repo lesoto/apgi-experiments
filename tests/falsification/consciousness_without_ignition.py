@@ -6,26 +6,26 @@ This test evaluates whether conscious reports can occur when neural ignition sig
 are absent (P3b < 2 μV, gamma PLV < 0.15, PCI < 0.3, no frontoparietal BOLD elevation).
 """
 
-from typing import Dict, List, Optional
-from dataclasses import dataclass
-import numpy as np
-from datetime import datetime
 import logging
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Dict, List, Optional
+
+import numpy as np
 
 from apgi_framework.core.equation import APGIEquation
-from apgi_framework.simulators.signature_validator import SignatureValidator
-from apgi_framework.simulators.p3b_simulator import P3bSimulator
-from apgi_framework.simulators.gamma_simulator import GammaSimulator
+from apgi_framework.exceptions import SimulationError, ValidationError
 from apgi_framework.simulators.bold_simulator import BOLDSimulator
+from apgi_framework.simulators.gamma_simulator import GammaSimulator
+from apgi_framework.simulators.p3b_simulator import P3bSimulator
 from apgi_framework.simulators.pci_calculator import PCICalculator
+from apgi_framework.simulators.signature_validator import SignatureValidator
 from tests.falsification.consciousness_assessment import (
     ConsciousnessAssessmentSimulator,
 )
-from apgi_framework.exceptions import ValidationError, SimulationError
 from tests.falsification.error_handling_wrapper import (
     with_error_handling,
 )
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -653,7 +653,7 @@ class ConsciousnessWithoutIgnitionTest:
                 # Continue with other trials
 
         # Group trials by participant
-        participant_results = {}
+        participant_results: Dict[str, List] = {}
         for trial in trial_results:
             if trial.participant_id not in participant_results:
                 participant_results[trial.participant_id] = []

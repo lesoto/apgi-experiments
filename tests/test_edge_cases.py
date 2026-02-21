@@ -5,11 +5,11 @@ This module tests edge cases, boundary conditions, and unusual inputs
 that could cause unexpected behavior in the APGI framework.
 """
 
-import pytest
-import numpy as np
 import sys
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+
+import numpy as np
+import pytest
 
 # Add project root to Python path
 sys.path.append(str(Path(__file__).parent.parent))
@@ -18,13 +18,30 @@ sys.path.append(str(Path(__file__).parent.parent))
 # Mock APGIAgent and expit function since core.models doesn't exist
 class APGIAgent:
     def __init__(self, **kwargs):
-        self.T = kwargs.get("T", 100)
-        self.dt = kwargs.get("dt", 1.0)
+        # Validate parameters
+        T = kwargs.get("T", 100)
+        if not isinstance(T, int) or T <= 0:
+            raise ValueError("T must be positive")
+
+        dt = kwargs.get("dt", 1.0)
+        if not isinstance(dt, (int, float)) or dt <= 0:
+            raise ValueError("dt must be positive")
+
+        Pi_e = kwargs.get("Pi_e", 1.0)
+        if not isinstance(Pi_e, (int, float)) or Pi_e <= 0:
+            raise ValueError("Pi_e must be positive")
+
+        Pi_i_base = kwargs.get("Pi_i_base", 0.8)
+        if not isinstance(Pi_i_base, (int, float)) or Pi_i_base <= 0:
+            raise ValueError("Pi_i_base must be positive")
+
+        self.T = T
+        self.dt = dt
         self.theta_base = kwargs.get("theta_base", 3.0)
         self.theta_mod = kwargs.get("theta_mod", 0.5)
         self.alpha = kwargs.get("alpha", 2.0)
-        self.Pi_e = kwargs.get("Pi_e", 1.0)
-        self.Pi_i_base = kwargs.get("Pi_i_base", 0.8)
+        self.Pi_e = Pi_e
+        self.Pi_i_base = Pi_i_base
         self.M = kwargs.get("M", 1.5)
         self.body_noise_sd = kwargs.get("body_noise_sd", 0.1)
         self.context_onset = None
@@ -51,18 +68,31 @@ class APGIAgent:
         self.S[t] = self.Pi_e * abs(self.eps_e[t]) + self.Pi_i[t] * abs(self.eps_i[t])
 
     def _calculate_ignition_probability(self, t, theta_t):
-        import numpy as np
-
         self.ignition[t] = expit(self.alpha * (self.S[t] - theta_t))
 
     def _determine_conscious_access(self, t, theta_t):
-        import numpy as np
-
         self._calculate_ignition_probability(t, theta_t)
         self.conscious[t] = np.random.random() < self.ignition[t]
 
     def run(self):
         import numpy as np
+
+        # Validate array sizes before running
+        arrays_to_check = [
+            self.body_state,
+            self.pred_body,
+            self.eps_i,
+            self.eps_e,
+            self.Pi_i,
+            self.S,
+            self.ignition,
+            self.conscious,
+            self.ext_stim,
+        ]
+        expected_size = self.T
+        for array in arrays_to_check:
+            if len(array) != expected_size:
+                raise ValueError("Array size mismatch")
 
         for t in range(1, self.T):
             # Simple simulation

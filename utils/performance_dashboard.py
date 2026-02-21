@@ -20,38 +20,52 @@ import json
 import threading
 import time
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, Type
 
-from dash import dcc, html, callback
-import dash.dash as dash
+try:
+    import dash
+    from dash import callback, dcc, html
+except ImportError:
+    dash = None
 
 # Try to import APGI components
 try:
-    from utils.logging_config import apgi_logger
-    from utils.performance_profiler import performance_profiler
     from utils.interactive_dashboard import create_dashboard
+    from utils.logging_config import apgi_logger as loguru_logger
+    from utils.performance_profiler import performance_profiler as real_profiler
     from utils.static_dashboard_generator import StaticDashboardGenerator
 except ImportError:
     # Fallback for standalone usage
     import logging
 
-    apgi_logger = logging.getLogger(__name__)
+    loguru_logger = logging.getLogger(__name__)  # type: ignore
 
     class DummyProfiler:
         def get_current_metrics(self):
-            return {}
+            return []
 
         def get_performance_history(self):
             return []
 
-    performance_profiler = DummyProfiler()
+    real_profiler = DummyProfiler()  # type: ignore
 
     def create_dashboard():
         return None
 
-    class StaticDashboardGenerator:
+    class FallbackStaticDashboardGenerator:
+        """Fallback static dashboard generator."""
+
         def generate_system_dashboard(self):
             return "<html><body><h1>Dashboard Not Available</h1></body></html>"
+
+    DashboardGeneratorClass: Type[Any] = FallbackStaticDashboardGenerator
+
+    # Set the generator based on import success
+    if "StaticDashboardGenerator" in globals():
+        DashboardGeneratorClass = StaticDashboardGenerator
+
+    # Alias for compatibility
+    DashboardClass = DashboardGeneratorClass
 
 
 class ComprehensivePerformanceDashboard:
@@ -61,6 +75,8 @@ class ComprehensivePerformanceDashboard:
         """Initialize the comprehensive dashboard."""
         self.port = port
         self.debug = debug
+        if dash is None:
+            raise ImportError("dash is required for ComprehensivePerformanceDashboard")
         self.app = dash.Dash(
             __name__,
             external_stylesheets=[
@@ -69,8 +85,14 @@ class ComprehensivePerformanceDashboard:
             ],
         )
 
+        # Use the real profiler if available, otherwise dummy
+        self.performance_profiler = real_profiler
+
+        # Use the real logger if available, otherwise fallback
+        self.logger = loguru_logger
+
         # Performance data storage
-        self.performance_data = {
+        self.performance_data: Dict[str, List[Any]] = {
             "timestamps": [],
             "cpu_usage": [],
             "memory_usage": [],
@@ -85,9 +107,9 @@ class ComprehensivePerformanceDashboard:
         self.running = False
 
         # Initialize components
-        self.static_generator = StaticDashboardGenerator()
+        self.static_generator = DashboardClass()
 
-        apgi_logger.info(
+        self.logger.info(
             f"Comprehensive Performance Dashboard initialized on port {port}"
         )
 
@@ -377,15 +399,15 @@ class ComprehensivePerformanceDashboard:
                 "memory_percent": memory_percent,
                 "memory_used_gb": memory.used / (1024**3),
                 "memory_total_gb": memory.total / (1024**3),
-                "disk_read_mb": disk.read_bytes / (1024**2),
-                "disk_write_mb": disk.write_bytes / (1024**2),
+                "disk_read_mb": getattr(disk, "read_bytes", 0) / (1024**2),
+                "disk_write_mb": getattr(disk, "write_bytes", 0) / (1024**2),
                 "network_sent_mb": network.bytes_sent / (1024**2),
                 "network_recv_mb": network.bytes_recv / (1024**2),
                 "active_processes": process_count,
                 "timestamp": datetime.now(),
             }
         except Exception as e:
-            apgi_logger.error(f"Error getting system metrics: {e}")
+            self.logger.error(f"Error getting system metrics: {e}")
             return {
                 "cpu_percent": 0,
                 "memory_percent": 0,
@@ -438,13 +460,13 @@ class ComprehensivePerformanceDashboard:
                         -max_points:
                     ]
 
-            apgi_logger.debug(
+            self.logger.debug(
                 f"Updated metrics: CPU {metrics['cpu_percent']:.1f}%, "
                 f"Memory {metrics['memory_percent']:.1f}%"
             )
 
         except Exception as e:
-            apgi_logger.error(f"Error updating metrics: {e}")
+            self.logger.error(f"Error updating metrics: {e}")
 
     def create_charts(self) -> Dict[str, Any]:
         """Create chart data from performance metrics."""
@@ -514,7 +536,7 @@ class ComprehensivePerformanceDashboard:
             "performance-timeline": timeline_chart,
         }
 
-    def export_data(self, filename: str = None) -> str:
+    def export_data(self, filename: Optional[str] = None) -> Optional[str]:
         """Export performance data to file."""
         if not filename:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -543,8 +565,8 @@ class ComprehensivePerformanceDashboard:
                 json.dump(export_data, f, indent=2, default=str)
 
             return filename
-        except Exception as e:
-            apgi_logger.error(f"Error exporting data: {e}")
+        except Exception:
+            self.logger.error("Error exporting data")
             return None
 
     def clear_data(self):
@@ -558,7 +580,7 @@ class ComprehensivePerformanceDashboard:
             "validation_results": [],
             "system_metrics": [],
         }
-        apgi_logger.info("Performance data cleared")
+        self.logger.info("Performance data cleared")
 
     def generate_report(self) -> Dict[str, Any]:
         """Generate performance summary report."""
@@ -605,7 +627,7 @@ class ComprehensivePerformanceDashboard:
 
             return report
         except Exception as e:
-            apgi_logger.error(f"Error generating report: {e}")
+            self.logger.error(f"Error generating report: {e}")
             return {"error": str(e)}
 
     def _generate_recommendations(
@@ -699,7 +721,7 @@ class ComprehensivePerformanceDashboard:
                 self.update_metrics()
                 time.sleep(5)  # Update every 5 seconds
             except Exception as e:
-                apgi_logger.error(f"Error in monitoring loop: {e}")
+                self.logger.error(f"Error in monitoring loop: {e}")
                 time.sleep(5)
 
     def run(self, host: str = "127.0.0.1", debug: bool = False):
@@ -714,7 +736,7 @@ class ComprehensivePerformanceDashboard:
             # Start initial metrics update
             self.update_metrics()
 
-            apgi_logger.info(
+            self.logger.info(
                 f"Starting Comprehensive Performance Dashboard on http://{host}:{self.port}"
             )
 
@@ -722,7 +744,7 @@ class ComprehensivePerformanceDashboard:
             self.app.run_server(debug=debug, host=host, port=self.port)
 
         except Exception as e:
-            apgi_logger.error(f"Error running dashboard: {e}")
+            self.logger.error(f"Error running dashboard: {e}")
             raise
 
     def get_performance_summary(self) -> Dict[str, Any]:

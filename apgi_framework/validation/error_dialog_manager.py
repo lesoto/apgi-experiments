@@ -1,14 +1,13 @@
 """Error Dialog Manager for APGI Framework to prevent dialog overload."""
 
+import queue
 import threading
 import time
-import queue
-from typing import Dict, List, Optional, Callable
+import tkinter as tk
 from dataclasses import dataclass, field
 from enum import Enum
-import tkinter as tk
 from tkinter import messagebox
-import customtkinter as ctk
+from typing import Optional
 
 from ..logging.standardized_logging import get_logger
 
@@ -231,16 +230,19 @@ class ErrorDialogManager:
             # Try to find the main application window
             try:
                 # Get all existing tkinter windows
-                windows = [
-                    widget
-                    for widget in tk._default_root.winfo_children()
-                    if isinstance(widget, (tk.Tk, tk.Toplevel))
-                ]
+                root = getattr(tk, "_default_root", None)
+                windows = []
+                if root is not None:
+                    windows = [
+                        widget
+                        for widget in root.winfo_children()
+                        if isinstance(widget, (tk.Tk, tk.Toplevel))
+                    ]
                 if windows:
                     windows[0].after(0, show_dialog)
                 else:
                     self.logger.warning("No suitable parent window found for dialog")
-            except:
+            except Exception:
                 self.logger.warning("Could not find parent window for dialog")
 
     def clear_queue(self):

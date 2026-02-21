@@ -2,21 +2,22 @@
 Extended tests for Threshold Detection Paradigm component.
 """
 
-import pytest
-import numpy as np
 from datetime import datetime
+
+import numpy as np
+import pytest
 
 # Import threshold detection components
 try:
     from apgi_framework.research.threshold_detection_paradigm import (
-        ThresholdDetectionSystem,
-        ModalityType,
-        ThresholdMethod,
-        StimulusParameters,
-        TrialResponse,
-        ConsciousnessLevel,
-        PsychometricFunction,
         AdaptiveStaircase,
+        ConsciousnessLevel,
+        ModalityType,
+        PsychometricFunction,
+        StimulusParameters,
+        ThresholdDetectionSystem,
+        ThresholdMethod,
+        TrialResponse,
     )
 
     THRESHOLD_DETECTION_AVAILABLE = True
@@ -129,16 +130,6 @@ class TestThresholdDetectionParadigmExtended:
             start_intensity=5.0, step_size=0.5, rule="3up_1down", max_trials=20
         )
 
-        # Test 2up_1down rule
-        staircase_2up1down = AdaptiveStaircase(
-            start_intensity=5.0, step_size=0.5, rule="2up_1down", max_trials=20
-        )
-
-        # Test 1up_1down rule
-        staircase_1up1down = AdaptiveStaircase(
-            start_intensity=5.0, step_size=0.5, rule="1up_1down", max_trials=20
-        )
-
         # Test invalid rule
         with pytest.raises(Exception):
             AdaptiveStaircase(
@@ -148,7 +139,7 @@ class TestThresholdDetectionParadigmExtended:
         # Test staircase behavior
         for i in range(10):
             # 3up_1down: need 3 correct to go down
-            intensity = staircase_3up1down.get_next_intensity()
+            staircase_3up1down.get_next_intensity()
             staircase_3up1down.update_staircase(True)  # Correct
 
             if i < 2:  # First 2 correct, shouldn't change

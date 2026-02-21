@@ -5,40 +5,39 @@ Provides advanced real-time monitoring capabilities with live data streaming,
 interactive plots, and comprehensive alert system.
 """
 
-import tkinter as tk
-from tkinter import ttk, messagebox
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
-import numpy as np
-import threading
-import time
 import json
 import queue
-from typing import Dict, List, Optional, Any
-from datetime import datetime, timedelta
+import threading
+import time
+import tkinter as tk
 from collections import deque
+from datetime import datetime
+from tkinter import messagebox, ttk
+from typing import Any, Dict, List, Optional, Tuple
+
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 
 try:
-    import websockets
     import asyncio
+    import websockets
 except ImportError:
-    websockets = None
-    asyncio = None
+    websockets: Optional[Any] = None  # type: ignore[no-redef]
+    asyncio: Optional[Any] = None  # type: ignore[no-redef]
 
+from ..logging.standardized_logging import get_logger
 from .monitoring_dashboard import (
+    CardiacMonitor,
     LiveEEGMonitor,
     PupillometryMonitor,
-    CardiacMonitor,
-    RealTimeParameterEstimateUpdater,
     QualityAlertSystem,
+    RealTimeParameterEstimateUpdater,
 )
 from .realtime_data_stream import (
     get_streamer,
     start_realtime_streaming,
     stop_realtime_streaming,
 )
-from ..logging.standardized_logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -79,13 +78,23 @@ class RealTimePlotManager:
         self.update_rate = 10  # Hz
 
         # Data buffers
-        self.eeg_data = deque(maxlen=self.time_window * self.update_rate)
-        self.pupil_data = deque(maxlen=self.time_window * self.update_rate)
-        self.cardiac_data = deque(maxlen=self.time_window * self.update_rate)
-        self.param_data = deque(maxlen=100)  # Parameter updates are less frequent
+        self.eeg_data: deque[Tuple[float, float, float]] = deque(
+            maxlen=self.time_window * self.update_rate
+        )
+        self.pupil_data: deque[Tuple[float, float]] = deque(
+            maxlen=self.time_window * self.update_rate
+        )
+        self.cardiac_data: deque[Tuple[float, float]] = deque(
+            maxlen=self.time_window * self.update_rate
+        )
+        self.param_data: deque[Tuple[float, str, float, float, float]] = deque(
+            maxlen=100
+        )  # Parameter updates are less frequent
 
         # Time buffer
-        self.time_buffer = deque(maxlen=self.time_window * self.update_rate)
+        self.time_buffer: deque[float] = deque(
+            maxlen=self.time_window * self.update_rate
+        )
         self.start_time = time.time()
 
         logger.info("RealTimePlotManager initialized")
@@ -194,7 +203,7 @@ class RealTimePlotManager:
         self.param_data.append((current_time, param_name, mean, ci_lower, ci_upper))
 
         # Group by parameter name
-        param_groups = {}
+        param_groups: Dict[str, Dict[str, List[Any]]] = {}
         for t, name, m, l, u in self.param_data:
             if name not in param_groups:
                 param_groups[name] = {

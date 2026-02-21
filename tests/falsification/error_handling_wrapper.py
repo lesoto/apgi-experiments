@@ -6,28 +6,26 @@ Implements comprehensive try-catch blocks, detailed error logging, automatic ret
 failures, and error recovery mechanisms.
 """
 
-from typing import Callable, Any, Optional, Dict, List
-from functools import wraps
 import logging
-from datetime import datetime
-import traceback
-import sys
 import os
+import sys
+import traceback
+from datetime import datetime
+from functools import wraps
+from typing import Any, Callable, Dict, List
 
 from apgi_framework.exceptions import (
     APGIFrameworkError,
-    ValidationError,
+    ConfigurationError,
     SimulationError,
     StatisticalError,
-    ConfigurationError,
+    ValidationError,
 )
 from apgi_framework.validation.error_recovery import (
-    with_retry,
     RetryConfig,
     get_recovery_manager,
-    safe_execute,
+    with_retry,
 )
-from apgi_framework.validation.parameter_validator import get_validator
 
 
 # Configure detailed logging with file handler
@@ -134,7 +132,7 @@ def with_error_handling(
                             )
                             logger.error(f"Invalid parameters: {kwargs}")
                             logger.error(
-                                f"Troubleshooting: Check parameter ranges and types"
+                                "Troubleshooting: Check parameter ranges and types"
                             )
                         raise
 
@@ -174,10 +172,10 @@ def with_error_handling(
                 if log_errors:
                     logger.error(f"Validation error in {func_name}: {str(e)}")
                     logger.error(f"Context: {context}")
-                    logger.error(f"Troubleshooting:")
-                    logger.error(f"  - Check parameter values are within valid ranges")
-                    logger.error(f"  - Verify parameter types match expected types")
-                    logger.error(f"  - Review parameter documentation")
+                    logger.error("Troubleshooting:")
+                    logger.error("  - Check parameter values are within valid ranges")
+                    logger.error("  - Verify parameter types match expected types")
+                    logger.error("  - Review parameter documentation")
 
                     # Create detailed error report
                     error_report = create_error_report(func_name, e, context)
@@ -193,13 +191,13 @@ def with_error_handling(
                 if log_errors:
                     logger.error(f"Configuration error in {func_name}: {str(e)}")
                     logger.error(f"Context: {context}")
-                    logger.error(f"Troubleshooting:")
-                    logger.error(f"  - Verify configuration file exists and is valid")
+                    logger.error("Troubleshooting:")
+                    logger.error("  - Verify configuration file exists and is valid")
                     logger.error(
-                        f"  - Check for missing required configuration parameters"
+                        "  - Check for missing required configuration parameters"
                     )
                     logger.error(
-                        f"  - Ensure configuration values are properly formatted"
+                        "  - Ensure configuration values are properly formatted"
                     )
 
                     error_report = create_error_report(func_name, e, context)
@@ -214,10 +212,10 @@ def with_error_handling(
                 if log_errors:
                     logger.error(f"Simulation error in {func_name}: {str(e)}")
                     logger.error(f"Context: {context}")
-                    logger.error(f"Troubleshooting:")
-                    logger.error(f"  - Try running with a different random seed")
-                    logger.error(f"  - Check simulation parameters are reasonable")
-                    logger.error(f"  - Verify input data is not corrupted")
+                    logger.error("Troubleshooting:")
+                    logger.error("  - Try running with a different random seed")
+                    logger.error("  - Check simulation parameters are reasonable")
+                    logger.error("  - Verify input data is not corrupted")
 
                     error_report = create_error_report(func_name, e, context)
                     logger.debug(f"Detailed error report:\n{error_report}")
@@ -242,10 +240,10 @@ def with_error_handling(
                 if log_errors:
                     logger.error(f"Statistical error in {func_name}: {str(e)}")
                     logger.error(f"Context: {context}")
-                    logger.error(f"Troubleshooting:")
-                    logger.error(f"  - Verify sample size is sufficient")
-                    logger.error(f"  - Check for numerical stability issues")
-                    logger.error(f"  - Ensure data distributions are appropriate")
+                    logger.error("Troubleshooting:")
+                    logger.error("  - Verify sample size is sufficient")
+                    logger.error("  - Check for numerical stability issues")
+                    logger.error("  - Ensure data distributions are appropriate")
 
                     error_report = create_error_report(func_name, e, context)
                     logger.debug(f"Detailed error report:\n{error_report}")
@@ -259,10 +257,10 @@ def with_error_handling(
                 if log_errors:
                     logger.critical(f"Memory error in {func_name}: {str(e)}")
                     logger.critical(f"Context: {context}")
-                    logger.critical(f"Troubleshooting:")
-                    logger.critical(f"  - Reduce batch size or number of trials")
-                    logger.critical(f"  - Close other applications to free memory")
-                    logger.critical(f"  - Consider processing data in chunks")
+                    logger.critical("Troubleshooting:")
+                    logger.critical("  - Reduce batch size or number of trials")
+                    logger.critical("  - Close other applications to free memory")
+                    logger.critical("  - Consider processing data in chunks")
 
                     error_report = create_error_report(func_name, e, context)
                     logger.debug(f"Detailed error report:\n{error_report}")
@@ -276,7 +274,7 @@ def with_error_handling(
             except KeyboardInterrupt:
                 # User interruption - clean exit
                 logger.warning(f"User interrupted {func_name}")
-                logger.info(f"Cleaning up after interruption...")
+                logger.info("Cleaning up after interruption...")
                 raise
 
             except APGIFrameworkError as e:
@@ -284,10 +282,10 @@ def with_error_handling(
                 if log_errors:
                     logger.error(f"Framework error in {func_name}: {str(e)}")
                     logger.error(f"Context: {context}")
-                    logger.error(f"Troubleshooting:")
-                    logger.error(f"  - Check system health with diagnostics")
-                    logger.error(f"  - Review error log for patterns")
-                    logger.error(f"  - Verify all dependencies are installed")
+                    logger.error("Troubleshooting:")
+                    logger.error("  - Check system health with diagnostics")
+                    logger.error("  - Review error log for patterns")
+                    logger.error("  - Verify all dependencies are installed")
 
                     error_report = create_error_report(func_name, e, context)
                     logger.debug(f"Detailed error report:\n{error_report}")
@@ -305,10 +303,10 @@ def with_error_handling(
                     logger.critical(f"Traceback:\n{traceback.format_exc()}")
                     logger.critical(f"Context: {context}")
                     logger.critical(f"System info: Python {sys.version}")
-                    logger.critical(f"Troubleshooting:")
-                    logger.critical(f"  - This is an unexpected error type")
-                    logger.critical(f"  - Check the full traceback above")
-                    logger.critical(f"  - Report this error if it persists")
+                    logger.critical("Troubleshooting:")
+                    logger.critical("  - This is an unexpected error type")
+                    logger.critical("  - Check the full traceback above")
+                    logger.critical("  - Report this error if it persists")
 
                     error_report = create_error_report(func_name, e, context)
                     logger.debug(f"Detailed error report:\n{error_report}")
@@ -344,9 +342,6 @@ def _validate_test_parameters(func_name: str, params: Dict[str, Any]):
     Raises:
         ValidationError: If parameters are invalid
     """
-    validator = get_validator()
-
-    # Validate common parameters
     if "n_trials" in params:
         n_trials = params["n_trials"]
         if not isinstance(n_trials, int) or n_trials <= 0:
@@ -478,28 +473,31 @@ class ErrorHandlingTestWrapper:
 
                             if is_transient:
                                 logger.info(
-                                    f"Transient failure detected, attempting recovery..."
+                                    "Transient failure detected, attempting recovery..."
                                 )
                                 self.recovery_attempts += 1
 
                                 # Attempt recovery
                                 recovery_result = recover_from_error(e, error_entry)
 
-                                if recovery_result is not None:
+                                if recovery_result["action"] == "return":
                                     self.successful_recoveries += 1
-                                    logger.info(
-                                        f"Recovery successful, returning result"
-                                    )
-                                    return recovery_result
-                                else:
-                                    # Recovery signaled retry
-                                    logger.info(f"Recovery initiated, retrying...")
+                                    logger.info("Recovery successful, returning result")
+                                    return recovery_result["result"]
+                                elif recovery_result["action"] == "retry":
+                                    # Recovery initiated, retry
+                                    logger.info("Recovery initiated, retrying...")
                                     import time
 
                                     time.sleep(
                                         1.0 * attempt_count
                                     )  # Exponential backoff
                                     continue
+                                elif recovery_result["action"] == "fail":
+                                    # Recovery failed, don't retry
+                                    logger.warning("Recovery failed, not retrying")
+                                    self.failed_recoveries += 1
+                                    raise
 
                         # If we get here, either not transient or max attempts reached
                         self.failed_recoveries += 1
@@ -532,8 +530,8 @@ class ErrorHandlingTestWrapper:
             }
 
         # Analyze error types
-        error_types = {}
-        error_methods = {}
+        error_types: Dict[str, int] = {}
+        error_methods: Dict[str, int] = {}
         for entry in self.error_log:
             error_type = entry["error_type"]
             method = entry["method"]
@@ -738,7 +736,6 @@ def log_test_execution(func: Callable) -> Callable:
         try:
             result = func(*args, **kwargs)
             end_time = datetime.now()
-            success = True
             error = None
 
             # Log successful execution
@@ -751,7 +748,6 @@ def log_test_execution(func: Callable) -> Callable:
 
         except Exception as e:
             end_time = datetime.now()
-            success = False
             error = e
 
             # Log failed execution
@@ -989,16 +985,21 @@ def handle_transient_failure(
     return False
 
 
-def recover_from_error(error: Exception, context: Dict[str, Any]) -> Optional[Any]:
+def recover_from_error(error: Exception, context: Dict[str, Any]) -> Dict[str, Any]:
     """
     Attempt to recover from an error using context-specific strategies.
+
+    Returns a dictionary with recovery action:
+    - {'action': 'return', 'result': value} - Recovery successful, return the result
+    - {'action': 'retry'} - Recovery initiated, signal caller to retry
+    - {'action': 'fail'} - Recovery failed, caller should not retry
 
     Args:
         error: Exception to recover from
         context: Context information
 
     Returns:
-        Recovery result if successful, None otherwise
+        Dictionary specifying recovery action and optional result
     """
     logger.info(f"Attempting error recovery for {type(error).__name__}")
 
@@ -1007,8 +1008,12 @@ def recover_from_error(error: Exception, context: Dict[str, Any]) -> Optional[An
     # Try registered recovery strategies first
     result = recovery_manager.attempt_recovery(error, context)
     if result is not None:
-        logger.info("Recovery successful using registered strategy")
-        return result
+        if isinstance(result, dict):
+            logger.info("Recovery successful using registered strategy")
+            return result
+        else:
+            logger.info("Recovery successful using registered strategy")
+            return {"action": "return", "result": result}
 
     # Try context-specific recovery
     if isinstance(error, SimulationError):
@@ -1019,7 +1024,8 @@ def recover_from_error(error: Exception, context: Dict[str, Any]) -> Optional[An
         new_seed = np.random.randint(0, 1000000)
         np.random.seed(new_seed)
         logger.info(f"Reset random seed to {new_seed}")
-        return None  # Signal to retry
+        # For simulation errors, retry with new seed
+        return {"action": "retry"}
 
     elif isinstance(error, (IOError, OSError)):
         logger.info("Attempting I/O error recovery")
@@ -1031,9 +1037,10 @@ def recover_from_error(error: Exception, context: Dict[str, Any]) -> Optional[An
                 path = context["path"]
                 os.makedirs(os.path.dirname(path), exist_ok=True)
                 logger.info(f"Created directory for path: {path}")
-                return None  # Signal to retry
+                return {"action": "retry"}
             except Exception as e:
                 logger.error(f"Failed to create directory: {e}")
 
+    # No recovery strategy available
     logger.warning("No recovery strategy available for this error")
-    return None
+    return {"action": "fail"}

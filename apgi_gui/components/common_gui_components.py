@@ -5,19 +5,18 @@ Extracts shared functionality to reduce duplication across GUI files.
 Provides standardized error handling, file operations, tooltips, and more.
 """
 
-import tkinter as tk
-from tkinter import messagebox, filedialog
-from typing import Dict, List, Callable, Optional, Any, Union
-import logging
 import json
-import os
-from pathlib import Path
+import logging
+import tkinter as tk
 import traceback
 from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
+from tkinter import filedialog, messagebox
+from typing import Any, Callable, Dict, List, Optional
 
 try:
-    import customtkinter as ctk
+    import customtkinter as ctk  # type: ignore
 
     CUSTOMTKINTER_AVAILABLE = True
 except ImportError:
@@ -31,8 +30,8 @@ try:
     MATPLOTLIB_AVAILABLE = True
 except ImportError:
     MATPLOTLIB_AVAILABLE = False
-    plt = None
-    FigureCanvasTkAgg = None
+    plt_type: Any = None  # type: ignore[assignment]
+    FigureCanvasTkAgg_type: Any = None  # type: ignore[assignment]
 
 logger = logging.getLogger(__name__)
 
@@ -136,7 +135,7 @@ class ErrorHandler:
             text_widget.insert(tk.END, f"Timestamp: {error_info.timestamp}\n")
             text_widget.insert(tk.END, "\n" + "=" * 50 + "\n")
             text_widget.insert(tk.END, "Technical Details:\n")
-            text_widget.insert(tk.END, error_info.technical_details)
+            text_widget.insert(tk.END, str(error_info.technical_details))
 
             text_widget.config(state=tk.DISABLED)
 
@@ -289,12 +288,12 @@ class FileManager:
             logger.info(f"Successfully loaded JSON from {file_path}")
             return data
 
-        except json.JSONDecodeError as e:
+        except json.JSONDecodeError:
             self.error_handler.show_error(
-                "JSON Parse Error", f"Invalid JSON format in file: {file_path}", str(e)
+                "JSON Parse Error", f"Invalid JSON format in file: {file_path}"
             )
             return None
-        except Exception as e:
+        except Exception:
             self.error_handler.show_error(
                 "File Load Error",
                 f"Failed to load file: {file_path}",
@@ -323,7 +322,7 @@ class FileManager:
             logger.info(f"Successfully saved JSON to {file_path}")
             return True
 
-        except Exception as e:
+        except Exception:
             self.error_handler.show_error(
                 "File Save Error",
                 f"Failed to save file: {file_path}",
@@ -393,7 +392,8 @@ class ThemeManager:
                 else:
                     # Default to light for other systems
                     self.themes["system"] = self.themes["light"]
-            except:
+            except Exception as e:
+                logger.error(f"Failed to detect system theme: {e}")
                 self.themes["system"] = self.themes["light"]
 
             root.destroy()
@@ -420,8 +420,9 @@ class ThemeManager:
 
         try:
             if hasattr(widget, "configure"):
-                # Configure basic colors
-                widget.configure(bg=colors["bg"])
+                # Configure basic colors - only for tk widgets
+                if isinstance(widget, tk.Widget):
+                    widget.configure(bg=colors["bg"])  # type: ignore[arg-type,call-arg]
 
                 # Handle different widget types
                 if isinstance(widget, (tk.Label, tk.Button)):
@@ -483,12 +484,11 @@ class PlotManager:
             canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
             return {"figure": fig, "axis": ax, "canvas": canvas}
-
         except Exception as e:
             self.error_handler.show_error(
                 "Plot Creation Error",
                 "Failed to create plot canvas",
-                traceback.format_exc(),
+                str(e),
             )
             return None
 
@@ -525,7 +525,7 @@ class PlotManager:
 
             canvas.draw()
 
-        except Exception as e:
+        except Exception:
             self.error_handler.show_error(
                 "Plot Update Error",
                 f"Failed to update plot: {plot_id}",

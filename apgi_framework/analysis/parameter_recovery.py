@@ -6,17 +6,18 @@ validation to ensure the Bayesian modeling pipeline can accurately recover
 known ground-truth parameters.
 """
 
-import numpy as np
-from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
+from typing import Dict, List, Optional, Tuple
+
 import matplotlib.pyplot as plt
-from scipy import stats  # type: ignore
+import numpy as np
 import pandas as pd
+from scipy import stats  # type: ignore
 
 from ..logging.standardized_logging import get_logger
+from ..utils.progress_monitor import ProgressMonitor
 from .bayesian_models import ParameterEstimates
 from .parameter_estimation import JointParameterFitter
-from ..utils.progress_monitor import ProgressMonitor
 
 
 @dataclass

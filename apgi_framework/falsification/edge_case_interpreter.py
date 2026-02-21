@@ -6,14 +6,14 @@ Handles special cases like anesthesia awareness, blindsight, dreams, and locked-
 that may not fit standard falsification criteria.
 """
 
-from typing import Dict, List, Optional, Tuple, Any, Union, TYPE_CHECKING
 from dataclasses import dataclass
-from enum import Enum
-import numpy as np
 from datetime import datetime
+from enum import Enum
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
-from ..simulators.signature_validator import CombinedSignature, ConsciousnessLevel
-from ..exceptions import ValidationError
+import numpy as np
+
+from ..simulators.signature_validator import CombinedSignature
 
 if TYPE_CHECKING:
     from . import ConsciousnessAssessment
@@ -399,7 +399,7 @@ class EdgeCaseInterpreter:
                 bold_scores.append(bold_score)
 
         if bold_scores:
-            scores.append(np.mean(bold_scores))
+            scores.append(float(np.mean(bold_scores)))
 
         # PCI score
         pci_score = self._calculate_range_score(
@@ -429,7 +429,7 @@ class EdgeCaseInterpreter:
         scores.append(meta_score)
 
         # Return weighted average (equal weights for now)
-        return np.mean(scores)
+        return float(np.mean(scores))
 
     def _calculate_range_score(
         self, value: float, expected_range: Tuple[float, float]
@@ -596,9 +596,9 @@ class EdgeCaseInterpreter:
                 bold_scores.append(bold_score)
 
         if bold_scores:
-            scores.append(np.mean(bold_scores))
+            scores.append(float(np.mean(bold_scores)))
 
-        return np.mean(scores)
+        return float(np.mean(scores))
 
     def _calculate_consciousness_consistency(
         self,
@@ -629,7 +629,7 @@ class EdgeCaseInterpreter:
         )
         scores.append(meta_score)
 
-        return np.mean(scores)
+        return float(np.mean(scores))
 
     def _generate_interpretation(
         self,

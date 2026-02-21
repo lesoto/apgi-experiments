@@ -5,23 +5,21 @@ Provides a user-friendly interface for creating, managing, and restoring backups
 of experiment data, configurations, and results.
 """
 
-import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
-import customtkinter as ctk
-from typing import Dict, Any, Optional, List, Callable
-from pathlib import Path
+import datetime
 import json
 import shutil
-import datetime
 import threading
+import tkinter as tk
 import zipfile
-import os
+from pathlib import Path
+from tkinter import filedialog, messagebox, ttk
+from typing import Any, Callable, Dict, List, Optional
 
 
 class BackupManager:
     """Manages backup operations for APGI Framework data."""
 
-    def __init__(self, base_path: Path = None):
+    def __init__(self, base_path: Optional[Path] = None):
         self.base_path = base_path or Path.cwd()
         self.backup_dir = self.base_path / "backups"
         self.backup_dir.mkdir(exist_ok=True)
@@ -119,7 +117,7 @@ class BackupManager:
                         continue
 
                     item_info = self.backup_items[item_name]
-                    source_path = self.base_path / item_info["path"]
+                    source_path = self.base_path / str(item_info["path"])
 
                     if not source_path.exists():
                         continue
@@ -132,7 +130,7 @@ class BackupManager:
 
                     # Add files to zip
                     if source_path.is_file():
-                        zipf.write(source_path, item_info["path"])
+                        zipf.write(source_path, str(item_info["path"]))
                     else:
                         for file_path in source_path.rglob("*"):
                             if file_path.is_file():
@@ -191,9 +189,6 @@ class BackupManager:
                 if "backup_metadata.json" not in zipf.namelist():
                     raise ValueError("Invalid backup file: missing metadata")
 
-                metadata_content = zipf.read("backup_metadata.json")
-                metadata = json.loads(metadata_content)
-
                 # Get list of files to extract (excluding metadata)
                 files_to_extract = [
                     f for f in zipf.namelist() if f != "backup_metadata.json"
@@ -247,7 +242,7 @@ class BackupManagerUI:
         self.item_vars = {}
         for item_name in self.backup_manager.backup_items:
             var = tk.BooleanVar(
-                value=self.backup_manager.backup_items[item_name]["enabled"]
+                value=bool(self.backup_manager.backup_items[item_name]["enabled"])
             )
             self.item_vars[item_name] = var
 
@@ -404,7 +399,7 @@ class BackupManagerUI:
                     backup["timestamp"], "%Y%m%d_%H%M%S"
                 )
                 date_str = timestamp.strftime("%Y-%m-%d %H:%M")
-            except:
+            except Exception:
                 date_str = backup["timestamp"]
 
             # Format items

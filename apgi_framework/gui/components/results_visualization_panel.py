@@ -5,18 +5,19 @@ Extracted from the monolithic GUI to provide a focused component
 for visualizing test results and statistical analysis.
 """
 
-import customtkinter as ctk
-import tkinter as tk
-from tkinter import messagebox, filedialog
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTk
-import numpy as np
 import json
 import logging
-from typing import Dict, Any, Optional, List, Callable
-from pathlib import Path
 import sys
+import tkinter as tk
 from datetime import datetime
+from pathlib import Path
+from tkinter import filedialog, messagebox
+from typing import Any, Callable, Dict, List, Optional
+
+import customtkinter as ctk
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.backends.backend_tkagg import FigureCanvasTk
 
 # Add project root to Python path for imports
 project_root = Path(__file__).parent.parent.parent
@@ -24,12 +25,12 @@ sys.path.insert(0, str(project_root))
 
 try:
     from apgi_framework.logging.standardized_logging import get_logger
+
+    logger = get_logger("results_visualization_panel")  # type: ignore[assignment]
 except ImportError as e:
     logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger("results_visualization_panel")
+    logger = logging.getLogger("results_visualization_panel")  # type: ignore[assignment]
     logger.warning(f"Could not import standardized logging: {e}")
-
-logger = logging.getLogger("results_visualization_panel")
 
 
 class ResultsVisualizationPanel(ctk.CTkFrame):
@@ -50,8 +51,10 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
         """
         super().__init__(parent)
 
-        self.results_data = []
-        self.test_run_history = []  # Track multiple runs for comparison
+        self.results_data: List[Dict[str, Any]] = []
+        self.test_run_history: List[
+            Dict[str, Any]
+        ] = []  # Track multiple runs for comparison
         self.results_callback = results_callback
 
         # Visualization settings
@@ -562,7 +565,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
             return
 
         # Extract comparison data
-        run_names = [f"Run {i+1}" for i in range(len(self.test_run_history))]
+        run_names = [f"Run {i + 1}" for i in range(len(self.test_run_history))]
         metrics = [
             "success_rate",
             "falsification_rate",
@@ -615,15 +618,15 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
             mean_power = np.mean(powers) if powers else 0
 
             # Build summary text
-            summary = f"{'='*50}\n"
-            summary += f"SUMMARY STATISTICS\n"
-            summary += f"{'='*50}\n\n"
+            summary = f"{'=' * 50}\n"
+            summary += "SUMMARY STATISTICS\n"
+            summary += f"{'=' * 50}\n\n"
             summary += f"Total Tests:        {total_tests}\n"
             summary += (
                 f"Falsified Tests:   {falsified_tests} ({falsification_rate:.1%})\n"
             )
             summary += f"Mean Effect Size:  {mean_effect_size:.3f}\n"
-            summary += f"Significant Tests: {significant_tests} ({significant_tests/total_tests:.1%})\n"
+            summary += f"Significant Tests: {significant_tests} ({significant_tests / total_tests:.1%})\n"
             summary += f"Mean Power:        {mean_power:.3f}\n\n"
 
             # Test type breakdown
@@ -636,8 +639,8 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
                 if result.get("is_falsified", False):
                     test_types[test_type]["falsified"] += 1
 
-            summary += f"TEST TYPE BREAKDOWN\n"
-            summary += f"{'-'*30}\n"
+            summary += "TEST TYPE BREAKDOWN\n"
+            summary += f"{'-' * 30}\n"
             for test_type, stats in test_types.items():
                 rate = stats["falsified"] / stats["total"] if stats["total"] > 0 else 0
                 summary += f"{test_type:20s}: {stats['falsified']:2d}/{stats['total']:2d} ({rate:.1%})\n"

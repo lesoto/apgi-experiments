@@ -4,15 +4,16 @@ Provides tools for profiling and analyzing performance bottlenecks.
 """
 
 import cProfile
-import pstats
-import io
-import time
 import functools
-import psutil
+import io
+import pstats
+import time
 from pathlib import Path
-from typing import Callable, Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
+
 import matplotlib.pyplot as plt
 import pandas as pd
+import psutil
 
 
 class Profiler:
@@ -478,8 +479,8 @@ if __name__ == "__main__":
         return np.linalg.svd(np.random.rand(1000, 1000))
 
     def pandas_benchmark():
-        import pandas as pd
         import numpy as np
+        import pandas as pd
 
         df = pd.DataFrame(np.random.rand(10000, 100))
         return df.describe()

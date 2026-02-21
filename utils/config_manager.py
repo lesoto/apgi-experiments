@@ -26,16 +26,25 @@ import yaml
 from dotenv import load_dotenv
 
 try:
-    from .logging_config import apgi_logger, log_error
-except ImportError:
-    try:
-        from utils.logging_config import apgi_logger, log_error
-    except ImportError:
-        # When running directly from utils directory
-        import logging_config
+    from apgi_framework.logging.standardized_logging import get_logger
 
-        apgi_logger = logging_config.apgi_logger
-        log_error = logging_config.log_error
+    apgi_logger = get_logger(__name__)
+
+    def log_error(error: Exception, context: dict = None):
+        apgi_logger.error(f"Error: {error}")
+        if context:
+            apgi_logger.error(f"Context: {context}")
+
+except ImportError:
+    import logging
+
+    apgi_logger = logging.getLogger(__name__)
+
+    def log_error(error: Exception, context: dict = None):
+        apgi_logger.error(f"Error: {error}")
+        if context:
+            apgi_logger.error(f"Context: {context}")
+
 
 # Project root directory
 PROJECT_ROOT = Path(__file__).parent
@@ -200,7 +209,7 @@ class ConfigManager:
     """Advanced configuration management system."""
 
     def __init__(self, config_file: Optional[str] = None):
-        self.config_file = config_file or CONFIG_DIR / "default.yaml"
+        self.config_file = Path(config_file or CONFIG_DIR / "default.yaml")
         self.config = APGIConfig()
         self.schema = self._load_schema()
         self._load_environment()

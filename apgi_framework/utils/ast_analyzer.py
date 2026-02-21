@@ -7,12 +7,11 @@ analysis for the test enhancement system.
 """
 
 import ast
-import inspect
-from pathlib import Path
-from typing import Union, List, Dict, Any, Optional, Set, Tuple
+import logging
 from dataclasses import dataclass
 from enum import Enum
-import logging
+from pathlib import Path
+from typing import Dict, List, Optional, Set, Union
 
 from .file_utils import FileUtils
 
@@ -592,8 +591,6 @@ class ASTAnalyzer:
     def _calculate_cognitive_complexity(self, tree: ast.AST) -> int:
         """Calculate cognitive complexity (simplified version)."""
         # This is a simplified version - full cognitive complexity is more complex
-        complexity = 0
-        nesting_level = 0
 
         class CognitiveVisitor(ast.NodeVisitor):
             def __init__(self):

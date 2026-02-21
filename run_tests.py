@@ -22,22 +22,22 @@ Usage:
     python run_tests.py [--gui] [--category CATEGORY] [--coverage] [--parallel]
 """
 
-import sys
-import os
-import subprocess
-import json
 import argparse
-import threading
-import queue
-from pathlib import Path
-from typing import Dict, Any
-from datetime import datetime
+import json
 import multiprocessing
+import os
+import queue
+import subprocess
+import sys
+import threading
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict
 
 # GUI imports
 try:
     import tkinter as tk
-    from tkinter import ttk, scrolledtext, messagebox
+    from tkinter import messagebox, scrolledtext, ttk
 
     GUI_AVAILABLE = True
 except ImportError:
@@ -57,8 +57,8 @@ project_root = Path(__file__).parent.absolute()
 sys.path.insert(0, str(project_root))
 
 try:
-    from apgi_framework.utils.test_utils import FrameworkTestUtilities
     from apgi_framework.cli import APGIFrameworkCLI
+    from apgi_framework.utils.framework_test_utils import FrameworkTestUtilities
 
     UTILS_AVAILABLE = True
 except ImportError as e:
@@ -466,12 +466,13 @@ class ComprehensiveTestRunner:
             if not capture_output:
                 print(f"Error running pytest: {e}")
             if capture_output:
+                error_msg = str(e)
 
                 class MockResult:
                     def __init__(self):
                         self.returncode = 1
                         self.stdout = ""
-                        self.stderr = str(e)
+                        self.stderr = error_msg
 
                 return MockResult()
             return 1

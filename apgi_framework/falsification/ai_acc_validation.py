@@ -14,10 +14,11 @@ Key components:
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any
-from enum import Enum
-import numpy as np
 from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import numpy as np
 
 from ..exceptions import ValidationError
 
@@ -273,7 +274,7 @@ class AIACCValidator:
         if not activations:
             return True, {"reason": "no_activations_measured", "activations": []}
 
-        validation_details = {
+        validation_details: Dict[str, Union[List[Dict[str, Any]], int, float]] = {
             "activations": [],
             "significant_activations": 0,
             "mean_activation": 0.0,
@@ -327,7 +328,7 @@ class AIACCValidator:
         if not coherences:
             return True, {"reason": "no_coherences_measured", "coherences": []}
 
-        validation_details = {
+        validation_details: Dict[str, Union[List[Dict[str, Any]], int, float]] = {
             "coherences": [],
             "high_coherence_count": 0,
             "mean_plv": 0.0,
@@ -382,7 +383,7 @@ class AIACCValidator:
         if not connectivities:
             return True, {"reason": "no_connectivities_measured", "connectivities": []}
 
-        validation_details = {
+        validation_details: Dict[str, Union[List[Dict[str, Any]], int, float]] = {
             "connectivities": [],
             "strong_connections": 0,
             "ai_acc_frontoparietal_connections": 0,
@@ -469,9 +470,9 @@ class AIACCValidator:
         )
 
         # Calculate summary metrics
-        mean_activation = activation_details.get("mean_activation", 0.0)
-        mean_plv = coherence_details.get("mean_plv", 0.0)
-        mean_connectivity = connectivity_details.get("mean_connectivity", 0.0)
+        mean_activation = float(activation_details.get("mean_activation", 0.0))
+        mean_plv = float(coherence_details.get("mean_plv", 0.0))
+        mean_connectivity = float(connectivity_details.get("mean_connectivity", 0.0))
 
         return AIACCValidationResult(
             trial_id=trial_id,
@@ -631,7 +632,7 @@ class AIACCSimulator:
         coherences = []
 
         for i in range(n_connections):
-            source_region = np.random.choice(self.regions)
+            source_region = np.random.choice(self.regions)  # type: ignore
             target_region = np.random.choice(self.frontoparietal_regions)
 
             if engagement_level == "absent":

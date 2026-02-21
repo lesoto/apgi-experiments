@@ -13,14 +13,13 @@ Key components:
 - Publication-ready result formatting
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any, Union
-from enum import Enum
-import numpy as np
-from datetime import datetime
 import json
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple, Union
 
-from ..exceptions import ValidationError
+import numpy as np
 
 
 class SignaturePattern(Enum):
@@ -282,7 +281,7 @@ class SignaturePatternClassifier:
                 strength = z_score / self.thresholds.bold_z_threshold * 0.4
                 strength_scores.append(max(strength, 0.0))
 
-        overall_strength = np.mean(strength_scores) if strength_scores else 0.0
+        overall_strength = float(np.mean(strength_scores)) if strength_scores else 0.0
         is_present = active_regions >= self.thresholds.min_bold_regions
 
         return is_present, overall_strength, active_regions
@@ -355,8 +354,8 @@ class SignaturePatternClassifier:
             pattern_type = SignaturePattern.ABSENT
 
         # Calculate overall scores
-        signature_strength = np.mean(
-            [p3b_strength, gamma_strength, bold_strength, pci_strength]
+        signature_strength = float(
+            np.mean([p3b_strength, gamma_strength, bold_strength, pci_strength])
         )
         completeness_score = signatures_present / 4.0  # 4 total signature types
 
@@ -403,7 +402,7 @@ class SignaturePatternClassifier:
         mean_strength = np.mean(strength_scores)
         strength_boost = mean_strength * 0.2
 
-        return min(base_confidence + signature_boost + strength_boost, 1.0)
+        return min(float(base_confidence + signature_boost + strength_boost), 1.0)
 
 
 class FalsificationInterpreter:
@@ -774,7 +773,7 @@ class FalsificationInterpreter:
 
     def _calculate_overall_confidence(self, *confidence_scores: float) -> float:
         """Calculate overall confidence from multiple confidence scores"""
-        return np.mean(confidence_scores)
+        return float(np.mean(confidence_scores))
 
     def _calculate_result_quality(
         self,
@@ -803,7 +802,7 @@ class FalsificationInterpreter:
         self, completeness_score: float, confidence_level: float, result_quality: float
     ) -> float:
         """Calculate interpretation reliability score"""
-        return np.mean([completeness_score, confidence_level, result_quality])
+        return float(np.mean([completeness_score, confidence_level, result_quality]))
 
 
 class ResultLogger:
@@ -882,7 +881,7 @@ class ResultLogger:
             1 for r in self.results_log if r["falsification_outcome"] == "falsified"
         )
 
-        pattern_counts = {}
+        pattern_counts: Dict[str, int] = {}
         for result in self.results_log:
             pattern = result["signature_pattern"]
             pattern_counts[pattern] = pattern_counts.get(pattern, 0) + 1

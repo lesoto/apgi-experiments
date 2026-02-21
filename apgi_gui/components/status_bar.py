@@ -1,22 +1,23 @@
 """Status bar component for the APGI Framework GUI."""
 
-import customtkinter as ctk
-from datetime import datetime
-from typing import Optional
 import logging
 import sys
+from datetime import datetime
 from pathlib import Path
+from typing import Optional
+
+import customtkinter as ctk  # type: ignore[import]
 
 # Import font manager for cross-platform compatibility
 try:
-    from apgi_framework.utils.font_manager import get_ui_font
     from apgi_framework.config.constants import GUIConstants, TimingConstants
+    from apgi_framework.utils.font_manager import get_ui_font
 except ImportError:
     # Fallback for direct execution
     project_root = Path(__file__).parent.parent.parent.parent
     sys.path.insert(0, str(project_root))
-    from apgi_framework.utils.font_manager import get_ui_font
     from apgi_framework.config.constants import GUIConstants, TimingConstants
+    from apgi_framework.utils.font_manager import get_ui_font
 
 
 # Cross-platform status indicators - using text-based icons for consistency

@@ -11,13 +11,15 @@ import sys
 import traceback
 from pathlib import Path
 
-# Add parent directory to path
-sys.path.insert(0, str(Path(__file__).parent))
+# Add project root and apgi_gui to path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+sys.path.insert(0, str(project_root / "apgi_gui"))
 
 
 def launch_gui():
     """Launch the GUI application normally."""
-    from apgi_gui import main
+    from apgi_gui.app import APGIFrameworkApp
 
     print("=" * 60)
     print("APGI System - Consciousness Modeling Framework")
@@ -26,13 +28,15 @@ def launch_gui():
     print("Please wait while the system initializes...\n")
 
     try:
-        main()
+        app = APGIFrameworkApp()
+        app.run()
     except KeyboardInterrupt:
         print("\n\nApplication closed by user")
     except Exception as e:
         print(f"\n\nERROR: {str(e)}")
         traceback.print_exc()
         input("\nPress Enter to exit...")
+        sys.exit(1)
 
 
 def test_gui_launch(duration_seconds: int = 3):
@@ -52,13 +56,13 @@ def test_gui_launch(duration_seconds: int = 3):
 
     try:
         # Import the GUI
-        from apgi_gui import APGIGui
+        from apgi_gui.app import APGIFrameworkApp
 
         # Create root window
         root = tk.Tk()
 
         # Create GUI instance
-        APGIGui(root)
+        APGIFrameworkApp(root)
 
         print("✓ GUI window opened successfully!")
         print(f"  - Window title: {root.title()}")

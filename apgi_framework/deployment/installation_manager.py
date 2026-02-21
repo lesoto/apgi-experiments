@@ -6,15 +6,14 @@ required for the APGI Framework parameter estimation system.
 """
 
 import logging
-import subprocess
-import shlex
-import sys
 import platform
-import os
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+import shlex
+import subprocess
+import sys
 from dataclasses import dataclass, field
 from enum import Enum
+from pathlib import Path
+from typing import Dict, Optional
 
 
 class DependencyStatus(Enum):

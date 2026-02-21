@@ -5,25 +5,21 @@ This module provides a unified interface for all data management, reporting,
 and visualization capabilities.
 """
 
-from typing import Dict, List, Any, Optional, Union
-from pathlib import Path
 import logging
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 from ..core.data_models import (
-    FalsificationResult,
     ExperimentalTrial,
+    FalsificationResult,
     StatisticalSummary,
-    APGIParameters,
-    NeuralSignatures,
-    ConsciousnessAssessment,
 )
 from ..exceptions import DataManagementError
-
-from .report_generator import ReportGenerator, FalsificationReport
-from .data_exporter import DataExporter
-from .visualizer import APGIVisualizer, InteractiveVisualizer
 from .dashboard import DashboardServer, ExperimentMonitor
+from .data_exporter import DataExporter
+from .report_generator import ReportGenerator
+from .visualizer import APGIVisualizer, InteractiveVisualizer
 
 
 class IntegratedDataManager:
@@ -56,19 +52,19 @@ class IntegratedDataManager:
 
         # Dashboard setup
         self.enable_dashboard = enable_dashboard
+        self.dashboard: Optional[DashboardServer] = None
+        self.experiment_monitor: ExperimentMonitor = ExperimentMonitor()
+
         if enable_dashboard:
             self.dashboard = DashboardServer(
                 port=dashboard_port, data_dir=str(self.base_output_dir / "dashboard")
             )
             self.experiment_monitor = self.dashboard.monitor
-        else:
-            self.dashboard = None
-            self.experiment_monitor = ExperimentMonitor()
 
         self.logger = logging.getLogger(__name__)
 
         # Active experiments tracking
-        self.active_experiments = {}
+        self.active_experiments: Dict[str, Any] = {}
 
     def start_system(self):
         """Start the data management system"""
@@ -162,7 +158,7 @@ class IntegratedDataManager:
             # Update monitor
             if current_trial is not None:
                 self.experiment_monitor.update_experiment_progress(
-                    experiment_id, current_trial, results, trials
+                    experiment_id, current_trial, results or [], trials or []
                 )
 
             self.logger.debug(f"Updated data for experiment {experiment_id}")
@@ -184,7 +180,7 @@ class IntegratedDataManager:
         self,
         experiment_id: str,
         statistical_summary: StatisticalSummary,
-        formats: List[str] = None,
+        formats: Optional[List[str]] = None,
     ) -> Dict[str, str]:
         """
         Generate comprehensive report for an experiment.
@@ -234,7 +230,7 @@ class IntegratedDataManager:
             )
 
     def export_experiment_data(
-        self, experiment_id: str, formats: List[str] = None
+        self, experiment_id: str, formats: Optional[List[str]] = None
     ) -> Dict[str, Dict[str, str]]:
         """
         Export experiment data in multiple formats.
@@ -257,7 +253,7 @@ class IntegratedDataManager:
             if formats is None:
                 formats = ["csv", "json", "hdf5"]
 
-            export_paths = {"results": {}, "trials": {}}
+            export_paths: Dict[str, Dict[str, str]] = {"results": {}, "trials": {}}
 
             # Export results
             if results:
@@ -355,9 +351,13 @@ class IntegratedDataManager:
                 "experiment_id": experiment_id,
                 "metadata": exp_data["metadata"],
                 "start_time": exp_data["start_time"].isoformat(),
-                "status": monitor_data.get("status", "unknown"),
-                "progress": monitor_data.get("progress", 0.0),
-                "statistics": monitor_data.get("statistics", {}),
+                "status": monitor_data.get("status", "unknown")
+                if monitor_data
+                else "unknown",
+                "progress": monitor_data.get("progress", 0.0) if monitor_data else 0.0,
+                "statistics": monitor_data.get("statistics", {})
+                if monitor_data
+                else {},
                 "data_counts": {
                     "results": len(exp_data["results"]),
                     "trials": len(exp_data["trials"]),

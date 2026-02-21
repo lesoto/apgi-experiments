@@ -7,12 +7,12 @@ and tools
 in the APGI Framework, organized by category for easy navigation.
 """
 
-import sys
-from pathlib import Path
-import tkinter as tk
-from tkinter import ttk, messagebox
 import subprocess
+import sys
 import threading
+import tkinter as tk
+from pathlib import Path
+from tkinter import messagebox, ttk
 
 
 # Configuration constants

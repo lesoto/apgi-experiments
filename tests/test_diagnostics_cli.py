@@ -5,20 +5,18 @@ This test suite provides full coverage for the CLI functions and command
 processing, ensuring all critical functionality is tested.
 """
 
-import pytest
-import unittest.mock as mock
-from unittest.mock import patch, MagicMock
-import sys
 from io import StringIO
-import argparse
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 # Import the modules we're testing
 from apgi_framework.validation.diagnostics_cli import (
-    run_health_check,
-    run_diagnostics,
-    validate_parameters,
     get_parameter_info,
     main,
+    run_diagnostics,
+    run_health_check,
+    validate_parameters,
 )
 
 
@@ -462,7 +460,7 @@ class TestArgumentParser:
         test_args = ["diagnostics_cli.py", "--help"]
 
         with patch("sys.argv", test_args):
-            with patch("sys.exit") as mock_exit:
+            with patch("sys.exit"):
                 with patch("argparse.ArgumentParser.print_help") as mock_help:
                     try:
                         main()

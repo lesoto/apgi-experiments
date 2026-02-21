@@ -6,17 +6,18 @@ This module implements the complete pipeline for simultaneous estimation of
 and uncertainty quantification.
 """
 
-import numpy as np
-from typing import Dict, List, Optional, Tuple, Any
-from dataclasses import dataclass
 import warnings
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple
 
+import numpy as np
+
+from ..logging.standardized_logging import get_logger
 from .bayesian_models import (
     HierarchicalBayesianModel,
-    ParameterEstimates,
     ParameterDistribution,
+    ParameterEstimates,
 )
-from ..logging.standardized_logging import get_logger
 
 # Initialize logger
 logger = get_logger(__name__)
@@ -552,8 +553,10 @@ class JointParameterFitter:
             New FitResults
         """
         warnings.warn(
-            "Refitting with more iterations. Consider checking model "
-            "specification if convergence continues to fail."
+            "The refit() method is deprecated and will be removed in a future version. "
+            "Use fit_all_subjects() with more iterations instead.",
+            DeprecationWarning,
+            stacklevel=2,
         )
 
         # This would require storing the data, which we'll skip for now

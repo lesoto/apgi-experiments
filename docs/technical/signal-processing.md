@@ -303,18 +303,18 @@ while recording:
 
 Default quality thresholds (configurable):
 
-| Metric                     | Threshold | Description                              | Units   |
-|----------------------------|:---------:|-----------------------------------------|:--------:|
-| EEG Quality                | ≥ 0.6     | Minimum acceptable EEG quality           | -       |
-| EEG Artifact Rate          | ≤ 15%     | Maximum artifact percentage              | %       |
-| EEG Bad Channels           | ≤ 5       | Maximum number of bad channels           | count   |
-| Pupil Quality              | ≥ 0.6     | Minimum pupillometry quality            | -       |
-| Pupil Data Loss            | ≤ 20%     | Maximum data loss percentage             | %       |
-| Pupil Tracking Confidence  | ≥ 0.7     | Minimum tracking confidence             | -       |
-| Cardiac Quality            | ≥ 0.6     | Minimum cardiac signal quality          | -       |
-| Cardiac SQI                | ≥ 0.7     | Minimum signal quality index            | -       |
-| Cardiac Ectopic Rate       | ≤ 5%      | Maximum ectopic beat percentage          | %       |
-| Overall Quality            | ≥ 0.5     | Minimum overall quality to continue     | -       |
+| Metric | Threshold | Description | Units |
+| --- | --- | --- | --- |
+| EEG Quality | >= 0.6 | Minimum acceptable EEG quality | - |
+| EEG Artifact Rate | <= 15% | Maximum artifact percentage | % |
+| EEG Bad Channels | <= 5 | Maximum number of bad channels | count |
+| Pupil Quality | >= 0.6 | Minimum pupillometry quality | - |
+| Pupil Data Loss | <= 20% | Maximum data loss percentage | % |
+| Pupil Tracking Confidence | >= 0.7 | Minimum tracking confidence | - |
+| Cardiac Quality | >= 0.6 | Minimum cardiac signal quality | - |
+| Cardiac SQI | >= 0.7 | Minimum signal quality index | - |
+| Cardiac Ectopic Rate | <= 5% | Maximum ectopic beat percentage | % |
+| Overall Quality | >= 0.5 | Minimum overall quality to continue | - |
 
 ## Quality Levels
 

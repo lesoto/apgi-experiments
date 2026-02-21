@@ -12,27 +12,21 @@ This example shows the architecture and patterns for creating new tests.
 """
 
 import sys
-from pathlib import Path
-import numpy as np
-from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Dict, Optional
+
+import numpy as np
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from apgi_framework.core import (
-    APGIEquation,
-    FalsificationResult,
-)
-from apgi_framework.simulators import (
-    P3bSimulator,
-    GammaSimulator,
-    BOLDSimulator,
-    P3bSignature,
-    GammaSignature,
-    BOLDSignature,
-)
 import logging
+
+from apgi_framework.simulators import (
+    GammaSimulator,
+    P3bSimulator,
+)
 
 # Setup logging with standardized system
 try:
@@ -45,7 +39,7 @@ except ImportError:
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)  # type: ignore
 
 
 @dataclass
@@ -219,7 +213,7 @@ class CrossModalIntegrationTest:
     def __init__(self):
         """Initialize the cross-modal integration test."""
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.bold_simulator = BOLDSimulator()
+        self.bold_simulator = GammaSimulator()
 
     def run_test(self, n_trials: int = 1000) -> CustomFalsificationResult:
         """
@@ -445,7 +439,7 @@ def display_custom_test_result(result: CustomFalsificationResult):
                 logger.info(f"    {sub_key}: {sub_value}")
         else:
             logger.info(f"  {key}: {value}")
-    logger.info(f"\nInterpretation:")
+    logger.info("\nInterpretation:")
     logger.info(f"  {result.interpretation}")
     logger.info("=" * 60 + "\n")
 

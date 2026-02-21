@@ -7,17 +7,17 @@ and configuration validation for the APGI Framework Test Enhancement system.
 Requirements: System deployment requirements
 """
 
-import sys
-import os
 import json
-import tempfile
 import shutil
-import subprocess
+import sys
+import tempfile
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List
+
 import pytest
-from hypothesis import given, strategies as st, assume, settings, example
-from hypothesis.stateful import RuleBasedStateMachine, rule, initialize, invariant
+from hypothesis import assume, given, settings
+from hypothesis import strategies as st
+from hypothesis.stateful import RuleBasedStateMachine, initialize, invariant, rule
 
 # Add the project root to Python path
 project_root = Path(__file__).parent.parent
@@ -263,7 +263,7 @@ def test_configuration_validation_property(
                 ), f"Configuration errors should be ValueError or TypeError, got {type(config_error)}"
                 assert len(str(config_error)) > 0, "Error message should not be empty"
 
-        except json.JSONEncodeError:
+        except TypeError:
             # Property: Non-serializable data should be handled gracefully
             # This is expected for some generated data structures
             pass

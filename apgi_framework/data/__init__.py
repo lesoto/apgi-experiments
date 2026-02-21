@@ -6,59 +6,59 @@ reporting, visualization, and dashboard capabilities for experimental data,
 results, and metadata.
 """
 
-from .storage_manager import StorageManager
+# Import example data loading functionality
+import sys
+from pathlib import Path
+
+from .dashboard import (
+    DashboardServer,
+    ExperimentComparator,
+    ExperimentMonitor,
+    create_dashboard,
+)
+from .data_exporter import DataExporter
+from .data_manager import IntegratedDataManager, create_data_manager
 from .data_models import (
+    BackupInfo,
+    DataVersion,
     ExperimentalDataset,
     ExperimentMetadata,
-    DataVersion,
-    BackupInfo,
+)
+from .data_validator import DataValidator
+from .experiment_tracker import ExperimentTracker
+from .migration_manager import MigrationManager, create_migration_manager
+from .parameter_estimation_dao import (
+    ParameterEstimationDAO,
+    create_parameter_estimation_dao,
 )
 from .parameter_estimation_models import (
-    TaskType,
-    StimulusModality,
     BehavioralResponse,
-    QualityMetrics,
-    TrialData,
     DetectionTrialResult,
     HeartbeatTrialResult,
+    ModelFitMetrics,
     OddballTrialResult,
     ParameterDistribution,
-    ModelFitMetrics,
-    ReliabilityMetrics,
     ParameterEstimates,
+    QualityMetrics,
+    ReliabilityMetrics,
     SessionData,
+    StimulusModality,
+    TaskType,
+    TrialData,
 )
 from .parameter_estimation_schema import (
     ParameterEstimationSchema,
     create_parameter_estimation_schema,
 )
-from .parameter_estimation_dao import (
-    ParameterEstimationDAO,
-    create_parameter_estimation_dao,
-)
-from .migration_manager import MigrationManager, create_migration_manager
 from .persistence_layer import PersistenceLayer
-from .data_validator import DataValidator
-from .experiment_tracker import ExperimentTracker
 
 # New reporting and visualization components
-from .report_generator import ReportGenerator, FalsificationReport, ReportSection
-from .data_exporter import DataExporter
+from .report_generator import FalsificationReport, ReportGenerator, ReportSection
+from .storage_manager import StorageManager
 from .visualizer import APGIVisualizer, InteractiveVisualizer
-from .dashboard import (
-    DashboardServer,
-    ExperimentMonitor,
-    ExperimentComparator,
-    create_dashboard,
-)
-from .data_manager import IntegratedDataManager, create_data_manager
-
-# Import example data loading functionality
-import sys
-from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "examples"))
-from data_loader import load_example_data, list_example_data
+from data_loader import list_example_data, load_example_data
 
 __all__ = [
     # Core data management

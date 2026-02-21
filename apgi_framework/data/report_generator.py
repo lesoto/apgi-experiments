@@ -5,20 +5,17 @@ This module provides comprehensive report generation capabilities for falsificat
 statistical summaries, and automated interpretation and conclusion generation.
 """
 
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, asdict
-from datetime import datetime
 import json
 import logging
+from dataclasses import asdict, dataclass, field
+from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, List
 
 from ..core.data_models import (
-    FalsificationResult,
     ExperimentalTrial,
+    FalsificationResult,
     StatisticalSummary,
-    APGIParameters,
-    NeuralSignatures,
-    ConsciousnessAssessment,
 )
 from ..exceptions import ReportGenerationError
 
@@ -29,9 +26,9 @@ class ReportSection:
 
     title: str
     content: str
-    subsections: List["ReportSection"] = None
-    figures: List[str] = None  # Figure file paths
-    tables: List[Dict[str, Any]] = None
+    subsections: List["ReportSection"] = field(default_factory=list)
+    figures: List[str] = field(default_factory=list)  # Figure file paths
+    tables: List[Dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass
@@ -211,7 +208,7 @@ class ReportGenerator:
         subsections = []
 
         # Group results by test type
-        test_types = {}
+        test_types: Dict[str, List[FalsificationResult]] = {}
         for result in results:
             if result.test_type not in test_types:
                 test_types[result.test_type] = []

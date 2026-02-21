@@ -2,24 +2,24 @@
 Simplified tests for clinical module components that focus on existing functionality.
 """
 
-import pytest
 import numpy as np
+import pytest
 
 from apgi_framework.clinical.disorder_classification import (
+    ClassificationResult,
+    DisorderClassification,
     DisorderType,
     NeuralSignatureProfile,
-    DisorderClassification,
-    ClassificationResult,
 )
 from apgi_framework.clinical.parameter_extraction import (
+    ClinicalParameters,
     ModalityType,
     TaskType,
-    ClinicalParameters,
 )
 from apgi_framework.clinical.treatment_prediction import (
-    TreatmentType,
-    TreatmentPredictor,
     TreatmentPrediction,
+    TreatmentPredictor,
+    TreatmentType,
 )
 
 

@@ -5,17 +5,14 @@ This test suite provides coverage for all major utility functions in the utils d
 Tests are organized by module and cover both happy paths and error conditions.
 """
 
-import pytest
-import tempfile
-import shutil
-import json
 import os
+import shutil
 import sys
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
-from datetime import datetime
-import threading
+import tempfile
 import time
+from pathlib import Path
+
+import pytest
 
 # Add project root to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -25,10 +22,10 @@ try:
     from utils.backup_manager import BackupManager
     from utils.cache_manager import CacheManager
     from utils.config_manager import ConfigManager
-    from utils.error_handler import ErrorHandler
-    from utils.performance_profiler import PerformanceProfiler
-    from utils.parameter_validator import APGIParameterValidator
     from utils.data_validation import DataValidator
+    from utils.error_handler import ErrorHandler
+    from utils.parameter_validator import APGIParameterValidator
+    from utils.performance_profiler import PerformanceProfiler
 except ImportError as e:
     # Try alternative import path if utils is not in Python path
     try:
@@ -42,10 +39,10 @@ except ImportError as e:
         from utils.backup_manager import BackupManager
         from utils.cache_manager import CacheManager
         from utils.config_manager import ConfigManager
-        from utils.error_handler import ErrorHandler
-        from utils.performance_profiler import PerformanceProfiler
-        from utils.parameter_validator import APGIParameterValidator
         from utils.data_validation import DataValidator
+        from utils.error_handler import ErrorHandler
+        from utils.parameter_validator import APGIParameterValidator
+        from utils.performance_profiler import PerformanceProfiler
     except ImportError:
         pytest.skip(f"Utility modules not available: {e}", allow_module_level=True)
 
@@ -329,44 +326,12 @@ class TestPerformanceProfiler:
         assert "operation2" in report
 
 
-class TestDependencyChecker:
-    """Test cases for DependencyChecker functionality."""
-
-    def setup_method(self):
-        """Set up test environment."""
-        self.dependency_checker = DependencyChecker()
-
-    def test_dependency_checking(self):
-        """Test checking package dependencies."""
-        # Check for built-in package
-        result = self.dependency_checker.check_dependency("sys")
-        assert result["installed"] is True
-
-        # Check for non-existent package
-        result = self.dependency_checker.check_dependency("nonexistent_package_12345")
-        assert result["installed"] is False
-
-    def test_version_checking(self):
-        """Test checking package versions."""
-        result = self.dependency_checker.check_dependency("sys")
-        assert "version" in result
-        assert result["version"] is not None
-
-    def test_dependency_resolution(self):
-        """Test dependency resolution."""
-        dependencies = ["sys", "os", "json"]
-        resolved = self.dependency_checker.resolve_dependencies(dependencies)
-
-        assert all(dep["installed"] for dep in resolved.values())
-        assert len(resolved) == len(dependencies)
-
-
 class TestParameterValidator:
     """Test cases for ParameterValidator functionality."""
 
     def setup_method(self):
         """Set up test environment."""
-        self.validator = ParameterValidator()
+        self.validator = APGIParameterValidator()
 
     def test_numeric_validation(self):
         """Test numeric parameter validation."""

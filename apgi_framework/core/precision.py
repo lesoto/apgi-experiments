@@ -5,9 +5,10 @@ This module implements precision calculations for both exteroceptive (Πₑ)
 and interoceptive (Πᵢ) components, including validation and edge case handling.
 """
 
-import numpy as np
-from typing import Union, Optional, Tuple
 import warnings
+from typing import Tuple
+
+import numpy as np
 
 from apgi_framework.exceptions import MathematicalError
 

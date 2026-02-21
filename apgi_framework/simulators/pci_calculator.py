@@ -6,12 +6,14 @@ consciousness-related complexity measures. PCI > 0.4 indicates conscious states,
 while PCI < 0.3 indicates unconscious states.
 """
 
-import numpy as np
-from typing import Optional, Tuple, Dict, List
-from dataclasses import dataclass
-from scipy import linalg
-from scipy.signal import hilbert
 import warnings
+import logging
+from dataclasses import dataclass
+from typing import Dict, List, Optional, Tuple
+
+import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -426,9 +428,10 @@ class PCICalculator:
             # Compute shortest path lengths
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                inv_matrix = np.linalg.pinv(
-                    connectivity_matrix + np.eye(connectivity_matrix.shape[0]) * 0.01
-                )
+                # inv_matrix is calculated but not used in current implementation
+                # inv_matrix = np.linalg.pinv(
+                #     connectivity_matrix + np.eye(connectivity_matrix.shape[0]) * 0.01
+                # )
 
             # Global efficiency approximation
             n = connectivity_matrix.shape[0]
@@ -448,7 +451,7 @@ class PCICalculator:
 
         except (ValueError, IndexError, ZeroDivisionError) as e:
             # Fallback: use mean connectivity
-            self.logger.warning(
+            logger.warning(
                 f"Integration calculation failed: {e}. Using mean connectivity fallback."
             )
             integration = np.mean(connectivity_matrix)
@@ -513,7 +516,7 @@ class PCICalculator:
                     if np.isnan(cross_corr) or np.isinf(cross_corr):
                         cross_corr = 0.0
                 except (ValueError, IndexError, RuntimeWarning) as e:
-                    self.logger.warning(
+                    logger.warning(
                         f"Cross-correlation calculation failed: {e}. Using fallback value."
                     )
                     cross_corr = 0.0

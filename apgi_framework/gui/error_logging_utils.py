@@ -4,9 +4,9 @@ Error logging utilities for APGI Framework.
 Provides integration between error handling and configuration system.
 """
 
+import logging
 from pathlib import Path
 from typing import Optional
-import logging
 
 logger = logging.getLogger(__name__)
 

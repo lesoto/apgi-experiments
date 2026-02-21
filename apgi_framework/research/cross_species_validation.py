@@ -6,15 +6,14 @@ of active inference principles and neural signatures of consciousness.
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any, Union
 from enum import Enum
+from typing import Dict, List, Optional, Tuple
+
 import numpy as np
 from scipy import stats
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import adjusted_rand_score, silhouette_score
-import logging
 
-from ..exceptions import ValidationError, SimulationError
+from ..exceptions import ValidationError
 from ..logging.standardized_logging import get_logger
 
 logger = get_logger("cross_species_validation")
@@ -345,7 +344,7 @@ class CrossSpeciesValidator:
         signatures2 = self._get_signatures_for_species(species2, signature_type)
 
         if not signatures1 or not signatures2:
-            raise ValidationError(f"No signatures found for comparison")
+            raise ValidationError("No signatures found for comparison")
 
         # Extract features for comparison
         features1 = self._extract_features_batch(signatures1)
@@ -552,7 +551,7 @@ class CrossSpeciesValidator:
         """
         logger.info("Starting comprehensive cross-species validation")
 
-        results = {}
+        results: Dict[str, List[ValidationResult]] = {}
         species_list = list(Species)
 
         for signature_type in signature_types:

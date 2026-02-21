@@ -7,24 +7,17 @@ plotting and figure generation for falsification test results.
 
 import csv
 import json
-import h5py
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-from typing import Dict, List, Any, Optional, Union, Tuple
-from pathlib import Path
-from datetime import datetime
 import logging
 from dataclasses import asdict
+from datetime import datetime
+from pathlib import Path
+from typing import List, Optional
+
+import h5py
 
 from ..core.data_models import (
-    FalsificationResult,
     ExperimentalTrial,
-    StatisticalSummary,
-    APGIParameters,
-    NeuralSignatures,
-    ConsciousnessAssessment,
+    FalsificationResult,
 )
 from ..exceptions import DataExportError
 
@@ -294,9 +287,7 @@ class DataExporter:
                 # Create subgroups for different data types
                 params_group = trials_group.create_group("apgi_parameters")
                 neural_group = trials_group.create_group("neural_signatures")
-                consciousness_group = trials_group.create_group(
-                    "consciousness_assessment"
-                )
+                trials_group.create_group("consciousness_assessment")
 
                 # Extract and store parameter arrays
                 extero_precisions = [t.apgi_parameters.extero_precision for t in trials]

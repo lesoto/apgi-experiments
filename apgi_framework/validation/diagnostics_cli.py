@@ -6,18 +6,14 @@ Command-line interface for running system health checks and diagnostics.
 
 import argparse
 import sys
-from datetime import datetime
 
-from .system_health import get_health_checker
-from .parameter_validator import get_validator
 from ..config import get_config_manager
-from ..logging.standardized_logging import get_logger
+from .parameter_validator import get_validator
+from .system_health import get_health_checker
 
 
 def run_health_check(args: argparse.Namespace) -> None:
     """Run system health check"""
-    logger = get_logger(__name__)
-
     print("\n" + "=" * 60)
     print("APGI FRAMEWORK SYSTEM HEALTH CHECK")
     print("=" * 60 + "\n")
@@ -164,9 +160,7 @@ Examples:
     )
 
     # Diagnostics command
-    diag_parser = subparsers.add_parser(
-        "diagnostics", help="Show diagnostic information"
-    )
+    subparsers.add_parser("diagnostics", help="Show diagnostic information")
 
     # Validate command
     validate_parser = subparsers.add_parser("validate", help="Validate parameters")

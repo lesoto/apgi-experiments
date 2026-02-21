@@ -5,28 +5,27 @@ Provides CRUD operations for parameter estimation sessions, trials, and estimate
 with the SQLite database backend.
 """
 
-import sqlite3
 import json
-from pathlib import Path
-from datetime import datetime
-from typing import Dict, List, Any, Optional, Tuple
+import sqlite3
 import uuid
+from datetime import datetime
+from pathlib import Path
+from typing import List, Optional, Union
 
 from ..exceptions import APGIFrameworkError
 from .parameter_estimation_models import (
-    SessionData,
-    TrialData,
+    BehavioralResponse,
     DetectionTrialResult,
     HeartbeatTrialResult,
-    OddballTrialResult,
-    ParameterEstimates,
-    BehavioralResponse,
-    QualityMetrics,
-    TaskType,
-    StimulusModality,
-    ParameterDistribution,
     ModelFitMetrics,
+    OddballTrialResult,
+    ParameterDistribution,
+    ParameterEstimates,
+    QualityMetrics,
     ReliabilityMetrics,
+    SessionData,
+    StimulusModality,
+    TrialData,
 )
 from .parameter_estimation_schema import ParameterEstimationSchema
 
@@ -212,7 +211,7 @@ class ParameterEstimationDAO:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 query = "SELECT session_id FROM parameter_estimation_sessions"
-                params = []
+                params: List[Union[str, int]] = []
 
                 if participant_id:
                     query += " WHERE participant_id = ?"

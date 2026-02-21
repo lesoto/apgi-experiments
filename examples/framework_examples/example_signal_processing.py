@@ -6,26 +6,16 @@ with quality control for parameter estimation experiments.
 """
 
 import numpy as np
-from apgi_framework.neural import (
-    # Signal processors
-    EEGProcessor,
-    PupillometryProcessor,
+
+from apgi_framework.neural import (  # Signal processors; Feature extractors; Quality control; Data acquisition interfaces
     CardiacProcessor,
-    # Feature extractors
+    EEGProcessor,
     ERPExtractor,
-    PupilFeatureExtractor,
     HRVAnalyzer,
-    HEPExtractor,
-    # Quality control
-    SignalQualityMonitor,
     OperatorNotificationSystem,
-    # Data acquisition interfaces
-    EEGInterface,
-    EEGConfig,
-    PupillometryInterface,
-    PupillometryConfig,
-    PhysiologicalMonitoring,
-    PhysiologicalConfig,
+    PupilFeatureExtractor,
+    PupillometryProcessor,
+    SignalQualityMonitor,
 )
 
 
@@ -52,7 +42,7 @@ def example_eeg_processing():
         eeg_data[ch, :] += 20 * np.sin(2 * np.pi * 10 * t)
 
     timestamps = t
-    channels = [f"Ch{i+1}" for i in range(n_channels)]
+    channels = [f"Ch{i + 1}" for i in range(n_channels)]
 
     # Process EEG data
     print("Processing EEG data...")
@@ -296,7 +286,7 @@ def example_integrated_quality_control():
     print(f"Quality level: {quality_metrics.quality_level.value}")
     print(f"Continue recording: {quality_metrics.continue_recording}")
     print(f"Active alerts: {quality_metrics.active_alerts}")
-    print(f"Suggestions:")
+    print("Suggestions:")
     for suggestion in quality_metrics.suggested_actions[:3]:
         print(f"  - {suggestion}")
 

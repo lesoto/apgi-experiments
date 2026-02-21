@@ -2,10 +2,9 @@
 Tests for core analysis modules.
 """
 
-import pytest
-import numpy as np
-from unittest.mock import Mock, patch
 import matplotlib
+import numpy as np
+import pytest
 
 matplotlib.use("Agg")  # Use non-interactive backend for testing
 
@@ -16,7 +15,7 @@ from pathlib import Path
 # Add core models to path
 sys.path.append(str(Path(__file__).parent.parent / "core" / "analysis"))
 
-from surprise_dynamics import *
+# Import specific function from threshold_phenomenon
 from threshold_phenomenon import ignition_probability
 
 
