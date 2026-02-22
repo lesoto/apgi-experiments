@@ -12,7 +12,7 @@
 
 The APGI Framework is a Python-based scientific research platform for consciousness research, experimental paradigms, and falsification testing of consciousness theories. It consists of a large tkinter/customtkinter desktop GUI (`GUI.py`, `GUI-Launcher.py`, `GUI-Experiment-Registry.py`, `apgi_gui/app.py`, `apps/apgi_falsification_gui.py`, `Tests-GUI.py`, `Utils-GUI.py`), a CLI layer (`apgi_framework/cli.py`), a substantial backend framework, and an extensive pytest test suite.
 
-**Overall Assessment:** The codebase is structurally ambitious and well-organized at the module level, but contains a significant number of incomplete implementations, stub functions, runtime dependency issues, and test failures that collectively reduce confidence in production readiness. Of the test modules executed (excluding tkinter-dependent GUI tests), **approximately 60–70 tests fail** across 10+ test files from a suite of ~600+ tests. Several user-facing features raise `NotImplementedError` at runtime. Core modules such as the PDF generator fail to import due to a scoping bug when optional dependencies are absent.
+**Overall Assessment:** The codebase is structurally ambitious and well-organized at the module level, but contains a significant number of incomplete implementations, stub functions, runtime dependency issues, and test failures that collectively reduce confidence in production readiness. A full suite run (excluding tkinter-dependent GUI tests) recorded **110 failed, 540 passed, 121 skipped, 9 errors** in 780 s across ~780 test items. An additional test-isolation problem was identified: a subset of failures only manifest during the complete suite run and pass when executed in isolation, indicating shared global state between test modules. Several user-facing features raise `NotImplementedError` at runtime. Core modules such as the PDF generator fail to import due to a scoping bug when optional dependencies are absent.
 
 ---
 
@@ -80,6 +80,7 @@ The APGI Framework is a Python-based scientific research platform for consciousn
 | **BUG-023** | `pyproject.toml:201–210` | `addopts` includes `--cov=apgi_framework` but `pytest-cov` is not in the minimal `dependencies` list — running `pytest` without installing `[dev]` fails immediately | `pip install -e . && pytest` | Test suite runs | `ERROR: unrecognized arguments: --cov=apgi_framework ...` |
 | **BUG-024** | `apgi_framework/config/config_manager.py:212` | `presets_dir = Path("config/presets")` is a relative path — resolves differently depending on the working directory at import time | Run tests from a temp directory; create `ConfigManager` | Presets stored relative to project root | Presets stored in unexpected locations when CWD differs from project root |
 | **BUG-025** | `apgi_framework/data/storage_manager.py` — `test_concurrent_access` | Concurrent `store_dataset` calls on minimal/empty data dicts all fail validation — zero successful writes when ≥4 are expected | Run `pytest tests/test_data_management.py::TestStorageManager::test_concurrent_access` | ≥4 concurrent writes succeed | `assert 0 >= 4` — all concurrent writes rejected by validator |
+| **BUG-026** | Test suite — multiple files | **Test isolation failure:** ~15+ tests pass individually but fail during the full suite run due to shared global state pollution between modules (affected files: `test_deployment_properties`, `test_error_handling_properties`, `test_falsification_coverage`, `test_config_manager` logging variants, `test_utils_basic::TestPerformanceProfiler`) | `pytest tests/` (full run) vs `pytest tests/test_deployment_properties.py` (isolated) | Tests pass in both contexts | Tests fail only in the full suite run |
 
 ---
 
@@ -138,7 +139,9 @@ Tests were executed against all modules that can be imported without a display s
 | `integration/test_end_to_end_workflow.py` | 0 | 1 | 0 | 9 ERRORS | CI integrator `HEAD~1`; component interaction |
 | `test_performance_properties.py` | — | — | — | **Entirely excluded** — `tkinter` unavailable (BUG-003) |
 
-**Approximate overall (importable tests):** ~680 passed, ~107 failed, ~100 skipped.
+**Full suite result (confirmed):** 540 passed, 110 failed, 121 skipped, 9 errors — 780 total items in 780 s.
+
+**Note on test isolation:** Several failures (`test_deployment_properties`, `test_error_handling_properties`, `test_falsification_coverage`, `test_config_manager` logging variants, `test_utils_basic::TestPerformanceProfiler`) pass when run in isolation but fail during the full suite run. This indicates **shared global state / test-order dependency** across modules — an additional quality issue not captured per-file above.
 
 ---
 
@@ -307,19 +310,22 @@ or handle unrecognised subcommands explicitly and call `sys.exit(1)`.
 
 ### Priority 4 — Low (Quality improvements)
 
-**REC-019: Implement `coverage_visualization.py` Qt widget**
+**REC-019: Fix test isolation / shared global state**
+Use `pytest-xdist` isolation or `autouse` fixtures that reset global singletons (`APGILogManager`, `ErrorTelemetry`, `ConfigManager`) between tests. Alternatively, run `pytest --forked` (via `pytest-forked`) to guarantee process isolation. Use `monkeypatch` or `importlib.reload()` in affected test modules rather than relying on module-level singletons persisting across tests.
+
+**REC-020: Implement `coverage_visualization.py` Qt widget**
 Either complete the PySide6 widget implementation or remove it and implement an equivalent tkinter widget since the rest of the UI uses tkinter/customtkinter.
 
-**REC-020: Fix `global _global_monitor` in `realtime_monitor.py`**
+**REC-021: Fix `global _global_monitor` in `realtime_monitor.py`**
 Remove or populate the unused `global` declaration (flake8 F824).
 
-**REC-021: Add `@abstractmethod` decorator to `enhanced_error_handling.py` stubs**
+**REC-022: Add `@abstractmethod` decorator to `enhanced_error_handling.py` stubs**
 The two methods raising `NotImplementedError` should be decorated with `@abstractmethod` and the class should inherit from `ABC` to enforce implementation at subclass instantiation time.
 
-**REC-022: Enforce `APGIAgent` parameter validation**
+**REC-023: Enforce `APGIAgent` parameter validation**
 The test `test_agent_parameter_validation` expects `ValueError` for out-of-range parameters. Implement boundary checks in the agent's `__init__` or `set_parameters()` method.
 
-**REC-023: Add `system_tk_available` guard to all top-level tkinter GUI modules**
+**REC-024: Add `system_tk_available` guard to all top-level tkinter GUI modules**
 Wrap all `import tkinter` statements in optional/guarded imports across `apgi_framework/gui/` so that headless imports (for unit testing or CLI-only usage) gracefully degrade.
 
 ---
