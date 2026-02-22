@@ -750,7 +750,7 @@ pip install PyQt5
 3. **Check for errors**:
 
 ```bash
-python launch_gui.py --verbose
+python GUI-Launcher.py --verbose
 
 ```
 

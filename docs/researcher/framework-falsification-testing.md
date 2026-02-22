@@ -208,7 +208,7 @@ python -m apgi_framework.cli run-batch --all-tests
 python -m apgi_framework.cli generate-config --output config.json
 
 # Launch GUI
-python launch_gui.py
+python GUI-Launcher.py
 ```
 
 ### Parameter Ranges

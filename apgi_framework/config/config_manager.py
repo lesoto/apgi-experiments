@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 import threading
 
-from ..path_manager import get_path_manager
+from ..utils.path_utils import get_path_manager
 from ..logging.standardized_logging import get_logger
 
 from .exceptions import ConfigurationError

@@ -120,7 +120,7 @@ class TestErrorHandler:
 
                 # Check that required methods exist
                 assert hasattr(handler, "log_error")
-                assert hasattr(handler, "get_recent_errors")
+                assert hasattr(handler, "get_error_summary")
                 assert hasattr(handler, "get_error_statistics")
         except ImportError as e:
             pytest.skip(f"ErrorHandler not available: {e}")
@@ -242,7 +242,7 @@ class TestDataValidation:
             # Check that validation methods exist
             assert hasattr(validator, "validate_file_format")
             assert hasattr(validator, "validate_dataset_structure")
-            assert hasattr(validator, "assess_data_quality")
+            assert hasattr(validator, "validate_data_quality")
         except ImportError as e:
             pytest.skip(f"DataValidator not available: {e}")
 

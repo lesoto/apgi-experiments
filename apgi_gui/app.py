@@ -1098,8 +1098,8 @@ For more information, visit the project documentation."""
                     width = widget.cget("width")
                     if width and isinstance(width, (int, str)) and str(width).isdigit():
                         original_props["width"] = int(width)
-                except (AttributeError, TclError):
-                    pass
+                except (AttributeError, TclError) as e:
+                    self.logger.debug(f"Could not get width for widget: {e}")
 
                 try:
                     height = widget.cget("height")
@@ -1109,8 +1109,8 @@ For more information, visit the project documentation."""
                         and str(height).isdigit()
                     ):
                         original_props["height"] = int(height)
-                except (AttributeError, TclError):
-                    pass
+                except (AttributeError, TclError) as e:
+                    self.logger.debug(f"Could not get height for widget: {e}")
 
             # Store padding if available
             if hasattr(widget, "cget"):
@@ -1123,8 +1123,8 @@ For more information, visit the project documentation."""
                             and str(value).isdigit()
                         ):
                             original_props[prop] = int(value)
-                    except (AttributeError, TclError):
-                        pass
+                    except (AttributeError, TclError) as e:
+                        self.logger.debug(f"Could not get {prop} for widget: {e}")
 
             if original_props:
                 self._original_widget_sizes[widget_id] = original_props
@@ -1134,7 +1134,7 @@ For more information, visit the project documentation."""
                 self._collect_original_sizes(child)
 
         except Exception as e:
-            self.logger.debug(f"Error collecting sizes for widget: {e}")
+            self.logger.warning(f"Error collecting sizes for widget: {e}")
 
     def _scale_widget_recursive(self, widget, zoom_factor: float) -> None:
         """Recursively scale a widget and its children."""
@@ -1221,23 +1221,19 @@ For more information, visit the project documentation."""
 
     def find(self) -> None:
         """Open find dialog."""
-        # Placeholder for find functionality
-        self.update_status("Find functionality not yet implemented")
+        raise NotImplementedError("Find functionality not yet implemented")
 
     def find_next(self) -> None:
         """Find next occurrence."""
-        # Placeholder for find functionality
-        self.update_status("Find next not yet implemented")
+        raise NotImplementedError("Find next not yet implemented")
 
     def find_previous(self) -> None:
         """Find previous occurrence."""
-        # Placeholder for find functionality
-        self.update_status("Find previous not yet implemented")
+        raise NotImplementedError("Find previous not yet implemented")
 
     def toggle_debug_mode(self) -> None:
         """Toggle debug mode."""
-        # Placeholder for debug functionality
-        self.update_status("Debug mode toggled")
+        raise NotImplementedError("Debug mode not yet implemented")
 
     def show_log(self) -> None:
         """Show application log viewer with pagination."""

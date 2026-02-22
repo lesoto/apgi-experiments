@@ -22,130 +22,28 @@ sys.path.insert(0, str(project_root))
 
 try:
     from apgi_framework.config import APGIParameters, ConfigManager, ExperimentalConfig
-    from apgi_framework.exceptions import APGIFrameworkError
     from apgi_framework.logging.standardized_logging import get_logger
     from apgi_framework.validation import get_validator
+
+    FRAMEWORK_AVAILABLE = True
 except ImportError as e:
+    FRAMEWORK_AVAILABLE = False
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger("parameter_config_panel")
-    logger.warning(f"Some APGI Framework components not available: {e}")
+    logger.error(f"APGI Framework components not available: {e}")
 
-    # Create fallback classes
-    class FallbackConfigManager:
-        def __init__(self):
-            pass
+    # Show error message to user
+    try:
+        import tkinter.messagebox as msgbox
 
-        def load_config(self):
-            return {}
-
-        def save_config(self, config):
-            pass
-
-    class FallbackAPGIParameters:
-        def __init__(self):
-            pass
-
-    class FallbackExperimentalConfig:
-        def __init__(self):
-            pass
-
-    class FallbackAPGIFrameworkError(Exception):
-        pass
-
-    # Assign fallback classes to expected names
-    ConfigManager = FallbackConfigManager  # type: ignore[assignment,no-redef,misc]
-    APGIParameters = FallbackAPGIParameters  # type: ignore[assignment,no-redef,misc]
-    ExperimentalConfig = FallbackExperimentalConfig  # type: ignore[assignment,no-redef,misc]
-    APGIFrameworkError = FallbackAPGIFrameworkError  # type: ignore[assignment,no-redef,misc]
-
-    def get_validator():  # type: ignore[no-redef,func-sig,misc]
-        try:
-            from apgi_framework.validation import get_validator as get_real_validator
-
-            validator = get_real_validator()
-            logger.info("Using real parameter validator")
-            return validator
-        except ImportError as e:
-            logger.warning(f"Could not import real validator: {e}")
-
-            class FallbackValidator:
-                """Fallback validator with clear indication of limited functionality."""
-
-                def validate_apgi_parameters(self, **kwargs):
-                    return FallbackResult(
-                        is_valid=True,
-                        errors=[],
-                        warnings=["Validation disabled - using fallback validator"],
-                        suggestions=[
-                            "Install APGI Framework validation module for full validation"
-                        ],
-                    )
-
-                def validate_experimental_config(self, **kwargs):
-                    return FallbackResult(
-                        is_valid=True,
-                        errors=[],
-                        warnings=["Validation disabled - using fallback validator"],
-                        suggestions=[
-                            "Install APGI Framework validation module for full validation"
-                        ],
-                    )
-
-                def validate_neural_thresholds(self, **kwargs):
-                    return FallbackResult(
-                        is_valid=True,
-                        errors=[],
-                        warnings=["Validation disabled - using fallback validator"],
-                        suggestions=[
-                            "Install APGI Framework validation module for full validation"
-                        ],
-                    )
-
-                def validate_all(self, **kwargs):
-                    return FallbackResult(
-                        is_valid=False,
-                        errors=["Full validation not available in fallback mode"],
-                        warnings=["Validation disabled - using fallback validator"],
-                        suggestions=[
-                            "Install APGI Framework validation module for full validation"
-                        ],
-                    )
-
-            class FallbackResult:
-                def __init__(self, is_valid, errors, warnings, suggestions):
-                    self.is_valid = is_valid
-                    self.errors = errors
-                    self.warnings = warnings
-                    self.suggestions = suggestions
-
-                def get_message(self):
-                    messages = []
-                    if self.errors:
-                        messages.append("ERRORS:")
-                        for error in self.errors:
-                            messages.append(f"  ❌ {error}")
-                    if self.warnings:
-                        messages.append("WARNINGS:")
-                        for warning in self.warnings:
-                            messages.append(f"  ⚠️  {warning}")
-                    if self.suggestions:
-                        messages.append("SUGGESTIONS:")
-                        for suggestion in self.suggestions:
-                            messages.append(f"  💡 {suggestion}")
-                    return (
-                        "\n".join(messages)
-                        if messages
-                        else "⚠️ Limited validation mode"
-                    )
-
-            logger.warning(
-                "Using fallback validator - validation functionality limited"
-            )
-            return FallbackValidator()
-
-else:
-    # Import successful, don't define fallback classes
-    pass
+        msgbox.showerror(
+            "Framework Not Available",
+            "The APGI Framework is not properly installed.\n\n"
+            "Parameter configuration will not function correctly.\n\n"
+            "Please install the framework before using this panel.",
+        )
+    except ImportError:
+        pass  # Can't show messagebox without tkinter
 
 
 logger = (

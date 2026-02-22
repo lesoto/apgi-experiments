@@ -453,10 +453,58 @@ class ErrorHandler:
             ),
         }
 
-    def reset_error_counts(self) -> None:
-        """Reset error counts."""
-        self.error_counts.clear()
-        apgi_logger.logger.info("Error counts reset")
+    def get_error_statistics(self) -> Dict[str, Any]:
+        """Get detailed error statistics."""
+        total_errors = sum(self.error_counts.values())
+        num_categories = len(self.error_counts)
+
+        if total_errors == 0:
+            return {
+                "total_errors": 0,
+                "categories_with_errors": 0,
+                "average_errors_per_category": 0.0,
+                "most_frequent_category": None,
+                "error_distribution": {},
+            }
+
+        most_frequent = max(self.error_counts.items(), key=lambda x: x[1])
+
+        return {
+            "total_errors": total_errors,
+            "categories_with_errors": num_categories,
+            "average_errors_per_category": total_errors / num_categories,
+            "most_frequent_category": most_frequent[0].value,
+            "error_distribution": {
+                cat.value: count for cat, count in self.error_counts.items()
+            },
+        }
+
+    def log_error(
+        self,
+        message: str,
+        level: str = "error",
+        context: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        """Log an error message at the specified level."""
+        if isinstance(message, Exception):
+            message = str(message)
+
+        if level == "error":
+            apgi_logger.logger.error(message)
+        elif level == "warning":
+            apgi_logger.logger.warning(message)
+        elif level == "info":
+            apgi_logger.logger.info(message)
+        elif level == "debug":
+            apgi_logger.logger.debug(message)
+        elif level == "critical":
+            apgi_logger.logger.critical(message)
+        else:
+            apgi_logger.logger.error(message)
+
+        # Log context if provided
+        if context:
+            apgi_logger.logger.debug(f"Error context: {context}")
 
 
 # Global error handler instance

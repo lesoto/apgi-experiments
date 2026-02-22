@@ -91,7 +91,7 @@ python apgi_gui.py
 #### Option 2: Using Launcher (Recommended)
 
 ```bash
-python launch_gui.py
+python GUI-Launcher.py
 ```
 
 The launcher script provides dependency checking and better error handling.

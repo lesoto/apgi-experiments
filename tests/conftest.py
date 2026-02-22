@@ -1,0 +1,40 @@
+"""
+Pytest configuration and fixtures for APGI Framework tests.
+"""
+
+import pytest
+import sys
+from pathlib import Path
+
+# Add project root to path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
+# Configure xvfb for GUI tests
+pytestmark = pytest.mark.filterwarnings("ignore::DeprecationWarning")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_test_environment():
+    """Setup test environment."""
+    # Set environment variables for headless testing if needed
+    import os
+
+    os.environ.setdefault("DISPLAY", ":99")
+
+
+# GUI test configuration
+def pytest_configure(config):
+    """Configure pytest for GUI tests."""
+    config.addinivalue_line("markers", "gui: mark test as requiring GUI/display")
+    config.addinivalue_line("markers", "slow: mark test as slow running")
+    config.addinivalue_line("markers", "integration: mark test as integration test")
+
+
+def pytest_collection_modifyitems(config, items):
+    """Modify test collection to handle GUI tests."""
+    # Add xvfb marker to GUI tests automatically
+    for item in items:
+        if "gui" in item.keywords or "GUI" in str(item.fspath):
+            item.add_marker(pytest.mark.xvfb)
+            item.add_marker(pytest.mark.gui)

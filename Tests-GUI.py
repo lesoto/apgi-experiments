@@ -20,7 +20,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 # Import theme manager
 try:
-    from apgi_gui.theme_manager import ThemeManager  # type: ignore
+    from apgi_gui.theme_manager import ThemeManager
 
     THEME_MANAGER_AVAILABLE = True
 except ImportError:
@@ -73,7 +73,7 @@ class ToolTip:
         """Display the tooltip"""
         if self.tipwindow or not self.text:
             return
-        bbox = self.widget.bbox("insert")  # type: ignore
+        bbox = self.widget.bbox("insert")
         if bbox is None:
             return
         x, y, _, _ = bbox
@@ -183,7 +183,7 @@ class TestsRunnerGUI:
             for theme_name in self.theme_manager.get_available_themes():
                 theme_menu.add_radiobutton(
                     label=theme_name.capitalize(),
-                    command=lambda t=theme_name: self._set_theme(t),  # type: ignore
+                    command=lambda t=theme_name: self._set_theme(t),
                     variable=tk.StringVar(value=self.theme_manager.current_theme),
                     value=theme_name,
                 )
@@ -220,7 +220,7 @@ class TestsRunnerGUI:
         if hasattr(self, "status_label"):
             fg_color = self.theme_manager.get_theme_color("fg")
             try:
-                self.status_label.config(fg=fg_color)  # type: ignore
+                self.status_label.config(fg=fg_color)
             except tk.TclError:
                 pass
 
@@ -386,7 +386,7 @@ class TestsRunnerGUI:
         Returns:
             Path to selected script or None if no selection.
         """
-        selection = tuple(self.scripts_listbox.curselection())  # type: ignore
+        selection = tuple(self.scripts_listbox.curselection())
         if selection:
             index = selection[0]
             return self.scripts[index]

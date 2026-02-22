@@ -17,7 +17,7 @@ Learn to set up and run a basic detection task experiment from start to finish.
 1. __Start the APGI Framework__
 
    ```bash
-   python launch_gui.py
+   python GUI-Launcher.py
    ```
 
 2. __Choose Your Experience Level__

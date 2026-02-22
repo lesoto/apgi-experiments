@@ -1,7 +1,5 @@
 # APGI Framework
 
-Adaptive Precision and Generalized Intelligence Framework
-
 ## Overview
 
 The APGI Framework is a comprehensive research platform for consciousness studies, neural signal processing, and adaptive intelligence systems. It provides tools for:
@@ -97,7 +95,7 @@ results = processor.analyze_eeg(data_file="eeg_data.csv")
 
 ```bash
 # Launch the main GUI
-python launch_gui.py
+python GUI-Launcher.py
 
 # Run experiment runner GUI
 python apps/experiment_runner_gui.py
@@ -184,9 +182,8 @@ https://github.com/apgi-research/apgi-framework
 #### Main GUI Applications
 
 - GUI.py - Main comprehensive GUI application (244KB)
-- GUI-Simple.py - Simplified GUI template version
 - GUI-Experiment-Registry.py - Experiment registry GUI for running 24 experiments
-- launch_gui.py - Centralized GUI launcher for all applications
+- GUI-Launcher.py - Centralized GUI launcher for all applications
 - apgi_gui/app.py - Modern GUI application using customtkinter
 
 #### Apps Directory GUIs
@@ -303,8 +300,6 @@ https://github.com/apgi-research/apgi-framework
    source venv/bin/activate  # On Unix/macOS
    
    # Install dependencies
-
-   ```bash
    pip install -r requirements.txt
    ```
 
@@ -329,7 +324,7 @@ https://github.com/apgi-research/apgi-framework
 5. **Run experiments via GUI**
 
    ```bash
-   python gui.py
+   python GUI-Launcher.py
    ```
 
 6. **Run experiments via command line**
@@ -383,7 +378,7 @@ https://github.com/apgi-research/apgi-framework
    - Precision parameter effects
    - Dynamic threshold adaptation
 
-2. **GUI Interface** (`gui.py`)
+2. **GUI Interface** (`GUI-Launcher.py`)
    - Tkinter-based interface for running experiments
    - Parameter configuration and real-time logging
    - Supports all implemented experiments
@@ -410,7 +405,7 @@ https://github.com/apgi-research/apgi-framework
 **Using the GUI:**
 
 ```bash
-python launch_gui.py
+python GUI-Launcher.py
 ```
 
 **Using the CLI:**

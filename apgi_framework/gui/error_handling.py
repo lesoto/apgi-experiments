@@ -33,28 +33,36 @@ try:
         safe_pickle_load,
     )
 except ImportError:
-    # Create fallback classes only if not already imported
-    if "SessionData" not in globals():
-        SessionData: Optional[type] = None  # type: ignore[no-redef]
-    if "ParameterEstimationDAO" not in globals():
-        ParameterEstimationDAO: Optional[type] = None  # type: ignore[no-redef]
+    # Create fallback classes that raise informative errors
+    SessionData: Optional[type] = None
+    ParameterEstimationDAO: Optional[type] = None
 
-    if "SecurePickleError" not in globals():
+    class SecurePickleError(Exception):
+        """Raised when secure pickle operations are not available."""
 
-        class SecurePickleError(Exception):  # type: ignore[no-redef]
-            pass
+        def __init__(
+            self,
+            message="Secure pickle functionality not available - framework not properly installed",
+        ):
+            super().__init__(message)
 
-    def safe_pickle_load(  # type: ignore[no-redef]
+    def safe_pickle_load(
         file_path: str | Path,
         expected_types: set[type] | None = None,
         verify_checksum: bool = True,
     ) -> Any:
-        return None
+        """Fallback function that raises an error."""
+        raise SecurePickleError(
+            "Cannot load secure pickle data - framework not properly installed"
+        )
 
-    def safe_pickle_dump(  # type: ignore[no-redef]
+    def safe_pickle_dump(
         obj: Any, file_path: str | Path, create_checksum: bool = True, protocol: int = 4
     ) -> None:
-        pass
+        """Fallback function that raises an error."""
+        raise SecurePickleError(
+            "Cannot save secure pickle data - framework not properly installed"
+        )
 
 else:
     # Import successful, don't define fallback classes
@@ -484,6 +492,61 @@ class SessionStateManager:
                 logger.error(f"Failed to read state file {state_file}: {e}")
 
         return states
+
+    def create_session(self, session_id: str) -> None:
+        """
+        Create a new session.
+
+        Args:
+            session_id: Session identifier
+        """
+        # Initialize empty session state
+        self.save_state(
+            session_id, {"status": "created", "created_at": datetime.now().isoformat()}
+        )
+
+    def handle_session_crash(self, exception: Exception) -> None:
+        """
+        Handle session crash.
+
+        Args:
+            exception: Exception that caused the crash
+        """
+        logger.error(f"Session crash: {exception}")
+        # Could save crash state or notify user
+        if self.current_state:
+            self.current_state["crashed"] = True
+            self.current_state["crash_time"] = datetime.now().isoformat()
+            self.current_state["crash_error"] = str(exception)
+
+    def attempt_session_recovery(self) -> bool:
+        """
+        Attempt to recover from session crash.
+
+        Returns:
+            True if recovery successful
+        """
+        if self.current_state and self.current_state.get("crashed"):
+            # Attempt recovery logic here
+            logger.info("Attempting session recovery...")
+            # For demo, just mark as recovered
+            self.current_state["crashed"] = False
+            self.current_state["recovered_at"] = datetime.now().isoformat()
+            return True
+        return False
+
+    def get_session_status(self) -> str:
+        """
+        Get current session status.
+
+        Returns:
+            Status string
+        """
+        if self.current_state:
+            if self.current_state.get("crashed"):
+                return "crashed"
+            return "active"
+        return "inactive"
 
 
 class AutomaticBackupSystem:

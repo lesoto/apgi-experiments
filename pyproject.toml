@@ -46,7 +46,6 @@ dependencies = [
 [project.optional-dependencies]
 gui = [
     "customtkinter>=5.2.0",
-    "tkinter>=8.6",
     "Pillow>=10.0.0",
     "pyautogui>=0.9.54",
     "pygetwindow>=0.0.9",
@@ -56,6 +55,7 @@ dev = [
     "pytest-cov>=4.0",
     "pytest-xdist>=3.0",
     "pytest-timeout>=2.0",
+    "pytest-xvfb>=3.0.0",
     "black>=23.7.0",
     "isort>=5.12.0",
     "flake8>=6.0.0",
@@ -110,7 +110,6 @@ network = [
 all = [
     # GUI
     "customtkinter>=5.2.0",
-    "tkinter>=8.6",
     "Pillow>=10.0.0",
     "pyautogui>=0.9.54",
     "pygetwindow>=0.0.9",
@@ -193,6 +192,34 @@ apgi_framework = [
 # Testing Configuration for APGI Framework
 # This file provides centralized configuration for all testing activities
 # Note: pytest configuration temporarily disabled due to collection issues
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "apgi_framework/tests", "research"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--disable-warnings",
+    "--tb=short",
+    "--cov=apgi_framework",
+    "--cov-report=html",
+    "--cov-report=xml",
+    "--cov-report=term-missing",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "gui: marks tests that require GUI/display",
+    "integration: marks tests as integration tests",
+    "property: marks tests as property-based tests",
+]
+
+# GUI tests should run with xvfb for headless testing
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
 
 [tool.coverage.report]
 exclude_lines = [

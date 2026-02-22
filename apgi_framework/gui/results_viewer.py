@@ -6,7 +6,7 @@ failure highlighting, quick navigation to failure details, and stack trace displ
 """
 
 import sys
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 from ..test_enhancement.models import (
     FailureCategory,
@@ -744,10 +744,116 @@ class ResultsViewer(QWidget):
         self.search_input.clear()
 
     def _export_results(self):
-        """Export results to file (placeholder implementation)."""
-        # In a real implementation, this would open a file dialog
-        # and export results to various formats (CSV, JSON, HTML, etc.)
-        pass
+        """Export results to file."""
+        if not self._current_results:
+            return
+
+        try:
+            if PYSIDE6_AVAILABLE:
+                from PySide6.QtWidgets import QFileDialog
+
+                file_path, selected_filter = QFileDialog.getSaveFileName(
+                    self,
+                    "Export Results",
+                    "test_results.json",
+                    "JSON Files (*.json);;CSV Files (*.csv);;All Files (*)",
+                )
+
+                if file_path:
+                    if file_path.endswith(".csv"):
+                        self._export_csv(file_path)
+                    else:
+                        self._export_json(file_path)
+            else:
+                # Fallback for non-GUI export
+                from pathlib import Path
+
+                output_file = Path("test_results_export.json")
+                self._export_json(str(output_file))
+                print(f"Results exported to {output_file}")
+
+        except Exception as e:
+            print(f"Export failed: {e}")
+
+    def _export_json(self, file_path: str):
+        """Export results to JSON format."""
+        import json
+
+        if not self._current_results:
+            return
+
+        export_data: Dict[str, Any] = {
+            "summary": {
+                "total_tests": self._current_results.total_tests,
+                "passed": self._current_results.passed,
+                "failed": self._current_results.failed,
+                "skipped": self._current_results.skipped,
+                "duration": self._current_results.duration,
+            },
+            "test_results": [],
+        }
+
+        for test_result in self._current_results.test_results:
+            result_data: Dict[str, Any] = {
+                "name": test_result.name,
+                "status": test_result.status.value,
+                "duration": test_result.duration,
+                "message": test_result.message,
+            }
+
+            if test_result.failure:
+                result_data["failure"] = {
+                    "category": test_result.failure.category.value,
+                    "message": test_result.failure.message,
+                    "traceback": test_result.failure.traceback,
+                }
+
+            export_data["test_results"].append(result_data)
+
+        with open(file_path, "w") as f:
+            json.dump(export_data, f, indent=2)
+
+    def _export_csv(self, file_path: str):
+        """Export results to CSV format."""
+        import csv
+
+        if not self._current_results:
+            return
+
+        with open(file_path, "w", newline="") as f:
+            writer = csv.writer(f)
+
+            # Write header
+            writer.writerow(
+                [
+                    "Test Name",
+                    "Status",
+                    "Duration",
+                    "Message",
+                    "Failure Category",
+                    "Failure Message",
+                ]
+            )
+
+            # Write test results
+            for test_result in self._current_results.test_results:
+                failure_category = (
+                    test_result.failure.category.value if test_result.failure else ""
+                )
+                failure_message = (
+                    test_result.failure.message if test_result.failure else ""
+                )
+
+                writer.writerow(
+                    [
+                        test_result.name,
+                        test_result.status.value,
+                        test_result.duration,
+                        test_result.message,
+                        failure_category,
+                        failure_message,
+                    ]
+                )
 
     def navigate_to_test(self, test_name: str):
         """Navigate to a specific test in the results."""

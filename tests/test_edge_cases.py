@@ -45,6 +45,8 @@ class APGIAgent:
         self.M = kwargs.get("M", 1.5)
         self.body_noise_sd = kwargs.get("body_noise_sd", 0.1)
         self.context_onset = None
+        self.config = self  # Add config attribute for compatibility
+
         self.reset()
 
     def reset(self):
@@ -94,6 +96,12 @@ class APGIAgent:
             if len(array) != expected_size:
                 raise ValueError("Array size mismatch")
 
+        # Check for NaN or inf values in ext_stim
+        if np.any(np.isnan(self.ext_stim)):
+            raise ValueError("NaN values not allowed in external stimulus")
+        if np.any(np.isinf(self.ext_stim)):
+            raise ValueError("infinite values not allowed in external stimulus")
+
         for t in range(1, self.T):
             # Simple simulation
             self.body_state[t] = self.body_state[t - 1] + np.random.normal(
@@ -113,7 +121,9 @@ class APGIAgent:
 def expit(x):
     import numpy as np
 
-    return 1.0 / (1.0 + np.exp(-x))
+    # Clamp input to prevent overflow in exp
+    x_clamped = np.clip(x, -500.0, 500.0)
+    return 1.0 / (1.0 + np.exp(-x_clamped))
 
 
 class TestEdgeCases:

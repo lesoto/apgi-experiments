@@ -105,7 +105,7 @@ class KeyboardManager:
     def _execute_shortcut(self, key_combination: str, event) -> Union[str, None]:
         """Execute a shortcut callback."""
         if not self.active:
-            return
+            return None
 
         if key_combination in self.shortcuts:
             shortcut_info = self.shortcuts[key_combination]

@@ -42,10 +42,10 @@ except ImportError:
     TOOLTIPS_AVAILABLE = False
 
     def add_tooltip(widget: Any, param_name: str) -> None:
-        pass
+        raise ImportError("Tooltip functionality not available - tooltip import failed")
 
     def add_parameter_tooltips(parameter_widgets: Dict[str, Any]) -> None:
-        pass
+        raise ImportError("Tooltip functionality not available - tooltip import failed")
 
 
 # Import keyboard manager
@@ -62,15 +62,21 @@ except ImportError:
 
     class _KeyboardManager:
         def __init__(self, root):
-            pass
+            raise ImportError(
+                "Keyboard shortcuts not available - apgi_gui.utils.keyboard_manager import failed"
+            )
 
         def bind_shortcut(self, *args, **kwargs):
-            pass
+            raise ImportError(
+                "Keyboard shortcuts not available - apgi_gui.utils.keyboard_manager import failed"
+            )
 
     def setup_standard_shortcuts(
         app_instance: Any, keyboard_manager: KeyboardManager
     ) -> None:
-        pass
+        raise ImportError(
+            "Keyboard shortcuts setup not available - apgi_gui.utils.keyboard_manager import failed"
+        )
 
 
 # Import undo/redo manager
@@ -88,13 +94,19 @@ except ImportError:
 
     class _UndoRedoManager:
         def __init__(self, *args, **kwargs):
-            pass
+            raise ImportError(
+                "Undo/redo functionality not available - apgi_gui.utils.undo_redo_manager import failed"
+            )
 
         def undo(self):
-            pass
+            raise ImportError(
+                "Undo/redo functionality not available - apgi_gui.utils.undo_redo_manager import failed"
+            )
 
         def redo(self):
-            pass
+            raise ImportError(
+                "Undo/redo functionality not available - apgi_gui.utils.undo_redo_manager import failed"
+            )
 
         def can_undo(self):
             return False
@@ -104,13 +116,19 @@ except ImportError:
 
     class _WidgetTracker:
         def __init__(self, *args, **kwargs):
-            pass
+            raise ImportError(
+                "Widget tracking not available - apgi_gui.utils.undo_redo_manager import failed"
+            )
 
         def track_widget(self, *args, **kwargs):
-            pass
+            raise ImportError(
+                "Widget tracking not available - apgi_gui.utils.undo_redo_manager import failed"
+            )
 
     def create_undo_redo_menu(menu_bar: Menu, undo_manager: UndoRedoManager) -> None:
-        pass
+        raise ImportError(
+            "Undo/redo menu creation not available - apgi_gui.utils.undo_redo_manager import failed"
+        )
 
 
 # Import theme manager
@@ -124,13 +142,19 @@ except ImportError:
 
     class _ThemeManager:
         def __init__(self, *args, **kwargs):
-            pass
+            raise ImportError(
+                "Theme management not available - apgi_gui.utils.theme_manager import failed"
+            )
 
         def set_theme(self, *args, **kwargs):
-            pass
+            raise ImportError(
+                "Theme management not available - apgi_gui.utils.theme_manager import failed"
+            )
 
         def toggle_dark_mode(self):
-            pass
+            raise ImportError(
+                "Theme management not available - apgi_gui.utils.theme_manager import failed"
+            )
 
     def get_system_theme_preference() -> str:
         return "light"

@@ -31,7 +31,7 @@ System Validation: PASS
 **1. Launch the GUI:**
 
 ```python
-python launch_gui.py
+python GUI-Launcher.py
 ```
 
 **2. Run a test:**
@@ -284,7 +284,7 @@ python -m apgi_framework.cli generate-config --output config.json
 python -m apgi_framework.cli status
 
 # Launch GUI
-python launch_gui.py
+python GUI-Launcher.py
 ```
 
 ### Parameter Ranges

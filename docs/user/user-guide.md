@@ -86,7 +86,7 @@ python -m apgi_framework.cli validate-system
 
 ```bash
 # Launch GUI application
-python launch_gui.py
+python GUI-Launcher.py
 ```
 
 ## GUI User Guide

@@ -17,19 +17,7 @@ This document describes the different GUI entry points and their intended use ca
 
 **Use Case:** Primary interface for researchers and power users
 
-### 2. `GUI-Simple.py` (896 lines)
-
-**Purpose:** Simplified GUI template for basic usage
-**Features:**
-
-- Streamlined interface
-- Basic experiment configuration
-- Essential functionality only
-- Easier to understand and modify
-
-**Use Case:** Quick experiments, educational purposes, or as a template for custom GUIs
-
-### 3. `GUI-Experiment-Registry.py`
+### 2. `GUI-Experiment-Registry.py`
 
 **Purpose:** Experiment registry and management interface
 **Features:**
@@ -42,7 +30,7 @@ This document describes the different GUI entry points and their intended use ca
 
 ## Secondary Entry Points
 
-### 4. `launch_gui.py` (1,030 lines)
+### 4. `GUI-Launcher.py` (1,030 lines)
 
 **Purpose:** Centralized launcher for all GUI applications
 **Features:**
@@ -66,10 +54,10 @@ This document describes the different GUI entry points and their intended use ca
 
 ## Recommended Usage
 
-- **New Users:** Start with `GUI-Simple.py` for basic functionality
+- **New Users:** Start with `GUI-Launcher.py` for easy interface selection
 - **Researchers:** Use `GUI.py` for full-featured experiment management
 - **Developers:** Use `apgi_gui/app.py` for component-based development
-- **System Administrators:** Use `launch_gui.py` to provide access to all interfaces
+- **System Administrators:** Use `GUI-Launcher.py` to provide access to all interfaces
 
 ## File Organization
 

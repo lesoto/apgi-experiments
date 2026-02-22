@@ -12,6 +12,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, TypedDict
 
+from tkinter import messagebox
 
 # Type definitions
 
@@ -45,44 +46,15 @@ except ImportError as e:
 
 # Import framework components
 try:
-    from apgi_framework.config import APGIParameters, ConfigManager, ExperimentalConfig
-    from apgi_framework.exceptions import APGIFrameworkError
+    from apgi_framework.config import ConfigManager
     from apgi_framework.logging.standardized_logging import get_logger
     from apgi_framework.main_controller import MainApplicationController
+
+    FRAMEWORK_COMPONENTS_AVAILABLE = True
 except ImportError as e:
-    logging.basicConfig(level=logging.INFO)
+    FRAMEWORK_COMPONENTS_AVAILABLE = False
     logger = logging.getLogger("main_gui_controller")
-    logger.warning(f"Could not import framework components: {e}")
-
-    # Create fallback classes only if not already imported
-    if "MainApplicationController" not in globals():
-
-        class MainApplicationController:  # type: ignore[no-redef]
-            def __init__(self):
-                pass
-
-    if "ConfigManager" not in globals():
-
-        class ConfigManager:  # type: ignore[no-redef]
-            def __init__(self):
-                pass
-
-    if "APGIParameters" not in globals():
-
-        class APGIParameters:  # type: ignore[no-redef]
-            def __init__(self):
-                pass
-
-    if "ExperimentalConfig" not in globals():
-
-        class ExperimentalConfig:  # type: ignore[no-redef]
-            def __init__(self):
-                pass
-
-    if "APGIFrameworkError" not in globals():
-
-        class APGIFrameworkError(Exception):  # type: ignore[no-redef]
-            pass
+    logger.error(f"Framework components not available: {e}")
 
 
 if "logger" not in globals():
@@ -137,6 +109,17 @@ class MainGUIController:
         # Initialize components
         self._initialize_components()
         self._setup_event_handlers()
+
+        # Check framework availability
+        if not FRAMEWORK_COMPONENTS_AVAILABLE:
+            messagebox.showerror(
+                "Framework Not Available",
+                "The APGI Framework components are not properly installed.\n\n"
+                "Please ensure the framework is correctly installed before running the GUI.\n\n"
+                "Missing components will cause limited functionality.",
+                parent=self.parent,
+            )
+            logger.warning("GUI initialized with missing framework components")
 
         logger.info("MainGUIController initialized")
 

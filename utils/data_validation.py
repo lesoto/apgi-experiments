@@ -129,6 +129,63 @@ class DataValidator:
 
         return results
 
+    def validate_dataset_structure(self, df: pd.DataFrame) -> Dict[str, Any]:
+        """Validate the structure of a dataset."""
+        result: Dict[str, Any] = {"valid": True, "errors": [], "warnings": []}
+
+        required_columns = ["timestamp", "eeg_fz", "pupil_diameter", "eda"]
+        missing_columns = [col for col in required_columns if col not in df.columns]
+
+        if missing_columns:
+            result["valid"] = False
+            result["errors"].append(f"Missing required columns: {missing_columns}")
+
+        return result
+
+    def validate_structure(self, data: Any, schema: Dict[str, Any]) -> bool:
+        """Validate data structure against a JSON schema."""
+        try:
+            # Simple schema validation implementation
+            if not isinstance(data, dict):
+                return False
+
+            # Check required properties
+            required = schema.get("required", [])
+            for prop in required:
+                if prop not in data:
+                    return False
+
+            # Check property types
+            properties = schema.get("properties", {})
+            for prop, prop_schema in properties.items():
+                if prop in data:
+                    expected_type = prop_schema.get("type")
+                    if expected_type:
+                        if expected_type == "string" and not isinstance(
+                            data[prop], str
+                        ):
+                            return False
+                        elif expected_type == "number" and not isinstance(
+                            data[prop], (int, float)
+                        ):
+                            return False
+                        elif expected_type == "boolean" and not isinstance(
+                            data[prop], bool
+                        ):
+                            return False
+                        elif expected_type == "array" and not isinstance(
+                            data[prop], list
+                        ):
+                            return False
+                        elif expected_type == "object" and not isinstance(
+                            data[prop], dict
+                        ):
+                            return False
+
+            return True
+        except Exception:
+            return False
+
     def _validate_csv_structure(
         self, df: pd.DataFrame, results: Dict[str, Any]
     ) -> bool:

@@ -88,10 +88,10 @@ except ImportError:
     TOOLTIPS_AVAILABLE = False
 
     def add_tooltip(widget: Any, param_name: str) -> None:
-        pass
+        raise ImportError("Tooltip functionality not available - tooltip import failed")
 
     def add_parameter_tooltips(parameter_widgets: dict[str, Any]) -> None:
-        pass
+        raise ImportError("Tooltip functionality not available - tooltip import failed")
 
 
 # Import keyboard manager
@@ -108,15 +108,26 @@ except ImportError:
 
     class _KeyboardManager:
         def __init__(self, root):
-            pass
+            raise ImportError(
+                "Keyboard shortcuts not available - apgi_gui.utils.keyboard_manager import failed"
+            )
 
         def bind_shortcut(self, *args, **kwargs):
-            pass
+            raise ImportError(
+                "Keyboard shortcuts not available - apgi_gui.utils.keyboard_manager import failed"
+            )
+
+        def unbind_shortcut(self, *args, **kwargs):
+            raise ImportError(
+                "Keyboard shortcuts not available - apgi_gui.utils.keyboard_manager import failed"
+            )
 
     def _setup_standard_shortcuts(
         app_instance: Any, keyboard_manager: KeyboardManager
     ) -> None:
-        pass
+        raise ImportError(
+            "Keyboard shortcuts setup not available - apgi_gui.utils.keyboard_manager import failed"
+        )
 
 
 # Import undo/redo manager
@@ -133,29 +144,45 @@ except ImportError:
 
     class _UndoRedoManager:
         def __init__(self, *args, **kwargs):
-            pass
+            raise ImportError(
+                "Undo/redo functionality not available - apgi_gui.utils.undo_redo_manager import failed"
+            )
 
         def undo(self):
-            pass
+            raise ImportError(
+                "Undo/redo functionality not available - apgi_gui.utils.undo_redo_manager import failed"
+            )
 
         def redo(self):
-            pass
+            raise ImportError(
+                "Undo/redo functionality not available - apgi_gui.utils.undo_redo_manager import failed"
+            )
 
         def can_undo(self):
-            pass
+            raise ImportError(
+                "Undo/redo functionality not available - apgi_gui.utils.undo_redo_manager import failed"
+            )
 
         def can_redo(self):
-            pass
+            raise ImportError(
+                "Undo/redo functionality not available - apgi_gui.utils.undo_redo_manager import failed"
+            )
 
     class _WidgetTracker:
         def __init__(self, *args, **kwargs):
-            pass
+            raise ImportError(
+                "Widget tracking not available - apgi_gui.utils.undo_redo_manager import failed"
+            )
 
         def track_widget(self, *args, **kwargs):
-            pass
+            raise ImportError(
+                "Widget tracking not available - apgi_gui.utils.undo_redo_manager import failed"
+            )
 
     def _create_undo_redo_menu(menu_bar: Any, undo_manager: UndoRedoManager) -> None:
-        pass
+        raise ImportError(
+            "Undo/redo menu creation not available - apgi_gui.utils.undo_redo_manager import failed"
+        )
 
 
 # Import theme manager
@@ -169,16 +196,24 @@ except ImportError:
 
     class _ThemeManager:
         def __init__(self, *args, **kwargs):
-            pass
+            raise ImportError(
+                "Theme management not available - apgi_gui.utils.theme_manager import failed"
+            )
 
         def set_theme(self, *args, **kwargs):
-            pass
+            raise ImportError(
+                "Theme management not available - apgi_gui.utils.theme_manager import failed"
+            )
 
         def toggle_dark_mode(self):
-            pass
+            raise ImportError(
+                "Theme management not available - apgi_gui.utils.theme_manager import failed"
+            )
 
     def _get_system_theme_preference() -> str:
         return "light"
+
+    get_system_theme_preference = _get_system_theme_preference
 
 
 try:
@@ -197,24 +232,24 @@ try:
     try:
         from apgi_framework.falsification import PrimaryFalsificationTest
     except ImportError:
-        PrimaryFalsificationTest = None  # type: ignore
+        PrimaryFalsificationTest = None
 
     try:
         from apgi_framework.falsification import ConsciousnessWithoutIgnitionTest
     except ImportError:
-        ConsciousnessWithoutIgnitionTest = None  # type: ignore
+        ConsciousnessWithoutIgnitionTest = None
 
     try:
         from apgi_framework.falsification.threshold_insensitivity_test import (
             ThresholdInsensitivityTest,
         )
     except ImportError:
-        ThresholdInsensitivityTest = None  # type: ignore
+        ThresholdInsensitivityTest = None
 
     try:
         from apgi_framework.falsification.soma_bias_test import SomaBiasTest
     except ImportError:
-        SomaBiasTest = None  # type: ignore
+        SomaBiasTest = None
 
     try:
         from apgi_framework.analysis.bayesian_models import HierarchicalBayesianModel
@@ -223,19 +258,19 @@ try:
             HierarchicalBayesianModel  # Alias for compatibility
         )
     except ImportError:
-        BayesianParameterEstimator = None  # type: ignore
+        BayesianParameterEstimator = None
 
     try:
         from apgi_framework.analysis.effect_size_calculator import EffectSizeCalculator
     except ImportError:
-        EffectSizeCalculator = None  # type: ignore
+        EffectSizeCalculator = None
 
     try:
         from apgi_framework.analysis.parameter_estimation import (
             ParameterEstimates as ParameterEstimation,
         )
     except ImportError:
-        ParameterEstimation = None  # type: ignore
+        ParameterEstimation = None
 
     # Clinical applications - use available classes
     try:
@@ -243,14 +278,14 @@ try:
             DisorderClassification as DisorderClassifier,
         )
     except ImportError:
-        DisorderClassifier = None  # type: ignore
+        DisorderClassifier = None
 
     try:
         from apgi_framework.clinical.parameter_extraction import (
             ClinicalParameterExtractor,
         )
     except ImportError:
-        ClinicalParameterExtractor = None  # type: ignore
+        ClinicalParameterExtractor = None
 
     # Neural simulators
     from apgi_framework.simulators.bold_simulator import BOLDSimulator
@@ -262,12 +297,12 @@ try:
     try:
         from apgi_framework.adaptive.quest_plus_staircase import QuestPlusStaircase
     except ImportError:
-        QuestPlusStaircase = None  # type: ignore
+        QuestPlusStaircase = None
 
     try:
         from apgi_framework.adaptive.stimulus_generators import StimulusGenerator
     except ImportError:
-        StimulusGenerator = None  # type: ignore
+        StimulusGenerator = None
 
 except ImportError as e:
     try:
@@ -309,15 +344,15 @@ except ImportError as e:
             logger = logging.getLogger("gui_import_error")
             logger.error(f"Error: Even basic APGI Framework imports failed: {e2}")
         # Set all components to None for graceful degradation
-        ConfigManager = None  # type: ignore
-        APGIEquation = None  # type: ignore
-        PrecisionCalculator = None  # type: ignore
-        PredictionErrorProcessor = None  # type: ignore
-        APGIFrameworkCLI = None  # type: ignore
-        IntegratedDataManager = None  # type: ignore
-        BayesianParameterEstimator = None  # type: ignore
-        DisorderClassifier = None  # type: ignore
-        QuestPlusStaircase = None  # type: ignore
+        ConfigManager = None
+        APGIEquation = None
+        PrecisionCalculator = None
+        PredictionErrorProcessor = None
+        APGIFrameworkCLI = None
+        IntegratedDataManager = None
+        BayesianParameterEstimator = None
+        DisorderClassifier = None
+        QuestPlusStaircase = None
 
 
 class ErrorSeverity(Enum):
@@ -519,7 +554,7 @@ class ConfigurationValidator:
             elif rules["type"] == int:
                 converted_value = int(value)
             else:
-                converted_value = value  # type: ignore[assignment]
+                converted_value = value
 
             # Check range
             if "min" in rules and converted_value < rules["min"]:
@@ -833,7 +868,9 @@ class InputValidator:
             return False, None, error_msg
 
         try:
-            int_val = int(float_val)  # type: ignore
+            if float_val is None:
+                return False, None, f"{param_name} cannot be None"
+            int_val = int(float_val)
 
             # Check if it was actually an integer
             if float_val != int_val:

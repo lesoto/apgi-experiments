@@ -26,7 +26,33 @@ try:
             self.M = kwargs.get("M", 1.5)
             self.body_noise_sd = kwargs.get("body_noise_sd", 0.1)
             self.context_onset = None
+            self.config = self  # Add config attribute for compatibility
+
+            # Parameter validation
+            if self.T <= 0:
+                raise ValueError("T must be positive")
+            if self.dt <= 0:
+                raise ValueError("dt must be positive")
+            if self.Pi_e < 0:
+                raise ValueError("Pi_e must be non-negative")
+            if self.Pi_i_base < 0:
+                raise ValueError("Pi_i_base must be non-negative")
+            if self.M <= 0:
+                raise ValueError("M must be positive")
+
             self.reset()
+
+        @property
+        def ext_stim(self):
+            return self._ext_stim
+
+        @ext_stim.setter
+        def ext_stim(self, value):
+            import numpy as np
+
+            if np.any(np.isnan(value)):
+                raise ValueError("NaN values not allowed in external stimulus")
+            self._ext_stim = value
 
         def reset(self):
             import numpy as np
@@ -35,11 +61,11 @@ try:
             self.pred_body = np.zeros(self.T)
             self.eps_i = np.zeros(self.T)
             self.eps_e = np.zeros(self.T)
+            self._ext_stim = np.zeros(self.T)
             self.Pi_i = np.full(self.T, self.Pi_i_base)
             self.S = np.zeros(self.T)
             self.ignition = np.zeros(self.T)
             self.conscious = np.zeros(self.T, dtype=bool)
-            self.ext_stim = np.zeros(self.T)
 
         def _update_context(self, t):
             if self.context_onset and t >= self.context_onset:

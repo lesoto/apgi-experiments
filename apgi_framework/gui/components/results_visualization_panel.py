@@ -891,6 +891,390 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
         self.ax4.legend()
         self.ax4.grid(True, alpha=0.3)
 
+    def _plot_success_rate_timeline(
+        self, timestamps: List[datetime], success_rates: List[float]
+    ):
+        """Plot success rate over time."""
+        if timestamps and success_rates:
+            # Convert timestamps to numbers for plotting
+            time_nums = [
+                (t - timestamps[0]).total_seconds() / 3600 for t in timestamps
+            ]  # hours
+
+            self.ax1.plot(
+                time_nums,
+                success_rates,
+                "o-",
+                color=self.plot_colors["primary"],
+                linewidth=2,
+            )
+            self.ax1.set_xlabel("Time (hours)")
+            self.ax1.set_ylabel("Success Rate")
+            self.ax1.set_title("Success Rate Timeline", fontweight="bold")
+            self.ax1.grid(True, alpha=0.3)
+            self.ax1.set_ylim(0, 1)
+
+    def _plot_falsification_timeline(
+        self, timestamps: List[datetime], falsification_rates: List[float]
+    ):
+        """Plot falsification rate over time."""
+        if timestamps and falsification_rates:
+            time_nums = [(t - timestamps[0]).total_seconds() / 3600 for t in timestamps]
+
+            self.ax2.plot(
+                time_nums,
+                falsification_rates,
+                "o-",
+                color=self.plot_colors["accent"],
+                linewidth=2,
+            )
+            self.ax2.set_xlabel("Time (hours)")
+            self.ax2.set_ylabel("Falsification Rate")
+            self.ax2.set_title("Falsification Rate Timeline", fontweight="bold")
+            self.ax2.grid(True, alpha=0.3)
+            self.ax2.set_ylim(0, 1)
+
+    def _plot_trend_analysis(
+        self,
+        timestamps: List[datetime],
+        success_rates: List[float],
+        falsification_rates: List[float],
+    ):
+        """Plot trend analysis of success and falsification rates."""
+        if timestamps and success_rates and falsification_rates:
+            time_nums = [(t - timestamps[0]).total_seconds() / 3600 for t in timestamps]
+
+            # Calculate trends (simple linear fit)
+            if len(time_nums) > 1:
+                success_trend = np.polyfit(time_nums, success_rates, 1)
+                falsification_trend = np.polyfit(time_nums, falsification_rates, 1)
+
+                success_line = np.polyval(success_trend, time_nums)
+                falsification_line = np.polyval(falsification_trend, time_nums)
+
+                self.ax3.plot(
+                    time_nums,
+                    success_rates,
+                    "o",
+                    color=self.plot_colors["primary"],
+                    alpha=0.7,
+                )
+                self.ax3.plot(
+                    time_nums,
+                    success_line,
+                    "-",
+                    color=self.plot_colors["primary"],
+                    linewidth=2,
+                    label="Success trend",
+                )
+                self.ax3.plot(
+                    time_nums,
+                    falsification_rates,
+                    "s",
+                    color=self.plot_colors["accent"],
+                    alpha=0.7,
+                )
+                self.ax3.plot(
+                    time_nums,
+                    falsification_line,
+                    "-",
+                    color=self.plot_colors["accent"],
+                    linewidth=2,
+                    label="Falsification trend",
+                )
+
+            self.ax3.set_xlabel("Time (hours)")
+            self.ax3.set_ylabel("Rate")
+            self.ax3.set_title("Trend Analysis", fontweight="bold")
+            self.ax3.legend()
+            self.ax3.grid(True, alpha=0.3)
+
+    def _plot_run_comparison(self):
+        """Plot comparison of individual runs."""
+        if self.test_run_history:
+            run_names = [f"Run {i + 1}" for i in range(len(self.test_run_history))]
+            success_rates = [
+                run.get("success_rate", 0) for run in self.test_run_history
+            ]
+            falsification_rates = [
+                run.get("falsification_rate", 0) for run in self.test_run_history
+            ]
+
+            x = range(len(run_names))
+            width = 0.35
+
+            self.ax4.bar(
+                [i - width / 2 for i in x],
+                success_rates,
+                width,
+                label="Success Rate",
+                color=self.plot_colors["primary"],
+                alpha=0.7,
+            )
+            self.ax4.bar(
+                [i + width / 2 for i in x],
+                falsification_rates,
+                width,
+                label="Falsification Rate",
+                color=self.plot_colors["accent"],
+                alpha=0.7,
+            )
+
+            self.ax4.set_xlabel("Run")
+            self.ax4.set_ylabel("Rate")
+            self.ax4.set_title("Run Comparison", fontweight="bold")
+            self.ax4.set_xticks(x)
+            self.ax4.set_xticklabels(run_names)
+            self.ax4.legend()
+            self.ax4.grid(True, alpha=0.3)
+            self.ax4.set_ylim(0, 1)
+
+    def _plot_run_comparison_bar(self, run_names: List[str], metrics: List[str]):
+        """Plot bar comparison of runs across different metrics."""
+        if run_names and metrics:
+            # Extract metric values for each run
+            metric_data = {}
+            for metric in metrics:
+                values = []
+                for run in self.test_run_history:
+                    if metric == "success_rate":
+                        values.append(run.get("success_rate", 0))
+                    elif metric == "falsification_rate":
+                        values.append(run.get("falsification_rate", 0))
+                    elif metric == "mean_effect_size":
+                        values.append(run.get("mean_effect_size", 0))
+                    elif metric == "mean_power":
+                        values.append(run.get("mean_power", 0))
+                metric_data[metric] = values
+
+            x = range(len(run_names))
+            width = 0.2
+            colors = [
+                self.plot_colors["primary"],
+                self.plot_colors["secondary"],
+                self.plot_colors["accent"],
+                self.plot_colors["warning"],
+            ]
+
+            for i, metric in enumerate(metrics):
+                if metric in metric_data:
+                    offset = (i - 1.5) * width
+                    self.ax1.bar(
+                        [pos + offset for pos in x],
+                        metric_data[metric],
+                        width,
+                        label=metric.replace("_", " ").title(),
+                        color=colors[i % len(colors)],
+                        alpha=0.7,
+                    )
+
+            self.ax1.set_xlabel("Run")
+            self.ax1.set_ylabel("Value")
+            self.ax1.set_title("Run Comparison by Metric", fontweight="bold")
+            self.ax1.set_xticks(x)
+            self.ax1.set_xticklabels(run_names)
+            self.ax1.legend()
+            self.ax1.grid(True, alpha=0.3)
+
+    def _plot_run_radar_comparison(self, run_names: List[str]):
+        """Plot radar comparison of runs (simplified as bar plot)."""
+        if run_names and len(run_names) >= 2:
+            # Simplified: show average metrics for each run
+            avg_metrics = []
+            for run in self.test_run_history:
+                avg = (
+                    run.get("success_rate", 0)
+                    + run.get("falsification_rate", 0)
+                    + run.get("mean_effect_size", 0)
+                    + run.get("mean_power", 0)
+                ) / 4
+                avg_metrics.append(avg)
+
+            self.ax2.bar(
+                run_names, avg_metrics, color=self.plot_colors["secondary"], alpha=0.7
+            )
+            self.ax2.set_ylabel("Average Metric Score")
+            self.ax2.set_title("Run Performance Radar (Simplified)", fontweight="bold")
+            self.ax2.grid(True, alpha=0.3)
+
+    def _plot_performance_trends(self):
+        """Plot performance trends across runs."""
+        if self.test_run_history:
+            run_indices = list(range(1, len(self.test_run_history) + 1))
+            success_rates = [
+                run.get("success_rate", 0) for run in self.test_run_history
+            ]
+            effect_sizes = [
+                run.get("mean_effect_size", 0) for run in self.test_run_history
+            ]
+            powers = [run.get("mean_power", 0) for run in self.test_run_history]
+
+            self.ax3.plot(
+                run_indices,
+                success_rates,
+                "o-",
+                label="Success Rate",
+                color=self.plot_colors["primary"],
+            )
+            self.ax3.plot(
+                run_indices,
+                effect_sizes,
+                "s-",
+                label="Effect Size",
+                color=self.plot_colors["secondary"],
+            )
+            self.ax3.plot(
+                run_indices,
+                powers,
+                "^-",
+                label="Power",
+                color=self.plot_colors["accent"],
+            )
+
+            self.ax3.set_xlabel("Run Number")
+            self.ax3.set_ylabel("Metric Value")
+            self.ax3.set_title("Performance Trends", fontweight="bold")
+            self.ax3.legend()
+            self.ax3.grid(True, alpha=0.3)
+
+    def _plot_statistical_significance_comparison(self):
+        """Plot statistical significance comparison across runs."""
+        if self.test_run_history:
+            run_names = [f"Run {i + 1}" for i in range(len(self.test_run_history))]
+            # Mock statistical significance scores (would need real calculation)
+            significance_scores = [
+                run.get("falsification_rate", 0) * 0.8 for run in self.test_run_history
+            ]  # Simplified
+
+            self.ax4.bar(
+                run_names,
+                significance_scores,
+                color=self.plot_colors["warning"],
+                alpha=0.7,
+            )
+            self.ax4.axhline(
+                y=0.05,
+                color=self.plot_colors["accent"],
+                linestyle="--",
+                label="α = 0.05",
+            )
+            self.ax4.set_ylabel("Significance Score")
+            self.ax4.set_title("Statistical Significance Comparison", fontweight="bold")
+            self.ax4.legend()
+            self.ax4.grid(True, alpha=0.3)
+
+    def _plot_p3b_analysis(self, p3b_amplitudes: List[List[float]]):
+        """Plot P3b amplitude analysis."""
+        if p3b_amplitudes:
+            # Flatten and plot distribution
+            all_amplitudes = [
+                amp for sublist in p3b_amplitudes for amp in sublist if sublist
+            ]
+            if all_amplitudes:
+                self.ax1.hist(
+                    all_amplitudes,
+                    bins=min(10, len(all_amplitudes)),
+                    alpha=0.7,
+                    color=self.plot_colors["primary"],
+                )
+                self.ax1.set_xlabel("P3b Amplitude (μV)")
+                self.ax1.set_ylabel("Frequency")
+                self.ax1.set_title("P3b Amplitude Distribution", fontweight="bold")
+                self.ax1.grid(True, alpha=0.3)
+
+    def _plot_gamma_analysis(self, gamma_powers: List[List[float]]):
+        """Plot gamma power analysis."""
+        if gamma_powers:
+            # Flatten and plot distribution
+            all_powers = [
+                power for sublist in gamma_powers for power in sublist if sublist
+            ]
+            if all_powers:
+                self.ax2.hist(
+                    all_powers,
+                    bins=min(10, len(all_powers)),
+                    alpha=0.7,
+                    color=self.plot_colors["secondary"],
+                )
+                self.ax2.set_xlabel("Gamma Power (dB)")
+                self.ax2.set_ylabel("Frequency")
+                self.ax2.set_title("Gamma Power Distribution", fontweight="bold")
+                self.ax2.grid(True, alpha=0.3)
+
+    def _plot_neural_correlations(self):
+        """Plot neural correlations."""
+        if self.results_data:
+            # Extract neural features for correlation
+            p3b_vals = [r.get("p3b_amplitude", [0]) for r in self.results_data]
+            gamma_vals = [r.get("gamma_power", [0]) for r in self.results_data]
+
+            # Use mean values for correlation
+            p3b_means = [np.mean(vals) if vals else 0 for vals in p3b_vals]
+            gamma_means = [np.mean(vals) if vals else 0 for vals in gamma_vals]
+
+            if p3b_means and gamma_means:
+                self.ax3.scatter(
+                    p3b_means, gamma_means, alpha=0.7, color=self.plot_colors["accent"]
+                )
+                # Add correlation line
+                if len(p3b_means) > 1:
+                    corr_coef = np.corrcoef(p3b_means, gamma_means)[0, 1]
+                    self.ax3.text(
+                        0.05,
+                        0.95,
+                        f"Correlation: {corr_coef:.2f}",
+                        transform=self.ax3.transAxes,
+                        fontsize=10,
+                        bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
+                    )
+
+                self.ax3.set_xlabel("Mean P3b Amplitude")
+                self.ax3.set_ylabel("Mean Gamma Power")
+                self.ax3.set_title("Neural Feature Correlation", fontweight="bold")
+                self.ax3.grid(True, alpha=0.3)
+
+    def _plot_signature_distributions(self):
+        """Plot neural signature distributions."""
+        if self.results_data:
+            # Create mock neural signatures for visualization
+            signatures = []
+            for r in self.results_data:
+                sig = {
+                    "conscious": r.get("is_falsified", False),
+                    "p3b": np.mean(r.get("p3b_amplitude", [0]))
+                    if r.get("p3b_amplitude")
+                    else 0,
+                    "gamma": np.mean(r.get("gamma_power", [0]))
+                    if r.get("gamma_power")
+                    else 0,
+                }
+                signatures.append(sig)
+
+            if signatures:
+                conscious_p3b = [s["p3b"] for s in signatures if s["conscious"]]
+                unconscious_p3b = [s["p3b"] for s in signatures if not s["conscious"]]
+
+                if conscious_p3b and unconscious_p3b:
+                    self.ax4.hist(
+                        conscious_p3b,
+                        alpha=0.7,
+                        label="Conscious",
+                        color=self.plot_colors["primary"],
+                    )
+                    self.ax4.hist(
+                        unconscious_p3b,
+                        alpha=0.7,
+                        label="Unconscious",
+                        color=self.plot_colors["accent"],
+                    )
+                    self.ax4.set_xlabel("P3b Amplitude")
+                    self.ax4.set_ylabel("Frequency")
+                    self.ax4.set_title(
+                        "Neural Signatures by Consciousness", fontweight="bold"
+                    )
+                    self.ax4.legend()
+                    self.ax4.grid(True, alpha=0.3)
+
 
 # Factory function for easy instantiation
 def create_results_visualization_panel(

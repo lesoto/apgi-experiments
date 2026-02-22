@@ -12,7 +12,7 @@ import tkinter as tk
 from datetime import datetime
 from pathlib import Path
 from tkinter import messagebox
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional, Union
 
 import customtkinter as ctk
 
@@ -21,69 +21,31 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 try:
-    from apgi_framework.exceptions import APGIFrameworkError
-    from apgi_framework.logging.standardized_logging import get_logger
+    from apgi_framework.logging.standardized_logging import APGILogger, get_logger
     from apgi_framework.main_controller import MainApplicationController
     from apgi_framework.validation import get_validator
+
+    FRAMEWORK_AVAILABLE = True
 except ImportError as e:
+    FRAMEWORK_AVAILABLE = False
     temp_logger = logging.getLogger("test_execution_panel")
-    temp_logger.warning(f"Some APGI Framework components not available: {e}")
+    temp_logger.error(f"APGI Framework components not available: {e}")
 
-    # Create fallback classes only if not already imported
-    if "MainApplicationController" not in globals():
+    # Show error message
+    try:
+        import tkinter.messagebox as msgbox
 
-        class MainApplicationController:  # type: ignore[no-redef]
-            def __init__(self):
-                pass
-
-            def run_test(self, **kwargs):
-                class MockResult:
-                    def __init__(self, test_name):
-                        self.test_id = f"mock_{test_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-                        self.n_trials = kwargs.get("n_trials", 100)
-                        self.n_participants = kwargs.get("n_participants", 20)
-                        self.success_rate = 0.75
-                        self.falsification_rate = 0.25
-                        self.execution_time = 2.5
-
-                    def to_dict(self):
-                        return {
-                            "test_id": self.test_id,
-                            "n_trials": self.n_trials,
-                            "n_participants": self.n_participants,
-                            "success_rate": self.success_rate,
-                            "falsification_rate": self.falsification_rate,
-                            "execution_time": self.execution_time,
-                        }
-
-                return MockResult("test")
-
-    if "APGIFrameworkError" not in globals():
-
-        class APGIFrameworkError(Exception):  # type: ignore[no-redef]
-            pass
-
-    def get_validator() -> Any:  # type: ignore[no-redef,func-sig]
-        class MockValidator:
-            def validate_experimental_config(self, **kwargs):
-                class MockResult:
-                    def __init__(self):
-                        self.is_valid = True
-                        self.warnings = []
-
-                    def get_message(self):
-                        return "Mock validation passed"
-
-                return MockResult()
-
-        return MockValidator()
-
-else:
-    # Import successful, don't define fallback classes
-    pass
+        msgbox.showerror(
+            "Framework Not Available",
+            "The APGI Framework is not properly installed.\n\n"
+            "Test execution will not function correctly.\n\n"
+            "Please install the framework before running tests.",
+        )
+    except ImportError:
+        pass
 
 
-logger: logging.Logger = (  # type: ignore[no-redef]
+logger: Union[APGILogger, logging.Logger] = (  # type: ignore[no-redef]
     get_logger("test_execution_panel")
     if "get_logger" in globals() and get_logger is not None
     else logging.getLogger("test_execution_panel")

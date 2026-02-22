@@ -109,7 +109,9 @@ class SystemMonitor:
                 # Memory metrics
                 memory = psutil.virtual_memory()
                 try:
-                    swap = psutil.swap_memory()
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore", RuntimeWarning)
+                        swap = psutil.swap_memory()
                     swap_percent = swap.percent
                 except Exception:
                     # Handle systems where swap memory stats are unavailable

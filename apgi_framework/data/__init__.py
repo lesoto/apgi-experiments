@@ -57,9 +57,6 @@ from .report_generator import FalsificationReport, ReportGenerator, ReportSectio
 from .storage_manager import StorageManager
 from .visualizer import APGIVisualizer, InteractiveVisualizer
 
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "examples"))
-from data_loader import list_example_data, load_example_data
-
 __all__ = [
     # Core data management
     "StorageManager",
@@ -106,7 +103,4 @@ __all__ = [
     # Integrated management
     "IntegratedDataManager",
     "create_data_manager",
-    # Example data loading
-    "load_example_data",
-    "list_example_data",
 ]

@@ -40,7 +40,7 @@ The easiest way to run experiments is through the graphical interface:
 
 ```bash
 # From the project root directory
-python experiment_registry_gui.py
+python GUI-Experiment-Registry.py
 ```
 
 #### GUI Features
@@ -55,7 +55,7 @@ python experiment_registry_gui.py
 
 #### GUI Usage Steps
 
-1. __Launch the GUI__: Run `python experiment_registry_gui.py`
+1. __Launch the GUI__: Run `python GUI-Experiment-Registry.py`
 2. __Select Experiment__: Click on an experiment from the list
 3. __Configure Parameters__: Set number of participants and trials
 4. __Choose Output__: (Optional) Select output file for results
@@ -426,7 +426,7 @@ result = run_experiment('experiment_name', n_participants=1, n_trials=5)
 
 ```bash
 # Launch GUI
-python experiment_registry_gui.py
+python GUI-Experiment-Registry.py
 
 # Or command line
 python tools/run_experiments.py iowa_gambling_task --n_participants 5 --n_trials 20

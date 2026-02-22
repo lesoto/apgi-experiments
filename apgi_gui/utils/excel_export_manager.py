@@ -324,7 +324,9 @@ class ExcelExportManager:
 
                 # Write data
                 for _, row in df.iterrows():
-                    ws_data.append(row.tolist())  # type: ignore
+                    # Convert row to list and ensure proper typing
+                    row_data = list(row)
+                    ws_data.append(row_data)
 
             # Metadata sheet
             if include_metadata:
@@ -337,7 +339,7 @@ class ExcelExportManager:
                 ]
 
                 for row in metadata:
-                    ws_meta.append(row)  # type: ignore
+                    ws_meta.append(row)
 
             # Save workbook
             wb.save(filepath)

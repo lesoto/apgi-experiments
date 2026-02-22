@@ -14,9 +14,15 @@ import pytest
 try:
     import tkinter as tk
 
-    TKINTER_AVAILABLE = True
+    # Test if tkinter can actually create a window
+    try:
+        root = tk.Tk()
+        root.withdraw()
+        root.destroy()
+        TKINTER_AVAILABLE = True
+    except Exception:
+        TKINTER_AVAILABLE = False
 except ImportError:
-    print("tkinter not available")
     TKINTER_AVAILABLE = False
 
 # Add project root to path
@@ -385,6 +391,10 @@ class TestMainGUIController:
         assert "log_statistics" in status
 
 
+@pytest.mark.skipif(
+    not TKINTER_AVAILABLE,
+    reason="tkinter not available",
+)
 class TestFallbackFunctionality:
     """Test fallback functionality when components aren't available."""
 
