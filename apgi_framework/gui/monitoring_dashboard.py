@@ -14,8 +14,12 @@ import tkinter as tk
 from datetime import datetime
 from tkinter import ttk
 from typing import Any, Dict, List, Optional
+from dataclasses import asdict
+from collections import deque
 
 import numpy as np
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
@@ -35,7 +39,7 @@ try:
 
     WEBSOCKETS_AVAILABLE = True
 except ImportError:
-    websockets = None
+    websockets = None  # type: ignore
     WEBSOCKETS_AVAILABLE = False
 
 logger = get_logger(__name__)
@@ -58,8 +62,16 @@ class LiveEEGMonitor:
         self.frame = ttk.LabelFrame(parent_frame, text="EEG Monitoring", padding=10)
         self.frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
+        # Create main container
+        main_container = ttk.Frame(self.frame)
+        main_container.pack(fill=tk.BOTH, expand=True)
+
+        # Top section - signal quality and controls
+        top_frame = ttk.Frame(main_container)
+        top_frame.pack(fill=tk.X, pady=(0, 10))
+
         # Signal quality indicators
-        quality_frame = ttk.Frame(self.frame)
+        quality_frame = ttk.Frame(top_frame)
         quality_frame.pack(fill=tk.X, pady=5)
 
         ttk.Label(quality_frame, text="Signal Quality:").pack(side=tk.LEFT, padx=5)
@@ -71,7 +83,7 @@ class LiveEEGMonitor:
         self.artifact_label.pack(side=tk.LEFT, padx=5)
 
         # Control buttons
-        control_frame = ttk.Frame(self.frame)
+        control_frame = ttk.Frame(top_frame)
         control_frame.pack(fill=tk.X, pady=5)
 
         self.start_button = ttk.Button(
@@ -87,11 +99,50 @@ class LiveEEGMonitor:
         )
         self.stop_button.pack(side=tk.LEFT, padx=5)
 
-        # Neural signatures
-        signature_frame = ttk.LabelFrame(
-            self.frame, text="Neural Signatures", padding=5
+        # Middle section - real-time signal visualization
+        signal_frame = ttk.LabelFrame(
+            main_container, text="Real-time EEG Signal", padding=5
         )
-        signature_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+        signal_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+
+        # Create matplotlib figure for EEG signal
+        self.signal_fig = Figure(figsize=(8, 3), dpi=80)
+        self.signal_ax = self.signal_fig.add_subplot(111)
+        self.signal_ax.set_xlabel("Time (s)")
+        self.signal_ax.set_ylabel("Amplitude (μV)")
+        self.signal_ax.set_title("EEG Signal (Sample Channels)")
+        self.signal_ax.grid(True, alpha=0.3)
+
+        # Initialize signal data storage
+        self.signal_window = 5.0  # 5 seconds of data
+        self.sampling_rate = 250.0  # Hz
+        self.signal_points = int(self.signal_window * self.sampling_rate)
+        self.signal_time: deque[float] = deque(maxlen=self.signal_points)
+        self.signal_data: deque[float] = deque(maxlen=self.signal_points)
+
+        # Create signal plot lines (show first 4 channels)
+        self.signal_lines = []
+        colors = ["blue", "red", "green", "orange"]
+        for i in range(4):
+            (line,) = self.signal_ax.plot(
+                [], [], colors[i], alpha=0.7, linewidth=1, label=f"Ch {i + 1}"
+            )
+            self.signal_lines.append(line)
+
+        self.signal_ax.legend(loc="upper right", fontsize="small")
+        self.signal_ax.set_xlim(0, self.signal_window)
+        self.signal_ax.set_ylim(-100, 100)  # μV range
+
+        # Embed signal figure
+        self.signal_canvas = FigureCanvasTkAgg(self.signal_fig, signal_frame)
+        self.signal_canvas.draw()
+        self.signal_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+
+        # Bottom section - neural signatures
+        signature_frame = ttk.LabelFrame(
+            main_container, text="Neural Signatures", padding=5
+        )
+        signature_frame.pack(fill=tk.X, pady=5)
 
         ttk.Label(signature_frame, text="P3b Amplitude (μV):").grid(
             row=0, column=0, sticky=tk.W, pady=2
@@ -124,6 +175,9 @@ class LiveEEGMonitor:
         self.is_monitoring = False
         self.update_thread: Optional[threading.Thread] = None
         self.stop_event = threading.Event()
+
+        # Signal generation for visualization
+        self.signal_start_time = time.time()
 
         logger.info("LiveEEGMonitor initialized")
 
@@ -211,7 +265,7 @@ class LiveEEGMonitor:
 
         try:
             # Initialize EEG interface
-            from ..neural.eeg_interface import EEGConfig
+            from apgi_framework.neural.eeg_interface import EEGConfig
 
             config = EEGConfig(sampling_rate=250.0)
             self.eeg_interface = EEGInterface(config)
@@ -283,6 +337,46 @@ class LiveEEGMonitor:
     def _update_loop(self) -> None:
         """GUI update loop."""
         while self.is_monitoring and not self.stop_event.is_set():
+            # Generate simulated EEG signal for visualization
+            current_time = time.time() - self.signal_start_time
+
+            # Generate 4 channels of simulated EEG data
+            for i in range(4):
+                # Different frequencies for each channel to show variety
+                freq = 10 + i * 2  # 10Hz, 12Hz, 14Hz, 16Hz
+                amplitude = 20 + i * 5  # Different amplitudes
+                signal_value = amplitude * np.sin(
+                    2 * np.pi * freq * current_time
+                ) + np.random.normal(0, 2)
+
+                # Add to signal data
+                self.signal_time.append(current_time)
+                self.signal_data.append(signal_value)
+
+            # Update signal plot
+            if len(self.signal_time) > 0:
+                # Update each channel line
+                for i, line in enumerate(self.signal_lines):
+                    # Extract data for this channel
+                    channel_data = [
+                        self.signal_data[j] for j in range(i, len(self.signal_data), 4)
+                    ]
+                    channel_time = [
+                        self.signal_time[j] for j in range(i, len(self.signal_time), 4)
+                    ]
+
+                    if channel_time and channel_data:
+                        line.set_data(channel_time, channel_data)
+
+                # Adjust x-axis to show sliding window
+                if current_time > self.signal_window:
+                    self.signal_ax.set_xlim(
+                        current_time - self.signal_window, current_time
+                    )
+
+                # Redraw canvas
+                self.signal_canvas.draw()
+
             # Update display at 10 Hz
             time.sleep(0.1)
 
@@ -314,8 +408,15 @@ class PupillometryMonitor:
         )
         self.frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
-        # Signal quality
-        quality_frame = ttk.Frame(self.frame)
+        # Create main container
+        main_container = ttk.Frame(self.frame)
+        main_container.pack(fill=tk.BOTH, expand=True)
+
+        # Top section - signal quality
+        top_frame = ttk.Frame(main_container)
+        top_frame.pack(fill=tk.X, pady=(0, 10))
+
+        quality_frame = ttk.Frame(top_frame)
         quality_frame.pack(fill=tk.X, pady=5)
 
         ttk.Label(quality_frame, text="Data Quality:").pack(side=tk.LEFT, padx=5)
@@ -326,9 +427,65 @@ class PupillometryMonitor:
         self.data_loss_label = ttk.Label(quality_frame, text="N/A", foreground="gray")
         self.data_loss_label.pack(side=tk.LEFT, padx=5)
 
-        # Pupil measurements
-        measurements_frame = ttk.LabelFrame(self.frame, text="Measurements", padding=5)
-        measurements_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+        # Middle section - real-time visualization
+        viz_frame = ttk.LabelFrame(
+            main_container, text="Real-time Pupillometry Data", padding=5
+        )
+        viz_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+
+        # Create matplotlib figure for pupillometry data
+        self.fig = Figure(figsize=(8, 4), dpi=80)
+        self.ax = self.fig.add_subplot(111)
+        self.ax.set_xlabel("Time (s)")
+        self.ax.set_ylabel("Value")
+        self.ax.set_title("Pupil Diameter and Blink Rate")
+        self.ax.grid(True, alpha=0.3)
+
+        # Initialize data storage for plotting
+        self.max_points = 100
+        self.time_data: deque[float] = deque(maxlen=self.max_points)
+        self.pupil_diameter_data: deque[float] = deque(maxlen=self.max_points)
+        self.blink_rate_data: deque[float] = deque(maxlen=self.max_points)
+        self.tracking_loss_data: deque[int] = deque(maxlen=self.max_points)
+
+        # Create plot lines with different y-axes
+        self.ax2 = self.ax.twinx()  # Secondary y-axis for blink rate
+
+        # Pupil diameter line (left axis)
+        (self.pupil_line,) = self.ax.plot(
+            [], [], "b-", label="Pupil Diameter (mm)", linewidth=2
+        )
+        # Blink rate line (right axis)
+        (self.blink_line,) = self.ax2.plot(
+            [], [], "r-", label="Blink Rate (bpm)", linewidth=2, alpha=0.7
+        )
+
+        # Configure axes
+        self.ax.set_ylabel("Pupil Diameter (mm)", color="b")
+        self.ax2.set_ylabel("Blink Rate (bpm)", color="r")
+        self.ax.tick_params(axis="y", labelcolor="b")
+        self.ax2.tick_params(axis="y", labelcolor="r")
+
+        # Add legend
+        lines1, labels1 = self.ax.get_legend_handles_labels()
+        lines2, labels2 = self.ax2.get_legend_handles_labels()
+        self.ax.legend(lines1 + lines2, labels1 + labels2, loc="upper right")
+
+        # Set initial axis limits
+        self.ax.set_xlim(0, 10)
+        self.ax.set_ylim(2, 8)  # Pupil diameter range (mm)
+        self.ax2.set_ylim(0, 30)  # Blink rate range (bpm)
+
+        # Embed figure
+        self.canvas = FigureCanvasTkAgg(self.fig, viz_frame)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+
+        # Bottom section - measurements
+        measurements_frame = ttk.LabelFrame(
+            main_container, text="Current Measurements", padding=5
+        )
+        measurements_frame.pack(fill=tk.X, pady=5)
 
         ttk.Label(measurements_frame, text="Pupil Diameter (mm):").grid(
             row=0, column=0, sticky=tk.W, pady=2
@@ -347,6 +504,9 @@ class PupillometryMonitor:
         )
         self.tracking_loss_label = ttk.Label(measurements_frame, text="N/A")
         self.tracking_loss_label.grid(row=2, column=1, sticky=tk.W, pady=2)
+
+        # Start time for x-axis
+        self.start_time = time.time()
 
         logger.info("PupillometryMonitor initialized")
 
@@ -391,6 +551,46 @@ class PupillometryMonitor:
         self.blink_rate_label.config(text=f"{blink_rate:.1f} bpm")
         self.tracking_loss_label.config(text=str(tracking_loss))
 
+        # Update visualization data
+        current_time = time.time() - self.start_time
+        self.time_data.append(current_time)
+        self.pupil_diameter_data.append(diameter)
+        self.blink_rate_data.append(blink_rate)
+        self.tracking_loss_data.append(tracking_loss)
+
+        self._update_plot()
+
+    def _update_plot(self):
+        """Update the matplotlib plot with current data."""
+        if len(self.time_data) > 0:
+            # Update line data
+            self.pupil_line.set_data(
+                list(self.time_data), list(self.pupil_diameter_data)
+            )
+            self.blink_line.set_data(list(self.time_data), list(self.blink_rate_data))
+
+            # Adjust x-axis limits to show sliding window
+            if self.time_data[-1] > 10:
+                self.ax.set_xlim(self.time_data[-1] - 10, self.time_data[-1])
+            else:
+                self.ax.set_xlim(0, 10)
+
+            # Adjust y-axis limits based on data range
+            if self.pupil_diameter_data:
+                y_min, y_max = min(self.pupil_diameter_data), max(
+                    self.pupil_diameter_data
+                )
+                margin = (y_max - y_min) * 0.1
+                self.ax.set_ylim(y_min - margin, y_max + margin)
+
+            if self.blink_rate_data:
+                y_min, y_max = min(self.blink_rate_data), max(self.blink_rate_data)
+                margin = (y_max - y_min) * 0.1
+                self.ax2.set_ylim(y_min - margin, y_max + margin)
+
+            # Redraw canvas
+            self.canvas.draw()
+
     def reset(self) -> None:
         """Reset monitor display."""
         self.quality_label.config(text="N/A", foreground="gray")
@@ -417,8 +617,15 @@ class CardiacMonitor:
         self.frame = ttk.LabelFrame(parent_frame, text="Cardiac Monitoring", padding=10)
         self.frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
-        # Signal quality
-        quality_frame = ttk.Frame(self.frame)
+        # Create main container
+        main_container = ttk.Frame(self.frame)
+        main_container.pack(fill=tk.BOTH, expand=True)
+
+        # Top section - signal quality
+        top_frame = ttk.Frame(main_container)
+        top_frame.pack(fill=tk.X, pady=(0, 10))
+
+        quality_frame = ttk.Frame(top_frame)
         quality_frame.pack(fill=tk.X, pady=5)
 
         ttk.Label(quality_frame, text="Signal Quality:").pack(side=tk.LEFT, padx=5)
@@ -429,9 +636,65 @@ class CardiacMonitor:
         self.rpeak_label = ttk.Label(quality_frame, text="N/A", foreground="gray")
         self.rpeak_label.pack(side=tk.LEFT, padx=5)
 
-        # Cardiac measurements
-        measurements_frame = ttk.LabelFrame(self.frame, text="Measurements", padding=5)
-        measurements_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+        # Middle section - real-time visualization
+        viz_frame = ttk.LabelFrame(
+            main_container, text="Real-time Cardiac Data", padding=5
+        )
+        viz_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+
+        # Create matplotlib figure for cardiac data
+        self.fig = Figure(figsize=(8, 4), dpi=80)
+        self.ax = self.fig.add_subplot(111)
+        self.ax.set_xlabel("Time (s)")
+        self.ax.set_ylabel("Value")
+        self.ax.set_title("Heart Rate and HRV")
+        self.ax.grid(True, alpha=0.3)
+
+        # Initialize data storage for plotting
+        self.max_points = 100
+        self.time_data: deque[float] = deque(maxlen=self.max_points)
+        self.heart_rate_data: deque[float] = deque(maxlen=self.max_points)
+        self.hrv_data: deque[float] = deque(maxlen=self.max_points)
+        self.rr_interval_data: deque[float] = deque(maxlen=self.max_points)
+
+        # Create plot lines with different y-axes
+        self.ax2 = self.ax.twinx()  # Secondary y-axis for HRV
+
+        # Heart rate line (left axis)
+        (self.hr_line,) = self.ax.plot(
+            [], [], "r-", label="Heart Rate (BPM)", linewidth=2
+        )
+        # HRV line (right axis)
+        (self.hrv_line,) = self.ax2.plot(
+            [], [], "g-", label="HRV (RMSSD ms)", linewidth=2, alpha=0.7
+        )
+
+        # Configure axes
+        self.ax.set_ylabel("Heart Rate (BPM)", color="r")
+        self.ax2.set_ylabel("HRV (RMSSD ms)", color="g")
+        self.ax.tick_params(axis="y", labelcolor="r")
+        self.ax2.tick_params(axis="y", labelcolor="g")
+
+        # Add legend
+        lines1, labels1 = self.ax.get_legend_handles_labels()
+        lines2, labels2 = self.ax2.get_legend_handles_labels()
+        self.ax.legend(lines1 + lines2, labels1 + labels2, loc="upper right")
+
+        # Set initial axis limits
+        self.ax.set_xlim(0, 10)
+        self.ax.set_ylim(50, 100)  # Heart rate range (BPM)
+        self.ax2.set_ylim(10, 100)  # HRV range (ms)
+
+        # Embed figure
+        self.canvas = FigureCanvasTkAgg(self.fig, viz_frame)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+
+        # Bottom section - measurements
+        measurements_frame = ttk.LabelFrame(
+            main_container, text="Current Measurements", padding=5
+        )
+        measurements_frame.pack(fill=tk.X, pady=5)
 
         ttk.Label(measurements_frame, text="Heart Rate (BPM):").grid(
             row=0, column=0, sticky=tk.W, pady=2
@@ -450,6 +713,9 @@ class CardiacMonitor:
         )
         self.rr_label = ttk.Label(measurements_frame, text="N/A")
         self.rr_label.grid(row=2, column=1, sticky=tk.W, pady=2)
+
+        # Start time for x-axis
+        self.start_time = time.time()
 
         logger.info("CardiacMonitor initialized")
 
@@ -498,6 +764,42 @@ class CardiacMonitor:
         self.hrv_label.config(text=f"{hrv:.1f} ms")
         self.rr_label.config(text=f"{rr_interval:.1f} ms")
 
+        # Update visualization data
+        current_time = time.time() - self.start_time
+        self.time_data.append(current_time)
+        self.heart_rate_data.append(heart_rate)
+        self.hrv_data.append(hrv)
+        self.rr_interval_data.append(rr_interval)
+
+        self._update_plot()
+
+    def _update_plot(self):
+        """Update the matplotlib plot with current data."""
+        if len(self.time_data) > 0:
+            # Update line data
+            self.hr_line.set_data(list(self.time_data), list(self.heart_rate_data))
+            self.hrv_line.set_data(list(self.time_data), list(self.hrv_data))
+
+            # Adjust x-axis limits to show sliding window
+            if self.time_data[-1] > 10:
+                self.ax.set_xlim(self.time_data[-1] - 10, self.time_data[-1])
+            else:
+                self.ax.set_xlim(0, 10)
+
+            # Adjust y-axis limits based on data range
+            if self.heart_rate_data:
+                y_min, y_max = min(self.heart_rate_data), max(self.heart_rate_data)
+                margin = (y_max - y_min) * 0.1
+                self.ax.set_ylim(y_min - margin, y_max + margin)
+
+            if self.hrv_data:
+                y_min, y_max = min(self.hrv_data), max(self.hrv_data)
+                margin = (y_max - y_min) * 0.1
+                self.ax2.set_ylim(y_min - margin, y_max + margin)
+
+            # Redraw canvas
+            self.canvas.draw()
+
     def reset(self) -> None:
         """Reset monitor display."""
         self.quality_label.config(text="N/A", foreground="gray")
@@ -526,9 +828,17 @@ class RealTimeParameterEstimateUpdater:
         )
         self.frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
+        # Create main container with text and visualization
+        main_container = ttk.Frame(self.frame)
+        main_container.pack(fill=tk.BOTH, expand=True)
+
+        # Left side - text displays
+        text_frame = ttk.Frame(main_container)
+        text_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
+
         # Parameter displays
-        params_frame = ttk.Frame(self.frame)
-        params_frame.pack(fill=tk.BOTH, expand=True)
+        params_frame = ttk.Frame(text_frame)
+        params_frame.pack(fill=tk.Y)
 
         # θ₀ (theta0)
         ttk.Label(params_frame, text="θ₀ (Ignition Threshold):").grid(
@@ -558,6 +868,43 @@ class RealTimeParameterEstimateUpdater:
         self.convergence_label = ttk.Label(params_frame, text="N/A")
         self.convergence_label.grid(row=3, column=1, sticky=tk.W, pady=2)
 
+        # Right side - visualization
+        viz_frame = ttk.Frame(main_container)
+        viz_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+
+        # Create matplotlib figure for parameter trends
+        self.fig = Figure(figsize=(6, 4), dpi=100)
+        self.ax = self.fig.add_subplot(111)
+        self.ax.set_xlabel("Time (s)")
+        self.ax.set_ylabel("Parameter Value")
+        self.ax.set_title("Real-time Parameter Estimates")
+        self.ax.grid(True, alpha=0.3)
+
+        # Initialize data storage for plotting
+        self.max_points = 100  # Keep last 100 data points
+        self.time_data: deque[float] = deque(maxlen=self.max_points)
+        self.theta0_data: deque[float] = deque(maxlen=self.max_points)
+        self.pi_i_data: deque[float] = deque(maxlen=self.max_points)
+        self.beta_data: deque[float] = deque(maxlen=self.max_points)
+
+        # Create plot lines
+        (self.theta0_line,) = self.ax.plot([], [], "b-", label="θ₀", linewidth=2)
+        (self.pi_i_line,) = self.ax.plot([], [], "g-", label="Πᵢ", linewidth=2)
+        (self.beta_line,) = self.ax.plot([], [], "r-", label="β", linewidth=2)
+        self.ax.legend(loc="upper right")
+
+        # Set initial axis limits
+        self.ax.set_xlim(0, 10)
+        self.ax.set_ylim(-0.5, 2.0)
+
+        # Embed matplotlib figure in tkinter
+        self.canvas = FigureCanvasTkAgg(self.fig, viz_frame)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+
+        # Start time for x-axis
+        self.start_time = time.time()
+
         logger.info("RealTimeParameterEstimateUpdater initialized")
 
     def update_theta0(
@@ -575,6 +922,12 @@ class RealTimeParameterEstimateUpdater:
         text = f"{mean:.3f} ± {std:.3f} [{ci_lower:.3f}, {ci_upper:.3f}]"
         self.theta0_label.config(text=text)
 
+        # Update visualization data
+        current_time = time.time() - self.start_time
+        self.time_data.append(current_time)
+        self.theta0_data.append(mean)
+        self._update_plot()
+
     def update_pi_i(
         self, mean: float, std: float, ci_lower: float, ci_upper: float
     ) -> None:
@@ -590,6 +943,13 @@ class RealTimeParameterEstimateUpdater:
         text = f"{mean:.3f} ± {std:.3f} [{ci_lower:.3f}, {ci_upper:.3f}]"
         self.pi_i_label.config(text=text)
 
+        # Update visualization data
+        current_time = time.time() - self.start_time
+        if len(self.time_data) == 0 or current_time > self.time_data[-1]:
+            self.time_data.append(current_time)
+        self.pi_i_data.append(mean)
+        self._update_plot()
+
     def update_beta(
         self, mean: float, std: float, ci_lower: float, ci_upper: float
     ) -> None:
@@ -604,6 +964,46 @@ class RealTimeParameterEstimateUpdater:
         """
         text = f"{mean:.3f} ± {std:.3f} [{ci_lower:.3f}, {ci_upper:.3f}]"
         self.beta_label.config(text=text)
+
+        # Update visualization data
+        current_time = time.time() - self.start_time
+        if len(self.time_data) == 0 or current_time > self.time_data[-1]:
+            self.time_data.append(current_time)
+        self.beta_data.append(mean)
+        self._update_plot()
+
+    def _update_plot(self):
+        """Update the matplotlib plot with current data."""
+        if len(self.time_data) > 0:
+            # Ensure all data arrays have the same length
+            min_length = min(
+                len(self.theta0_data), len(self.pi_i_data), len(self.beta_data)
+            )
+            time_array = list(self.time_data)[-min_length:]
+            theta0_array = list(self.theta0_data)[-min_length:]
+            pi_i_array = list(self.pi_i_data)[-min_length:]
+            beta_array = list(self.beta_data)[-min_length:]
+
+            # Update line data
+            self.theta0_line.set_data(time_array, theta0_array)
+            self.pi_i_line.set_data(time_array, pi_i_array)
+            self.beta_line.set_data(time_array, beta_array)
+
+            # Adjust x-axis limits to show sliding window
+            if time_array[-1] > 10:
+                self.ax.set_xlim(time_array[-1] - 10, time_array[-1])
+            else:
+                self.ax.set_xlim(0, 10)
+
+            # Adjust y-axis limits based on data range
+            all_data = theta0_array + pi_i_array + beta_array
+            if all_data:
+                y_min, y_max = min(all_data), max(all_data)
+                margin = (y_max - y_min) * 0.1
+                self.ax.set_ylim(y_min - margin, y_max + margin)
+
+            # Redraw canvas
+            self.canvas.draw()
 
     def update_convergence(self, converged: bool, r_hat: float) -> None:
         """
@@ -807,6 +1207,9 @@ class MultiModalMonitoringDashboard:
         self.root = root
         self.root.title("APGI Multi-Modal Monitoring Dashboard")
         self.root.geometry("1200x800")
+
+        # Add stop event for simulation control
+        self._stop_event = threading.Event()
 
         # Initialize data streamer
         self.streamer = get_streamer()
@@ -1019,11 +1422,29 @@ class MultiModalMonitoringDashboard:
     def _simulate_data_updates(self):
         """Fallback simulation when WebSocket is not available."""
         logger.info("Using simulated data updates")
-        while True:
+        while not self._stop_event.is_set():
             try:
-                # Simulate some basic updates for demonstration
-                time.sleep(1.0)
-            except Exception:
+                current_time = time.time()
+
+                # Generate simulated data using the streamer's methods
+                eeg_data = self.streamer._generate_eeg_data(current_time)
+                pupil_data = self.streamer._generate_pupil_data(current_time)
+                cardiac_data = self.streamer._generate_cardiac_data(current_time)
+
+                # Process the simulated data through the same methods as WebSocket data
+                self._update_eeg_from_stream(asdict(eeg_data))
+                self._update_pupil_from_stream(asdict(pupil_data))
+                self._update_cardiac_from_stream(asdict(cardiac_data))
+
+                # Occasionally update parameters
+                if int(current_time) % 3 == 0:  # Every 3 seconds
+                    param_data = self.streamer._generate_parameter_data(current_time)
+                    self._update_parameters_from_stream(asdict(param_data))
+
+                time.sleep(0.1)  # 10 Hz updates
+
+            except Exception as e:
+                logger.error(f"Simulation error: {e}")
                 break
 
     def stop_streaming(self):

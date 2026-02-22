@@ -35,6 +35,9 @@ class MainArea(ctk.CTkFrame):
 
     def setup_ui(self):
         """Set up the main area UI components."""
+        # Initialize attributes first
+        self.tab_content_created = set()
+
         # Configure frame
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
@@ -51,10 +54,22 @@ class MainArea(ctk.CTkFrame):
 
         self.create_tabs()
 
+        # Create scrollable frame for tab content
+        self.scrollable_frame = ctk.CTkScrollableFrame(
+            self.tabview.tab("Configuration")
+        )
+        self.scrollable_frame.grid(
+            row=0,
+            column=0,
+            padx=self.ui_config["spacing"]["padding_x"],
+            pady=self.ui_config["spacing"]["padding_x"],
+            sticky="nsew",
+        )
+        self.scrollable_frame.grid_columnconfigure(0, weight=1)
+        self.scrollable_frame.grid_rowconfigure(1, weight=1)
+
         # Create initial tab content lazily
         self.on_tab_changed()
-
-        self.tab_content_created = set()
 
     def create_tabs(self):
         """Create the tab view tabs."""
@@ -308,9 +323,40 @@ class MainArea(ctk.CTkFrame):
                 current_tab = selected_tab
 
             if current_tab not in self.tab_content_created:
+                # Get the tab frame
+                tab_frame = self.tabview.tab(current_tab)
+
+                # Create scrollable frame for this tab if it doesn't exist
+                if not hasattr(
+                    self, f'scrollable_frame_{current_tab.replace(" ", "_").lower()}'
+                ):
+                    scrollable_frame = ctk.CTkScrollableFrame(tab_frame)
+                    scrollable_frame.grid(
+                        row=0,
+                        column=0,
+                        padx=self.ui_config["spacing"]["padding_x"],
+                        pady=self.ui_config["spacing"]["padding_x"],
+                        sticky="nsew",
+                    )
+                    scrollable_frame.grid_columnconfigure(0, weight=1)
+                    scrollable_frame.grid_rowconfigure(1, weight=1)
+                    setattr(
+                        self,
+                        f'scrollable_frame_{current_tab.replace(" ", "_").lower()}',
+                        scrollable_frame,
+                    )
+                else:
+                    scrollable_frame = getattr(
+                        self,
+                        f'scrollable_frame_{current_tab.replace(" ", "_").lower()}',
+                    )
+
                 # Clear existing content
-                for widget in self.scrollable_frame.winfo_children():
+                for widget in scrollable_frame.winfo_children():
                     widget.destroy()
+
+                # Set current scrollable_frame for content creation methods
+                self.scrollable_frame = scrollable_frame
 
                 # Create content based on selected tab
                 if current_tab == "Analysis":

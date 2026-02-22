@@ -240,20 +240,29 @@ class RealTimeDataStreamer:
 
     def _run_server(self):
         """Run the WebSocket server."""
-        self._loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self._loop)
+        # Create new event loop for this thread
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
 
         try:
-            self.server = websockets.serve(self.register_client, self.host, self.port)
+            # Create server
+            server_coro = websockets.serve(self.register_client, self.host, self.port)
+            self.server = loop.run_until_complete(server_coro)
 
-            self._loop.run_until_complete(self.server)
-            self._loop.run_until_complete(self._streaming_loop())
+            # Start streaming loop
+            streaming_task = asyncio.ensure_future(self._streaming_loop())
+
+            logger.info(f"WebSocket server started on {self.host}:{self.port}")
+            loop.run_until_complete(streaming_task)
 
         except Exception as e:
             logger.error(f"Server error: {e}")
         finally:
-            self._loop.close()
-            self._loop = None
+            # Clean up
+            if self.server:
+                self.server.close()
+                loop.run_until_complete(self.server.wait_closed())
+            loop.close()
 
     async def _streaming_loop(self):
         """Main streaming loop for data generation and broadcasting."""

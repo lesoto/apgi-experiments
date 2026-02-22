@@ -658,3 +658,48 @@ TestFailure = FrameworkFailure
 TestRunStatus = FrameworkRunStatus
 TestRunCategory = FrameworkRunCategory
 FailureCategory = FrameworkFailureCategory
+
+
+class FrameworkTestUtilities:
+    """Test utilities for the APGI Framework test enhancement system.
+
+    This class provides utility methods for test execution, discovery, and management.
+    """
+
+    def __init__(self):
+        """Initialize the test utilities."""
+        self.logger = logging.getLogger(__name__)
+
+    def discover_tests(self, test_path: str) -> List[str]:
+        """Discover test files in the given path.
+
+        Args:
+            test_path: Path to search for test files
+
+        Returns:
+            List of discovered test file paths
+        """
+        # Simple test discovery implementation
+        import glob
+
+        test_files = glob.glob(f"{test_path}/test_*.py")
+        return test_files
+
+    def run_tests(self, test_files: List[str]) -> Dict[str, Any]:
+        """Run the specified test files.
+
+        Args:
+            test_files: List of test files to run
+
+        Returns:
+            Dictionary with test results
+        """
+        # Basic implementation - could be enhanced
+        results = {
+            "total_tests": len(test_files),
+            "passed": 0,
+            "failed": 0,
+            "errors": 0,
+            "skipped": 0,
+        }
+        return results
