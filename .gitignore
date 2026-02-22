@@ -65,3 +65,5 @@ temp/
 cache/
 backups/
 .mypy_cache/
+.hypothesis/
+config/presets/
