@@ -102,6 +102,7 @@ The APGI Framework is a Python-based scientific research platform for consciousn
 | 13 | **CLI logger initialization before use** | `apgi_framework/cli.py:179` | `self.logger = None` used before `setup_logging()` | High — CLI crashes when controller initialisation fails |
 | 14 | **Generic dataset storage** | `apgi_framework/data/storage_manager.py` | Requires 3 domain-specific fields; no support for arbitrary research data | Medium |
 | 15 | **Presets directory auto-creation with nested paths** | `apgi_framework/config/config_manager.py:329` | `open()` without `parent.mkdir(parents=True, exist_ok=True)` | Medium |
+| 16 | **`GUI-Simple.py` missing** | `GUI-Launcher.py:223,703` | File referenced in launcher app registry and `launch_simple_gui()` but does not exist on disk | High |
 
 ---
 
@@ -186,6 +187,7 @@ This is a desktop Python/tkinter application; standard web browser compatibility
 | Windows paths | `security_validator.py` references Windows-specific paths (`C:\Windows\`, `C:\Program Files\`) which is intentional for validation; fine | ✓ OK |
 | Dependency isolation | `reportlab` optional but `pdf_generator.py` fails to import when absent due to module-level use of `A4` outside the try block | Critical |
 | `pyproject.toml` addopts | `--cov` flags in `addopts` break `pytest` without `pytest-cov` installed; not in minimal `dependencies` | Medium |
+| `GUI-Simple.py` missing | `GUI-Launcher.py:223,703` registers and can launch `GUI-Simple.py` but the file does not exist in the repository | High |
 
 ---
 
