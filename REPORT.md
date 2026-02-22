@@ -48,7 +48,7 @@ The application contains **two independent critical bugs** that each independent
 | Core Dependencies | numpy, scipy, pandas, matplotlib, customtkinter |
 | Package Name | `apgi-framework-test-enhancement` v1.0.0 |
 | Architecture | Multi-entry-point monolith with framework library |
-| Entry Points | GUI.py (5,691 lines), apgi_gui/app.py (1,700 lines), GUI-Launcher.py, GUI-Experiment-Registry.py |
+| Entry Points | GUI.py (6,741 lines actual; docs say 5,691), apgi_gui/app.py (1,706 lines), GUI-Launcher.py (1,029 lines), GUI-Experiment-Registry.py (876 lines) |
 
 ### Entry Points Status
 
@@ -726,7 +726,8 @@ The zoom system silently ignores all exceptions when collecting widget sizes, wh
 | Tests SKIPPED | 121 (GUI tests, no display) + 2 (other) |
 | Test ERRORS (setup/teardown) | 1 |
 | Pass rate (of runnable tests) | **56/63 = 88.9%** |
-| Pass rate (including uncollectable) | **~18%** |
+| Pass rate (including uncollectable) | **~17%** |
+| Note | Third-party audit confirmed **33** collection errors (vs. 31 in initial run) when integration tests counted separately |
 
 ### 6.2 Failing Tests
 
@@ -788,6 +789,7 @@ The documentation describes the system as having:
 - A web interface at `../../apgi-web/APGI-Experiments.html` — not present in this repository.
 - A `setup.py` — not present.
 - A `core/models/apgi_agent.py` — present in `core/analysis/` but instructions say `core/models/`.
+- `GUI.py` documented as "5,691 lines" — actual line count is **6,741** (18% more than documented; docs are stale).
 - `tests/unit/`, `tests/performance/` directories for pytest markers — these directories do not exist; only `tests/framework/`, `tests/falsification/`, `tests/integration/`.
 
 ---
