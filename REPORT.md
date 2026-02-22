@@ -1,10 +1,11 @@
 # APGI Framework — Comprehensive Application Audit Report
 
 **Report Date:** 2026-02-22
-**Auditor:** Automated End-to-End Audit
+**Auditor:** Automated End-to-End Audit (multi-pass)
 **Branch:** `claude/app-audit-testing-Zdyzh`
 **Python Version Tested:** 3.11.14
 **Scope:** Full codebase — GUI applications, framework modules, test suite, documentation
+**Total Bugs Found:** 27 (2 critical, 10 high, 11 medium, 4 low)
 
 ---
 
@@ -31,9 +32,9 @@ The APGI Framework (Adaptive Precision and Generalized Intelligence) is a resear
 - **45+ test files** covering unit, integration, property-based, and GUI tests
 - **Extensive documentation** across 16+ markdown files
 
-### Overall Health: **POOR TO FAIR**
+### Overall Health: **POOR**
 
-The application contains **one critical import-level bug** that cascades to prevent 31 test files from loading and blocks all major framework modules from being imported. Additionally, two documented primary GUI entry points (`launch_gui.py`, `GUI-Simple.py`) are entirely absent from the repository. Several GUI view modes advertised to users will crash the application on selection. The test suite, where it can run, yields **7 failures out of 56 active tests** (12.5% failure rate), with an additional **121 tests silently skipped** due to missing display environment and **31 test files failing to collect** due to the critical import bug.
+The application contains **two independent critical bugs** that each independently prevent the application from functioning. First, a one-line wrong import path in `config_manager.py` cascades to block the entire framework from importing, causing 31 of 45 test files to fail collection. Second, `apgi_gui/components/main_area.py` references `self.scrollable_frame` in 23+ places across all four UI tabs, but this attribute is never initialized in `setup_ui()`—every tab of the modern `apgi_gui/app.py` application crashes with `AttributeError` the moment any tab content is accessed. Additionally, two documented primary GUI entry points (`launch_gui.py`, `GUI-Simple.py`) are entirely absent from the repository. Several further GUI view modes crash on selection. The test suite yields **7 failures out of 56 active tests** (12.5% failure rate), with **121 tests silently skipped** (no display) and **31 test files failing to collect** (critical import bug).
 
 ---
 
@@ -66,11 +67,11 @@ The application contains **one critical import-level bug** that cascades to prev
 
 | # | KPI | Score (1–100) | Rationale |
 |---|-----|--------------|-----------|
-| 1 | **Functional Completeness** | **42/100** | Critical path_manager import bug breaks the entire framework; 2 documented GUI entry points missing; multiple GUI view modes crash on selection; find/debug/search features explicitly unimplemented; ~31 test modules unable to load |
+| 1 | **Functional Completeness** | **35/100** | Two independent critical bugs: path_manager import breaks framework; `scrollable_frame` uninitialized in MainArea crashes all 4 tabs of the modern GUI; 2 documented entry points missing; multiple ResultsVisualizationPanel modes crash; find/debug/search are stubs; 31 test modules unable to load |
 | 2 | **UI/UX Consistency** | **55/100** | The components that exist follow consistent CustomTkinter patterns with good zoom, theme toggle, keyboard shortcuts, and status bar; however, large sections of the sidebar, visualization modes, and session management are stubs; fallback classes silently mask failures |
 | 3 | **Responsiveness & Performance** | **58/100** | Architecture uses threading for long tasks, memory-monitored undo/redo stacks, and adaptive window sizing; however, headless testing prevents runtime validation; `matplotlib.use("Agg")` backend selected correctly; no performance benchmarks passing |
-| 4 | **Error Handling & Resilience** | **40/100** | Defensive try/except wrapping is pervasive but masks real errors via silent fallback classes; the fundamental `path_manager` import error is unhandled at startup; SessionStateManager methods called in demo code do not exist; bare `except Exception` swallowing in file I/O paths |
-| 5 | **Overall Implementation Quality** | **45/100** | Good directory structure and module separation; however, 60+ stub `pass` methods, 50+ `# type: ignore` comments, missing LICENSE/README/CHANGELOG, broken docs cross-references, 31 test collection errors, and a cascade import failure indicate the codebase is in mid-development with significant incomplete work |
+| 4 | **Error Handling & Resilience** | **38/100** | Defensive try/except wrapping is pervasive (289+ blocks in GUI.py alone) but masks real errors via silent `pass` catches; fundamental `path_manager` import error is unhandled at startup; `scrollable_frame` uninitialized crash is unguarded; SessionStateManager methods called in demo code do not exist; bare `except Exception` swallowing in file I/O paths |
+| 5 | **Overall Implementation Quality** | **42/100** | Good directory structure and module separation; however, two critical uninitialized/missing-module bugs, 60+ stub `pass` methods, 50+ `# type: ignore` comments, duplicate widget-tracking initialization, missing LICENSE/README/CHANGELOG, broken docs cross-references, and 31 test collection errors indicate the codebase is in mid-development with significant incomplete work |
 
 ### Score Interpretation
 
@@ -129,11 +130,82 @@ from ..utils.path_utils import get_path_manager
 
 ---
 
+---
+
+#### BUG-002 — `self.scrollable_frame` never initialized — all four main tabs crash on access
+
+**Severity:** Critical
+**Affected File:** `apgi_gui/components/main_area.py`
+**Affected Lines:** 130, 165, 207, 241, 312, 359, 390, 420, 449, 462, 485, 495, 499, 528, 561, 618, 631, 668, 669 (23+ references)
+
+**Description:**
+`MainArea.setup_ui()` creates `self.tabview` and its four tab frames (`config_tab`, `analysis_tab`, `viz_tab`, `results_tab`) but **never creates `self.scrollable_frame`**. Every tab-content creation method (`create_configuration_content`, `create_analysis_content`, `create_visualization_content`, `create_results_content`) immediately accesses `self.scrollable_frame` as the parent for all child widgets. Because tab content is created lazily via `on_tab_changed()`, opening the app does not crash immediately, but accessing **any tab** triggers an instant `AttributeError`.
+
+**Reproduction Steps:**
+1. Run `python3 apgi_gui/app.py`
+2. Click on the "Configuration" tab (or any tab).
+
+**Expected:**
+The tab renders parameter entry widgets.
+
+**Actual:**
+```
+AttributeError: 'MainArea' object has no attribute 'scrollable_frame'
+  File "apgi_gui/components/main_area.py", line 130, in create_configuration_content
+    params_frame = ctk.CTkFrame(self.scrollable_frame)
+```
+
+**Impact:** The modern `apgi_gui/app.py` GUI application is **completely non-functional**. All four workspace tabs crash on access. This is independent of BUG-001.
+
+**Fix:**
+Add to `setup_ui()` after `self.create_tabs()`:
+```python
+# Create scrollable frame inside the configuration tab (and analogues for other tabs)
+self.scrollable_frame = ctk.CTkScrollableFrame(self.config_tab)
+self.scrollable_frame.pack(fill="both", expand=True)
+```
+Each tab needs its own scrollable frame or the attribute must be set per-tab before calling the corresponding `create_*_content()` method.
+
+---
+
 ### 4.2 High Severity
 
 ---
 
-#### BUG-002 — ResultsVisualizationPanel crashes on all non-Overview view modes
+#### BUG-003 — `MainArea.run_analysis()` is an explicit placeholder
+
+**Severity:** High
+**Affected File:** `apgi_gui/components/main_area.py:1885`
+
+**Description:**
+The `run_analysis()` method — called both directly via the keyboard shortcut `Ctrl+R` and via the "Run Analysis" button — contains only a placeholder body that prints a status message. No actual analysis is performed.
+
+```python
+def run_analysis(self) -> None:
+    """Run the current analysis."""
+    self.update_status("Analysis completed (placeholder)")
+```
+
+**Reproduction Steps:**
+1. Open `apgi_gui/app.py`
+2. Press `Ctrl+R` or click the Run Analysis button.
+
+**Expected:** APGI analysis executes and results are displayed.
+**Actual:** Status bar shows "Analysis completed (placeholder)"; no computation occurs.
+
+---
+
+#### BUG-004 — `create_visualization_content()` and `create_results_content()` are empty
+
+**Severity:** High
+**Affected File:** `apgi_gui/components/main_area.py` (lines 492, 676)
+
+**Description:**
+Both tab-content creation methods have no body—they clear child widgets and return immediately. The Visualization and Results tabs render as entirely blank panels.
+
+---
+
+#### BUG-005 — ResultsVisualizationPanel crashes on all non-Overview view modes
 
 **Severity:** High
 **Affected File:** `apgi_framework/gui/components/results_visualization_panel.py`
@@ -171,7 +243,7 @@ AttributeError: 'ResultsVisualizationPanel' object has no attribute '_plot_effec
 
 ---
 
-#### BUG-003 — `TestFallbackFunctionality` test raises `NameError: name 'tk' is not defined`
+#### BUG-006 — `TestFallbackFunctionality` test raises `NameError: name 'tk' is not defined`
 
 **Severity:** High
 **Affected File:** `tests/test_gui_components_refactored.py:393`
@@ -204,7 +276,7 @@ class TestFallbackFunctionality:
 
 ---
 
-#### BUG-004 — `APGIAgent` mock in tests missing `.config` attribute
+#### BUG-007 — `APGIAgent` mock in tests missing `.config` attribute
 
 **Severity:** High
 **Affected Files:** `tests/test_apgi_agent.py` (line referenced from `test_edge_cases.py:322`)
@@ -230,7 +302,7 @@ AttributeError: 'APGIAgent' object has no attribute 'config'
 
 ---
 
-#### BUG-005 — `ErrorHandler` missing documented `log_error` method
+#### BUG-008 — `ErrorHandler` missing documented `log_error` method
 
 **Severity:** High
 **Affected File:** `utils/error_handler.py`
@@ -257,7 +329,7 @@ AssertionError: assert False
 
 ---
 
-#### BUG-006 — `DataValidator` missing `validate_dataset_structure` method
+#### BUG-009 — `DataValidator` missing `validate_dataset_structure` method
 
 **Severity:** High
 **Affected File:** `utils/data_validation.py`
@@ -284,7 +356,7 @@ AssertionError: assert False
 
 ---
 
-#### BUG-007 — `APGIAgent.test_parameter_validation` fails — missing validation
+#### BUG-010 — `APGIAgent.test_parameter_validation` fails — missing validation
 
 **Severity:** High
 **Affected File:** `tests/test_apgi_agent.py::TestAPGIAgent::test_parameter_validation`
@@ -307,7 +379,7 @@ Failed: DID NOT RAISE <class 'ValueError'>
 
 ---
 
-#### BUG-008 — `test_nan_and_inf_handling` does not raise `ValueError` for NaN stimulus
+#### BUG-011 — `test_nan_and_inf_handling` does not raise `ValueError` for NaN stimulus
 
 **Severity:** High
 **Affected File:** `tests/test_edge_cases.py::TestEdgeCases::test_nan_and_inf_handling`
@@ -330,7 +402,7 @@ Failed: DID NOT RAISE <class 'ValueError'>
 
 ---
 
-#### BUG-009 — `test_empty_stimulus` fails with `AttributeError`
+#### BUG-012 — `test_empty_stimulus` fails with `AttributeError`
 
 **Severity:** High
 **Affected File:** `tests/test_edge_cases.py::TestEdgeCases::test_empty_stimulus`
@@ -353,7 +425,7 @@ AttributeError: 'APGIAgent' object has no attribute 'config'
 
 ---
 
-#### BUG-010 — `test_context_modulation_edge_cases` fails with `AttributeError`
+#### BUG-013 — `test_context_modulation_edge_cases` fails with `AttributeError`
 
 **Severity:** High
 **Affected File:** `tests/test_edge_cases.py::TestEdgeCases::test_context_modulation_edge_cases`
@@ -367,7 +439,30 @@ Same root cause as BUG-009. `agent.config` is accessed but not present on the mo
 
 ---
 
-#### BUG-011 — 14 GUI modules commented out in `apgi_framework/gui/__init__.py`
+#### BUG-014 — Duplicate widget-tracking initialization in `apgi_gui/app.py`
+
+**Severity:** Medium
+**Affected File:** `apgi_gui/app.py` (lines 65–66 and 113–114)
+
+**Description:**
+`_tracked_widgets` and `_text_widgets` sets are initialized twice in `__init__()`: first at lines 65–66 (before the config block) and again at lines 113–114 (after setup_logging). The second assignment silently discards any widgets added in between, and indicates unintended copy-paste duplication.
+
+---
+
+#### BUG-015 — Unused import `safe_pickle_load` in `main_area.py`
+
+**Severity:** Medium
+**Affected File:** `apgi_gui/components/main_area.py:10`
+
+**Description:**
+```python
+from apgi_framework.security.secure_pickle import safe_pickle_load
+```
+This import is never used in the file. It adds an unnecessary dependency on `apgi_framework.security`, which may fail to import if the framework itself is broken (see BUG-001).
+
+---
+
+#### BUG-016 — 14 GUI modules commented out in `apgi_framework/gui/__init__.py`
 
 **Severity:** Medium
 **Affected File:** `apgi_framework/gui/__init__.py`
@@ -386,7 +481,7 @@ All major GUI component exports are commented out. Only `launch_gui()` is export
 
 ---
 
-#### BUG-012 — Demo code in `error_handling.py` calls non-existent `SessionStateManager` methods
+#### BUG-017 — Demo code in `error_handling.py` calls non-existent `SessionStateManager` methods
 
 **Severity:** Medium
 **Affected File:** `apgi_framework/gui/error_handling.py` (approx. lines 1096–1139)
@@ -404,7 +499,7 @@ Any use of the demo GUI will crash with `AttributeError`.
 
 ---
 
-#### BUG-013 — `sys.path.insert()` anti-pattern in `apgi_framework/data/__init__.py`
+#### BUG-018 — `sys.path.insert()` anti-pattern in `apgi_framework/data/__init__.py`
 
 **Severity:** Medium
 **Affected File:** `apgi_framework/data/__init__.py` (lines 10–11, 60–61)
@@ -414,7 +509,7 @@ The data package init mutates `sys.path` to inject the `examples/` directory for
 
 ---
 
-#### BUG-014 — Pervasive fallback dummy classes mask real import errors
+#### BUG-019 — Pervasive fallback dummy classes mask real import errors
 
 **Severity:** Medium
 **Affected Files:**
@@ -438,7 +533,7 @@ except ImportError:
 
 ---
 
-#### BUG-015 — `find()`, `find_next()`, `find_previous()` are explicit placeholders
+#### BUG-020 — `find()`, `find_next()`, `find_previous()` are explicit placeholders
 
 **Severity:** Medium
 **Affected File:** `apgi_gui/app.py` (lines 1222–1235)
@@ -454,7 +549,7 @@ def find(self) -> None:
 
 ---
 
-#### BUG-016 — `toggle_debug_mode()` is a no-op placeholder
+#### BUG-021 — `toggle_debug_mode()` is a no-op placeholder
 
 **Severity:** Medium
 **Affected File:** `apgi_gui/app.py:1237–1240`
@@ -464,7 +559,7 @@ def find(self) -> None:
 
 ---
 
-#### BUG-017 — `GUI.py` contains multiple empty `pass` stubs in fallback classes
+#### BUG-022 — `GUI.py` contains multiple empty `pass` stubs in fallback classes
 
 **Severity:** Medium
 **Affected File:** `GUI.py` (lines 91, 94, 111, 114, 119, 136, 139, 142, 145, 148, 152, 155, 158, 172, 175, 178, 578, 583, 590)
@@ -474,7 +569,7 @@ Fallback classes for `KeyboardManager`, `UndoRedoManager`, `WidgetTracker`, and 
 
 ---
 
-#### BUG-018 — `apgi_framework/config/exceptions.py` referenced but imports from wrong location
+#### BUG-023 — `apgi_framework/config/exceptions.py` referenced but imports from wrong location
 
 **Severity:** Medium
 **Affected File:** `apgi_framework/config/config_manager.py:17`
@@ -484,7 +579,7 @@ Fallback classes for `KeyboardManager`, `UndoRedoManager`, `WidgetTracker`, and 
 
 ---
 
-#### BUG-019 — `121 GUI tests silently skipped` due to missing display
+#### BUG-024 — `121 GUI tests silently skipped` due to missing display
 
 **Severity:** Medium
 **Affected Files:** `tests/test_gui_components.py`, `tests/test_gui_components_expanded.py`, `tests/test_gui_config_management.py`, `tests/test_new_components.py`
@@ -494,7 +589,7 @@ All 121 GUI tests use `@pytest.mark.skipif` or equivalent guards that skip when 
 
 ---
 
-#### BUG-020 — `tkinter` listed as pip-installable optional dependency
+#### BUG-025 — `tkinter` listed as pip-installable optional dependency
 
 **Severity:** Medium
 **Affected File:** `pyproject.toml` (line 49)
@@ -515,7 +610,7 @@ gui = [
 
 ---
 
-#### BUG-021 — All 14 exception classes in `apgi_framework/exceptions.py` are bare `pass` stubs
+#### BUG-026 — All 14 exception classes in `apgi_framework/exceptions.py` are bare `pass` stubs
 
 **Severity:** Low
 **Affected File:** `apgi_framework/exceptions.py` (lines 13–97)
@@ -525,7 +620,7 @@ All exception classes (`APGIFrameworkError`, `MathematicalError`, `SimulationErr
 
 ---
 
-#### BUG-022 — README.md contains malformed markdown nesting
+#### BUG-027 — README.md contains malformed markdown nesting
 
 **Severity:** Low
 **Affected File:** `docs/README.md` (lines 306–308)
@@ -543,7 +638,7 @@ A code block is opened with triple backticks and then another code block opens i
 
 ---
 
-#### BUG-023 — `_collect_original_sizes()` method has multiple bare `pass` exception catches
+#### BUG-028 — `_collect_original_sizes()` method has multiple bare `pass` exception catches
 
 **Severity:** Low
 **Affected File:** `apgi_gui/app.py` (lines 1102, 1113, 1127)
@@ -589,6 +684,11 @@ The zoom system silently ignores all exceptions when collecting widget sizes, wh
 |---------|-------------|--------|
 | Find / Find Next / Find Previous | `apgi_gui/app.py` | Placeholder — displays "not yet implemented" |
 | Debug Mode toggle | `apgi_gui/app.py` | No-op placeholder |
+| Configuration tab content | `apgi_gui/components/main_area.py` | Crashes — `scrollable_frame` not initialized (BUG-002) |
+| Analysis tab content | `apgi_gui/components/main_area.py` | Crashes — `scrollable_frame` not initialized (BUG-002) |
+| Visualization tab content | `apgi_gui/components/main_area.py` | Empty — `create_visualization_content()` has no body |
+| Results tab content | `apgi_gui/components/main_area.py` | Empty — `create_results_content()` has no body |
+| Run Analysis | `apgi_gui/components/main_area.py` | Placeholder status message only |
 | Statistical Details view | `ResultsVisualizationPanel` | Crashes — missing 4 plot methods |
 | Time Series view | `ResultsVisualizationPanel` | Crashes — missing 4 plot methods |
 | Comparison view | `ResultsVisualizationPanel` | Crashes — missing 4 plot methods |
@@ -694,11 +794,27 @@ The documentation describes the system as having:
 
 ## 8. Actionable Recommendations
 
+### Predicted Runtime Behavior (Before Fixes)
+
+| Action | Outcome |
+|--------|---------|
+| Launch `apgi_gui/app.py` | Window opens; sidebar and status bar visible |
+| Click any tab (Configuration, Analysis, etc.) | **CRASH** — `AttributeError: 'MainArea' object has no attribute 'scrollable_frame'` |
+| Press Ctrl+R (Run Analysis) | Status bar shows placeholder message; no analysis runs |
+| Change ResultsVisualizationPanel to "Statistical Details" | **CRASH** — `AttributeError: '_plot_effect_sizes_with_ci'` |
+| Press Ctrl+F (Find) | Status bar: "Find functionality not yet implemented" |
+| Press Ctrl+D (Debug Mode) | Status bar: "Debug mode toggled"; nothing changes |
+| `import apgi_framework` | **CRASH** — `ModuleNotFoundError: No module named 'apgi_framework.path_manager'` |
+| Run `pytest tests/` | 31 collection errors; 7 test failures; 121 skips; 56 pass |
+
+---
+
 ### Priority 1 — Critical (Fix immediately; blocks everything else)
 
 | # | Action | File(s) | Effort |
 |---|--------|---------|--------|
 | R-01 | Fix wrong import in `config_manager.py`: change `from ..path_manager import get_path_manager` → `from ..utils.path_utils import get_path_manager` | `apgi_framework/config/config_manager.py:14` | XS (1 line) |
+| R-01b | Initialize `self.scrollable_frame` in `MainArea.setup_ui()` for each tab (or per-tab scrollable frames) | `apgi_gui/components/main_area.py` | S (~10 lines) |
 | R-02 | Create `launch_gui.py` or update all documentation to point to the correct launcher (`GUI-Launcher.py`) | All docs + new file | S |
 | R-03 | Create `GUI-Simple.py` as documented, or remove all references to it from docs | docs/GUI-ENTRY-POINTS.md, docs/README.md | S–M |
 
@@ -706,7 +822,8 @@ The documentation describes the system as having:
 
 | # | Action | File(s) | Effort |
 |---|--------|---------|--------|
-| R-04 | Implement the 4 missing plot method groups in `ResultsVisualizationPanel`, OR remove the broken view mode options from the dropdown | `results_visualization_panel.py` | L |
+| R-04 | Implement `run_analysis()`, `create_visualization_content()`, `create_results_content()` in `MainArea` | `apgi_gui/components/main_area.py` | L |
+| R-04b | Implement the 4 missing plot method groups in `ResultsVisualizationPanel`, OR remove the broken view mode options from the dropdown | `results_visualization_panel.py` | L |
 | R-05 | Fix `TestFallbackFunctionality` to skip when `TKINTER_AVAILABLE` is False | `tests/test_gui_components_refactored.py:393` | XS |
 | R-06 | Fix all 5 `test_edge_cases.py` failures: add `config` sub-object to mock `APGIAgent`, implement NaN/inf validation | `tests/test_edge_cases.py`, `tests/test_apgi_agent.py` | S |
 | R-07 | Implement `ErrorHandler.log_error()` or update test to use `handle_error()` | `utils/error_handler.py` or test | XS |
@@ -724,6 +841,8 @@ The documentation describes the system as having:
 | R-14 | Implement or clearly mark as `NotImplemented` the `find()`, `find_next()`, `find_previous()`, and `toggle_debug_mode()` methods | `apgi_gui/app.py` | M |
 | R-15 | Remove `sys.path.insert()` from `apgi_framework/data/__init__.py`; use proper package structure | `data/__init__.py` | S |
 | R-16 | Add `pytest-timeout` to `requirements.txt` or remove the entry from `pyproject.toml` | `requirements.txt` / `pyproject.toml` | XS |
+| R-16b | Remove duplicate `_tracked_widgets`/`_text_widgets` initialization in `app.py` (lines 65–66 and 113–114) | `apgi_gui/app.py` | XS |
+| R-16c | Remove unused `from apgi_framework.security.secure_pickle import safe_pickle_load` | `apgi_gui/components/main_area.py:10` | XS |
 | R-17 | Add sigmoid input clamping to prevent `RuntimeWarning: overflow in exp` | `tests/test_edge_cases.py` + implementation | XS |
 
 ### Priority 4 — Low (Technical debt; schedule for future sprint)
