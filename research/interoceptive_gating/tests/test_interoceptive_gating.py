@@ -37,9 +37,9 @@ try:
         InteroceptiveGatingExperiment,
         run_interoceptive_gating_experiment,
     )
-except ImportError as e:
+except ImportError:
     # Create a mock experiment class for testing
-    class InteroceptiveGatingExperiment:
+    class MockInteroceptiveGatingExperiment:
         def __init__(self, n_participants=1, sample_rate=1000):
             self.n_participants = n_participants
             self.sample_rate = sample_rate
@@ -134,6 +134,9 @@ except ImportError as e:
             fig, ax = plt.subplots()
             ax.bar(analysis["rt"].keys(), analysis["rt"].values())
             return fig
+
+    # Assign mock class to expected name
+    InteroceptiveGatingExperiment = MockInteroceptiveGatingExperiment
 
     def run_interoceptive_gating_experiment(n_participants=2, n_trials_per_condition=5):
         exp = InteroceptiveGatingExperiment(n_participants=n_participants)

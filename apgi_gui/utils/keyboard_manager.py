@@ -7,9 +7,8 @@ Supports both tkinter and customtkinter applications.
 
 import json
 import tkinter as tk
-from pathlib import Path
 from tkinter import ttk
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Callable, Dict, Union
 
 import customtkinter as ctk
 
@@ -19,7 +18,7 @@ class KeyboardManager:
 
     def __init__(self, root_widget: Union[tk.Tk, tk.Toplevel, ctk.CTk]):
         self.root = root_widget
-        self.shortcuts = {}
+        self.shortcuts: Dict[str, Dict[str, Any]] = {}
         self.active = True
         self._load_default_shortcuts()
 
@@ -103,7 +102,7 @@ class KeyboardManager:
                     key_combo, info["callback"], info.get("description", "")
                 )
 
-    def _execute_shortcut(self, key_combination: str, event) -> None:
+    def _execute_shortcut(self, key_combination: str, event) -> Union[str, None]:
         """Execute a shortcut callback."""
         if not self.active:
             return
@@ -120,6 +119,9 @@ class KeyboardManager:
 
             # Prevent default behavior
             return "break"
+
+        # No shortcut found, allow default behavior
+        return None
 
     def unbind_shortcut(self, key_combination: str) -> None:
         """Unbind a keyboard shortcut."""
@@ -266,9 +268,8 @@ class StandardKeyboardShortcuts:
             # Try to copy from focused widget
             focused = self.app.root.focus_get()
             if hasattr(focused, "selection_get"):
-                focused.clipboard_clear()
                 focused.clipboard_append(focused.selection_get())
-        except:
+        except (AttributeError, tk.TclError):
             pass
 
     def paste(self, event=None):
@@ -279,18 +280,8 @@ class StandardKeyboardShortcuts:
             if hasattr(focused, "insert"):
                 text = focused.clipboard_get()
                 focused.insert(tk.INSERT, text)
-        except:
+        except (AttributeError, tk.TclError):
             pass
-
-    def run_experiment(self, event=None):
-        """Run experiment action."""
-        if hasattr(self.app, "run_experiment"):
-            self.app.run_experiment()
-
-    def clear_results(self, event=None):
-        """Clear results action."""
-        if hasattr(self.app, "clear_results"):
-            self.app.clear_results()
 
     def export_data(self, event=None):
         """Export data action."""
@@ -301,6 +292,16 @@ class StandardKeyboardShortcuts:
         """Load configuration action."""
         if hasattr(self.app, "load_config"):
             self.app.load_config()
+
+    def run_experiment(self, event=None):
+        """Run experiment action."""
+        if hasattr(self.app, "run_experiment"):
+            self.app.run_experiment()
+
+    def clear_results(self, event=None):
+        """Clear results action."""
+        if hasattr(self.app, "clear_results"):
+            self.app.clear_results()
 
     def show_help(self, event=None):
         """Show help action."""

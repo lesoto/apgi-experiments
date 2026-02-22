@@ -554,9 +554,7 @@ class MicrostateAnalysis:
                 np.mean(np.abs(seq1.transition_matrix - seq2.transition_matrix))
             )
         else:
-            transition_diff: float = (
-                0.0  # Default value when matrices are not available
-            )
+            transition_diff = 0.0  # Default value when matrices are not available
 
         return {
             "template_correlation": template_corr,

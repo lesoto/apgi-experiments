@@ -9,9 +9,8 @@ import json
 import tkinter as tk
 from dataclasses import dataclass
 from datetime import datetime
-from pathlib import Path
 from tkinter import ttk
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 import customtkinter as ctk
 

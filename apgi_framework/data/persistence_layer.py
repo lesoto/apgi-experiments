@@ -664,3 +664,244 @@ class PersistenceLayer:
 
         except Exception as e:
             raise PersistenceError(f"Failed to flush persistence layer: {str(e)}")
+
+    def stream_dataset(
+        self,
+        experiment_id: str,
+        data_type: str = "processed_data",
+        chunk_size: int = 1000,
+    ):
+        """
+        Stream dataset data in chunks to handle large datasets efficiently.
+
+        Args:
+            experiment_id: Experiment identifier
+            data_type: Type of data to stream ('raw_data', 'processed_data', 'analysis_results')
+            chunk_size: Number of items per chunk
+
+        Yields:
+            Dict containing chunk of data with metadata
+        """
+        try:
+            if self.backend not in ["hdf5", "hybrid"]:
+                raise PersistenceError("Streaming only supported for HDF5 backend")
+
+            with h5py.File(self.hdf5_path, "r") as f:
+                if experiment_id not in f:
+                    raise PersistenceError(f"Experiment {experiment_id} not found")
+
+                exp_group = f[experiment_id]
+                if data_type not in exp_group:
+                    raise PersistenceError(
+                        f"Data type {data_type} not found in experiment"
+                    )
+
+                data_group = exp_group[data_type]
+
+                # Get total number of datasets/items
+                total_items = len(list(data_group.keys()))
+
+                for i in range(0, total_items, chunk_size):
+                    chunk_data = {}
+                    chunk_end = min(i + chunk_size, total_items)
+
+                    # Load chunk of data
+                    for j in range(i, chunk_end):
+                        key = list(data_group.keys())[j]
+                        item = data_group[key]
+
+                        if isinstance(item, h5py.Dataset):
+                            chunk_data[key] = item[()]
+                        elif isinstance(item, h5py.Group):
+                            chunk_data[key] = self._load_dict_hdf5(item)
+
+                    yield {
+                        "chunk_start": i,
+                        "chunk_end": chunk_end,
+                        "total_items": total_items,
+                        "data": chunk_data,
+                        "is_last_chunk": chunk_end >= total_items,
+                    }
+
+        except Exception as e:
+            raise PersistenceError(
+                f"Failed to stream dataset {experiment_id}: {str(e)}"
+            )
+
+    def get_dataset_info(self, experiment_id: str) -> Dict[str, Any]:
+        """
+        Get dataset information without loading full data.
+
+        Args:
+            experiment_id: Experiment identifier
+
+        Returns:
+            Dict with dataset metadata and structure info
+        """
+        try:
+            metadata = self._load_metadata(experiment_id)
+            if not metadata:
+                raise PersistenceError(f"Experiment {experiment_id} not found")
+
+            info = {
+                "experiment_id": experiment_id,
+                "metadata": {
+                    "name": metadata.experiment_name,
+                    "created_at": metadata.created_at.isoformat(),
+                    "n_participants": metadata.n_participants,
+                    "n_trials": metadata.n_trials,
+                    "total_size_mb": metadata.total_size_mb,
+                    "data_format": metadata.data_format,
+                },
+                "data_structure": {},
+                "estimated_memory_mb": 0,
+            }
+
+            # Get data structure info without loading
+            if self.backend in ["hdf5", "hybrid"]:
+                with h5py.File(self.hdf5_path, "r") as f:
+                    if experiment_id in f:
+                        exp_group = f[experiment_id]
+                        for data_type in [
+                            "data",
+                            "raw_data",
+                            "processed_data",
+                            "analysis_results",
+                        ]:
+                            if data_type in exp_group:
+                                type_group = exp_group[data_type]
+                                type_info = self._analyze_group_structure(type_group)
+                                info["data_structure"][data_type] = type_info
+                                info["estimated_memory_mb"] += type_info.get(
+                                    "estimated_size_mb", 0
+                                )
+
+            return info
+
+        except Exception as e:
+            raise PersistenceError(
+                f"Failed to get dataset info for {experiment_id}: {str(e)}"
+            )
+
+    def _analyze_group_structure(self, group: h5py.Group) -> Dict[str, Any]:
+        """
+        Analyze HDF5 group structure and estimate memory usage.
+
+        Args:
+            group: HDF5 group to analyze
+
+        Returns:
+            Dict with structure information and size estimates
+        """
+        structure = {
+            "datasets": [],
+            "subgroups": [],
+            "estimated_size_mb": 0,
+            "total_items": 0,
+        }
+
+        try:
+            for key in group.keys():
+                item = group[key]
+                if isinstance(item, h5py.Dataset):
+                    dataset_info = {
+                        "name": key,
+                        "shape": item.shape,
+                        "dtype": str(item.dtype),
+                        "size_mb": (item.size * item.dtype.itemsize) / (1024 * 1024),
+                    }
+                    structure["datasets"].append(dataset_info)
+                    structure["estimated_size_mb"] += dataset_info["size_mb"]
+                    structure["total_items"] += 1
+
+                elif isinstance(item, h5py.Group):
+                    subgroup_info = self._analyze_group_structure(item)
+                    subgroup_info["name"] = key
+                    structure["subgroups"].append(subgroup_info)
+                    structure["estimated_size_mb"] += subgroup_info["estimated_size_mb"]
+                    structure["total_items"] += subgroup_info["total_items"]
+
+        except Exception as e:
+            # Log error but continue with partial info
+            structure["error"] = str(e)
+
+        return structure
+
+    def load_dataset_chunked(
+        self,
+        experiment_id: str,
+        data_type: str = "processed_data",
+        chunk_size: int = 1000,
+        max_memory_mb: float = 500.0,
+    ):
+        """
+        Load dataset with memory-aware chunking.
+
+        Args:
+            experiment_id: Experiment identifier
+            data_type: Type of data to load
+            chunk_size: Maximum items per chunk
+            max_memory_mb: Maximum memory to use for loading
+
+        Returns:
+            Iterator yielding data chunks
+        """
+        # Get dataset info first
+        info = self.get_dataset_info(experiment_id)
+        data_info = info["data_structure"].get(data_type, {})
+
+        if data_info.get("estimated_size_mb", 0) > max_memory_mb:
+            # Use streaming for large datasets
+            return self.stream_dataset(experiment_id, data_type, chunk_size)
+        else:
+            # Load normally for smaller datasets
+            dataset = self.load_dataset(experiment_id)
+            data = getattr(dataset, data_type, {}) or {}
+
+            # Yield as single chunk
+            yield {
+                "chunk_start": 0,
+                "chunk_end": len(data),
+                "total_items": len(data),
+                "data": data,
+                "is_last_chunk": True,
+            }
+
+    def process_large_dataset(
+        self,
+        experiment_id: str,
+        processor_func: callable,
+        data_type: str = "processed_data",
+        chunk_size: int = 1000,
+    ):
+        """
+        Process large datasets in chunks to avoid memory issues.
+
+        Args:
+            experiment_id: Experiment identifier
+            processor_func: Function to process each chunk
+            data_type: Type of data to process
+            chunk_size: Size of chunks to process
+
+        Returns:
+            List of processing results from each chunk
+        """
+        results = []
+
+        try:
+            for chunk in self.stream_dataset(experiment_id, data_type, chunk_size):
+                # Process chunk
+                chunk_result = processor_func(chunk["data"])
+                results.append(chunk_result)
+
+                # Optional: yield intermediate results for very long processing
+                if len(results) % 10 == 0:  # Every 10 chunks
+                    # Could yield here if needed for progress updates
+                    pass
+
+        except Exception as e:
+            raise PersistenceError(
+                f"Failed to process large dataset {experiment_id}: {str(e)}"
+            )
+
+        return results

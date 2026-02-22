@@ -8,9 +8,9 @@ Supports both tkinter and customtkinter applications.
 import json
 import os
 import tkinter as tk
-from pathlib import Path
+from datetime import datetime
 from tkinter import ttk
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import customtkinter as ctk
 
@@ -22,7 +22,9 @@ class ThemeManager:
         self.app = app_instance
         self.current_theme = "light"
         self.theme_configs = self._load_default_themes()
-        self.theme_callbacks = []
+        self.theme_callbacks: List[Callable[..., Any]] = []
+        self.font_scale = 1.0  # Font scaling factor
+        self.custom_themes: Dict[str, Dict[str, Any]] = {}  # User-created themes
 
     def _load_default_themes(self) -> Dict[str, Dict[str, Any]]:
         """Load default theme configurations."""
@@ -134,8 +136,68 @@ class ThemeManager:
             },
         }
 
+    def set_font_scale(self, scale: float) -> None:
+        """Set font scaling factor for the application."""
+        self.font_scale = max(0.5, min(3.0, scale))  # Clamp between 0.5 and 3.0
+        self._apply_font_scale()
+
+    def get_font_scale(self) -> float:
+        """Get current font scaling factor."""
+        return self.font_scale
+
+    def _apply_font_scale(self) -> None:
+        """Apply font scaling to all widgets in the application."""
+        try:
+            # This is a simplified implementation - in practice, you'd need to
+            # recursively traverse all widgets and scale their fonts
+            # For now, we'll apply to the root window and common styles
+
+            if hasattr(self.app, "option_add"):
+                # Scale default fonts
+                base_font_size = 10  # Base font size
+                scaled_size = int(base_font_size * self.font_scale)
+                self.app.option_add("*Font", f"TkDefaultFont {scaled_size}")
+
+            # Notify callbacks about font scale change
+            for callback in self.theme_callbacks:
+                try:
+                    callback("font_scale", {"scale": self.font_scale})
+                except Exception as e:
+                    print(f"Error in font scale callback: {e}")
+
+        except Exception as e:
+            print(f"Error applying font scale: {e}")
+
+    def create_custom_theme(
+        self, name: str, base_theme: str = "light", **customizations
+    ) -> bool:
+        """Create a custom theme based on an existing theme."""
+        if base_theme not in self.theme_configs:
+            return False
+
+        if name in self.theme_configs or name in self.custom_themes:
+            return False  # Theme already exists
+
+        # Create copy of base theme
+        custom_theme = self.theme_configs[base_theme].copy()
+        custom_theme["name"] = f"Custom: {name}"
+        custom_theme["description"] = f"Custom theme based on {base_theme}"
+
+        # Apply customizations
+        for key, value in customizations.items():
+            if key == "colors" and isinstance(value, dict):
+                custom_theme["colors"].update(value)
+            elif key in custom_theme:
+                custom_theme[key] = value
+
+        # Store custom theme
+        self.custom_themes[name] = custom_theme
+        self.theme_configs[name] = custom_theme
+
+        return True
+
     def get_available_themes(self) -> List[str]:
-        """Get list of available theme names."""
+        """Get list of available theme names including custom themes."""
         return list(self.theme_configs.keys())
 
     def get_theme_info(self, theme_name: str) -> Optional[Dict[str, Any]]:
@@ -242,11 +304,11 @@ class ThemeManager:
         """Get colors for the current theme."""
         return self.theme_configs.get(self.current_theme, {}).get("colors", {})
 
-    def add_theme_callback(self, callback: callable) -> None:
+    def add_theme_callback(self, callback: Callable[..., Any]) -> None:
         """Add a callback to be called when theme changes."""
         self.theme_callbacks.append(callback)
 
-    def remove_theme_callback(self, callback: callable) -> None:
+    def remove_theme_callback(self, callback: Callable[..., Any]) -> None:
         """Remove a theme callback."""
         if callback in self.theme_callbacks:
             self.theme_callbacks.remove(callback)
@@ -287,7 +349,7 @@ class ThemeManager:
                 label=theme_config["name"],
                 value=theme_name,
                 variable=tk.StringVar(value=self.current_theme),
-                command=lambda t=theme_name: self.set_theme(t),
+                command=lambda t=theme_name: self.set_theme(t),  # type: ignore
             )
 
         theme_menu.add_separator()
@@ -326,7 +388,7 @@ class ThemeManager:
             return combobox
         else:
             # tkinter combobox
-            import tkinter as tk
+            import tkinter as tk  # noqa: F401
             from tkinter import ttk
 
             theme_names = [config["name"] for config in self.theme_configs.values()]
@@ -428,13 +490,13 @@ def get_system_theme_preference() -> str:
             try:
                 import winreg
 
-                with winreg.OpenKey(
-                    winreg.HKEY_CURRENT_USER,
+                with winreg.OpenKey(  # type: ignore
+                    winreg.HKEY_CURRENT_USER,  # type: ignore
                     r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize",
                 ) as key:
-                    value, _ = winreg.QueryValueEx(key, "AppsUseLightTheme")
+                    value, _ = winreg.QueryValueEx(key, "AppsUseLightTheme")  # type: ignore
                     return "dark" if value == 0 else "light"
-            except:
+            except (OSError, ImportError):
                 pass
 
         # Linux/other - check environment variables
@@ -486,7 +548,7 @@ def create_theme_dialog(parent, theme_manager: ThemeManager) -> tk.Toplevel:
             text=theme_config["name"],
             value=theme_name,
             variable=theme_var,
-            command=lambda t=theme_name: theme_manager.set_theme(t),
+            command=lambda t=theme_name: theme_manager.set_theme(t),  # type: ignore
         )
         radio.pack(side=tk.LEFT)
 

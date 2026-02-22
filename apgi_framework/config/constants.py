@@ -36,6 +36,43 @@ class GUIConstants:
     GRID_PADDING_X = 5
     GRID_PADDING_Y = 5
 
+    # Thread and performance settings
+    THREAD_POOL_SIZE = 4
+    PLOT_DPI = 100
+    EXPORT_DPI = 300
+    CONSOLE_MAX_LINES = 1000
+    VALIDATION_TIMEOUT = 5.0
+
+    # Window layout ratios
+    WINDOW_WIDTH_RATIO = 0.8
+    WINDOW_HEIGHT_RATIO = 0.8
+    MAX_WINDOW_WIDTH = 2000
+    MAX_WINDOW_HEIGHT = 1200
+    MIN_WINDOW_WIDTH = 1600
+    MIN_WINDOW_HEIGHT = 1000
+    SIDEBAR_WIDTH = 350
+    STATUS_BAR_HEIGHT = 30
+    MAX_ERROR_DISPLAY = 5
+
+    # Color schemes
+    SIDEBAR_BG = "#f0f0f0"
+    MAIN_BG = "white"
+    STATUS_BAR_BG = "#e0e0e0"
+    SUCCESS_COLOR = "#2E8B57"
+    WARNING_COLOR = "#FFA500"
+    ERROR_COLOR = "#DC143C"
+    INFO_COLOR = "#4682B4"
+
+    # Default parameter values
+    DEFAULT_EXTEROCEPTIVE_PRECISION = 1.0
+    DEFAULT_INTEROCEPTIVE_PRECISION = 1.0
+    DEFAULT_SOMATIC_GAIN = 1.0
+    DEFAULT_THRESHOLD = 1.0
+    DEFAULT_STEEPNESS = 1.0
+    DEFAULT_NUM_TRIALS = 100
+    DEFAULT_N_PARTICIPANTS = 10
+    DEFAULT_SESSION_DURATION = 60.0
+
 
 # Timing Constants
 class TimingConstants:

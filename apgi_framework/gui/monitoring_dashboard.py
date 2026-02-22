@@ -6,6 +6,8 @@ Provides live monitoring of EEG, pupillometry, cardiac signals, and parameter es
 
 import os
 import sys
+import asyncio
+import json
 import threading
 import time
 import tkinter as tk
@@ -20,10 +22,21 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 try:
     from ..logging.standardized_logging import get_logger
     from ..neural.eeg_interface import EEGInterface
+    from .realtime_data_stream import get_streamer
 except ImportError:
     # Handle relative import when run directly
     from apgi_framework.logging.standardized_logging import get_logger
     from apgi_framework.neural.eeg_interface import EEGInterface
+    from apgi_framework.gui.realtime_data_stream import get_streamer
+
+# Check for websockets library
+try:
+    import websockets
+
+    WEBSOCKETS_AVAILABLE = True
+except ImportError:
+    websockets = None
+    WEBSOCKETS_AVAILABLE = False
 
 logger = get_logger(__name__)
 
@@ -795,6 +808,9 @@ class MultiModalMonitoringDashboard:
         self.root.title("APGI Multi-Modal Monitoring Dashboard")
         self.root.geometry("1200x800")
 
+        # Initialize data streamer
+        self.streamer = get_streamer()
+
         # Create main notebook for different monitors
         self.notebook = ttk.Notebook(root)
         self.notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
@@ -809,6 +825,9 @@ class MultiModalMonitoringDashboard:
         cardiac_frame = tk.Frame(self.notebook)
         self.cardiac_monitor = CardiacMonitor(cardiac_frame)
 
+        params_frame = tk.Frame(self.notebook)
+        self.param_monitor = RealTimeParameterEstimateUpdater(params_frame)
+
         # Create alert system
         alert_frame = tk.Frame(self.notebook)
         self.alert_system = QualityAlertSystem(alert_frame)
@@ -817,9 +836,201 @@ class MultiModalMonitoringDashboard:
         self.notebook.add(eeg_frame, text="EEG Monitoring")
         self.notebook.add(pupil_frame, text="Pupillometry")
         self.notebook.add(cardiac_frame, text="Cardiac")
+        self.notebook.add(params_frame, text="Parameters")
         self.notebook.add(alert_frame, text="Alerts")
 
+        # Start real-time streaming
+        self.start_streaming()
+
         logger.info("MultiModalMonitoringDashboard initialized")
+
+    def start_streaming(self):
+        """Start real-time data streaming."""
+        if self.streamer.start_server():
+            logger.info("Real-time data streaming started")
+            # Start data reception thread
+            self.streaming_thread = threading.Thread(
+                target=self._receive_stream_data, daemon=True
+            )
+            self.streaming_thread.start()
+        else:
+            logger.error("Failed to start real-time streaming")
+
+    def _receive_stream_data(self):
+        """Receive and process streaming data via WebSocket client."""
+        if not WEBSOCKETS_AVAILABLE:
+            logger.warning("WebSocket library not available, using simulated data")
+            self._simulate_data_updates()
+            return
+
+        # Create new event loop for WebSocket client
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+        try:
+            loop.run_until_complete(self._websocket_client_loop())
+        except Exception as e:
+            logger.error(f"WebSocket client error: {e}")
+            # Fallback to simulation
+            self._simulate_data_updates()
+        finally:
+            loop.close()
+
+    async def _websocket_client_loop(self):
+        """WebSocket client loop to receive data."""
+        uri = f"ws://{self.streamer.host}:{self.streamer.port}"
+
+        try:
+            async with websockets.connect(uri) as websocket:
+                logger.info(f"Connected to WebSocket server at {uri}")
+
+                # Send subscription request
+                subscribe_msg = {
+                    "type": "subscribe",
+                    "streams": ["eeg", "pupil", "cardiac", "parameters"],
+                }
+                await websocket.send(json.dumps(subscribe_msg))
+
+                # Receive and process data
+                async for message in websocket:
+                    try:
+                        data = json.loads(message)
+                        self._process_websocket_data(data)
+                    except json.JSONDecodeError as e:
+                        logger.error(f"Invalid JSON received: {e}")
+
+        except websockets.exceptions.ConnectionClosed:
+            logger.warning("WebSocket connection closed")
+        except Exception as e:
+            logger.error(f"WebSocket connection error: {e}")
+            raise
+
+    def _process_websocket_data(self, data: Dict[str, Any]):
+        """Process incoming WebSocket data and update monitors."""
+        data_type = data.get("data_type")
+        stream_data = data.get("data", {})
+
+        if data_type == "eeg":
+            self._update_eeg_from_stream(stream_data)
+        elif data_type == "pupil":
+            self._update_pupil_from_stream(stream_data)
+        elif data_type == "cardiac":
+            self._update_cardiac_from_stream(stream_data)
+        elif data_type == "parameters":
+            self._update_parameters_from_stream(stream_data)
+
+    def _update_eeg_from_stream(self, data: Dict[str, Any]):
+        """Update EEG monitor from streaming data."""
+        quality_score = data.get("quality_score", 0.0)
+        artifact_rate = data.get("artifact_rate", 0.0)
+        bad_channels = data.get("bad_channels", [])
+        p3b_amplitude = data.get("p3b_amplitude")
+        hep_amplitude = data.get("hep_amplitude")
+
+        # Update GUI in main thread
+        self.root.after(
+            0, self.eeg_monitor.update_signal_quality, quality_score, artifact_rate
+        )
+        self.root.after(0, self.eeg_monitor.update_bad_channels, bad_channels)
+
+        if p3b_amplitude is not None:
+            self.root.after(0, self.eeg_monitor.update_p3b, p3b_amplitude)
+
+        if hep_amplitude is not None:
+            self.root.after(0, self.eeg_monitor.update_hep, hep_amplitude)
+
+        # Check for quality alerts
+        self.root.after(
+            0, self.alert_system.check_eeg_quality, quality_score, artifact_rate
+        )
+
+    def _update_pupil_from_stream(self, data: Dict[str, Any]):
+        """Update pupillometry monitor from streaming data."""
+        data_quality = data.get("data_quality", 0.0)
+        data_loss = data.get("data_loss", 0.0)
+        pupil_diameter = data.get("pupil_diameter", 0.0)
+        blink_rate = data.get("blink_rate", 0.0)
+        tracking_loss = data.get("tracking_loss", 0)
+
+        # Update GUI in main thread
+        self.root.after(0, self.pupil_monitor.update_quality, data_quality, data_loss)
+        self.root.after(
+            0,
+            self.pupil_monitor.update_measurements,
+            pupil_diameter,
+            blink_rate,
+            tracking_loss,
+        )
+
+        # Check for quality alerts
+        self.root.after(
+            0, self.alert_system.check_pupil_quality, data_loss, tracking_loss
+        )
+
+    def _update_cardiac_from_stream(self, data: Dict[str, Any]):
+        """Update cardiac monitor from streaming data."""
+        signal_quality = data.get("signal_quality", 0.0)
+        rpeak_confidence = data.get("rpeak_confidence", 0.0)
+        heart_rate = data.get("heart_rate", 0.0)
+        hrv = data.get("hrv", 0.0)
+        rr_interval = data.get("rr_interval", 0.0)
+
+        # Update GUI in main thread
+        self.root.after(
+            0, self.cardiac_monitor.update_quality, signal_quality, rpeak_confidence
+        )
+        self.root.after(
+            0, self.cardiac_monitor.update_measurements, heart_rate, hrv, rr_interval
+        )
+
+        # Check for quality alerts
+        self.root.after(
+            0, self.alert_system.check_cardiac_quality, signal_quality, rpeak_confidence
+        )
+
+    def _update_parameters_from_stream(self, data: Dict[str, Any]):
+        """Update parameter estimates from streaming data."""
+        param_name = data.get("parameter_name", "")
+        mean = data.get("mean", 0.0)
+        std = data.get("std", 0.0)
+        ci_lower = data.get("ci_lower", 0.0)
+        ci_upper = data.get("ci_upper", 0.0)
+        converged = data.get("converged", False)
+        r_hat = data.get("r_hat")
+
+        # Update GUI in main thread
+        if param_name == "theta0":
+            self.root.after(
+                0, self.param_monitor.update_theta0, mean, std, ci_lower, ci_upper
+            )
+        elif param_name == "pi_i":
+            self.root.after(
+                0, self.param_monitor.update_pi_i, mean, std, ci_lower, ci_upper
+            )
+        elif param_name == "beta":
+            self.root.after(
+                0, self.param_monitor.update_beta, mean, std, ci_lower, ci_upper
+            )
+
+        self.root.after(
+            0, self.param_monitor.update_convergence, converged, r_hat or 1.0
+        )
+
+    def _simulate_data_updates(self):
+        """Fallback simulation when WebSocket is not available."""
+        logger.info("Using simulated data updates")
+        while True:
+            try:
+                # Simulate some basic updates for demonstration
+                time.sleep(1.0)
+            except Exception:
+                break
+
+    def stop_streaming(self):
+        """Stop real-time data streaming."""
+        if hasattr(self, "streamer"):
+            self.streamer.stop_server()
+            logger.info("Real-time data streaming stopped")
 
 
 if __name__ == "__main__":

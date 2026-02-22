@@ -2,10 +2,9 @@
 
 import json
 import logging
-import os
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 
 @dataclass
@@ -72,7 +71,7 @@ class ConfigValidator:
                 return ValidationError(
                     field_name, f"Parent directory does not exist: {path_obj.parent}"
                 )
-        except Exception as e:
+        except Exception:
             return ValidationError(field_name, f"Invalid path: {path}")
         return None
 
@@ -106,7 +105,7 @@ class AppConfig:
         # Default configuration
         self._default_config = {
             "theme": "system",
-            "recent_files": [],  # type: List[str]
+            "recent_files": [],
             "data_dir": str(Path.home() / "Documents" / "APGI_Data"),
             "log_dir": str(self.app_dir / "logs"),
             "window_width": 1800,

@@ -37,6 +37,8 @@ except ImportError:
             """Mock performance metric logging."""
             self.logger.info(f"Performance Metric - {name}: {value} {unit}")
 
+    apgi_logger = MockAPGILogger()
+
     # Suppress matplotlib warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="matplotlib")
 

@@ -661,7 +661,7 @@ class MainGUIController:
         """Validate system state and return validation results."""
         issues: List[str] = []
         warnings: List[str] = []
-        validation_results: Dict[str, Any] = {
+        validation_results: ValidationResult = {
             "valid": True,
             "issues": issues,
             "warnings": warnings,

@@ -5,17 +5,15 @@ Provides comprehensive Excel export functionality for experimental data, results
 Supports multiple data formats and customizable styling.
 """
 
-import json
 import os
 from datetime import datetime
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 import pandas as pd
 
 try:
     from openpyxl import Workbook
-    from openpyxl.chart import BarChart, LineChart, Reference
+    from openpyxl.chart import BarChart, Reference
     from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
     from openpyxl.utils.dataframe import dataframe_to_rows
 
@@ -27,7 +25,7 @@ except ImportError:
     )
 
 try:
-    import xlsxwriter
+    import xlsxwriter  # noqa: F401
 
     XLSXWRITER_AVAILABLE = True
 except ImportError:
@@ -130,12 +128,12 @@ class ExcelExportManager:
         # Auto-adjust column widths
         for column in ws.columns:
             max_length = 0
-            column_letter = column[0].column_letter
+            column_letter = column[0].column_letter  # type: ignore
             for cell in column:
                 try:
                     if len(str(cell.value)) > max_length:
                         max_length = len(str(cell.value))
-                except:
+                except (AttributeError, ValueError):
                     pass
             adjusted_width = min(max_length + 2, 50)
             ws.column_dimensions[column_letter].width = adjusted_width
@@ -275,6 +273,9 @@ class ExcelExportManager:
             # Create a chart
             chart = workbook.add_chart({"type": "column"})
 
+            # Get sheet name for chart references
+            sheet_name = worksheet.name
+
             # Configure chart
             chart.add_series(
                 {
@@ -323,7 +324,7 @@ class ExcelExportManager:
 
                 # Write data
                 for _, row in df.iterrows():
-                    ws_data.append(row.tolist())
+                    ws_data.append(row.tolist())  # type: ignore
 
             # Metadata sheet
             if include_metadata:
@@ -336,7 +337,7 @@ class ExcelExportManager:
                 ]
 
                 for row in metadata:
-                    ws_meta.append(row)
+                    ws_meta.append(row)  # type: ignore
 
             # Save workbook
             wb.save(filepath)
@@ -541,14 +542,14 @@ class ExcelExportManager:
 
             # Check for common issues
             if len(df) == 0:
-                validation_result["warnings"].append("File contains no data rows")
+                validation_result["warnings"].append("File contains no data rows")  # type: ignore
 
             if df.isnull().all().all():
-                validation_result["warnings"].append("All cells are empty")
+                validation_result["warnings"].append("All cells are empty")  # type: ignore
 
             # Check for duplicate column names
             if len(df.columns) != len(set(df.columns)):
-                validation_result["warnings"].append("Duplicate column names found")
+                validation_result["warnings"].append("Duplicate column names found")  # type: ignore
 
             return validation_result
 

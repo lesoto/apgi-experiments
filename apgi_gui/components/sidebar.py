@@ -42,13 +42,24 @@ class Sidebar(ctk.CTkFrame):
         self.monitor_interval = (
             self.app.config.file_monitor_interval
         )  # Use configurable interval
-        self.file_timestamps = {}  # Store file timestamps for change detection
-        self.file_lock = threading.Lock()  # Thread-safe access to file_timestamps
+        self.file_stats = {}  # Store file stats (mtime_ns, size) for change detection
+        self.file_lock = threading.Lock()  # Thread-safe access to file_stats
 
-        # Import thread manager
-        from apgi_framework.utils.thread_manager import thread_manager
+        # Import thread manager with proper error handling
+        try:
+            from apgi_framework.utils.thread_manager import thread_manager
 
-        self.thread_manager = thread_manager
+            self.thread_manager = thread_manager
+            self.thread_manager_available = True
+            self.logger.debug("Thread manager initialized successfully")
+        except ImportError as e:
+            self.logger.warning(f"Thread manager not available: {e}")
+            self.thread_manager = None
+            self.thread_manager_available = False
+        except Exception as e:
+            self.logger.error(f"Error initializing thread manager: {e}")
+            self.thread_manager = None
+            self.thread_manager_available = False
 
         self.setup_ui()
         self.start_file_monitoring()
@@ -170,19 +181,20 @@ class Sidebar(ctk.CTkFrame):
         # Clear compatibility listbox
         self.recent_listbox.clear()
 
-        # Update file timestamps for monitoring
+        # Update file stats for monitoring
         with self.file_lock:
-            self.file_timestamps.clear()
+            self.file_stats.clear()
 
         # Create buttons for each recent file
         for i, file_path in enumerate(self.app.recent_files):
-            # Store timestamp for monitoring
+            # Store stats for monitoring
             try:
                 if file_path.exists():
-                    timestamp = file_path.stat().st_mtime
+                    stat = file_path.stat()
+                    stats_tuple = (stat.st_mtime_ns, stat.st_size)
                     # Thread-safe update
                     with self.file_lock:
-                        self.file_timestamps[str(file_path)] = timestamp
+                        self.file_stats[str(file_path)] = stats_tuple
             except (OSError, PermissionError):
                 self.logger.warning(f"Cannot access file: {file_path}")
                 continue
@@ -284,15 +296,21 @@ class Sidebar(ctk.CTkFrame):
             # Stop file monitoring
             self.stop_file_monitoring()
 
-            # Clean up file timestamps
+            # Clean up file stats
             with self.file_lock:
-                self.file_timestamps.clear()
+                self.file_stats.clear()
 
         except Exception as e:
             self.logger.error(f"Error during cleanup: {e}")
 
     def start_file_monitoring(self):
         """Start monitoring recent files for external changes."""
+        if not self.thread_manager_available or not self.thread_manager:
+            self.logger.warning(
+                "Thread manager not available, file monitoring disabled"
+            )
+            return
+
         if not self.file_monitor_active:
             self.file_monitor_active = True
             self.file_monitor_future = self.thread_manager.submit_with_callback(
@@ -336,68 +354,69 @@ class Sidebar(ctk.CTkFrame):
         """Check for file changes and update UI if needed."""
         changes_detected = False
 
-        # Thread-safe access to file_timestamps
+        # Thread-safe access to file_stats
         with self.file_lock:
-            timestamps_copy = self.file_timestamps.copy()
+            stats_copy = self.file_stats.copy()
 
-        for file_path_str, old_timestamp in timestamps_copy.items():
+        for file_path_str, old_stats in stats_copy.items():
             file_path = Path(file_path_str)
 
             try:
                 if file_path.exists():
-                    new_timestamp = file_path.stat().st_mtime
-                    if new_timestamp > old_timestamp:
+                    stat = file_path.stat()
+                    new_stats = (stat.st_mtime_ns, stat.st_size)
+                    if new_stats != old_stats:
                         # File has been modified externally
                         changes_detected = True
 
-                        # Thread-safe update of timestamp
+                        # Thread-safe update of stats
                         with self.file_lock:
-                            self.file_timestamps[file_path_str] = new_timestamp
+                            self.file_stats[file_path_str] = new_stats
 
                         # Update UI in main thread
                         self.after(0, lambda: self._handle_file_change(file_path))
                 else:
-                    # File was deleted - remove from timestamps
+                    # File was deleted - remove from stats
                     changes_detected = True
                     # Thread-safe removal of deleted file
                     with self.file_lock:
-                        self.file_timestamps.pop(file_path_str, None)
+                        self.file_stats.pop(file_path_str, None)
                     self.after(0, lambda: self._handle_file_deleted(file_path))
 
             except (OSError, PermissionError) as e:
                 # File might be inaccessible - remove from monitoring
                 self.logger.warning(f"File monitoring error for {file_path_str}: {e}")
                 with self.file_lock:
-                    self.file_timestamps.pop(file_path_str, None)
+                    self.file_stats.pop(file_path_str, None)
                 continue
 
         # Periodic cleanup: remove entries for files that no longer exist
-        if len(self.file_timestamps) > 100:  # Only cleanup if dict is getting large
-            self._cleanup_file_timestamps()
+        if len(self.file_stats) > 100:  # Only cleanup if dict is getting large
+            self._cleanup_file_stats()
 
         return changes_detected
 
-    def _cleanup_file_timestamps(self):
-        """Clean up file timestamps dict by removing entries for non-existent files."""
+    def _cleanup_file_stats(self):
+        """Clean up file stats dict by removing entries for non-existent files."""
         try:
             with self.file_lock:
                 # Keep only entries for files that still exist
-                valid_timestamps = {
-                    path: mtime
-                    for path, mtime in self.file_timestamps.items()
+                valid_stats = {
+                    path: stats
+                    for path, stats in self.file_stats.items()
                     if Path(path).exists()
                 }
 
-                removed_count = len(self.file_timestamps) - len(valid_timestamps)
-                self.file_timestamps = valid_timestamps
+                removed_count = len(self.file_stats) - len(valid_stats)
+                self.file_stats = valid_stats
 
                 if removed_count > 0:
                     self.logger.debug(
-                        f"Cleaned up {removed_count} stale file timestamp entries"
+                        f"Cleaned up {removed_count} stale file stats entries"
                     )
 
         except Exception as e:
-            self.logger.error(f"Error during file timestamps cleanup: {e}")
+            self.logger.error(f"Error during file stats cleanup: {e}")
 
     def _handle_file_change(self, file_path: Path):
         """Handle external file change.
@@ -412,10 +431,11 @@ class Sidebar(ctk.CTkFrame):
                 f"File '{file_path.name}' was modified externally", level="warning"
             )
 
-            # Update file timestamp
+            # Update file stats
             try:
+                stat = file_path.stat()
                 with self.file_lock:
-                    self.file_timestamps[str(file_path)] = file_path.stat().st_mtime
+                    self.file_stats[str(file_path)] = (stat.st_mtime_ns, stat.st_size)
             except (OSError, PermissionError):
                 pass
 
@@ -426,9 +446,9 @@ class Sidebar(ctk.CTkFrame):
             file_path: Path to the deleted file
         """
         try:
-            # Remove from timestamps
+            # Remove from stats
             with self.file_lock:
-                self.file_timestamps.pop(str(file_path), None)
+                self.file_stats.pop(str(file_path), None)
 
             # Remove from recent files if it was deleted
             if file_path in self.app.recent_files:

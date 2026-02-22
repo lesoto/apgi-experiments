@@ -83956,9 +83956,9 @@
   "preprocessing_steps": [
     "Missing data cleaned using interpolate strategy",
     "Removed 504 outliers using iqr method",
-    "Normalized Index(['time_seconds', 'eeg_fz', 'eeg_pz', 'pupil_diameter', 'eda',\n       'heart_rate', 'event_marker'],\n      dtype='object') using zscore method"
+    "Normalized ['time_seconds', 'eeg_fz', 'eeg_pz', 'pupil_diameter', 'eda', 'heart_rate', 'event_marker'] using zscore method"
   ],
-  "processing_timestamp": "2026-02-21T02:03:10.250759",
+  "processing_timestamp": "2026-02-21T20:07:45.202135",
   "metadata": {
     "shape": [
       6996,

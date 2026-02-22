@@ -5,7 +5,6 @@ This test suite provides full coverage for all input validation functions,
 ensuring all critical functionality is tested including edge cases and error conditions.
 """
 
-import re
 import tempfile
 from pathlib import Path
 

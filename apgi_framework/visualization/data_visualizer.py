@@ -8,11 +8,11 @@ Provides comprehensive visualization capabilities for experimental data includin
 - Export capabilities
 """
 
-import json
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+
+from typing import Any, Dict, List, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -24,7 +24,7 @@ import seaborn as sns
 from plotly.subplots import make_subplots
 
 from ..config.constants import VisualizationConstants
-from ..exceptions import ValidationError, VisualizationError
+from ..exceptions import VisualizationError
 
 logger = logging.getLogger(__name__)
 
@@ -706,22 +706,22 @@ class DataVisualizer:
 
             for i, fig in enumerate(figures):
                 if format == "html":
-                    filename = f"{filename_prefix}_{i+1}_{timestamp}.html"
+                    filename = f"{filename_prefix}_{i + 1}_{timestamp}.html"
                     filepath = self.output_dir / filename
                     fig.write_html(str(filepath))
 
                 elif format == "png":
-                    filename = f"{filename_prefix}_{i+1}_{timestamp}.png"
+                    filename = f"{filename_prefix}_{i + 1}_{timestamp}.png"
                     filepath = self.output_dir / filename
                     fig.write_image(str(filepath), width=1200, height=800)
 
                 elif format == "pdf":
-                    filename = f"{filename_prefix}_{i+1}_{timestamp}.pdf"
+                    filename = f"{filename_prefix}_{i + 1}_{timestamp}.pdf"
                     filepath = self.output_dir / filename
                     fig.write_image(str(filepath), format="pdf")
 
                 elif format == "svg":
-                    filename = f"{filename_prefix}_{i+1}_{timestamp}.svg"
+                    filename = f"{filename_prefix}_{i + 1}_{timestamp}.svg"
                     filepath = self.output_dir / filename
                     fig.write_image(str(filepath), format="svg")
 

@@ -353,6 +353,20 @@ def check_dependencies(install_missing=False, core_only=False) -> Dict[str, Any]
                     "\n💡 All CORE dependencies satisfied. Optional packages can be installed later:"
                 )
                 print("   pip install --user <optional_package_name>")
+
+                # List missing optional dependencies
+                missing_optional = [
+                    name
+                    for name, (available, _, _, _) in optional_results.items()
+                    if not available
+                ]
+                if missing_optional:
+                    print("\n📦 Missing OPTIONAL dependencies:")
+                    for package in missing_optional:
+                        desc = OPTIONAL_DEPENDENCIES[package]["description"]
+                        min_ver = OPTIONAL_DEPENDENCIES[package]["min_version"]
+                        print(f"  • {package} (>= {min_ver}) - {desc}")
+                        print(f"    pip install --user '{package}>={min_ver}'")
     else:
         print("\nOPTIONAL DEPENDENCIES - SKIPPED (core-only mode)")
         summary = generate_summary(core_results, {})

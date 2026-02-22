@@ -21,48 +21,52 @@ import pandas as pd
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
+# Import constants
+from apgi_framework.config.constants import GUIConstants
+
+
 # Configuration constants
 class GUIConfig:
     """Central configuration for GUI constants and paths."""
 
     DATA_FOLDER = "data"
     RESULTS_FOLDER = "results"
-    WINDOW_WIDTH_RATIO = 0.8
-    WINDOW_HEIGHT_RATIO = 0.8
-    MAX_WINDOW_WIDTH = 2000
-    MAX_WINDOW_HEIGHT = 1200
-    MIN_WINDOW_WIDTH = 1600
-    MIN_WINDOW_HEIGHT = 1000
-    SIDEBAR_WIDTH = 350
-    STATUS_BAR_HEIGHT = 30
-    MAX_ERROR_DISPLAY = 5
-    THREAD_POOL_SIZE = 4
-    PLOT_DPI = 100
-    EXPORT_DPI = 300
-    CONSOLE_MAX_LINES = 1000
-    VALIDATION_TIMEOUT = 5.0
+    WINDOW_WIDTH_RATIO = GUIConstants.WINDOW_WIDTH_RATIO
+    WINDOW_HEIGHT_RATIO = GUIConstants.WINDOW_HEIGHT_RATIO
+    MAX_WINDOW_WIDTH = GUIConstants.MAX_WINDOW_WIDTH
+    MAX_WINDOW_HEIGHT = GUIConstants.MAX_WINDOW_HEIGHT
+    MIN_WINDOW_WIDTH = GUIConstants.MIN_WINDOW_WIDTH
+    MIN_WINDOW_HEIGHT = GUIConstants.MIN_WINDOW_HEIGHT
+    SIDEBAR_WIDTH = GUIConstants.SIDEBAR_WIDTH
+    STATUS_BAR_HEIGHT = GUIConstants.STATUS_BAR_HEIGHT
+    MAX_ERROR_DISPLAY = GUIConstants.MAX_ERROR_DISPLAY
+    THREAD_POOL_SIZE = GUIConstants.THREAD_POOL_SIZE
+    PLOT_DPI = GUIConstants.PLOT_DPI
+    EXPORT_DPI = GUIConstants.EXPORT_DPI
+    CONSOLE_MAX_LINES = GUIConstants.CONSOLE_MAX_LINES
+    VALIDATION_TIMEOUT = GUIConstants.VALIDATION_TIMEOUT
 
     # Color schemes
     COLORS = {
-        "sidebar_bg": "#f0f0f0",
-        "main_bg": "white",
-        "status_bar_bg": "#e0e0e0",
-        "success": "#2E8B57",
-        "warning": "#FFA500",
-        "error": "#DC143C",
-        "info": "#4682B4",
+        "sidebar_bg": GUIConstants.SIDEBAR_BG,
+        "main_bg": GUIConstants.MAIN_BG,
+        "status_bar_bg": GUIConstants.STATUS_BAR_BG,
+        "success": GUIConstants.SUCCESS_COLOR,
+        "warning": GUIConstants.WARNING_COLOR,
+        "error": GUIConstants.ERROR_COLOR,
+        "info": GUIConstants.INFO_COLOR,
     }
 
     # Default parameter values
     DEFAULT_PARAMS = {
-        "exteroceptive_precision": 1.0,
-        "interoceptive_precision": 1.0,
-        "somatic_gain": 1.0,
-        "threshold": 1.0,
-        "steepness": 1.0,
-        "num_trials": 100,
-        "n_participants": 10,
-        "session_duration": 60.0,
+        "exteroceptive_precision": GUIConstants.DEFAULT_EXTEROCEPTIVE_PRECISION,
+        "interoceptive_precision": GUIConstants.DEFAULT_INTEROCEPTIVE_PRECISION,
+        "somatic_gain": GUIConstants.DEFAULT_SOMATIC_GAIN,
+        "threshold": GUIConstants.DEFAULT_THRESHOLD,
+        "steepness": GUIConstants.DEFAULT_STEEPNESS,
+        "num_trials": GUIConstants.DEFAULT_NUM_TRIALS,
+        "n_participants": GUIConstants.DEFAULT_N_PARTICIPANTS,
+        "session_duration": GUIConstants.DEFAULT_SESSION_DURATION,
     }
 
 

@@ -8,12 +8,27 @@ Usage:
 """
 
 import argparse
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 # Check if running in interactive mode
 IS_INTERACTIVE = sys.stdin.isatty() and sys.stdout.isatty()
+
+# Check if running in automated/CI environment
+IS_AUTOMATED = bool(
+    os.getenv("CI")
+    or os.getenv("GITHUB_ACTIONS")
+    or os.getenv("GITLAB_CI")
+    or os.getenv("AUTOMATED_DEPLOYMENT")
+    or os.getenv("JENKINS_HOME")
+    or os.getenv("TRAVIS")
+    or os.getenv("CIRCLECI")
+    or os.getenv("BUILDKITE")
+    or os.getenv("TEAMCITY_VERSION")
+    or os.getenv("BAMBOO_BUILDKEY")
+)
 
 # Add framework to path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -106,8 +121,13 @@ class QuickDeploy:
         print("=" * 50)
 
         # Environment selection
-        if self.auto_mode:
-            print(f"[AUTO] Using {self.manager.config.environment} configuration")
+        if self.auto_mode or not IS_INTERACTIVE or IS_AUTOMATED:
+            print(
+                f"[AUTO/NON-INTERACTIVE] Using default {self.environment} environment"
+            )
+            if self.manager:
+                self.manager.config.environment = self.environment
+                self.manager.config.monitoring_enabled = True
         else:
             print("Select environment:")
             print("1. Development (for testing)")
@@ -116,48 +136,56 @@ class QuickDeploy:
             while True:
                 choice = input("Enter choice [1-2]: ").strip()
                 if choice == "1":
-                    self.manager.config.environment = "development"
-                    self.manager.config.monitoring_enabled = True
+                    if self.manager:
+                        self.manager.config.environment = "development"
+                        self.manager.config.monitoring_enabled = True
                     break
                 elif choice == "2":
-                    self.manager.config.environment = "production"
-                    self.manager.config.monitoring_enabled = True
+                    if self.manager:
+                        self.manager.config.environment = "production"
+                        self.manager.config.monitoring_enabled = True
                     break
                 else:
                     print("Invalid choice. Please enter 1 or 2.")
 
         # Port configuration
         default_port = "8000"
-        if self.auto_mode:
-            print(f"[AUTO] Using default port {default_port}")
+        if self.auto_mode or not IS_INTERACTIVE or IS_AUTOMATED:
+            print(f"[AUTO/NON-INTERACTIVE] Using default port {default_port}")
             port = default_port
         else:
             port = input(f"Enter web port [{default_port}]: ").strip()
         if port:
             try:
                 port_num = int(port)
-                self.manager.config.ports = {"8000": port_num}
+                if self.manager:
+                    self.manager.config.ports = {"8000": port_num}
             except ValueError:
                 print("Invalid port, using default 8000")
+                if self.manager:
+                    self.manager.config.ports = {"8000": 8000}
 
         # Data directory
         default_data = Path("./data")
-        if self.auto_mode:
-            print(f"[AUTO] Using default data directory {default_data}")
+        if self.auto_mode or not IS_INTERACTIVE or IS_AUTOMATED:
+            print(f"[AUTO/NON-INTERACTIVE] Using default data directory {default_data}")
             data_dir = default_data
         else:
             data_dir_input = input(f"Data directory [{default_data}]: ").strip()
             data_dir = Path(data_dir_input) if data_dir_input else default_data
         if data_dir:
-            self.manager.config.volumes = {str(data_dir): "/app/data"}
+            if self.manager:
+                self.manager.config.volumes = {str(data_dir): "/app/data"}
 
         # Backup preference
-        if self.auto_mode:
-            print("[AUTO] Enabling automatic backups")
-            self.manager.config.backup_enabled = True
+        if self.auto_mode or not IS_INTERACTIVE or IS_AUTOMATED:
+            print("[AUTO/NON-INTERACTIVE] Enabling automatic backups by default")
+            if self.manager:
+                self.manager.config.backup_enabled = True
         else:
             backup_choice = input("Enable automatic backups? [Y/n]: ").strip().lower()
-            self.manager.config.backup_enabled = backup_choice != "n"
+            if self.manager:
+                self.manager.config.backup_enabled = backup_choice != "n"
 
         print("\n[OK] Configuration complete!")
         return True
@@ -355,9 +383,11 @@ Examples:
 
     args = parser.parse_args()
 
-    # Auto-enable auto mode in non-interactive environments
-    if not IS_INTERACTIVE and not args.auto:
-        print("Non-interactive environment detected, enabling auto mode...")
+    # Auto-enable auto mode in non-interactive or automated environments
+    if (not IS_INTERACTIVE or IS_AUTOMATED) and not args.auto:
+        print(
+            "Non-interactive or automated environment detected, enabling auto mode..."
+        )
         args.auto = True
 
     if args.command == "deploy" or args.command is None:
@@ -383,23 +413,35 @@ Examples:
         # Check prerequisites
         if not deployer.check_prerequisites():
             if not args.auto:
-                input("Press Enter to exit...")
+                if IS_INTERACTIVE:
+                    input("Press Enter to exit...")
+                else:
+                    print("[NON-INTERACTIVE] Prerequisites not met, exiting.")
             sys.exit(1)
 
         # Interactive setup
         if not deployer.interactive_setup():
             if not args.auto:
-                input("Press Enter to exit...")
+                if IS_INTERACTIVE:
+                    input("Press Enter to exit...")
+                else:
+                    print("[NON-INTERACTIVE] Setup failed, exiting.")
             sys.exit(1)
 
         # Deploy
         if deployer.deploy():
             if not args.auto:
-                input("\nPress Enter to exit...")
+                if IS_INTERACTIVE:
+                    input("\nPress Enter to exit...")
+                else:
+                    print("[NON-INTERACTIVE] Deployment successful.")
             sys.exit(0)
         else:
             if not args.auto:
-                input("\nPress Enter to exit...")
+                if IS_INTERACTIVE:
+                    input("\nPress Enter to exit...")
+                else:
+                    print("[NON-INTERACTIVE] Deployment failed.")
             sys.exit(1)
 
     else:

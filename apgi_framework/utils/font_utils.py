@@ -1,6 +1,5 @@
 """Font utilities for cross-platform font compatibility."""
 
-import platform
 import tkinter as tk
 from typing import List, Tuple
 
@@ -85,4 +84,4 @@ def get_font(
     if weight == "bold":
         return (font_name, size, "bold")
     else:
-        return (font_name, size)
+        return (font_name, size, "normal")

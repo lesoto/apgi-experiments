@@ -7,8 +7,8 @@ Prevents UI freezing and provides visual feedback to users.
 
 import threading
 import tkinter as tk
-from tkinter import ttk
-from typing import Any, Callable, Optional
+from tkinter import ttk, TclError
+from typing import Callable, Optional
 
 
 class LoadingIndicator:
@@ -21,9 +21,9 @@ class LoadingIndicator:
             parent: Parent widget for the loading indicator
         """
         self.parent = parent
-        self.loading_window = None
-        self.progress_bar = None
-        self.status_label = None
+        self.loading_window: Optional[tk.Toplevel] = None
+        self.progress_bar: Optional[ttk.Progressbar] = None
+        self.status_label: Optional[ttk.Label] = None
         self._cancel_requested = False
 
     def show_loading(
@@ -47,37 +47,37 @@ class LoadingIndicator:
 
         # Create loading window
         self.loading_window = tk.Toplevel(self.parent)
-        self.loading_window.title(title)
-        self.loading_window.resizable(False, False)
-        self.loading_window.transient(self.parent)
-        self.loading_window.grab_set()
+        self.loading_window.title(title)  # type: ignore
+        self.loading_window.resizable(False, False)  # type: ignore
+        self.loading_window.transient(self.parent)  # type: ignore
+        self.loading_window.grab_set()  # type: ignore
 
         # Center the window
-        self.loading_window.update_idletasks()
+        self.loading_window.update_idletasks()  # type: ignore
         width = 300
         height = 100 if not show_progress else 120
         x = self.parent.winfo_rootx() + (self.parent.winfo_width() - width) // 2
         y = self.parent.winfo_rooty() + (self.parent.winfo_height() - height) // 2
-        self.loading_window.geometry(f"{width}x{height}+{x}+{y}")
+        self.loading_window.geometry(f"{width}x{height}+{x}+{y}")  # type: ignore
 
         # Status label
-        self.status_label = ttk.Label(
+        self.status_label = ttk.Label(  # type: ignore
             self.loading_window,
             text=message,
             wraplength=280,
             justify=tk.CENTER,
         )
-        self.status_label.pack(pady=10, padx=10)
+        self.status_label.pack(pady=10, padx=10)  # type: ignore
 
         # Progress bar (optional)
         if show_progress:
-            self.progress_bar = ttk.Progressbar(
+            self.progress_bar = ttk.Progressbar(  # type: ignore
                 self.loading_window,
                 mode="indeterminate",
                 length=250,
             )
-            self.progress_bar.pack(pady=5)
-            self.progress_bar.start(10)
+            self.progress_bar.pack(pady=5)  # type: ignore
+            self.progress_bar.start(10)  # type: ignore
 
         # Cancel button (optional)
         if cancelable:
@@ -104,7 +104,7 @@ class LoadingIndicator:
         """
         if self.status_label:
             self.status_label.config(text=message)
-            self.loading_window.update_idletasks()
+            self.loading_window.update_idletasks()  # type: ignore
 
     def update_progress(self, value: float, maximum: float = 100) -> None:
         """Update progress bar (if in determinate mode).
@@ -117,7 +117,7 @@ class LoadingIndicator:
             self.progress_bar["mode"] = "determinate"
             self.progress_bar["maximum"] = maximum
             self.progress_bar["value"] = value
-            self.loading_window.update_idletasks()
+            self.loading_window.update_idletasks()  # type: ignore
 
     def is_cancelled(self) -> bool:
         """Check if operation was cancelled.
@@ -137,7 +137,7 @@ class LoadingIndicator:
         if self.loading_window:
             try:
                 self.loading_window.destroy()
-            except:
+            except (AttributeError, TclError):
                 pass  # Window might already be destroyed
             finally:
                 self.loading_window = None

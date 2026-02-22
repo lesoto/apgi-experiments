@@ -12,7 +12,7 @@ import tkinter as tk
 from datetime import datetime
 from pathlib import Path
 from tkinter import messagebox
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, Optional
 
 import customtkinter as ctk
 
@@ -58,7 +58,7 @@ except ImportError as e:
     ExperimentalConfig = FallbackExperimentalConfig  # type: ignore[assignment,no-redef,misc]
     APGIFrameworkError = FallbackAPGIFrameworkError  # type: ignore[assignment,no-redef,misc]
 
-    def get_validator():  # type: ignore[no-redef,func-sig]
+    def get_validator():  # type: ignore[no-redef,func-sig,misc]
         try:
             from apgi_framework.validation import get_validator as get_real_validator
 

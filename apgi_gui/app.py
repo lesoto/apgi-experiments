@@ -103,7 +103,8 @@ class APGIFrameworkApp(ctk.CTk if CUSTOMTKINTER_AVAILABLE else tk.Tk):
         self.recent_files: List[Path] = []
 
         # Memory monitoring for undo/redo
-        self._undo_memory_usage = 0  # Track memory usage in bytes
+        self._undo_memory_usage = 0  # Track memory usage in bytes for undo stack
+        self._redo_memory_usage = 0  # Track memory usage in bytes for redo stack
         self._undo_memory_limit = (
             self.config.undo_memory_limit_mb * 1024 * 1024
         )  # Convert MB to bytes
@@ -125,6 +126,9 @@ class APGIFrameworkApp(ctk.CTk if CUSTOMTKINTER_AVAILABLE else tk.Tk):
 
         # Center window on screen
         self._center_window()
+
+        # Bind close event to save recent files
+        self.protocol("WM_DELETE_WINDOW", self.on_close)
 
     def _setup_ui(self) -> None:
         """Set up the main user interface."""
@@ -226,6 +230,11 @@ class APGIFrameworkApp(ctk.CTk if CUSTOMTKINTER_AVAILABLE else tk.Tk):
         except Exception as e:
             self.logger.error(f"Error saving recent files: {e}")
 
+    def on_close(self) -> None:
+        """Handle application close event."""
+        self._save_recent_files()
+        self.quit()
+
     def update_status(self, message: str, level: str = "info") -> None:
         """Update the status bar with a message.
 
@@ -233,7 +242,7 @@ class APGIFrameworkApp(ctk.CTk if CUSTOMTKINTER_AVAILABLE else tk.Tk):
             message: The message to display
             level: The message level (info, warning, error)
         """
-        self.status_bar.set_status(message, level)
+        self.after(0, lambda: self.status_bar.set_status(message, level))
 
         # Log the message
         log_method = getattr(self.logger, level, self.logger.info)
@@ -360,24 +369,22 @@ class APGIFrameworkApp(ctk.CTk if CUSTOMTKINTER_AVAILABLE else tk.Tk):
         """Add data to undo stack with memory monitoring."""
         data_size = self._get_object_size(data)
 
-        # Check if adding this would exceed memory limit
-        if self._undo_memory_usage + data_size > self._undo_memory_limit:
-            # Remove oldest items until we have enough space
-            while (
-                self.undo_stack
-                and self._undo_memory_usage + data_size > self._undo_memory_limit
-            ):
-                oldest = self.undo_stack.popleft()
-                self._undo_memory_usage -= self._get_object_size(oldest)
-                self.logger.debug("Removed old undo entry due to memory limit")
+        # Check if adding this would exceed memory limit for undo stack
+        while (
+            self.undo_stack
+            and self._undo_memory_usage + data_size > self._undo_memory_limit
+        ):
+            oldest = self.undo_stack.popleft()
+            self._undo_memory_usage -= self._get_object_size(oldest)
+            self.logger.debug("Removed old undo entry due to memory limit")
 
-        # Add new item
+        # Add new item to undo stack
         self.undo_stack.append(data)
         self._undo_memory_usage += data_size
 
         # Clear redo stack when new action is performed
         self.redo_stack.clear()
-        self._undo_memory_usage = 0  # Reset memory tracking for redo stack
+        self._redo_memory_usage = 0
 
     def undo(self) -> None:
         """Undo the last action with memory monitoring."""
@@ -386,9 +393,9 @@ class APGIFrameworkApp(ctk.CTk if CUSTOMTKINTER_AVAILABLE else tk.Tk):
             current_size = self._get_object_size(current_data)
 
             # Add current state to redo stack
-            if self._undo_memory_usage + current_size <= self._undo_memory_limit:
+            if self._redo_memory_usage + current_size <= self._undo_memory_limit:
                 self.redo_stack.append(current_data)
-                self._undo_memory_usage += current_size
+                self._redo_memory_usage += current_size
 
             # Get and remove from undo stack
             undo_data = self.undo_stack.pop()
@@ -415,7 +422,7 @@ class APGIFrameworkApp(ctk.CTk if CUSTOMTKINTER_AVAILABLE else tk.Tk):
             # Get and remove from redo stack
             redo_data = self.redo_stack.pop()
             redo_size = self._get_object_size(redo_data)
-            self._undo_memory_usage -= redo_size
+            self._redo_memory_usage -= redo_size
 
             # Apply redo
             self.main_area.load_data(redo_data)
@@ -424,8 +431,8 @@ class APGIFrameworkApp(ctk.CTk if CUSTOMTKINTER_AVAILABLE else tk.Tk):
             self.update_status("Nothing to redo", "warning")
 
     def get_undo_memory_usage_mb(self) -> float:
-        """Get current undo stack memory usage in MB."""
-        return self._undo_memory_usage / (1024 * 1024)
+        """Get current undo/redo stack memory usage in MB."""
+        return (self._undo_memory_usage + self._redo_memory_usage) / (1024 * 1024)
 
     def toggle_theme(self) -> None:
         """Toggle between light and dark themes."""
@@ -445,25 +452,13 @@ class APGIFrameworkApp(ctk.CTk if CUSTOMTKINTER_AVAILABLE else tk.Tk):
         self._propagate_theme_to_components()
 
     def _propagate_theme_to_components(self) -> None:
-        """Propagate current theme to all UI components with comprehensive tracking."""
+        """Propagate current theme to all UI components comprehensively."""
         try:
             # Force theme update on CustomTkinter level
             ctk.set_appearance_mode(self.config.theme)
 
-            # Update all tracked widgets
-            self._update_all_tracked_widgets()
-
-            # Update main area components
-            if hasattr(self, "main_area"):
-                self._update_widget_theme_recursive(self.main_area)
-
-            # Update sidebar components
-            if hasattr(self, "sidebar"):
-                self._update_widget_theme_recursive(self.sidebar)
-
-            # Update status bar
-            if hasattr(self, "status_bar"):
-                self._update_widget_theme_recursive(self.status_bar)
+            # Update all widgets recursively from the root to ensure comprehensive coverage
+            self._update_widget_theme_recursive(self)
 
             # Force UI refresh
             self.update_idletasks()
@@ -528,7 +523,285 @@ class APGIFrameworkApp(ctk.CTk if CUSTOMTKINTER_AVAILABLE else tk.Tk):
                 self._text_widgets.add(widget)
 
     def show_help(self) -> None:
-        """Show the help dialog."""
+        """Show context-sensitive help dialog."""
+        try:
+            # Get current context
+            current_tab = self._get_current_tab()
+            focused_widget = self._get_focused_widget_info()
+
+            # Generate context-specific help content
+            help_content = self._generate_context_help(current_tab, focused_widget)
+
+            # Create help dialog
+            help_dialog = ctk.CTkToplevel(self)
+            help_dialog.title(f"Help - {current_tab} Tab")
+            help_dialog.geometry("700x600")
+            help_dialog.transient(self)
+            help_dialog.grab_set()
+
+            # Create scrollable text widget
+            help_text_widget = ctk.CTkTextbox(help_dialog, wrap="word")
+            help_text_widget.pack(fill="both", expand=True, padx=10, pady=10)
+            help_text_widget.insert("1.0", help_content)
+            help_text_widget.configure(state="disabled")
+
+            # Button frame
+            button_frame = ctk.CTkFrame(help_dialog)
+            button_frame.pack(fill="x", padx=10, pady=10)
+
+            # General help button
+            general_btn = ctk.CTkButton(
+                button_frame,
+                text="General Help",
+                command=lambda: self._show_general_help(help_text_widget),
+            )
+            general_btn.pack(side="left", padx=5)
+
+            # Close button
+            close_button = ctk.CTkButton(
+                button_frame, text="Close", command=help_dialog.destroy
+            )
+            close_button.pack(side="right", padx=5)
+
+        except Exception as e:
+            self.logger.error(f"Error opening context help: {e}")
+            self.update_status("Error opening help", "error")
+            # Fallback to general help
+            self._show_general_help_fallback()
+
+    def _get_current_tab(self) -> str:
+        """Get the name of the currently active tab."""
+        try:
+            if hasattr(self, "main_area") and hasattr(self.main_area, "tabview"):
+                return self.main_area.tabview.get()
+            return "Application"
+        except Exception:
+            return "Application"
+
+    def _get_focused_widget_info(self) -> dict:
+        """Get information about the currently focused widget."""
+        try:
+            focused = self.focus_get()
+            if focused:
+                info = {"widget": focused, "type": type(focused).__name__}
+
+                # Add context-specific information
+                if hasattr(focused, "winfo_class"):
+                    info["class"] = focused.winfo_class()
+
+                # Check if it's in a specific area
+                if hasattr(self, "sidebar") and self._is_widget_in_sidebar(focused):
+                    info["area"] = "sidebar"
+                elif hasattr(self, "main_area") and self._is_widget_in_main_area(
+                    focused
+                ):
+                    info["area"] = "main_area"
+                elif hasattr(self, "status_bar") and self._is_widget_in_status_bar(
+                    focused
+                ):
+                    info["area"] = "status_bar"
+
+                return info
+            return {}
+        except Exception:
+            return {}
+
+    def _is_widget_in_sidebar(self, widget) -> bool:
+        """Check if widget is within the sidebar."""
+        try:
+            if hasattr(self, "sidebar"):
+                return widget in self.sidebar.winfo_children() or any(
+                    widget in child.winfo_children()
+                    for child in self.sidebar.winfo_children()
+                )
+            return False
+        except Exception:
+            return False
+
+    def _is_widget_in_main_area(self, widget) -> bool:
+        """Check if widget is within the main area."""
+        try:
+            if hasattr(self, "main_area"):
+                return widget in self.main_area.winfo_children() or any(
+                    widget in child.winfo_children()
+                    for child in self.main_area.winfo_children()
+                )
+            return False
+        except Exception:
+            return False
+
+    def _is_widget_in_status_bar(self, widget) -> bool:
+        """Check if widget is within the status bar."""
+        try:
+            if hasattr(self, "status_bar"):
+                return widget in self.status_bar.winfo_children() or any(
+                    widget in child.winfo_children()
+                    for child in self.status_bar.winfo_children()
+                )
+            return False
+        except Exception:
+            return False
+
+    def _generate_context_help(self, current_tab: str, focused_info: dict) -> str:
+        """Generate context-specific help content."""
+        help_sections = []
+
+        # Tab-specific help
+        tab_help = self._get_tab_specific_help(current_tab)
+        if tab_help:
+            help_sections.append(f"## {current_tab} Tab Help\n\n{tab_help}")
+
+        # Widget-specific help
+        if focused_info:
+            widget_help = self._get_widget_specific_help(focused_info)
+            if widget_help:
+                help_sections.append(f"## Current Context\n\n{widget_help}")
+
+        # General shortcuts
+        general_shortcuts = self._get_general_shortcuts()
+        help_sections.append(f"## General Shortcuts\n\n{general_shortcuts}")
+
+        # Footer
+        footer = "\n\nFor more information, visit the project documentation or press F1 for general help."
+        help_sections.append(footer)
+
+        return "\n\n".join(help_sections)
+
+    def _get_tab_specific_help(self, tab_name: str) -> str:
+        """Get help content specific to a tab."""
+        tab_help = {
+            "Configuration": """
+Configure your APGI experiment parameters:
+
+• **Parameters Tab**: Set θ₀ (Ignition Threshold), Πᵢ (Interoceptive Precision), and other model parameters
+• **Stimuli Tab**: Configure stimulus presentation settings and timing
+• **Hardware Tab**: Set up connections to EEG, cardiac monitors, and other devices
+• **Validation Tab**: Configure parameter validation and error checking
+
+Use the 'Run Analysis' button or Ctrl+R to test your configuration.
+            """,
+            "Analysis": """
+Analyze your experimental data:
+
+• **Data Import**: Load experimental data from CSV, JSON, or real-time sources
+• **Processing**: Apply filtering, artifact removal, and preprocessing steps
+• **Model Fitting**: Fit APGI models to your data using Bayesian methods
+• **Visualization**: View results with interactive plots and statistics
+
+Select data files from the sidebar and use analysis tools in the toolbar.
+            """,
+            "Visualization": """
+Visualize your results:
+
+• **Time Series**: Plot physiological signals over time
+• **Phase Space**: View state space trajectories
+• **Statistical Plots**: Display parameter distributions and confidence intervals
+• **Interactive Controls**: Zoom, pan, and filter visualizations
+
+Use the toolbar controls to customize plot appearance and export images.
+            """,
+            "Results": """
+Review and export your analysis results:
+
+• **Summary Statistics**: View key metrics and parameter estimates
+• **Model Comparison**: Compare different model fits and validation scores
+• **Export Options**: Save results as PDF reports, CSV data, or images
+• **Session History**: Review previous analysis sessions
+
+Use the export buttons to save your work in various formats.
+            """,
+        }
+        return tab_help.get(tab_name, "")
+
+    def _get_widget_specific_help(self, focused_info: dict) -> str:
+        """Get help content specific to the focused widget."""
+        widget_type = focused_info.get("type", "")
+        area = focused_info.get("area", "")
+
+        if "Entry" in widget_type or "Text" in widget_type:
+            return "You are currently editing a text field. Type your input and press Enter to confirm, or Tab to move to the next field."
+        elif "Button" in widget_type:
+            return "Click this button to perform the displayed action, or use the associated keyboard shortcut if available."
+        elif "Combobox" in widget_type or "OptionMenu" in widget_type:
+            return "Click to open a dropdown menu and select from available options."
+        elif area == "sidebar":
+            return "The sidebar shows your recent files, project structure, and quick actions. Double-click files to open them."
+        elif area == "status_bar":
+            return "The status bar shows current application state, progress, and messages."
+        else:
+            return ""
+
+    def _get_general_shortcuts(self) -> str:
+        """Get general keyboard shortcuts help."""
+        return """Common Shortcuts:
+• F1 - Show this help
+• Ctrl+N - New file
+• Ctrl+O - Open file
+• Ctrl+S - Save file
+• Ctrl+Z - Undo
+• Ctrl+Y - Redo
+• Ctrl+T - Toggle theme
+• Ctrl+0 - Reset zoom
+• Ctrl+Plus/Minus - Zoom in/out
+• Ctrl+Q - Quit application
+
+Tab Navigation:
+• Ctrl+1-4 - Switch to specific tabs
+• Ctrl+Tab - Next tab
+• Ctrl+Shift+Tab - Previous tab"""
+
+    def _show_general_help(self, help_text_widget) -> None:
+        """Show general help in the existing dialog."""
+        try:
+            general_help = """APGI Framework GUI Help
+
+Keyboard Shortcuts:
+  File Operations:
+    Ctrl+N           - New file
+    Ctrl+O           - Open file
+    Ctrl+S           - Save file
+    Ctrl+Shift+S     - Save file as
+    Ctrl+W           - Close file
+    Ctrl+Q           - Quit application
+    
+  Edit Operations:
+    Ctrl+Z           - Undo
+    Ctrl+Shift+Z     - Redo (alternative)
+    Ctrl+Y           - Redo
+    Ctrl+A           - Select all
+    Ctrl+C           - Copy
+    Ctrl+V           - Paste
+    Ctrl+X           - Cut
+    
+  View Operations:
+    Ctrl+T           - Toggle theme
+    F11              - Toggle fullscreen
+    Ctrl+0           - Reset zoom
+    Ctrl+Plus        - Zoom in
+    Ctrl+Minus       - Zoom out
+    
+  Navigation:
+    Ctrl+1-4         - Switch to tabs
+    Ctrl+Tab         - Next tab
+    Ctrl+Shift+Tab   - Previous tab
+    
+  Application:
+    Ctrl+R           - Run analysis
+    F5               - Refresh
+    F1               - Show help
+
+For more information, visit the project documentation."""
+
+            help_text_widget.configure(state="normal")
+            help_text_widget.delete("1.0", "end")
+            help_text_widget.insert("1.0", general_help)
+            help_text_widget.configure(state="disabled")
+
+        except Exception as e:
+            self.logger.error(f"Error showing general help: {e}")
+
+    def _show_general_help_fallback(self) -> None:
+        """Show general help as fallback when context help fails."""
         help_text = """APGI Framework GUI Help
 
 Keyboard Shortcuts:
@@ -543,7 +816,6 @@ Keyboard Shortcuts:
   Edit Operations:
     Ctrl+Z           - Undo
     Ctrl+Y           - Redo
-    Ctrl+Shift+Z     - Redo (alternative)
     Ctrl+A           - Select all
     Ctrl+C           - Copy
     Ctrl+V           - Paste
@@ -557,31 +829,14 @@ Keyboard Shortcuts:
     Ctrl+Minus       - Zoom out
     
   Navigation:
-    Ctrl+1           - Configuration tab
-    Ctrl+2           - Analysis tab
-    Ctrl+3           - Visualization tab
-    Ctrl+4           - Results tab
+    Ctrl+1-4         - Switch to tabs
     Ctrl+Tab         - Next tab
     Ctrl+Shift+Tab   - Previous tab
     
   Application:
     Ctrl+R           - Run analysis
     F5               - Refresh
-    Ctrl+F           - Find
-    Ctrl+G           - Find next
-    Ctrl+Shift+G     - Find previous
     F1               - Show help
-    Ctrl+H           - Show help (alternative)
-    
-  Debug/Development:
-    Ctrl+D           - Toggle debug mode
-    Ctrl+L           - Show log
-    Ctrl+P           - Show preferences
-    
-  Window Management:
-    Alt+F4           - Quit application
-    Ctrl+M           - Minimize window
-    Ctrl+Shift+M     - Maximize window
 
 For more information, visit the project documentation."""
 
@@ -728,6 +983,9 @@ For more information, visit the project documentation."""
                 # Apply to CustomTkinter widgets
                 self._update_widget_fonts(element, zoomed_size)
 
+            # Apply comprehensive zoom scaling to all widgets
+            self._apply_zoom_to_all_widgets(zoom_factor)
+
             # Update status bar with zoom level
             if hasattr(self, "status_bar"):
                 self.status_bar.set_zoom_level(int(self.zoom_level * 100))
@@ -811,6 +1069,113 @@ For more information, visit the project documentation."""
 
         except Exception as e:
             self.logger.warning(f"Error updating window size: {e}")
+
+    def _apply_zoom_to_all_widgets(self, zoom_factor: float) -> None:
+        """Apply zoom scaling to all widgets recursively."""
+        try:
+            # Store original sizes on first zoom application
+            if not hasattr(self, "_original_widget_sizes"):
+                self._original_widget_sizes = {}
+                self._collect_original_sizes(self)
+
+            # Apply zoom to all widgets starting from root
+            self._scale_widget_recursive(self, zoom_factor)
+
+        except Exception as e:
+            self.logger.warning(f"Error applying zoom to widgets: {e}")
+
+    def _collect_original_sizes(self, widget) -> None:
+        """Collect original sizes of all widgets for zoom calculations."""
+        try:
+            widget_id = str(id(widget))
+
+            # Store original size properties
+            original_props = {}
+
+            # Width and height
+            if hasattr(widget, "cget"):
+                try:
+                    width = widget.cget("width")
+                    if width and isinstance(width, (int, str)) and str(width).isdigit():
+                        original_props["width"] = int(width)
+                except (AttributeError, TclError):
+                    pass
+
+                try:
+                    height = widget.cget("height")
+                    if (
+                        height
+                        and isinstance(height, (int, str))
+                        and str(height).isdigit()
+                    ):
+                        original_props["height"] = int(height)
+                except (AttributeError, TclError):
+                    pass
+
+            # Store padding if available
+            if hasattr(widget, "cget"):
+                for prop in ["padx", "pady", "ipadx", "ipady"]:
+                    try:
+                        value = widget.cget(prop)
+                        if (
+                            value
+                            and isinstance(value, (int, str))
+                            and str(value).isdigit()
+                        ):
+                            original_props[prop] = int(value)
+                    except (AttributeError, TclError):
+                        pass
+
+            if original_props:
+                self._original_widget_sizes[widget_id] = original_props
+
+            # Recursively collect for children
+            for child in widget.winfo_children():
+                self._collect_original_sizes(child)
+
+        except Exception as e:
+            self.logger.debug(f"Error collecting sizes for widget: {e}")
+
+    def _scale_widget_recursive(self, widget, zoom_factor: float) -> None:
+        """Recursively scale a widget and its children."""
+        try:
+            widget_id = str(id(widget))
+
+            # Scale this widget if we have original sizes
+            if widget_id in self._original_widget_sizes:
+                original_props = self._original_widget_sizes[widget_id]
+                new_props = {}
+
+                # Scale width and height
+                if "width" in original_props:
+                    new_props["width"] = max(
+                        1, int(original_props["width"] * zoom_factor)
+                    )
+                if "height" in original_props:
+                    new_props["height"] = max(
+                        1, int(original_props["height"] * zoom_factor)
+                    )
+
+                # Scale padding
+                for prop in ["padx", "pady", "ipadx", "ipady"]:
+                    if prop in original_props:
+                        new_props[prop] = max(
+                            0, int(original_props[prop] * zoom_factor)
+                        )
+
+                # Apply new properties if any
+                if new_props and hasattr(widget, "configure"):
+                    try:
+                        widget.configure(**new_props)
+                    except Exception as e:
+                        self.logger.debug(f"Error configuring widget: {e}")
+
+            # Recursively scale children
+            for child in widget.winfo_children():
+                self._scale_widget_recursive(child, zoom_factor)
+
+        except Exception as e:
+            self.logger.debug(f"Error scaling widget: {e}")
 
     def switch_to_tab(self, tab_name: str) -> None:
         """Switch to a specific tab."""

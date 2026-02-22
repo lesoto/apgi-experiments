@@ -4,7 +4,6 @@ import logging
 import sys
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import Optional
 
 
 def setup_logging(name: str, log_dir: str) -> logging.Logger:
@@ -72,7 +71,7 @@ def log_exceptions(logger: logging.Logger):
         def wrapper(*args, **kwargs):
             try:
                 return func(*args, **kwargs)
-            except Exception as e:
+            except Exception:
                 logger.exception(f"Exception in {func.__name__}")
                 raise
 

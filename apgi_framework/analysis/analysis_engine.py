@@ -7,6 +7,7 @@ Provides comprehensive analysis capabilities for experimental data including:
 - Results processing and reporting
 """
 
+import concurrent.futures
 import logging
 from dataclasses import dataclass
 from datetime import datetime
@@ -247,7 +248,7 @@ class AnalysisEngine:
         Dict[str, float],
         Dict[str, Tuple[float, float]],
     ]:
-        """Perform comparative analysis (t-tests, ANOVA)."""
+        """Perform comparative analysis with parallel processing."""
         from scipy import stats as scipy_stats
 
         # Identify grouping variables
@@ -259,7 +260,15 @@ class AnalysisEngine:
         effect_sizes: Dict[str, float] = {}
         conf_intervals: Dict[str, Tuple[float, float]] = {}
 
-        for group_col in group_cols:
+        if not group_cols:
+            return stats, p_values, effect_sizes, conf_intervals
+
+        # Function to analyze a single grouping variable
+        def analyze_grouping_variable(group_col):
+            group_stats = {}
+            group_p_values = {}
+            group_effect_sizes = {}
+
             groups = data[group_col].unique()
 
             for num_col in numeric_cols:
@@ -289,7 +298,7 @@ class AnalysisEngine:
                     cohens_d = (
                         group_data[0].mean() - group_data[1].mean()
                     ) / pooled_std
-                    effect_sizes[f"{test_name}_cohens_d"] = cohens_d
+                    group_effect_sizes[f"{test_name}_cohens_d"] = cohens_d
                 else:
                     # ANOVA
                     f_stat, p_val = scipy_stats.f_oneway(*group_data)
@@ -302,23 +311,58 @@ class AnalysisEngine:
                         for g in group_data
                     ) / sum(len(g) for g in group_data)
                     eta_squared = between_var / total_var
-                    effect_sizes[f"{test_name}_eta_squared"] = eta_squared
+                    group_effect_sizes[f"{test_name}_eta_squared"] = eta_squared
 
-                stats[test_name] = {
+                group_stats[test_name] = {
                     "test_statistic": t_stat if len(group_data) == 2 else f_stat,
                     "group_means": [g.mean() for g in group_data],
                     "group_stds": [g.std() for g in group_data],
                     "group_sizes": [len(g) for g in group_data],
                 }
 
-                p_values[test_name] = p_val
+                group_p_values[test_name] = p_val
 
+            return group_col, group_stats, group_p_values, group_effect_sizes
+
+        # Use parallel processing for multiple grouping variables
+        max_workers = min(len(group_cols), 4)  # Limit concurrent workers
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # Submit analysis tasks for each grouping variable
+            future_to_group = {
+                executor.submit(analyze_grouping_variable, group_col): group_col
+                for group_col in group_cols
+            }
+
+            # Collect results
+            for future in concurrent.futures.as_completed(future_to_group):
+                try:
+                    (
+                        group_col,
+                        group_stats,
+                        group_p_values,
+                        group_effect_sizes,
+                    ) = future.result()
+
+                    # Merge results
+                    stats.update(group_stats)
+                    p_values.update(group_p_values)
+                    effect_sizes.update(group_effect_sizes)
+
+                except Exception as exc:
+                    group_col = future_to_group[future]
+                    logger.warning(
+                        f"Comparative analysis for {group_col} failed: {exc}"
+                    )
+
+        logger.info(
+            f"Completed parallel comparative analysis for {len(group_cols)} grouping variables"
+        )
         return stats, p_values, effect_sizes, conf_intervals
 
     def _correlation_analysis(
         self, data: pd.DataFrame, params: Dict[str, Any]
     ) -> Tuple[Dict, Dict, Dict, Dict]:
-        """Perform correlation analysis."""
+        """Perform correlation analysis with parallel processing."""
         from scipy import stats as scipy_stats
 
         numeric_data = data.select_dtypes(include=[np.number]).dropna()
@@ -329,25 +373,64 @@ class AnalysisEngine:
         effect_sizes = {}
         conf_intervals = {}
 
-        # Pairwise correlations
-        for i, col1 in enumerate(numeric_cols):
-            for j, col2 in enumerate(numeric_cols[i + 1 :], i + 1):
-                x = numeric_data[col1]
-                y = numeric_data[col2]
+        # Generate pairs for parallel processing
+        column_pairs = [
+            (col1, col2)
+            for i, col1 in enumerate(numeric_cols)
+            for col2 in numeric_cols[i + 1 :]
+        ]
 
-                # Pearson correlation
-                r, p_val = scipy_stats.pearsonr(x, y)
-                corr_name = f"{col1}_vs_{col2}_pearson"
+        if not column_pairs:
+            return stats, p_values, effect_sizes, conf_intervals
 
-                stats[corr_name] = {"correlation": r, "n": len(x)}
+        # Function to compute correlation for a single pair
+        def compute_correlation(pair):
+            col1, col2 = pair
+            x = numeric_data[col1]
+            y = numeric_data[col2]
 
-                p_values[corr_name] = p_val
-                effect_sizes[corr_name] = abs(r)  # Effect size is |r|
+            # Pearson correlation
+            r, p_val = scipy_stats.pearsonr(x, y)
+            corr_name = f"{col1}_vs_{col2}_pearson"
 
-                # Confidence interval for correlation
-                ci = self._correlation_confidence_interval(r, len(x))
-                conf_intervals[corr_name] = ci
+            # Confidence interval for correlation
+            ci = self._correlation_confidence_interval(r, len(x))
 
+            return {
+                "name": corr_name,
+                "stats": {"correlation": r, "n": len(x)},
+                "p_value": p_val,
+                "effect_size": abs(r),
+                "ci": ci,
+            }
+
+        # Use parallel processing for correlation computation
+        max_workers = min(len(column_pairs), 8)  # Limit to 8 concurrent workers
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # Submit all correlation tasks
+            future_to_pair = {
+                executor.submit(compute_correlation, pair): pair
+                for pair in column_pairs
+            }
+
+            # Collect results
+            for future in concurrent.futures.as_completed(future_to_pair):
+                try:
+                    result = future.result()
+                    corr_name = result["name"]
+
+                    stats[corr_name] = result["stats"]
+                    p_values[corr_name] = result["p_value"]
+                    effect_sizes[corr_name] = result["effect_size"]
+                    conf_intervals[corr_name] = result["ci"]
+
+                except Exception as exc:
+                    pair = future_to_pair[future]
+                    logger.warning(f"Correlation computation for {pair} failed: {exc}")
+
+        logger.info(
+            f"Completed parallel correlation analysis for {len(column_pairs)} pairs"
+        )
         return stats, p_values, effect_sizes, conf_intervals
 
     def _regression_analysis(

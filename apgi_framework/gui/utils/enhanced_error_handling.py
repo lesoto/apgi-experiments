@@ -48,9 +48,9 @@ class GUIError:
         exception: Exception,
         category: str,
         severity: str,
-        context: Dict[str, Any] = None,
-        user_message: str = None,
-        recovery_actions: List[str] = None,
+        context: Optional[Dict[str, Any]] = None,
+        user_message: Optional[str] = None,
+        recovery_actions: Optional[List[str]] = None,
     ):
         """
         Initialize GUI error.
@@ -114,7 +114,7 @@ class FallbackManager:
     def _check_customtkinter(self) -> bool:
         """Check if CustomTkinter is available."""
         try:
-            import customtkinter
+            import customtkinter  # noqa: F401
 
             return True
         except ImportError:
@@ -131,7 +131,7 @@ class FallbackManager:
     def _check_plotly(self) -> bool:
         """Check if Plotly is available."""
         try:
-            import plotly
+            import plotly  # noqa: F401
 
             return True
         except ImportError:
@@ -148,7 +148,7 @@ class FallbackManager:
     def _check_sqlite(self) -> bool:
         """Check if SQLite is available."""
         try:
-            import sqlite3
+            import sqlite3  # noqa: F401
 
             return True
         except ImportError:
@@ -169,7 +169,7 @@ class FallbackManager:
     def _check_h5py(self) -> bool:
         """Check if HDF5 is available."""
         try:
-            import h5py
+            import h5py  # noqa: F401
 
             return True
         except ImportError:
@@ -211,7 +211,7 @@ class FallbackManager:
 class EnhancedErrorHandler:
     """Enhanced error handler with recovery strategies."""
 
-    def __init__(self, root_window: tk.Tk = None):
+    def __init__(self, root_window: Optional[tk.Tk] = None):
         """
         Initialize enhanced error handler.
 
@@ -247,7 +247,7 @@ class EnhancedErrorHandler:
         exception: Exception,
         category: str,
         severity: str = ErrorSeverity.MEDIUM,
-        context: Dict[str, Any] = None,
+        context: Optional[Dict[str, Any]] = None,
         show_dialog: bool = True,
     ) -> bool:
         """
@@ -436,8 +436,8 @@ class EnhancedErrorHandler:
         if not self.error_log:
             return {"total_errors": 0, "by_category": {}, "by_severity": {}}
 
-        by_category = {}
-        by_severity = {}
+        by_category: Dict[str, int] = {}
+        by_severity: Dict[str, int] = {}
 
         for error in self.error_log:
             by_category[error.category] = by_category.get(error.category, 0) + 1
@@ -450,7 +450,7 @@ class EnhancedErrorHandler:
             "recent_errors": [str(e.exception) for e in self.error_log[-5:]],
         }
 
-    def save_error_log(self, file_path: Path = None):
+    def save_error_log(self, file_path: Optional[Path] = None):
         """Save error log to file."""
         if file_path is None:
             file_path = Path("error_log.json")
@@ -480,7 +480,7 @@ class EnhancedErrorHandler:
 _global_error_handler: Optional[EnhancedErrorHandler] = None
 
 
-def get_error_handler(root_window: tk.Tk = None) -> EnhancedErrorHandler:
+def get_error_handler(root_window: Optional[tk.Tk] = None) -> EnhancedErrorHandler:
     """Get or create global error handler."""
     global _global_error_handler
     if _global_error_handler is None:
@@ -492,7 +492,7 @@ def handle_gui_error(
     exception: Exception,
     category: str,
     severity: str = ErrorSeverity.MEDIUM,
-    context: Dict[str, Any] = None,
+    context: Optional[Dict[str, Any]] = None,
     show_dialog: bool = True,
 ) -> bool:
     """
@@ -512,7 +512,7 @@ def handle_gui_error(
     return handler.handle_error(exception, category, severity, context, show_dialog)
 
 
-def setup_global_error_handling(root_window: tk.Tk):
+def setup_global_error_handling(root_window: Optional[tk.Tk]):
     """Setup global error handling for tkinter application."""
     handler = get_error_handler(root_window)
 

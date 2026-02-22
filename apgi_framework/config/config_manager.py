@@ -7,10 +7,16 @@ including parameter validation, default values, and experimental settings.
 
 import json
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+import threading
 
-from apgi_framework.exceptions import ConfigurationError
-from apgi_framework.utils.path_utils import get_path_manager
+from ..path_manager import get_path_manager
+from ..logging.standardized_logging import get_logger
+
+from .exceptions import ConfigurationError
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -200,6 +206,11 @@ class ConfigManager:
         self.retry_config = RetryConfig()
         self.performance_thresholds = PerformanceThresholds()
         self.stimulus_params = StimulusParameters()
+        self._lock = threading.RLock()  # Thread-safe access to configuration
+
+        # Preset management
+        self.presets_dir = Path("config/presets")
+        self.presets_dir.mkdir(parents=True, exist_ok=True)
 
         if config_path:
             config_file = self.path_manager.resolve_path(config_path)
@@ -297,9 +308,90 @@ class ConfigManager:
         """Get current performance thresholds."""
         return self.performance_thresholds
 
-    def get_stimulus_parameters(self) -> StimulusParameters:
+    def get_stimulus_params(self) -> StimulusParameters:
         """Get current stimulus parameters."""
         return self.stimulus_params
+
+    def save_preset(self, name: str) -> None:
+        """Save current configuration as a preset.
+
+        Args:
+            name: Name of the preset
+        """
+        preset_data = {
+            "apgi_parameters": self.apgi_params.__dict__,
+            "experimental_config": self.experimental_config.__dict__,
+            "retry_config": self.retry_config.__dict__,
+            "performance_thresholds": self.performance_thresholds.__dict__,
+            "stimulus_parameters": self.stimulus_params.__dict__,
+        }
+
+        preset_path = self.presets_dir / f"{name}.json"
+        with open(preset_path, "w") as f:
+            json.dump(preset_data, f, indent=2)
+
+        logger.info(f"Saved configuration preset: {name}")
+
+    def load_preset(self, name: str) -> None:
+        """Load configuration from a preset.
+
+        Args:
+            name: Name of the preset to load
+        """
+        preset_path = self.presets_dir / f"{name}.json"
+        if not preset_path.exists():
+            raise ConfigurationError(f"Preset not found: {name}")
+
+        with open(preset_path, "r") as f:
+            preset_data = json.load(f)
+
+        # Load APGI parameters
+        if "apgi_parameters" in preset_data:
+            apgi_data = preset_data["apgi_parameters"]
+            self.apgi_params = APGIParameters(**apgi_data)
+
+        # Load experimental configuration
+        if "experimental_config" in preset_data:
+            exp_data = preset_data["experimental_config"]
+            self.experimental_config = ExperimentalConfig(**exp_data)
+
+        # Load retry configuration
+        if "retry_config" in preset_data:
+            retry_data = preset_data["retry_config"]
+            self.retry_config = RetryConfig(**retry_data)
+
+        # Load performance thresholds
+        if "performance_thresholds" in preset_data:
+            perf_data = preset_data["performance_thresholds"]
+            self.performance_thresholds = PerformanceThresholds(**perf_data)
+
+        # Load stimulus parameters
+        if "stimulus_parameters" in preset_data:
+            stim_data = preset_data["stimulus_parameters"]
+            self.stimulus_params = StimulusParameters(**stim_data)
+
+        logger.info(f"Loaded configuration preset: {name}")
+
+    def list_presets(self) -> List[str]:
+        """List available configuration presets.
+
+        Returns:
+            List of preset names
+        """
+        return [p.stem for p in self.presets_dir.glob("*.json")]
+
+    def delete_preset(self, name: str) -> None:
+        """Delete a configuration preset.
+
+        Args:
+            name: Name of the preset to delete
+        """
+        preset_path = self.presets_dir / f"{name}.json"
+        if preset_path.exists():
+            preset_path.unlink()
+            logger.info(f"Deleted configuration preset: {name}")
+        else:
+            raise ConfigurationError(f"Preset not found: {name}")
 
     def _validate_config_structure(self, config_data: Dict[str, Any]) -> None:
         """Validate overall configuration structure."""
@@ -379,31 +471,96 @@ class ConfigManager:
                         f"but got {param_value}. Precision values represent inverse variance "
                         f"and cannot be negative."
                     )
-                if param_value <= 0 and "threshold" in param_name.lower():
+                if param_name == "threshold" and param_value <= 0:
                     raise ConfigurationError(
                         f"Parameter '{section_name}.{param_name}' must be positive, "
                         f"but got {param_value}. Threshold values must be greater than zero."
                     )
-                if param_value <= 0 and "gain" in param_name.lower():
-                    raise ConfigurationError(
-                        f"Parameter '{section_name}.{param_name}' must be positive, "
-                        f"but got {param_value}. Gain values must be greater than zero."
-                    )
-                if "steepness" in param_name.lower() and param_value <= 0:
-                    raise ConfigurationError(
-                        f"Parameter '{section_name}.{param_name}' must be positive, "
-                        f"but got {param_value}. Steepness controls sigmoid slope and must be positive."
-                    )
 
-                # Specific range validations
-                if section_name == "apgi_parameters":
-                    self._validate_apgi_parameter_range(param_name, param_value)
-                elif section_name == "experimental_config":
-                    self._validate_experimental_parameter_range(param_name, param_value)
-                elif section_name == "performance_thresholds":
-                    self._validate_performance_parameter_range(param_name, param_value)
-                elif section_name == "stimulus_parameters":
-                    self._validate_stimulus_parameter_range(param_name, param_value)
+    def _validate_apgi_parameter_range_with_warning(
+        self, param_name: str, value: float, logger
+    ) -> None:
+        """Validate APGI parameter ranges with warnings for edge cases."""
+        recommended_ranges = {
+            "extero_precision": (0.1, 10.0, "1.0-3.0"),
+            "intero_precision": (0.1, 10.0, "0.5-2.0"),
+            "threshold": (0.5, 10.0, "2.0-5.0"),
+            "steepness": (0.1, 10.0, "1.0-3.0"),
+        }
+
+        if param_name in recommended_ranges:
+            min_val, max_val, typical = recommended_ranges[param_name]
+            if not (min_val <= value <= max_val):
+                # Allow values outside range but warn
+                logger.warning(
+                    f"APGI parameter '{param_name}' value {value} is outside recommended range "
+                    f"[{min_val}, {max_val}]. Typical values: {typical}. "
+                    f"Parameter will be accepted but may produce unexpected results."
+                )
+        # Only raise error for truly invalid values (negative for precision, etc.)
+        if (
+            param_name in ["extero_precision", "intero_precision", "steepness"]
+            and value <= 0
+        ):
+            raise ConfigurationError(
+                f"Parameter '{param_name}' must be positive, got {value}"
+            )
+
+    def _validate_experimental_parameter_range_with_warning(
+        self, param_name: str, value: float, logger
+    ) -> None:
+        """Validate experimental parameter ranges with warnings for edge cases."""
+        recommended_ranges = {
+            "n_trials": (1, 100000, "100-1000"),
+            "n_participants": (1, 10000, "10-500"),
+            "alpha_level": (0.001, 0.5, "0.05, 0.01, 0.001"),
+        }
+
+        if param_name in recommended_ranges:
+            min_val, max_val, typical = recommended_ranges[param_name]
+            if not (min_val <= value <= max_val):
+                logger.warning(
+                    f"Experimental parameter '{param_name}' value {value} is outside recommended range "
+                    f"[{min_val}, {max_val}]. Recommended: {typical}. "
+                    f"Parameter will be accepted but may affect statistical power."
+                )
+
+    def _validate_performance_parameter_range_with_warning(
+        self, param_name: str, value: float, logger
+    ) -> None:
+        """Validate performance threshold parameter ranges with warnings for edge cases."""
+        recommended_ranges = {
+            "min_rt": (0.05, 5.0, "0.1-0.3s"),
+            "max_rt": (0.5, 30.0, "2.0-10.0s"),
+            "min_accuracy": (0.0, 1.0, "0.5-0.8"),
+        }
+
+        if param_name in recommended_ranges:
+            min_val, max_val, typical = recommended_ranges[param_name]
+            if not (min_val <= value <= max_val):
+                logger.warning(
+                    f"Performance parameter '{param_name}' value {value} is outside recommended range "
+                    f"[{min_val}, {max_val}]. Typical: {typical}. "
+                    f"Parameter will be accepted but may affect data filtering."
+                )
+
+    def _validate_stimulus_parameter_range_with_warning(
+        self, param_name: str, value: float, logger
+    ) -> None:
+        """Validate stimulus parameter ranges with warnings for edge cases."""
+        recommended_ranges = {
+            "lapse_rate": (0.0, 0.5, "0.01-0.05"),
+            "guess_rate": (0.0, 1.0, "0.5 for 2AFC"),
+        }
+
+        if param_name in recommended_ranges:
+            min_val, max_val, typical = recommended_ranges[param_name]
+            if not (min_val <= value <= max_val):
+                logger.warning(
+                    f"Stimulus parameter '{param_name}' value {value} is outside recommended range "
+                    f"[{min_val}, {max_val}]. Typical: {typical}. "
+                    f"Parameter will be accepted but may affect model fitting."
+                )
 
     def _validate_apgi_parameter_range(self, param_name: str, value: float) -> None:
         """Validate APGI parameter ranges."""
@@ -491,14 +648,15 @@ class ConfigManager:
         Args:
             **kwargs: Parameter names and values to update.
         """
-        for key, value in kwargs.items():
-            if hasattr(self.apgi_params, key):
-                setattr(self.apgi_params, key, value)
-            else:
-                raise ConfigurationError(f"Unknown APGI parameter: {key}")
+        with self._lock:
+            for key, value in kwargs.items():
+                if hasattr(self.apgi_params, key):
+                    setattr(self.apgi_params, key, value)
+                else:
+                    raise ConfigurationError(f"Unknown APGI parameter: {key}")
 
-        # Re-validate parameters
-        self.apgi_params.__post_init__()
+            # Re-validate parameters
+            self.apgi_params.__post_init__()
 
     def update_experimental_config(self, **kwargs) -> None:
         """Update experimental configuration.
@@ -506,14 +664,15 @@ class ConfigManager:
         Args:
             **kwargs: Configuration names and values to update.
         """
-        for key, value in kwargs.items():
-            if hasattr(self.experimental_config, key):
-                setattr(self.experimental_config, key, value)
-            else:
-                raise ConfigurationError(f"Unknown experimental parameter: {key}")
+        with self._lock:
+            for key, value in kwargs.items():
+                if hasattr(self.experimental_config, key):
+                    setattr(self.experimental_config, key, value)
+                else:
+                    raise ConfigurationError(f"Unknown experimental parameter: {key}")
 
-        # Re-validate configuration
-        self.experimental_config.__post_init__()
+            # Re-validate configuration
+            self.experimental_config.__post_init__()
 
     def validate(self) -> bool:
         """Validate all configuration objects.
@@ -524,21 +683,22 @@ class ConfigManager:
         Raises:
             ConfigurationError: If any configuration is invalid.
         """
-        try:
-            # Validate APGI parameters
-            self.apgi_params.__post_init__()
+        with self._lock:
+            try:
+                # Validate APGI parameters
+                self.apgi_params.__post_init__()
 
-            # Validate experimental configuration
-            self.experimental_config.__post_init__()
+                # Validate experimental configuration
+                self.experimental_config.__post_init__()
 
-            # Additional validation could be added here
+                # Additional validation could be added here
 
-            return True
+                return True
 
-        except ConfigurationError as e:
-            raise e
-        except Exception as e:
-            raise ConfigurationError(f"Configuration validation failed: {e}")
+            except ConfigurationError as e:
+                raise e
+            except Exception as e:
+                raise ConfigurationError(f"Configuration validation failed: {e}")
 
     def get_validation_report(self) -> Dict[str, Any]:
         """Get a detailed validation report.
@@ -546,32 +706,33 @@ class ConfigManager:
         Returns:
             Dictionary containing validation status and details.
         """
-        report: Dict[str, Any] = {
-            "valid": True,
-            "errors": [],
-            "warnings": [],
-            "details": {},
-        }
+        with self._lock:
+            report: Dict[str, Any] = {
+                "valid": True,
+                "errors": [],
+                "warnings": [],
+                "details": {},
+            }
 
-        try:
-            # Validate APGI parameters
-            self.apgi_params.__post_init__()
-            report["details"]["apgi_parameters"] = "Valid"
-        except ConfigurationError as e:
-            report["valid"] = False
-            report["errors"].append(f"APGI Parameters: {e}")
-            report["details"]["apgi_parameters"] = str(e)
+            try:
+                # Validate APGI parameters
+                self.apgi_params.__post_init__()
+                report["details"]["apgi_parameters"] = "Valid"
+            except ConfigurationError as e:
+                report["valid"] = False
+                report["errors"].append(f"APGI Parameters: {e}")
+                report["details"]["apgi_parameters"] = str(e)
 
-        try:
-            # Validate experimental configuration
-            self.experimental_config.__post_init__()
-            report["details"]["experimental_config"] = "Valid"
-        except ConfigurationError as e:
-            report["valid"] = False
-            report["errors"].append(f"Experimental Config: {e}")
-            report["details"]["experimental_config"] = str(e)
+            try:
+                # Validate experimental configuration
+                self.experimental_config.__post_init__()
+                report["details"]["experimental_config"] = "Valid"
+            except ConfigurationError as e:
+                report["valid"] = False
+                report["errors"].append(f"Experimental Config: {e}")
+                report["details"]["experimental_config"] = str(e)
 
-        return report
+            return report
 
     def validate_apgi_parameter(self, param_name: str, value: float) -> bool:
         """Validate a single APGI parameter.

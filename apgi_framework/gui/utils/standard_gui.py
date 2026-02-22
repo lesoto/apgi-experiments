@@ -11,10 +11,9 @@ import sys
 import tkinter as tk
 import traceback
 from abc import ABC, abstractmethod
-from datetime import datetime
 from pathlib import Path
 from tkinter import messagebox, ttk
-from typing import Any, Callable, Dict, Optional
+from typing import Callable, Optional
 
 # Try to import CustomTkinter, fallback to tkinter if not available
 try:
@@ -96,7 +95,9 @@ class GUIStyleManager:
 class StandardWindow(ABC):
     """Base class for standardized GUI windows."""
 
-    def __init__(self, title: str, size: str = None, use_customtkinter: bool = False):
+    def __init__(
+        self, title: str, size: Optional[str] = None, use_customtkinter: bool = False
+    ):
         """
         Initialize a standardized window.
 

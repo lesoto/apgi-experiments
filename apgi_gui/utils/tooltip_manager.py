@@ -7,11 +7,8 @@ Supports both tkinter and customtkinter widgets.
 
 import json
 import tkinter as tk
-from pathlib import Path
-from tkinter import ttk
-from typing import Any, Dict, Optional, Union
-
-import customtkinter as ctk
+from tkinter import TclError
+from typing import Any, Dict, Optional
 
 
 class TooltipManager:
@@ -231,7 +228,7 @@ class TooltipManager:
         # Create tooltip window
         tooltip_window = tk.Toplevel(widget)
         tooltip_window.wm_overrideredirect(True)
-        tooltip_window.wm_geometry(f"+{event.x_root+10}+{event.y_root+10}")
+        tooltip_window.wm_geometry(f"+{event.x_root + 10}+{event.y_root + 10}")
 
         # Create label with tooltip text
         label = tk.Label(
@@ -262,7 +259,7 @@ class TooltipManager:
         if widget_id in self.tooltip_windows:
             try:
                 self.tooltip_windows[widget_id].destroy()
-            except:
+            except (AttributeError, TclError):
                 pass  # Window might already be destroyed
             finally:
                 del self.tooltip_windows[widget_id]
@@ -270,7 +267,7 @@ class TooltipManager:
 
     def add_parameter_tooltips(
         self,
-        parent_widget: tk.Widget,
+        parent_widget: Optional[tk.Widget],
         parameter_widgets: Dict[str, Any],
     ) -> None:
         """Add tooltips to multiple parameter widgets at once."""
@@ -287,7 +284,7 @@ class TooltipManager:
                     if id(tooltip_info["widget"]) == widget_id:
                         tooltip_info["widget"].after_cancel(timer)
                         break
-            except:
+            except (AttributeError, TclError):
                 pass
 
         self.tooltip_timers.clear()
@@ -296,7 +293,7 @@ class TooltipManager:
         for tooltip_window in self.tooltip_windows.values():
             try:
                 tooltip_window.destroy()
-            except:
+            except (AttributeError, TclError):
                 pass
 
         self.tooltip_windows.clear()

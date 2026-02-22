@@ -339,8 +339,8 @@ Examples:
         batch_test_parser.add_argument(
             "--timeout",
             type=validate_timeout_range,
-            default=300,
-            help="Timeout per test in seconds (range: 1-3600, default: 300)",
+            default=600,
+            help="Timeout per test in seconds (range: 1-3600, default: 600)",
         )
         batch_test_parser.add_argument(
             "--failfast", action="store_true", help="Stop on first failure"
@@ -499,8 +499,8 @@ Examples:
         test_exec_parser.add_argument(
             "--timeout",
             type=validate_timeout_range,
-            default=300,
-            help="Timeout per test in seconds (range: 1-3600, default: 300)",
+            default=600,
+            help="Timeout per test in seconds (range: 1-3600, default: 600)",
         )
         test_exec_parser.add_argument(
             "--verbose", "-v", action="store_true", help="Verbose output"

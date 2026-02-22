@@ -39,33 +39,22 @@ class MainArea(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
-        # Header with tabs
+        # Main content area with tabview
         self.tabview = ctk.CTkTabview(self)
         self.tabview.grid(
-            row=0,
-            column=0,
-            padx=self.ui_config["spacing"]["padding_x"],
-            pady=self.ui_config["spacing"]["padding_x"],
-            sticky="ew",
-        )
-        self.tabview.grid_columnconfigure(0, weight=1)
-
-        # Create tabs
-        self.create_tabs()
-
-        # Main content area with scrollable frame
-        self.scrollable_frame = ctk.CTkScrollableFrame(self)
-        self.scrollable_frame.grid(
             row=1,
             column=0,
             padx=self.ui_config["spacing"]["padding_x"],
             pady=(0, self.ui_config["spacing"]["padding_x"]),
             sticky="nsew",
         )
-        self.scrollable_frame.grid_columnconfigure(0, weight=1)
 
-        # Create content for default tab
-        self.create_configuration_content()
+        self.create_tabs()
+
+        # Create initial tab content lazily
+        self.on_tab_changed()
+
+        self.tab_content_created = set()
 
     def create_tabs(self):
         """Create the tab view tabs."""
@@ -136,10 +125,6 @@ class MainArea(ctk.CTkFrame):
     def create_configuration_content(self):
         """Create the configuration tab content."""
         self.logger.debug("Creating configuration content")
-
-        # Clear existing content
-        for widget in self.scrollable_frame.winfo_children():
-            widget.destroy()
 
         # APGI Parameters Section
         params_frame = ctk.CTkFrame(self.scrollable_frame)
@@ -310,7 +295,7 @@ class MainArea(ctk.CTkFrame):
         self.logger.debug("Configuration content created successfully")
 
     def on_tab_changed(self, selected_tab: Optional[str] = None):
-        """Handle tab change events.
+        """Handle tab change events with lazy loading.
 
         Args:
             selected_tab: The selected tab name (from button command)
@@ -322,19 +307,22 @@ class MainArea(ctk.CTkFrame):
             else:
                 current_tab = selected_tab
 
-            # Clear existing content
-            for widget in self.scrollable_frame.winfo_children():
-                widget.destroy()
+            if current_tab not in self.tab_content_created:
+                # Clear existing content
+                for widget in self.scrollable_frame.winfo_children():
+                    widget.destroy()
 
-            # Create content based on selected tab
-            if current_tab == "Analysis":
-                self.create_analysis_content()
-            elif current_tab == "Visualization":
-                self.create_visualization_content()
-            elif current_tab == "Results":
-                self.create_results_content()
-            else:  # Configuration tab or default
-                self.create_configuration_content()
+                # Create content based on selected tab
+                if current_tab == "Analysis":
+                    self.create_analysis_content()
+                elif current_tab == "Visualization":
+                    self.create_visualization_content()
+                elif current_tab == "Results":
+                    self.create_results_content()
+                else:  # Configuration tab or default
+                    self.create_configuration_content()
+
+                self.tab_content_created.add(current_tab)
 
             # Update status
             self.app.update_status(f"Switched to {current_tab} tab")
@@ -367,10 +355,6 @@ class MainArea(ctk.CTkFrame):
 
     def create_analysis_content(self):
         """Create the analysis tab content."""
-        # Clear existing content
-        for widget in self.scrollable_frame.winfo_children():
-            widget.destroy()
-
         # Data Import Section
         import_frame = ctk.CTkFrame(self.scrollable_frame)
         import_frame.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
