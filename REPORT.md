@@ -20,7 +20,7 @@ The APGI Framework is a Python-based scientific research platform for consciousn
 
 | KPI | Score (0–100) | Rationale |
 |-----|:---:|-----------|
-| **1. Functional Completeness** | **52** | Key user-facing features (Find/Find Next/Previous, Debug Mode, PDF/LATEX export, API service startup, consciousness evaluation with real data, coverage visualization) are stubs or raise `NotImplementedError`. Core simulation functions use hardcoded output values. |
+| **1. Functional Completeness** | **48** | Key user-facing features (Find/Find Next/Previous, Debug Mode, PDF/LATEX export, API service startup, consciousness evaluation with real data, coverage visualization) are stubs or raise `NotImplementedError`. Core simulation functions use hardcoded output values. Multiple public APIs (`QuestPlusParameters`, `StorageManager`, `IntegratedDataManager`, `APGIEquation`, stimulus generators) are missing documented methods or reject expected constructor arguments. |
 | **2. UI/UX Consistency** | **61** | Theme toggling, undo/redo, zoom, keyboard shortcuts, and help dialogs are implemented in `apgi_gui/app.py`. Menu structure is coherent. However, missing features (Find, Debug) are exposed in menus without guards, and some components that load conditionally can silently fail. |
 | **3. Responsiveness & Performance** | **68** | Long-running operations are generally offloaded to background threads. Some threshold-detection tests time out (>30 s), indicating potential infinite loops or unbounded computations in psychometric fitting. The `performance_monitor.py` module imports `tkinter` at the module top level, blocking headless usage. |
 | **4. Error Handling & Resilience** | **55** | The CLI's `self.logger` is initialized to `None` and used before `setup_logging()` is called, causing `AttributeError` crashes. The PDF generator module raises `NameError` on import when `reportlab` is missing. Config manager's `save_preset` does not create nested parent directories. Corrupted JSON in presets is not caught as `ConfigurationError`. Several modules catch broad `Exception` silently. |
@@ -81,6 +81,16 @@ The APGI Framework is a Python-based scientific research platform for consciousn
 | **BUG-024** | `apgi_framework/config/config_manager.py:212` | `presets_dir = Path("config/presets")` is a relative path — resolves differently depending on the working directory at import time | Run tests from a temp directory; create `ConfigManager` | Presets stored relative to project root | Presets stored in unexpected locations when CWD differs from project root |
 | **BUG-025** | `apgi_framework/data/storage_manager.py` — `test_concurrent_access` | Concurrent `store_dataset` calls on minimal/empty data dicts all fail validation — zero successful writes when ≥4 are expected | Run `pytest tests/test_data_management.py::TestStorageManager::test_concurrent_access` | ≥4 concurrent writes succeed | `assert 0 >= 4` — all concurrent writes rejected by validator |
 | **BUG-026** | Test suite — multiple files | **Test isolation failure:** ~15+ tests pass individually but fail during the full suite run due to shared global state pollution between modules (affected files: `test_deployment_properties`, `test_error_handling_properties`, `test_falsification_coverage`, `test_config_manager` logging variants, `test_utils_basic::TestPerformanceProfiler`) | `pytest tests/` (full run) vs `pytest tests/test_deployment_properties.py` (isolated) | Tests pass in both contexts | Tests fail only in the full suite run |
+| **BUG-027** | `apgi_framework/core/equation.py` | `APGIEquation` missing expected public methods `set_parameters()` and `calculate()` | `eq = APGIEquation(); eq.set_parameters({})` | Method executes | `AttributeError: 'APGIEquation' object has no attribute 'set_parameters'` |
+| **BUG-028** | `apgi_framework/adaptive/quest_plus_staircase.py` | `QuestPlusParameters` rejects `step_size_min` kwarg; `QuestPlusStaircase` missing `current_level` and `step_up` attributes; `StaircaseState` has no `UP` member — widespread API mismatch between tests and implementation | `QuestPlusParameters(step_size_min=0.1)` | Parameter accepted | `TypeError: unexpected keyword argument 'step_size_min'` |
+| **BUG-029** | `apgi_framework/research/stimulus_generators.py` | `ToneParameters`, `GaborParameters`, `CO2PuffParameters` reject their expected primary kwargs (`frequency`, `size`, `concentration`) — constructor API does not match documented/tested interface | `ToneParameters(frequency=440)` | Parameter accepted | `TypeError: unexpected keyword argument 'frequency'` |
+| **BUG-030** | `apgi_framework/data/data_manager.py` + `storage_manager.py` | `IntegratedDataManager` rejects `storage_path` constructor arg and is missing `query_experiments()` method; `StorageManager` is missing `retrieve_dataset()` method; `query_datasets()` returns `dict` but callers expect an object with `.experiment_ids` | `IntegratedDataManager(storage_path="/tmp/x")` | Manager created | `TypeError: unexpected keyword argument 'storage_path'`; `AttributeError: no attribute 'query_experiments'`; `AttributeError: no attribute 'retrieve_dataset'` |
+| **BUG-031** | Multiple modules — systemic relative-path issue | At least 4 modules resolve output directories relative to CWD at runtime: `config/presets` (ConfigManager), `logs/telemetry` (ErrorTelemetry), `apgi_output/performance_profiles` (PerformanceProfiler), `config` (error_handler). All fail with `FileNotFoundError` when CWD differs from the project root | Instantiate any of these classes from a temp directory or test runner | Directory created relative to project root | `FileNotFoundError: [Errno 2] No such file or directory: 'config'` (etc.) |
+| **BUG-032** | `apgi_framework/system_validator.py` | Validation test names returned as "Title Case" (e.g., `"Threshold Management"`) but tests compare against `"snake_case"` (e.g., `"threshold_management"`) — naming convention mismatch | `assert validator.get_test_name() == "threshold_management"` | Strings match | `AssertionError: 'Threshold Management' == 'threshold_management'` |
+| **BUG-033** | `apgi_framework/system_validator.py` | `ValidationSuite.total_execution_time` computed via float addition returns `0.30000000000000004` where tests assert `== 0.3` — exact float equality used instead of `pytest.approx` | `assert suite.total_execution_time == 0.3` | Assertion passes | `AssertionError: assert 0.30000000000000004 == 0.3` |
+| **BUG-034** | `apgi_framework/workflow_orchestrator.py` | Summary report contains `"APGI Framework Testing - Workflow Summary"` header but test asserts presence of `"WORKFLOW SUMMARY"` | `assert 'WORKFLOW SUMMARY' in orchestrator.save_summary_report()` | Assertion passes | `AssertionError: 'WORKFLOW SUMMARY' not found in output` |
+| **BUG-035** | `apgi_framework/research/threshold_detection_paradigm.py` | `PsychometricFunction` is missing the `_extract_threshold_at_performance()` method expected by callers | `fn._extract_threshold_at_performance(0.75)` | Value returned | `AttributeError: 'PsychometricFunction' object has no attribute '_extract_threshold_at_performance'` |
+| **BUG-036** | `apgi_framework/testing/framework.py` — `FrameworkTestCase` | Constructor requires a `module` positional argument not documented; callers that omit it get a `TypeError` | `FrameworkTestCase()` | Instance created with defaults | `TypeError: __init__() missing 1 required positional argument: 'module'` |
 
 ---
 
@@ -138,8 +148,12 @@ Tests were executed against all modules that can be imported without a display s
 | `integration/test_integration_properties.py` | 19 | 2 | 2 | `FileExistsError` in property tests; error-handling workflow |
 | `integration/test_end_to_end_workflow.py` | 0 | 1 | 0 | 9 ERRORS | CI integrator `HEAD~1`; component interaction |
 | `test_performance_properties.py` | — | — | — | **Entirely excluded** — `tkinter` unavailable (BUG-003) |
+| `tests/framework/test_equation.py` | 0 | 2 | 0 | `APGIEquation` missing `set_parameters()` and `calculate()` (BUG-027) |
+| `test_adaptive_comprehensive.py` (full) | 5 | 21 | 0 | API mismatch: `QuestPlusParameters`, `StaircaseState`, `QuestPlusStaircase`, stimulus generators, `SessionConfiguration` (BUG-028, BUG-029) |
+| `test_activity_logging_properties.py` | varies | 3 | 0 | Execution ID not logged; test name not in output; concurrent logging drops entries |
+| `test_data_management.py` (full) | 3 | 15 | 0 | `IntegratedDataManager` / `StorageManager` API mismatch (BUG-030) |
 
-**Full suite result (confirmed):** 540 passed, 110 failed, 121 skipped, 9 errors — 780 total items in 780 s.
+**Full suite result (confirmed, 3 independent runs):** ~106–110 failed, 540–544 passed, 121 skipped, 9 errors — variance between runs confirms test isolation issues (BUG-026).
 
 **Note on test isolation:** Several failures (`test_deployment_properties`, `test_error_handling_properties`, `test_falsification_coverage`, `test_config_manager` logging variants, `test_utils_basic::TestPerformanceProfiler`) pass when run in isolation but fail during the full suite run. This indicates **shared global state / test-order dependency** across modules — an additional quality issue not captured per-file above.
 
@@ -310,22 +324,51 @@ or handle unrecognised subcommands explicitly and call `sys.exit(1)`.
 
 ### Priority 4 — Low (Quality improvements)
 
-**REC-019: Fix test isolation / shared global state**
+**REC-019: Fix systemic relative-path issues across modules**
+Audit every module that constructs file paths at runtime. Replace all occurrences of `Path("config/presets")`, `Path("logs/telemetry")`, `Path("apgi_output/...")`, etc. with paths anchored to a known absolute reference:
+```python
+BASE_DIR = Path(__file__).parent.parent  # project root
+self.presets_dir = BASE_DIR / "config" / "presets"
+```
+Apply the same pattern to `error_handler.py`, `error_telemetry.py`, and `performance_monitor.py`.
+
+**REC-020: Fix test isolation / shared global state**
 Use `pytest-xdist` isolation or `autouse` fixtures that reset global singletons (`APGILogManager`, `ErrorTelemetry`, `ConfigManager`) between tests. Alternatively, run `pytest --forked` (via `pytest-forked`) to guarantee process isolation. Use `monkeypatch` or `importlib.reload()` in affected test modules rather than relying on module-level singletons persisting across tests.
 
-**REC-020: Implement `coverage_visualization.py` Qt widget**
+**REC-025: Implement missing `APGIEquation` public API**
+Add `set_parameters(params: dict)` and `calculate()` (or `compute()`) methods to `APGIEquation`. These are referenced directly in `tests/framework/test_equation.py` and appear to be core documented methods.
+
+**REC-026: Reconcile `QuestPlus*` / stimulus generator / session API**
+Align `QuestPlusParameters`, `QuestPlusStaircase`, `StaircaseState`, `ToneParameters`, `GaborParameters`, `CO2PuffParameters`, and `SessionConfiguration` constructors with the kwargs expected by the test suite. Either add the missing parameters to the dataclasses or update tests to match the actual implemented signatures — but do not leave them silently mismatched.
+
+**REC-027: Fix `IntegratedDataManager` / `StorageManager` API**
+Add `storage_path` constructor parameter to `IntegratedDataManager`. Implement missing `query_experiments()` and `StorageManager.retrieve_dataset()` methods. Fix `query_datasets()` to return an object with `.experiment_ids` rather than a raw `dict`.
+
+**REC-028: Normalise `SystemValidator` test name casing**
+Change validator test names from "Title Case" to `snake_case` (or update tests to match), and replace `== 0.3` float comparisons with `pytest.approx(0.3)`.
+
+**REC-029: Fix `WorkflowOrchestrator` summary header**
+Change the summary template to include `"WORKFLOW SUMMARY"` as a section header, or update the test assertion to match `"APGI Framework Testing - Workflow Summary"`.
+
+**REC-030: Add `_extract_threshold_at_performance()` to `PsychometricFunction`**
+Implement this private helper method which is called by threshold-extraction code and expected by tests.
+
+**REC-031: Fix `FrameworkTestCase` constructor**
+Make the `module` argument optional with a sensible default, or document it clearly as required and update all callers.
+
+**REC-021: Implement `coverage_visualization.py` Qt widget**
 Either complete the PySide6 widget implementation or remove it and implement an equivalent tkinter widget since the rest of the UI uses tkinter/customtkinter.
 
-**REC-021: Fix `global _global_monitor` in `realtime_monitor.py`**
+**REC-022: Fix `global _global_monitor` in `realtime_monitor.py`**
 Remove or populate the unused `global` declaration (flake8 F824).
 
-**REC-022: Add `@abstractmethod` decorator to `enhanced_error_handling.py` stubs**
+**REC-023: Add `@abstractmethod` decorator to `enhanced_error_handling.py` stubs**
 The two methods raising `NotImplementedError` should be decorated with `@abstractmethod` and the class should inherit from `ABC` to enforce implementation at subclass instantiation time.
 
-**REC-023: Enforce `APGIAgent` parameter validation**
+**REC-024: Enforce `APGIAgent` parameter validation**
 The test `test_agent_parameter_validation` expects `ValueError` for out-of-range parameters. Implement boundary checks in the agent's `__init__` or `set_parameters()` method.
 
-**REC-024: Add `system_tk_available` guard to all top-level tkinter GUI modules**
+**REC-032: Add `system_tk_available` guard to all top-level tkinter GUI modules**
 Wrap all `import tkinter` statements in optional/guarded imports across `apgi_framework/gui/` so that headless imports (for unit testing or CLI-only usage) gracefully degrade.
 
 ---
