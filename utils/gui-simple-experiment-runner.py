@@ -35,10 +35,10 @@ except ImportError:
     TOOLTIPS_AVAILABLE = False
 
     def add_tooltip(widget: Any, param_name: str) -> None:
-        pass
+        logger.debug("Tooltips not available, using fallback")
 
     def add_parameter_tooltips(parameter_widgets: Dict[str, Any]) -> None:
-        pass
+        logger.debug("Parameter tooltips not available, using fallback")
 
 
 # Import keyboard manager
@@ -55,15 +55,15 @@ except ImportError:
 
     class _KeyboardManager:
         def __init__(self, root):
-            pass
+            logger.debug("Keyboard shortcuts not available, using fallback")
 
         def bind_shortcut(self, *args, **kwargs):
-            pass
+            logger.debug("Keyboard shortcuts not available, using fallback")
 
     def setup_standard_shortcuts(
         app_instance: Any, keyboard_manager: KeyboardManager
     ) -> None:
-        pass
+        logger.debug("Keyboard shortcuts not available, using fallback")
 
 
 # Import undo/redo manager
@@ -81,13 +81,13 @@ except ImportError:
 
     class _UndoRedoManager:
         def __init__(self, *args, **kwargs):
-            pass
+            logger.debug("Undo/redo not available, using fallback")
 
         def undo(self):
-            pass
+            logger.debug("Undo/redo not available, using fallback")
 
         def redo(self):
-            pass
+            logger.debug("Undo/redo not available, using fallback")
 
         def can_undo(self):
             return False
@@ -97,13 +97,13 @@ except ImportError:
 
     class _WidgetTracker:
         def __init__(self, *args, **kwargs):
-            pass
+            logger.debug("Undo/redo not available, using fallback")
 
         def track_widget(self, *args, **kwargs):
-            pass
+            logger.debug("Undo/redo not available, using fallback")
 
     def create_undo_redo_menu(menu_bar: Menu, undo_manager: UndoRedoManager) -> None:
-        pass
+        logger.debug("Undo/redo not available, using fallback")
 
 
 # Import theme manager
@@ -117,13 +117,13 @@ except ImportError:
 
     class _ThemeManager:
         def __init__(self, *args, **kwargs):
-            pass
+            logger.debug("Theme manager not available, using fallback")
 
         def set_theme(self, *args, **kwargs):
-            pass
+            logger.debug("Theme manager not available, using fallback")
 
         def toggle_dark_mode(self):
-            pass
+            logger.debug("Theme manager not available, using fallback")
 
     def get_system_theme_preference() -> str:
         return "light"
@@ -146,7 +146,7 @@ except ImportError:
         return None
 
     def create_excel_export_dialog(parent: Any, export_callback: Any) -> None:
-        pass
+        logger.debug("Excel export not available, using fallback")
 
 
 # Set matplotlib backend before importing to avoid threading issues
@@ -593,8 +593,10 @@ except Exception as e:
                     # Clean up temporary script
                     try:
                         os.unlink(script_path)
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        logger.debug(
+                            f"Could not clean up temporary script {script_path}: {e}"
+                        )
 
             else:
                 # Simulation mode

@@ -25,7 +25,7 @@ try:
     HAS_SEABORN = True
 except ImportError:
     HAS_SEABORN = False
-    sns = None
+    sns = None  # type: ignore
 
 from ..exceptions import AnalysisError, ValidationError
 
@@ -76,7 +76,8 @@ class AnalysisEngine:
 
         # Initialize plotting style
         plt.style.use("seaborn-v0_8")
-        sns.set_palette("husl")
+        if HAS_SEABORN and sns is not None:
+            sns.set_palette("husl")
 
         # Analysis registry
         self.analysis_functions = {
@@ -225,7 +226,7 @@ class AnalysisEngine:
             }
 
             # Confidence intervals
-            ci = self._calculate_confidence_interval(col_data)
+            ci = self._calculate_confidence_interval(np.asarray(col_data.values))
             conf_intervals[col] = ci
 
             # Normality test
@@ -310,7 +311,7 @@ class AnalysisEngine:
                         len(g) * (g.mean() - np.concatenate(group_data).mean()) ** 2
                         for g in group_data
                     ) / sum(len(g) for g in group_data)
-                    eta_squared = between_var / total_var
+                    eta_squared = between_var / total_var if total_var != 0 else 0.0
                     group_effect_sizes[f"{test_name}_eta_squared"] = eta_squared
 
                 group_stats[test_name] = {
@@ -324,35 +325,23 @@ class AnalysisEngine:
 
             return group_col, group_stats, group_p_values, group_effect_sizes
 
-        # Use parallel processing for multiple grouping variables
-        max_workers = min(len(group_cols), 4)  # Limit concurrent workers
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            # Submit analysis tasks for each grouping variable
-            future_to_group = {
-                executor.submit(analyze_grouping_variable, group_col): group_col
-                for group_col in group_cols
-            }
+        # Process each grouping variable sequentially to avoid GIL issues with DataFrames
+        for group_col in group_cols:
+            try:
+                (
+                    group_col,
+                    group_stats,
+                    group_p_values,
+                    group_effect_sizes,
+                ) = analyze_grouping_variable(group_col)
 
-            # Collect results
-            for future in concurrent.futures.as_completed(future_to_group):
-                try:
-                    (
-                        group_col,
-                        group_stats,
-                        group_p_values,
-                        group_effect_sizes,
-                    ) = future.result()
+                # Merge results
+                stats.update(group_stats)
+                p_values.update(group_p_values)
+                effect_sizes.update(group_effect_sizes)
 
-                    # Merge results
-                    stats.update(group_stats)
-                    p_values.update(group_p_values)
-                    effect_sizes.update(group_effect_sizes)
-
-                except Exception as exc:
-                    group_col = future_to_group[future]
-                    logger.warning(
-                        f"Comparative analysis for {group_col} failed: {exc}"
-                    )
+            except Exception as exc:
+                logger.warning(f"Comparative analysis for {group_col} failed: {exc}")
 
         logger.info(
             f"Completed parallel comparative analysis for {len(group_cols)} grouping variables"
@@ -368,10 +357,10 @@ class AnalysisEngine:
         numeric_data = data.select_dtypes(include=[np.number]).dropna()
         numeric_cols = numeric_data.columns
 
-        stats = {}
-        p_values = {}
-        effect_sizes = {}
-        conf_intervals = {}
+        stats: Dict[str, Any] = {}
+        p_values: Dict[str, Any] = {}
+        effect_sizes: Dict[str, Any] = {}
+        conf_intervals: Dict[str, Any] = {}
 
         # Generate pairs for parallel processing
         column_pairs = [
@@ -456,8 +445,8 @@ class AnalysisEngine:
         # Simple linear regression for each pair
         for i, col1 in enumerate(numeric_cols):
             for j, col2 in enumerate(numeric_cols[i + 1 :], i + 1):
-                X = numeric_data[col1].values.reshape(-1, 1)
-                y = numeric_data[col2].values
+                X = np.asarray(numeric_data[col1].values).reshape(-1, 1)
+                y = np.asarray(numeric_data[col2].values)
 
                 model = LinearRegression()
                 model.fit(X, y)
@@ -523,9 +512,9 @@ class AnalysisEngine:
         numeric_data = data.select_dtypes(include=[np.number]).dropna()
 
         stats = {}
-        p_values = {}
-        effect_sizes = {}
-        conf_intervals = {}
+        p_values: Dict[str, float] = {}
+        effect_sizes: Dict[str, float] = {}
+        conf_intervals: Dict[str, Tuple[float, float]] = {}
 
         for col in numeric_data.columns:
             series = numeric_data[col]
@@ -765,7 +754,7 @@ class AnalysisEngine:
         import json
 
         with open(summary_path, "r") as f:
-            return json.load(f)
+            return json.load(f)  # type: ignore
 
     def list_analyses(self) -> List[str]:
         """List all available analysis IDs."""

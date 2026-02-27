@@ -8,6 +8,7 @@ type checking, and sandboxing to prevent code execution vulnerabilities.
 import hashlib
 import logging
 import pickle
+import pickletools
 from dataclasses import is_dataclass
 from datetime import datetime
 from pathlib import Path
@@ -150,9 +151,12 @@ class SecurePickleValidator:
         if len(data) < 2:
             return False
 
-        # Check for valid pickle protocol markers
-        valid_protocols = {b"\x80", b"}", b")", b".", b"0", b"1", b"2"}
-        return data[:1] in valid_protocols
+        try:
+            # Use pickletools to parse the pickle data
+            list(pickletools.genops(data))
+            return True
+        except Exception:
+            return False
 
     def _contains_dangerous_opcodes(self, data: bytes) -> bool:
         """
@@ -403,6 +407,14 @@ def validate_pickle_security(file_path: Union[str, Path]) -> ValidationResult:
 
         # Get file info
         result["file_size"] = file_path.stat().st_size
+
+        # Check file size limit to prevent DoS
+        max_size = 100 * 1024 * 1024  # 100MB limit
+        if result["file_size"] > max_size:
+            result["errors"].append(
+                f"File too large for validation (max {max_size} bytes)"
+            )
+            return result
 
         # Read and validate
         with open(file_path, "rb") as f:

@@ -7,6 +7,9 @@ statistical analysis, and experimental validation.
 """
 
 
+from typing import Optional
+
+
 class APGIFrameworkError(Exception):
     """Base exception for all APGI Framework errors."""
 
@@ -30,7 +33,7 @@ class MathematicalError(APGIFrameworkError):
     def __init__(
         self,
         message: str = "Mathematical calculation error",
-        operation: str = None,
+        operation: Optional[str] = None,
         **context,
     ):
         """
@@ -52,7 +55,7 @@ class SimulationError(APGIFrameworkError):
     def __init__(
         self,
         message: str = "Neural simulation error",
-        simulation_type: str = None,
+        simulation_type: Optional[str] = None,
         **context,
     ):
         """
@@ -74,7 +77,7 @@ class StatisticalError(APGIFrameworkError):
     def __init__(
         self,
         message: str = "Statistical analysis error",
-        test_type: str = None,
+        test_type: Optional[str] = None,
         **context,
     ):
         """
@@ -94,7 +97,10 @@ class ValidationError(APGIFrameworkError):
     """Errors in experimental validation and control mechanisms."""
 
     def __init__(
-        self, message: str = "Validation error", parameter: str = None, **context
+        self,
+        message: str = "Validation error",
+        parameter: Optional[str] = None,
+        **context,
     ):
         """
         Initialize the validation error.
@@ -113,7 +119,10 @@ class ConfigurationError(APGIFrameworkError):
     """Errors in configuration management and parameter validation."""
 
     def __init__(
-        self, message: str = "Configuration error", config_file: str = None, **context
+        self,
+        message: str = "Configuration error",
+        config_file: Optional[str] = None,
+        **context,
     ):
         """
         Initialize the configuration error.
@@ -132,7 +141,10 @@ class DataError(APGIFrameworkError):
     """Errors in data management, storage, and retrieval."""
 
     def __init__(
-        self, message: str = "Data management error", data_source: str = None, **context
+        self,
+        message: str = "Data management error",
+        data_source: Optional[str] = None,
+        **context,
     ):
         """
         Initialize the data error.
@@ -153,7 +165,7 @@ class DataManagementError(APGIFrameworkError):
     def __init__(
         self,
         message: str = "Data management operation error",
-        operation: str = None,
+        operation: Optional[str] = None,
         **context,
     ):
         """
@@ -173,7 +185,10 @@ class VisualizationError(APGIFrameworkError):
     """Errors in visualization and plotting operations."""
 
     def __init__(
-        self, message: str = "Visualization error", plot_type: str = None, **context
+        self,
+        message: str = "Visualization error",
+        plot_type: Optional[str] = None,
+        **context,
     ):
         """
         Initialize the visualization error.
@@ -192,7 +207,10 @@ class DashboardError(APGIFrameworkError):
     """Errors in dashboard and monitoring operations."""
 
     def __init__(
-        self, message: str = "Dashboard error", component: str = None, **context
+        self,
+        message: str = "Dashboard error",
+        component: Optional[str] = None,
+        **context,
     ):
         """
         Initialize the dashboard error.
@@ -211,7 +229,10 @@ class PersistenceError(APGIFrameworkError):
     """Errors in data persistence and storage operations."""
 
     def __init__(
-        self, message: str = "Persistence error", storage_type: str = None, **context
+        self,
+        message: str = "Persistence error",
+        storage_type: Optional[str] = None,
+        **context,
     ):
         """
         Initialize the persistence error.
@@ -232,7 +253,7 @@ class ReportGenerationError(APGIFrameworkError):
     def __init__(
         self,
         message: str = "Report generation error",
-        report_type: str = None,
+        report_type: Optional[str] = None,
         **context,
     ):
         """
@@ -252,7 +273,10 @@ class DataExportError(APGIFrameworkError):
     """Errors in data export operations."""
 
     def __init__(
-        self, message: str = "Data export error", export_format: str = None, **context
+        self,
+        message: str = "Data export error",
+        export_format: Optional[str] = None,
+        **context,
     ):
         """
         Initialize the data export error.
@@ -271,7 +295,10 @@ class AnalysisError(APGIFrameworkError):
     """Errors in data analysis operations."""
 
     def __init__(
-        self, message: str = "Data analysis error", analysis_type: str = None, **context
+        self,
+        message: str = "Data analysis error",
+        analysis_type: Optional[str] = None,
+        **context,
     ):
         """
         Initialize the analysis error.
@@ -292,7 +319,7 @@ class ProcessingError(APGIFrameworkError):
     def __init__(
         self,
         message: str = "Results processing error",
-        processing_step: str = None,
+        processing_step: Optional[str] = None,
         **context,
     ):
         """

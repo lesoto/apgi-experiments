@@ -10,8 +10,16 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      # Mount source code for development
-      - .:/app
+      # Mount only necessary source directories for development
+      - ./apgi_framework:/app/apgi_framework:cached
+      - ./apgi_gui:/app/apgi_gui:cached
+      - ./utils:/app/utils:cached
+      - ./examples:/app/examples:cached
+      - ./research:/app/research:cached
+      - ./config:/app/config:cached
+      - ./core:/app/core:cached
+      - ./docs:/app/docs:cached
+      - ./tests:/app/tests:cached
       # Mount data directories
       - ./data:/app/data
       - ./results:/app/results
@@ -55,7 +63,7 @@ services:
     environment:
       - POSTGRES_DB=apgi_framework
       - POSTGRES_USER=apgi_user
-      - POSTGRES_PASSWORD=apgi_password
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?err}
     networks:
       - apgi-network
     restart: unless-stopped
@@ -69,13 +77,20 @@ services:
     ports:
       - "8888:8888"
     volumes:
-      - .:/app
+      # Mount only necessary directories for jupyter development
+      - ./apgi_framework:/app/apgi_framework:cached
+      - ./apgi_gui:/app/apgi_gui:cached
+      - ./utils:/app/utils:cached
+      - ./examples:/app/examples:cached
+      - ./research:/app/research:cached
+      - ./config:/app/config:cached
+      - ./core:/app/core:cached
       - ./notebooks:/app/notebooks
       - ./data:/app/data
       - ./results:/app/results
     environment:
       - JUPYTER_ENABLE_LAB=yes
-      - JUPYTER_TOKEN=apgi-dev-token
+      - JUPYTER_TOKEN=${JUPYTER_TOKEN}
     networks:
       - apgi-network
     restart: unless-stopped
@@ -125,7 +140,7 @@ services:
       - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
       - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_ADMIN_PASSWORD:?err}
     networks:
       - apgi-network
     restart: unless-stopped

@@ -24,6 +24,7 @@ import psutil
 
 from ..logging.standardized_logging import get_logger
 from ..optimization.performance_monitor import PerformanceAlert
+from ..security.secure_pickle import safe_pickle_load
 from .batch_runner import BatchExecutionSummary, BatchTestRunner, TestResult
 
 logger = get_logger(__name__)
@@ -427,7 +428,7 @@ class MemoryEfficientTestRunner(BatchTestRunner):
 
         try:
             with open(checkpoint_path, "rb") as f:
-                checkpoint = pickle.load(f)
+                checkpoint = safe_pickle_load(f)
 
             logger.info(f"Resuming execution from checkpoint: {checkpoint_file}")
             logger.info(f"Completed tests: {len(checkpoint.completed_tests)}")

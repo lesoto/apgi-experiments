@@ -5,6 +5,7 @@ Provides comprehensive error handling, recovery strategies, and user-friendly
 error reporting with detailed diagnostics and suggested solutions.
 """
 
+import abc
 import datetime
 import json
 import logging
@@ -108,10 +109,12 @@ class ErrorRecoveryStrategy:
         self.name = name
         self.description = description
 
+    @abc.abstractmethod
     def can_handle(self, error: APGIError) -> bool:
         """Check if this strategy can handle the error."""
         raise NotImplementedError
 
+    @abc.abstractmethod
     def recover(self, error: APGIError, **kwargs) -> bool:
         """Attempt to recover from the error."""
         raise NotImplementedError
@@ -136,16 +139,48 @@ class DataValidationRecovery(ErrorRecoveryStrategy):
             if data is None:
                 return False
 
-            # Attempt basic data cleaning
+            # Attempt basic data cleaning based on data type
             if hasattr(data, "dropna"):
-                # Pandas DataFrame
+                # Pandas DataFrame/Series
                 cleaned_data = data.dropna()
                 if len(cleaned_data) > 0:
                     kwargs["cleaned_data"] = cleaned_data
                     return True
+            elif hasattr(data, "__iter__") and not isinstance(data, (str, bytes)):
+                # Lists, arrays, etc.
+                try:
+                    import numpy as np
 
+                    if isinstance(data, np.ndarray):
+                        # Remove NaN values from numpy array
+                        cleaned_data = data[~np.isnan(data)]
+                        if len(cleaned_data) > 0:
+                            kwargs["cleaned_data"] = cleaned_data
+                            return True
+                    else:
+                        # Filter out None values from list
+                        cleaned_data = [x for x in data if x is not None]
+                        if cleaned_data:
+                            kwargs["cleaned_data"] = cleaned_data
+                            return True
+                except ImportError:
+                    # Fallback for list filtering
+                    cleaned_data = [x for x in data if x is not None]
+                    if cleaned_data:
+                        kwargs["cleaned_data"] = cleaned_data
+                        return True
+            elif isinstance(data, dict):
+                # Clean dictionary values
+                cleaned_data = {k: v for k, v in data.items() if v is not None}
+                if cleaned_data:
+                    kwargs["cleaned_data"] = cleaned_data
+                    return True
+
+            # If we reach here, data couldn't be cleaned
             return False
-        except Exception:
+        except Exception as e:
+            # Log the recovery attempt failure
+            logging.warning(f"Data validation recovery failed: {e}")
             return False
 
 

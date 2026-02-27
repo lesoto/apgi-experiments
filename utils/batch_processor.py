@@ -25,6 +25,12 @@ from tqdm import tqdm  # type: ignore
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+try:
+    from apgi_framework.security.secure_pickle import safe_pickle_dump
+except ImportError:
+    # Fallback to regular pickle if secure_pickle not available
+    safe_pickle_dump = pickle.dump
+
 # Load modules with hyphens using importlib with fallback
 try:
     formal_model_spec = importlib.util.spec_from_file_location(
@@ -347,7 +353,7 @@ class BatchProcessor:
                 json.dump(job.result, f, indent=2, default=str)
         elif job.output_file and job.output_file.endswith(".pkl"):
             with open(output_path, "wb") as f:
-                pickle.dump(job.result, f)
+                safe_pickle_dump(job.result, f)
         elif job.output_file and job.output_file.endswith(".csv"):
             if isinstance(job.result, dict) and "results" in job.result:
                 # Save simulation results as CSV

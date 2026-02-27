@@ -15,7 +15,7 @@ def test_imports():
 
         import matplotlib  # noqa: F401
         import numpy  # noqa: F401
-        import scipy  # noqa: F401 # type: ignore
+        import scipy  # noqa: F401
         import yaml  # noqa: F401
 
         print("✓ All core dependencies imported successfully")
@@ -29,8 +29,8 @@ def test_apgi_system():
     """Test APGI system initialization."""
     print("\nTesting APGI System...")
     try:
-        from apgi_system.platform_utils import get_resource_path  # type: ignore
-        from apgi_system.system import APGISystem  # type: ignore
+        from apgi_system.platform_utils import get_resource_path
+        from apgi_system.system import APGISystem
 
         APGISystem(config_path=str(get_resource_path("config/default.yaml")))
         print("✓ APGI System initialized successfully")
@@ -46,8 +46,8 @@ def test_system_step():
     print("\nTesting system step...")
     try:
         import numpy as np
-        from apgi_system.platform_utils import get_resource_path  # type: ignore
-        from apgi_system.system import APGISystem  # type: ignore
+        from apgi_system.platform_utils import get_resource_path
+        from apgi_system.system import APGISystem
 
         system = APGISystem(config_path=str(get_resource_path("config/default.yaml")))
         extero_input = np.random.randn(256)
@@ -144,7 +144,7 @@ def test_experimental_tasks():
     """Test experimental task imports."""
     print("\nTesting experimental tasks...")
     try:
-        from apgi_system.experiments.tasks import (  # noqa: F401 # type: ignore
+        from apgi_system.experiments.tasks import (  # noqa: F401
             AttentionalBlinkTask,
             BinocularRivalryTask,
             ChangeBlindnessTask,

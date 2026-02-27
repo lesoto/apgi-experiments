@@ -70,16 +70,51 @@ htmlcov/
 .tox/
 .nox/
 
-# CI/CD
-.github/
+# Coverage and testing
+coverage_html_report/
+.coverage
+.pytest_cache/
+.tox/
+.nox/
+htmlcov/
 
-# Docker
-Dockerfile*
-docker-compose*
-.dockerignore
+# Tests directory
+tests/
 
-# Development files
-*.dev
-*.local
-.env
-.env.*
+# Benchmarks and profiling
+benchmarks/
+.ci/
+
+# Documentation build
+docs/
+
+# Notebooks (if not needed in container)
+# notebooks/
+
+# Apps (if not needed in container)
+apps/
+
+# Utils (if not needed in container)
+# utils/
+
+# Research (if not needed in container)
+# research/
+
+# Examples (if not needed in container)
+examples/
+
+# K8s configs
+k8s/
+
+# Build artifacts
+*.tar.gz
+*.zip
+
+# Temporary files
+*.tmp
+*.bak
+*.old
+
+# Editor files
+*.sublime-project
+*.sublime-workspace

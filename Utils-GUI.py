@@ -87,7 +87,7 @@ class UtilsRunnerGUI:
         try:
             if config_path.exists():
                 with open(config_path, "r") as f:
-                    return json.load(f)
+                    return json.load(f)  # type: ignore
             else:
                 # Create default config file
                 with open(config_path, "w") as f:
@@ -108,10 +108,10 @@ class UtilsRunnerGUI:
         """
         for category in self.config.get("script_categories", {}).values():
             if script_name in category.get("scripts", []):
-                return category.get(
+                return category.get(  # type: ignore
                     "timeout", self.config["default_settings"]["timeout"]
                 )
-        return self.config["default_settings"]["timeout"]
+        return self.config["default_settings"]["timeout"]  # type: ignore
 
     def prompt_for_arguments(self, script_name: str) -> List[str]:
         """Prompt user for script arguments.
@@ -318,7 +318,7 @@ class UtilsRunnerGUI:
         selection = self.scripts_listbox.curselection()
         if selection:
             index = selection[0]
-            return self.scripts[index]
+            return self.scripts[index]  # type: ignore
         return None
 
     def run_selected_script(self):

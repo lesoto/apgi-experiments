@@ -13,6 +13,7 @@ import sys
 import tempfile
 import threading
 import time
+import json
 import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox, scrolledtext, ttk
@@ -189,6 +190,7 @@ class ExperimentRegistryGUI:
         self.n_trials = tk.IntVar(value=50)
         self.output_file = tk.StringVar(value="")
         self.running = False
+        self.cancelled = False
 
         # Thread management
         self.experiment_threads = []
@@ -205,25 +207,15 @@ class ExperimentRegistryGUI:
             # Add custom shortcuts for this GUI
             self._setup_custom_shortcuts()
         else:
-            self.keyboard_manager = (
-                _KeyboardManager(self.root) if "_KeyboardManager" in locals() else None
-            )
+            self.keyboard_manager = None
 
         # Initialize undo/redo functionality
         if UNDO_REDO_AVAILABLE:
             self.undo_manager = UndoRedoManager(max_history=50)
             self.widget_tracker = WidgetTracker(self.undo_manager)
         else:
-            self.undo_manager = (
-                _UndoRedoManager(max_history=50)
-                if "_UndoRedoManager" in locals()
-                else None
-            )
-            self.widget_tracker = (
-                _WidgetTracker(self.undo_manager)
-                if "_WidgetTracker" in locals() and self.undo_manager
-                else None
-            )
+            self.undo_manager = None
+            self.widget_tracker = None
 
         # Initialize theme manager
         if THEME_AVAILABLE:
@@ -232,9 +224,7 @@ class ExperimentRegistryGUI:
             system_theme = get_system_theme_preference()
             self.theme_manager.set_theme(system_theme)
         else:
-            self.theme_manager = (
-                _ThemeManager(self.root) if "_ThemeManager" in locals() else None
-            )
+            self.theme_manager = None
 
         # Create GUI
         self.create_widgets()
@@ -402,6 +392,14 @@ class ExperimentRegistryGUI:
         )
         self.run_button.pack(side=tk.LEFT, padx=(0, 5))
 
+        self.cancel_button = ttk.Button(
+            button_frame,
+            text="Cancel Experiment",
+            command=self.cancel_experiment,
+            state="disabled",
+        )
+        self.cancel_button.pack(side=tk.LEFT, padx=(0, 5))
+
         self.run_all_button = ttk.Button(
             button_frame, text="Run All Experiments", command=self.run_all_experiments
         )
@@ -428,7 +426,11 @@ class ExperimentRegistryGUI:
         # Progress bar
         self.progress_var = tk.DoubleVar()
         self.progress_bar = ttk.Progressbar(
-            main_frame, variable=self.progress_var, maximum=100, length=400
+            main_frame,
+            variable=self.progress_var,
+            maximum=100,
+            length=400,
+            mode="determinate",
         )
         self.progress_bar.grid(
             row=3, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(10, 0)
@@ -468,7 +470,6 @@ class ExperimentRegistryGUI:
                 lines = content.split("\n")
                 docstring_lines = []
                 in_docstring = False
-                in_docstring = not in_docstring
 
                 for line in lines:
                     if '"""' in line:
@@ -577,7 +578,16 @@ class ExperimentRegistryGUI:
         self.experiment_threads.append(thread)
         thread.start()
 
-    def run_all_experiments(self):
+    def cancel_experiment(self):
+        """Cancel the currently running experiment."""
+        if self.running:
+            self.log_output("Cancelling experiment...")
+            self.cancelled = True
+            self.update_status("Cancelling...")
+        else:
+            messagebox.showinfo(
+                "No Running Experiment", "No experiment is currently running."
+            )
         """Run all experiments."""
         if self.running:
             messagebox.showwarning(
@@ -602,8 +612,16 @@ class ExperimentRegistryGUI:
         """Run a single experiment (called from thread) with subprocess isolation."""
         try:
             self.running = True
+            self.cancelled = False
             self.log_output(f"Starting experiment: {exp_name}")
             self.update_status(f"Running: {exp_name}")
+
+            # Enable cancel button
+            self.root.after(0, lambda: self.cancel_button.config(state="normal"))
+
+            # Set progress bar to indeterminate mode
+            self.progress_bar.config(mode="indeterminate")
+            self.progress_bar.start()
 
             # Prepare parameters with correct names
             params = {
@@ -620,12 +638,12 @@ import sys
 from pathlib import Path
 
 # Add the actual project root to Python path
-project_root = Path("{project_root}")
+project_root = Path({json.dumps(str(project_root))})
 sys.path.insert(0, str(project_root))
 
 try:
     from run_experiments import run_experiment
-    result = run_experiment("{exp_name}", n_participants={params["n_participants"]}, n_trials_per_condition={params["n_trials_per_condition"]})
+    result = run_experiment({json.dumps(exp_name)}, n_participants={params["n_participants"]}, n_trials_per_condition={params["n_trials_per_condition"]})
     print("SUCCESS: Experiment completed")
     print(f"RESULT: {{result}}")
 except Exception as e:
@@ -640,59 +658,81 @@ except Exception as e:
                 script_path = f.name
 
             try:
-                # Run experiment in subprocess to isolate from GUI
+                # Run experiment in subprocess
                 start_time = time.time()
-                result = subprocess.run(
+                process = subprocess.Popen(
                     [sys.executable, script_path],
-                    capture_output=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
                     text=True,
-                    timeout=300,  # 5 minute timeout
                 )
-                end_time = time.time()
 
-                output = result.stdout
-                error = result.stderr
+                # Poll for completion or cancellation
+                timeout = 300  # 5 minutes
+                elapsed = 0
+                poll_interval = 0.1  # Check every 100ms
 
-                if result.returncode == 0 and "SUCCESS:" in output:
-                    # Extract result from output
-                    lines = output.split("\n")
-                    result_line = next(
-                        (line for line in lines if line.startswith("RESULT:")), ""
-                    )
-                    if result_line:
-                        result_value = result_line.replace("RESULT: ", "")
-                    else:
-                        result_value = "Experiment completed successfully"
+                while elapsed < timeout:
+                    if self.cancelled:
+                        process.kill()
+                        process.wait()
+                        self.experiment_status[exp_name] = "Cancelled"
+                        self.log_output(f"✗ {exp_name} - Cancelled by user")
+                        logger.info(f"Experiment {exp_name} cancelled by user")
+                        return
 
-                    # Update status
-                    self.experiment_status[exp_name] = "Success"
-                    self.log_output(
-                        f"✓ {exp_name} completed successfully in {end_time - start_time:.2f} seconds"
-                    )
-                    if result_value != "Experiment completed successfully":
-                        self.log_output(f"Result: {result_value}")
-                else:
+                    if process.poll() is not None:
+                        # Process finished
+                        break
+
+                    time.sleep(poll_interval)
+                    elapsed += poll_interval
+
+                if process.poll() is None:
+                    # Timeout
+                    process.kill()
+                    process.wait()
                     self.experiment_status[exp_name] = "Failed"
-                    error_msg = error or output or "Unknown error occurred"
-                    self.log_output(f"✗ {exp_name} failed: {error_msg}")
-                    messagebox.showerror(
-                        "Experiment Failed",
-                        f"Experiment {exp_name} failed: {error_msg}",
-                    )
+                    error_msg = "Experiment timed out after 300 seconds"
+                    self.log_output(f"✗ {exp_name} - Failed: {error_msg}")
+                    logger.error(f"Experiment {exp_name} timed out in batch run")
+                else:
+                    # Process finished within timeout
+                    output, error = process.communicate()
+                    end_time = time.time()
 
-            except subprocess.TimeoutExpired:
-                self.experiment_status[exp_name] = "Failed"
-                error_msg = "Experiment timed out after 300 seconds"
-                self.log_output(f"✗ {exp_name} failed: {error_msg}")
-                messagebox.showerror(
-                    "Experiment Failed", f"Experiment {exp_name} timed out"
-                )
+                    if process.returncode == 0 and "SUCCESS:" in output:
+                        # Extract result from output
+                        lines = output.split("\n")
+                        result_line = next(
+                            (line for line in lines if line.startswith("RESULT:")), ""
+                        )
+                        if result_line:
+                            result_value = result_line.replace("RESULT: ", "")
+                        else:
+                            result_value = "Experiment completed successfully"
+
+                        self.experiment_status[exp_name] = "Success"
+                        self.log_output(
+                            f"✓ {exp_name} - Success ({end_time - start_time:.2f}s)"
+                        )
+                        if result_value != "Experiment completed successfully":
+                            self.log_output(f"  Result: {result_value}")
+                        logger.info(f"Experiment {exp_name} completed in batch run")
+                    else:
+                        self.experiment_status[exp_name] = "Failed"
+                        error_msg = error or output or "Unknown error occurred"
+                        self.log_output(f"✗ {exp_name} - Failed: {error_msg}")
+                        logger.error(
+                            f"Experiment {exp_name} failed in batch run: {error_msg}"
+                        )
+
             except Exception as e:
                 self.experiment_status[exp_name] = "Failed"
                 error_msg = f"Failed to run experiment subprocess: {e}"
-                self.log_output(f"✗ {exp_name} failed: {error_msg}")
-                messagebox.showerror(
-                    "Experiment Failed", f"Experiment {exp_name} failed: {error_msg}"
+                self.log_output(f"✗ {exp_name} - Failed: {error_msg}")
+                logger.error(
+                    f"Experiment {exp_name} subprocess failed in batch run: {e}"
                 )
             finally:
                 # Clean up temporary script
@@ -713,7 +753,14 @@ except Exception as e:
             messagebox.showerror("Experiment Failed", error_msg)
 
         finally:
+            # Stop progress bar
+            self.progress_bar.stop()
+            self.progress_bar.config(mode="determinate")
+            self.progress_var.set(0)
+            # Disable cancel button
+            self.root.after(0, lambda: self.cancel_button.config(state="disabled"))
             self.running = False
+            self.cancelled = False
             self.update_status("Ready")
 
     def _run_all_experiments(self):
@@ -746,12 +793,12 @@ import sys
 from pathlib import Path
 
 # Add the actual project root to Python path
-project_root = Path("{project_root}")
+project_root = Path({json.dumps(str(project_root))})
 sys.path.insert(0, str(project_root))
 
 try:
     from run_experiments import run_experiment
-    result = run_experiment("{exp_name}", n_participants={params["n_participants"]}, n_trials_per_condition={params["n_trials_per_condition"]})
+    result = run_experiment({json.dumps(exp_name)}, n_participants={params["n_participants"]}, n_trials_per_condition={params["n_trials_per_condition"]})
     print("SUCCESS: Experiment completed")
     print(f"RESULT: {{result}}")
 except Exception as e:
@@ -770,18 +817,16 @@ except Exception as e:
                 try:
                     # Run experiment in subprocess to isolate from GUI
                     start_time = time.time()
-                    result = subprocess.run(
+                    process = subprocess.Popen(
                         [sys.executable, script_path],
-                        capture_output=True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
                         text=True,
-                        timeout=300,  # 5 minute timeout
                     )
+                    output, error = process.communicate(timeout=300)
                     end_time = time.time()
 
-                    output = result.stdout
-                    error = result.stderr
-
-                    if result.returncode == 0 and "SUCCESS:" in output:
+                    if process.returncode == 0 and "SUCCESS:" in output:
                         # Extract result from output
                         lines = output.split("\n")
                         result_line = next(
@@ -808,6 +853,8 @@ except Exception as e:
                         )
 
                 except subprocess.TimeoutExpired:
+                    process.kill()
+                    process.wait()
                     self.experiment_status[exp_name] = "Failed"
                     error_msg = "Experiment timed out after 300 seconds"
                     self.log_output(f"✗ {exp_name} - Failed: {error_msg}")

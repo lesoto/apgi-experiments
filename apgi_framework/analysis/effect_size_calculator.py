@@ -12,7 +12,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import scipy.stats as stats  # type: ignore
-from scipy.stats import f, t  # type: ignore
+from scipy.stats import t, ncf  # type: ignore
 
 
 class EffectSizeType(Enum):
@@ -81,8 +81,6 @@ class EffectSizeCalculator:
             random_state: Random seed for reproducible bootstrap results
         """
         self.random_state = random_state
-        if random_state is not None:
-            np.random.seed(random_state)
 
     def cohens_d(
         self,
@@ -103,6 +101,12 @@ class EffectSizeCalculator:
         Returns:
             EffectSizeResult with Cohen's d and confidence intervals
         """
+        # Validate minimum group sizes
+        if len(group1) < 2 or len(group2) < 2:
+            raise ValueError(
+                "Groups must have at least 2 observations for Cohen's d calculation"
+            )
+
         # Calculate Cohen's d
         n1, n2 = len(group1), len(group2)
         m1, m2 = np.mean(group1), np.mean(group2)
@@ -112,7 +116,7 @@ class EffectSizeCalculator:
         pooled_std = np.sqrt(((n1 - 1) * s1**2 + (n2 - 1) * s2**2) / (n1 + n2 - 2))
 
         # Cohen's d
-        d = (m1 - m2) / pooled_std
+        d = (m1 - m2) / pooled_std if pooled_std != 0 else 0.0
 
         # Calculate confidence interval
         if method == ConfidenceIntervalMethod.PARAMETRIC:
@@ -353,25 +357,32 @@ class EffectSizeCalculator:
         # Calculate original statistic
         original_stat = statistic_func(data)
 
+        # Create local random generator
+        rng = (
+            np.random.default_rng(self.random_state)
+            if self.random_state is not None
+            else np.random.default_rng()
+        )
+
         # Generate bootstrap samples
         bootstrap_stats_list: List[float] = []
 
         bootstrap_data: Union[np.ndarray, Tuple[np.ndarray, ...]]
 
         if isinstance(data, tuple):
-            # Multiple arrays
-            n = len(data[0])  # Assume all arrays have same length
+            # Multiple arrays - resample each independently
             for _ in range(n_bootstrap):
-                # Resample indices
-                indices = np.random.choice(n, size=n, replace=True)
-                bootstrap_data = tuple(arr[indices] for arr in data)
+                # Resample each array independently to avoid preserving paired structure
+                bootstrap_data = tuple(
+                    rng.choice(arr, size=len(arr), replace=True) for arr in data
+                )
                 bootstrap_stat = statistic_func(bootstrap_data)
                 bootstrap_stats_list.append(bootstrap_stat)
         else:
             # Single array
             n = len(data)
             for _ in range(n_bootstrap):
-                indices = np.random.choice(n, size=n, replace=True)
+                indices = rng.choice(n, size=n, replace=True)
                 bootstrap_data = data[indices]
                 bootstrap_stat = statistic_func(bootstrap_data)
                 bootstrap_stats_list.append(bootstrap_stat)
@@ -452,12 +463,14 @@ class EffectSizeCalculator:
         """Calculate confidence interval for eta-squared using non-central F distribution."""
         alpha = 1 - confidence_level
 
-        # Convert F to eta-squared bounds
-        # This is an approximation - exact calculation is complex
-        f_lower = f.ppf(alpha / 2, df_between, df_within)
-        f_upper = f.ppf(1 - alpha / 2, df_between, df_within)
+        # Non-centrality parameter
+        lambda_nc = f_stat * df_between
 
-        # Convert to eta-squared (approximation)
+        # Use non-central F distribution for proper confidence intervals
+        f_lower = ncf.ppf(alpha / 2, df_between, df_within, lambda_nc)
+        f_upper = ncf.ppf(1 - alpha / 2, df_between, df_within, lambda_nc)
+
+        # Convert to eta-squared
         eta_lower = max(
             0, (f_lower * df_between - df_between) / (f_lower * df_between + df_within)
         )

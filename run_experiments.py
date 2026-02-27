@@ -201,10 +201,10 @@ class ComprehensiveExperimentRunner:
             try:
                 if config_path.suffix.lower() == ".json":
                     with open(config_path) as f:
-                        return json.load(f)
+                        return json.load(f)  # type: ignore
                 elif config_path.suffix.lower() in [".yaml", ".yml"]:
                     with open(config_path) as f:
-                        return yaml.safe_load(f)
+                        return yaml.safe_load(f)  # type: ignore
                 else:
                     self.logger.error(
                         f"Unsupported config format: {config_path.suffix}"
@@ -635,7 +635,7 @@ Detailed Results:
                 """Dynamically adjust threshold based on recent surprise."""
                 # Adjust threshold based on whether surprise is increasing or decreasing
                 self.theta += self.adaptation_rate * (surprise - self.theta)
-                return self.theta
+                return self.theta  # type: ignore
 
         # Create models
         static_model = APGIModel(APGIParams(n_steps=1000, theta_base=5.0))
@@ -787,7 +787,7 @@ def _is_safe_data_structure(data) -> bool:
             for k, v in data.items()
         )
     elif isinstance(data, str):
-        return check_string_safety(data)
+        return check_string_safety(data)  # type: ignore
     else:
         return True
 

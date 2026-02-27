@@ -321,30 +321,51 @@ class CICDPipeline:
             # Run safety check for known vulnerabilities
             logger.info("Checking for known security vulnerabilities...")
             result = subprocess.run(
-                ["python", "-m", "safety", "check"],
+                [sys.executable, "-m", "safety", "check"],
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
             )
 
             if result.returncode != 0:
-                logger.warning("Security vulnerabilities found")
-                logger.warning(result.stdout)
-                # Don't fail pipeline for security warnings
+                logger.error("Security vulnerabilities found")
+                logger.error(result.stdout)
+                return False
 
             # Run bandit security linter
             logger.info("Running bandit security linter...")
             result = subprocess.run(
-                ["python", "-m", "bandit", "-r", "apgi_framework/", "-f", "json"],
+                [sys.executable, "-m", "bandit", "-r", "apgi_framework/", "-f", "json"],
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
             )
 
             if result.returncode != 0:
-                logger.warning("Security issues found by bandit")
-                logger.warning(result.stdout)
-                # Don't fail pipeline for medium/low severity issues
+                try:
+                    issues = json.loads(result.stdout)
+                    high_severity = [
+                        issue
+                        for issue in issues.get("results", [])
+                        if issue.get("issue_severity") == "HIGH"
+                    ]
+                    if high_severity:
+                        logger.error(
+                            f"High severity security issues found: {len(high_severity)}"
+                        )
+                        for issue in high_severity:
+                            logger.error(
+                                f"  {issue['issue_text']} in {issue['filename']}:{issue['line_number']}"
+                            )
+                        return False
+                    else:
+                        logger.warning(
+                            "Security issues found by bandit (low/medium severity)"
+                        )
+                        logger.warning(result.stdout)
+                except json.JSONDecodeError:
+                    logger.warning("Could not parse bandit output")
+                    logger.warning(result.stdout)
 
             logger.info("Security scan completed")
             return True

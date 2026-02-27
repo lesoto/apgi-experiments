@@ -644,6 +644,7 @@ class LoggingUtils:
 
 # Global logging utilities instance
 _logging_utils = None
+_logging_lock = threading.Lock()
 
 
 def get_logging_utils(base_log_dir: Optional[Union[str, Path]] = None) -> LoggingUtils:
@@ -657,8 +658,9 @@ def get_logging_utils(base_log_dir: Optional[Union[str, Path]] = None) -> Loggin
         LoggingUtils instance
     """
     global _logging_utils
-    if _logging_utils is None or base_log_dir is not None:
-        _logging_utils = LoggingUtils(base_log_dir)
+    with _logging_lock:
+        if _logging_utils is None or base_log_dir is not None:
+            _logging_utils = LoggingUtils(base_log_dir)
     return _logging_utils
 
 

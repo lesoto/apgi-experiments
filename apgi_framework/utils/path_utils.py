@@ -7,6 +7,7 @@ import os
 import platform
 import shutil
 import tempfile
+import threading
 import warnings
 from contextlib import contextmanager
 from pathlib import Path
@@ -514,6 +515,7 @@ class PathManager:
 
 # Global path manager instance
 _default_path_manager = None
+_path_lock = threading.Lock()
 
 
 def get_path_manager(base_path: Optional[Union[str, Path]] = None) -> PathManager:
@@ -527,8 +529,9 @@ def get_path_manager(base_path: Optional[Union[str, Path]] = None) -> PathManage
         PathManager instance
     """
     global _default_path_manager
-    if _default_path_manager is None or base_path is not None:
-        _default_path_manager = PathManager(base_path)
+    with _path_lock:
+        if _default_path_manager is None or base_path is not None:
+            _default_path_manager = PathManager(base_path)
     return _default_path_manager
 
 

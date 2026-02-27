@@ -181,9 +181,17 @@ class PrecisionTimer:
 
         target_absolute = self.reference_time + (target_time_ms / 1000.0)
 
-        # Busy wait for high precision
-        while time.perf_counter() < target_absolute:
-            pass
+        # Hybrid sleep + busy-wait for high precision with low CPU usage
+        while True:
+            current_time = time.perf_counter()
+            if current_time >= target_absolute:
+                break
+            time_left = target_absolute - current_time
+            if time_left > 0.001:  # More than 1ms left
+                time.sleep(time_left - 0.001)
+            else:
+                # Short sleep instead of busy-wait to reduce CPU usage
+                time.sleep(0.0001)
 
         actual_time = time.perf_counter()
         error_ms = (actual_time - target_absolute) * 1000.0
@@ -212,9 +220,13 @@ class PrecisionTimer:
         if duration_ms > 2.0:
             time.sleep((duration_ms - 1.0) / 1000.0)
 
-        # Busy wait for final precision
+        # Busy wait for final precision with hybrid sleep
         while time.perf_counter() < target_time:
-            pass
+            time_left = target_time - time.perf_counter()
+            if time_left > 0.001:
+                time.sleep(time_left - 0.001)
+            else:
+                time.sleep(0.0001)
 
         actual_duration = (time.perf_counter() - start_time) * 1000.0
         error_ms = actual_duration - duration_ms

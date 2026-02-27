@@ -10,7 +10,8 @@ import os
 import yaml
 from dataclasses import dataclass, asdict, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, get_type_hints
+import threading
 
 try:
     from apgi_framework.logging.standardized_logging import get_logger
@@ -111,6 +112,7 @@ class APGIConfig:
     # Environment
     environment: str = "development"
     debug: bool = False
+    secret_key: str = ""
 
     # Component configurations
     database: DatabaseConfig = field(default_factory=DatabaseConfig)
@@ -201,6 +203,7 @@ class ConfigurationManager:
         env_mappings = {
             "APGI_ENVIRONMENT": ("environment", str),
             "APGI_DEBUG": ("debug", bool),
+            "APGI_SECRET_KEY": ("secret_key", str),
             "APGI_DATA_DIR": ("data_directory", str),
             "APGI_OUTPUT_DIR": ("output_directory", str),
             "APGI_LOG_LEVEL": ("logging.level", str),
@@ -260,6 +263,12 @@ class ConfigurationManager:
                     if isinstance(value, dict):
                         for sub_key, sub_value in value.items():
                             if hasattr(attr, sub_key):
+                                # Get field type and coerce value
+                                field_type = get_type_hints(type(attr)).get(sub_key)
+                                if field_type:
+                                    sub_value = self._coerce_value(
+                                        sub_value, field_type
+                                    )
                                 setattr(attr, sub_key, sub_value)
                 else:
                     # Update direct attribute
@@ -280,6 +289,25 @@ class ConfigurationManager:
             current = current[key]
 
         current[keys[-1]] = value
+
+    def _coerce_value(self, value: Any, field_type: Any) -> Any:
+        """Coerce configuration value to the expected type."""
+        try:
+            if field_type == bool:
+                if isinstance(value, str):
+                    return value.lower() in ("true", "1", "yes", "on")
+                return bool(value)
+            elif field_type == int:
+                return int(value)
+            elif field_type == float:
+                return float(value)
+            elif field_type == str:
+                return str(value)
+            else:
+                return value
+        except (ValueError, TypeError):
+            logger.warning(f"Could not coerce {value} to {field_type}, using as-is")
+            return value
 
     def get_config(self) -> APGIConfig:
         """Get current configuration."""
@@ -321,10 +349,14 @@ class ConfigurationManager:
 
     def update_config(self, updates: Dict[str, Any]):
         """Update configuration with validation."""
+        old_config = self.config
         try:
             self._update_config_from_dict(updates)
+            self.save_config()  # Persist changes to file
             logger.info("Configuration updated successfully")
         except Exception as e:
+            # Restore previous config on error
+            self.config = old_config
             logger.error(f"Failed to update configuration: {e}")
             raise
 
@@ -396,6 +428,12 @@ class ConfigurationManager:
         if self.config.experimental.max_participants <= 0:
             errors.append("Max participants must be positive")
 
+        # Validate secret key
+        if not self.config.secret_key or len(self.config.secret_key) < 32:
+            errors.append(
+                "Secret key must be at least 32 characters long and not empty"
+            )
+
         return errors
 
     def get_config_summary(self) -> Dict[str, Any]:
@@ -441,6 +479,7 @@ class ConfigurationManager:
 
 # Global configuration manager instance
 _global_config_manager: Optional[ConfigurationManager] = None
+_config_lock = threading.Lock()
 
 
 def get_config_manager(
@@ -448,8 +487,9 @@ def get_config_manager(
 ) -> ConfigurationManager:
     """Get or create the global configuration manager."""
     global _global_config_manager
-    if _global_config_manager is None:
-        _global_config_manager = ConfigurationManager(config_file)
+    with _config_lock:
+        if _global_config_manager is None:
+            _global_config_manager = ConfigurationManager(config_file)
     return _global_config_manager
 
 

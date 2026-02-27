@@ -62,13 +62,30 @@ class BIDSExporter:
             (self.bids_root / directory).mkdir(parents=True, exist_ok=True)
 
     def _sanitize_string(self, string: str) -> str:
-        """Sanitize string for BIDS compliance."""
-        # Remove invalid characters
-        sanitized = re.sub(r"[^\w\-\.]", "_", string)
+        """Sanitize string for BIDS compliance and path traversal protection."""
+        # Validate input to prevent path traversal
+        if not string or not isinstance(string, str):
+            raise ValueError(f"Invalid string input: {string}")
+
+        # Check for path traversal attempts
+        if ".." in string or "/" in string or "\\" in string:
+            raise ValueError(
+                f"Invalid characters in string (path traversal attempt): {string}"
+            )
+
+        # Remove invalid characters (only allow alphanumeric, underscore, hyphen)
+        sanitized = re.sub(r"[^\w\-]", "_", string)
+
         # Replace multiple underscores with single
         sanitized = re.sub(r"_+", "_", sanitized)
+
         # Remove leading/trailing underscores
         sanitized = sanitized.strip("_")
+
+        # Ensure result is not empty and doesn't start with problematic patterns
+        if not sanitized:
+            raise ValueError(f"String became empty after sanitization: {string}")
+
         return sanitized
 
     def _create_bids_filename(
@@ -133,15 +150,20 @@ class BIDSExporter:
         filename = self._create_bids_filename(entities, "eeg", "set")
 
         # Determine output directory
-        output_dir = self.bids_root / f"sub-{subject_id}"
+        sanitized_subject_id = self._sanitize_string(subject_id)
+        output_dir = self.bids_root / f"sub-{sanitized_subject_id}"
         if session_id:
             output_dir = output_dir / f"ses-{session_id}"
         output_dir = output_dir / "eeg"
 
+        # Verify containment
+        if not output_dir.resolve().is_relative_to(self.bids_root.resolve()):
+            raise ValueError(f"Invalid subject_id: {subject_id}")
+
         output_path = output_dir / filename
 
-        # Export data in different formats
-        self._export_eeg_set(data, channels, sampling_rate, output_path)
+        # Export EEG data
+        output_path = self._export_eeg_set(data, channels, sampling_rate, output_path)
 
         # Create channels.tsv
         self._create_channels_tsv(
@@ -165,7 +187,7 @@ class BIDSExporter:
         channels: Optional[List[str]],
         sampling_rate: float,
         output_path: Path,
-    ):
+    ) -> Path:
         """Export EEG data in SET format (simplified)."""
         # For simplicity, we'll export as CSV with proper BIDS structure
         csv_path = output_path.with_suffix(".csv")
@@ -175,6 +197,8 @@ class BIDSExporter:
 
         # Also create a simple binary format
         np.save(output_path.with_suffix(".npy"), data)
+
+        return csv_path
 
     def _create_channels_tsv(
         self, channels: Optional[List[str]], output_dir: Path, filename: str
@@ -277,14 +301,20 @@ class BIDSExporter:
         filename = self._create_bids_filename(entities, "beh", "tsv")
 
         # Determine output directory
-        output_dir = self.bids_root / f"sub-{subject_id}"
+        sanitized_subject_id = self._sanitize_string(subject_id)
+        output_dir = self.bids_root / f"sub-{sanitized_subject_id}"
         if session_id:
             output_dir = output_dir / f"ses-{session_id}"
         output_dir = output_dir / "beh"
 
+        # Verify containment
+        if not output_dir.resolve().is_relative_to(self.bids_root.resolve()):
+            raise ValueError(f"Invalid subject_id: {subject_id}")
+
         output_path = output_dir / filename
 
         # Export data
+        output_dir.mkdir(parents=True, exist_ok=True)
         data.to_csv(output_path, sep="\t", index=False)
 
         # Create sidecar JSON
@@ -368,14 +398,20 @@ class BIDSExporter:
             filename = self._create_bids_filename(entities, data_type, "tsv.gz")
 
             # Determine output directory
-            output_dir = self.bids_root / f"sub-{subject_id}"
+            sanitized_subject_id = self._sanitize_string(subject_id)
+            output_dir = self.bids_root / f"sub-{sanitized_subject_id}"
             if session_id:
                 output_dir = output_dir / f"ses-{session_id}"
             output_dir = output_dir / "physio"
 
+            # Verify containment
+            if not output_dir.resolve().is_relative_to(self.bids_root.resolve()):
+                raise ValueError(f"Invalid subject_id: {subject_id}")
+
             output_path = output_dir / filename
 
             # Export data
+            output_dir.mkdir(parents=True, exist_ok=True)
             df = pd.DataFrame(array)
             df.to_csv(output_path, sep="\t", index=False, compression="gzip")
 

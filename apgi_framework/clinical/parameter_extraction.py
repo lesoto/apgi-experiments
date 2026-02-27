@@ -679,17 +679,17 @@ class ClinicalParameterExtractor:
         """
         if len(values1) != len(values2):
             logger.error("Value lists must have same length")
-            return 0.0
+            return np.nan
 
         # Calculate Pearson correlation as simplified ICC
         if len(values1) < 2:
-            return 0.0
+            return np.nan
 
         try:
             corr, _ = pearsonr(values1, values2)
             return float(corr)
         except (ValueError, TypeError, RuntimeError):
-            return 0.0
+            return np.nan
 
     def calculate_internal_consistency(
         self, battery: AssessmentBattery, trial_data: Dict[str, List[float]]
@@ -821,33 +821,42 @@ class ClinicalParameterExtractor:
         """
         correlations = {}
 
-        # Example criterion validations
+        # Example criterion validations - compute validation scores based on criterion measures
         if "anxiety_scale" in criterion_measures:
+            anxiety_level = criterion_measures["anxiety_scale"]
             # Lower threshold should correlate with higher anxiety
-            # Simplified correlation calculation
-
-            # Inverse relationship: lower theta_t -> higher anxiety
-            corr_theta = -(params.theta_t - 3.5) / 2.0
+            expected_theta = 3.5 - anxiety_level * 0.5  # Lower theta for higher anxiety
+            corr_theta = 1.0 - min(abs(params.theta_t - expected_theta) / 2.0, 1.0)
             correlations["theta_anxiety"] = corr_theta
 
-            # Higher interoceptive precision -> higher anxiety
-            corr_pi_i = (params.pi_i - 1.5) / 1.0
+            # Higher interoceptive precision correlates with higher anxiety
+            expected_pi_i = 1.5 + anxiety_level * 0.5  # Higher pi_i for higher anxiety
+            corr_pi_i = 1.0 - min(abs(params.pi_i - expected_pi_i) / 1.0, 1.0)
             correlations["pi_i_anxiety"] = corr_pi_i
 
         if "depression_scale" in criterion_measures:
-            # Higher threshold should correlate with higher depression
-
-            corr_theta = (params.theta_t - 3.5) / 2.0
+            depression_level = criterion_measures["depression_scale"]
+            # Higher threshold correlates with higher depression
+            expected_theta = (
+                3.5 + depression_level * 0.5
+            )  # Higher theta for higher depression
+            corr_theta = 1.0 - min(abs(params.theta_t - expected_theta) / 2.0, 1.0)
             correlations["theta_depression"] = corr_theta
 
-            # Lower interoceptive precision -> higher depression
-            corr_pi_i = -(params.pi_i - 1.5) / 1.0
+            # Lower interoceptive precision correlates with higher depression
+            expected_pi_i = (
+                1.5 - depression_level * 0.5
+            )  # Lower pi_i for higher depression
+            corr_pi_i = 1.0 - min(abs(params.pi_i - expected_pi_i) / 1.0, 1.0)
             correlations["pi_i_depression"] = corr_pi_i
 
         if "interoceptive_awareness" in criterion_measures:
+            awareness_level = criterion_measures["interoceptive_awareness"]
             # Interoceptive precision should correlate with awareness
-
-            corr_pi_i = (params.pi_i - 1.5) / 1.0
+            expected_pi_i = (
+                1.5 + (awareness_level - 0.5) * 1.0
+            )  # Higher awareness -> higher pi_i
+            corr_pi_i = 1.0 - min(abs(params.pi_i - expected_pi_i) / 1.0, 1.0)
             correlations["pi_i_awareness"] = corr_pi_i
 
         logger.info(f"Criterion correlations: {correlations}")

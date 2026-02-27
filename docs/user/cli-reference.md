@@ -86,13 +86,13 @@ __Required__: No
 
 Run an individual falsification test.
 
-#### Syntax
+#### run-test Syntax
 
 ```bash
 python -m apgi_framework.cli run-test TEST_TYPE [OPTIONS]
 ```
 
-#### Arguments
+#### run-test Arguments
 
 __TEST_TYPE__ (required)
 
@@ -105,7 +105,7 @@ __Choices__:
 - `threshold-insensitivity`: Neuromodulatory threshold dynamics
 - `soma-bias`: Interoceptive vs exteroceptive bias
 
-#### Options
+#### run-test Options
 
 ### --trials, -n
 
@@ -146,7 +146,7 @@ __Type__: Integer
 __Default__: None (random)  
 __Required__: No
 
-#### Examples
+#### run-test Examples
 
 ```bash
 
@@ -173,15 +173,15 @@ python -m apgi_framework.cli run-test primary \
 
 Run multiple falsification tests in batch mode.
 
-#### Syntax
+#### run-batch Syntax
 
 ```bash
 python -m apgi_framework.cli run-batch [OPTIONS]
 ```
 
-#### Options
+#### run-batch Options
 
-__--all-tests__
+##### --all-tests
 
 Run all available falsification tests.
 
@@ -193,7 +193,7 @@ __Type__: Flag
 __Default__: False  
 __Required__: No (but either --all-tests or --tests must be specified)
 
-__--tests__
+##### --tests
 
 Specify which tests to run.
 
@@ -206,7 +206,7 @@ __Choices__: primary, consciousness-without-ignition, threshold-insensitivity, s
 __Default__: None  
 __Required__: No (but either --all-tests or --tests must be specified)
 
-__--parallel__
+##### --parallel
 
 Run tests in parallel (experimental feature).
 
@@ -219,7 +219,7 @@ __Default__: False
 __Required__: No  
 __Note__: Experimental feature, may have stability issues
 
-#### Examples
+#### run-batch Examples
 
 ```bash
 
@@ -244,13 +244,13 @@ python -m apgi_framework.cli run-batch --all-tests --parallel
 
 Generate a configuration file template.
 
-#### Syntax
+#### generate-config Syntax
 
 ```bash
 python -m apgi_framework.cli generate-config [OPTIONS]
 ```
 
-#### Options
+#### generate-config Options
 
 __--output__
 
@@ -283,7 +283,7 @@ __Template Descriptions__:
 - __minimal__: Minimal configuration with only essential parameters
 - __comprehensive__: Full configuration with all available options
 
-#### Examples
+#### generate-config Examples
 
 ```bash
 
@@ -308,13 +308,13 @@ python -m apgi_framework.cli generate-config \
 
 Validate system components and configuration.
 
-#### Syntax
+#### validate-system Syntax
 
 ```bash
 python -m apgi_framework.cli validate-system [OPTIONS]
 ```
 
-#### Options
+#### validate-system Options
 
 __--detailed__
 
@@ -328,7 +328,7 @@ __Type__: Flag
 __Default__: False  
 __Required__: No
 
-#### Examples
+#### validate-system Examples
 
 ```bash
 
@@ -348,12 +348,12 @@ python -m apgi_framework.cli --config my_config.json validate-system --detailed
 #### Output
 
 __Simple Output__:
-```
+```text
 System Validation: PASS
 ```
 
 __Detailed Output__:
-```
+```text
 ============================================================
 System Validation Results (Detailed)
 ============================================================
@@ -370,13 +370,13 @@ Overall Status: PASS
 
 Show current system status and configuration.
 
-#### Syntax
+#### status Syntax
 
 ```bash
 python -m apgi_framework.cli status
 ```
 
-#### Examples
+#### status Examples
 
 ```bash
 
@@ -389,7 +389,7 @@ python -m apgi_framework.cli --config my_config.json status
 
 #### Output
 
-```
+```text
 ==================================================
 APGI Framework System Status
 ==================================================
@@ -408,13 +408,13 @@ Last Updated: 2025-01-07T10:30:45
 
 Set APGI parameter values.
 
-#### Syntax
+#### set-params Syntax
 
 ```bash
 python -m apgi_framework.cli set-params [OPTIONS]
 ```
 
-#### Options
+#### set-params Options
 
 __--extero-precision__
 
@@ -481,7 +481,7 @@ __Range__: 0.1-5.0
 __Default__: 1.3  
 __Required__: No
 
-#### Examples
+#### set-params Examples
 
 ```bash
 

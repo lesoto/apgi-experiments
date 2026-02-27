@@ -409,9 +409,8 @@ class WorkflowOrchestrator:
         finally:
             # Store stage result with thread safety
             with self._workflow_lock:
-                assert (
-                    self.current_workflow is not None
-                ), "Workflow should be initialized"
+                if self.current_workflow is None:
+                    raise RuntimeError("Workflow should be initialized")
                 self.current_workflow.stage_results[stage] = stage_result
 
             # Call registered callbacks with thread safety
@@ -430,16 +429,18 @@ class WorkflowOrchestrator:
         futures = []
 
         if self.config.run_primary_tests:
-            assert (
-                self.executor is not None
-            ), "Executor should be initialized in parallel workflow"
+            if self.executor is None:
+                raise RuntimeError(
+                    "Executor should be initialized in parallel workflow"
+                )
             future = self.executor.submit(self._run_primary_tests)
             futures.append(("primary", future))
 
         if self.config.run_secondary_tests:
-            assert (
-                self.executor is not None
-            ), "Executor should be initialized in parallel workflow"
+            if self.executor is None:
+                raise RuntimeError(
+                    "Executor should be initialized in parallel workflow"
+                )
             future = self.executor.submit(self._run_secondary_tests)
             futures.append(("secondary", future))
 
@@ -500,7 +501,8 @@ class WorkflowOrchestrator:
         results["primary_falsification"] = primary_result
 
         # Store in workflow result
-        assert self.current_workflow is not None, "Workflow should be initialized"
+        if self.current_workflow is None:
+            raise RuntimeError("Workflow should be initialized")
         self.current_workflow.test_results.update(results)
 
         return results
@@ -527,7 +529,8 @@ class WorkflowOrchestrator:
         results["soma_bias"] = soma_bias_result
 
         # Store in workflow result
-        assert self.current_workflow is not None, "Workflow should be initialized"
+        if self.current_workflow is None:
+            raise RuntimeError("Workflow should be initialized")
         self.current_workflow.test_results.update(results)
 
         return results
@@ -537,7 +540,8 @@ class WorkflowOrchestrator:
         self.logger.debug("Running statistical analysis")
 
         # Aggregate statistical results from all tests
-        assert self.current_workflow is not None, "Workflow should be initialized"
+        if self.current_workflow is None:
+            raise RuntimeError("Workflow should be initialized")
         statistical_summary: Dict[str, Any] = {
             "total_tests_run": len(self.current_workflow.test_results),
             "falsification_results": {},
@@ -570,12 +574,14 @@ class WorkflowOrchestrator:
         total_tests = len(statistical_summary["falsification_results"])
 
         if falsification_count > 0:
-            assert self.current_workflow is not None, "Workflow should be initialized"
+            if self.current_workflow is None:
+                raise RuntimeError("Workflow should be initialized")
             self.current_workflow.falsification_conclusion = (
                 f"Framework falsified by {falsification_count}/{total_tests} tests"
             )
         else:
-            assert self.current_workflow is not None, "Workflow should be initialized"
+            if self.current_workflow is None:
+                raise RuntimeError("Workflow should be initialized")
             self.current_workflow.falsification_conclusion = (
                 "Framework not falsified by any tests"
             )
@@ -587,12 +593,14 @@ class WorkflowOrchestrator:
             if c is not None
         ]
         if confidence_values:
-            assert self.current_workflow is not None, "Workflow should be initialized"
+            if self.current_workflow is None:
+                raise RuntimeError("Workflow should be initialized")
             self.current_workflow.confidence_level = sum(confidence_values) / len(
                 confidence_values
             )
 
-        assert self.current_workflow is not None, "Workflow should be initialized"
+        if self.current_workflow is None:
+            raise RuntimeError("Workflow should be initialized")
         self.current_workflow.statistical_summary = statistical_summary
 
         return statistical_summary
@@ -601,7 +609,8 @@ class WorkflowOrchestrator:
         """Aggregate all results into final format."""
         self.logger.debug("Aggregating results")
 
-        assert self.current_workflow is not None, "Workflow should be initialized"
+        if self.current_workflow is None:
+            raise RuntimeError("Workflow should be initialized")
 
         aggregated_results = {
             "workflow_summary": {
@@ -632,7 +641,8 @@ class WorkflowOrchestrator:
         """Generate detailed reports."""
         self.logger.debug("Generating reports")
 
-        assert self.current_workflow is not None, "Workflow should be initialized"
+        if self.current_workflow is None:
+            raise RuntimeError("Workflow should be initialized")
 
         # Save workflow result to file
         output_dir = Path(
@@ -671,7 +681,8 @@ class WorkflowOrchestrator:
     def _save_json_report(self, file_path: Path) -> None:
         """Save complete workflow result as JSON."""
         # Convert workflow result to dictionary for JSON serialization
-        assert self.current_workflow is not None, "Workflow should be initialized"
+        if self.current_workflow is None:
+            raise RuntimeError("Workflow should be initialized")
         report_data = {
             "workflow_id": self.current_workflow.workflow_id,
             "start_time": self.current_workflow.start_time.isoformat(),
@@ -712,7 +723,8 @@ class WorkflowOrchestrator:
 
     def _save_summary_report(self, file_path: Path) -> None:
         """Save human-readable summary report."""
-        assert self.current_workflow is not None, "Workflow should be initialized"
+        if self.current_workflow is None:
+            raise RuntimeError("Workflow should be initialized")
         with open(file_path, "w") as f:
             f.write("APGI Framework Testing - Workflow Summary\n")
             f.write("=" * 60 + "\n\n")

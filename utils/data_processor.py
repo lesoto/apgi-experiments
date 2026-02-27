@@ -397,7 +397,7 @@ def create_data_summary(
         "completeness": 1
         - (data.isnull().sum().sum() / (len(data) * len(data.columns))),
         "duplicate_rows": data.duplicated().sum(),
-        "duplicate_rate": data.duplicated().sum() / len(data),
+        "duplicate_rate": data.duplicated().sum() / (len(data) or 1),
     }
 
     # Categorical columns summary

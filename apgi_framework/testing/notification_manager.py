@@ -12,6 +12,7 @@ import json
 import logging
 import smtplib
 import sqlite3
+import ssl
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from email.mime.multipart import MIMEMultipart
@@ -598,9 +599,9 @@ class NotificationManager:
                 config.get("smtp_port", 587),
             ) as server:
                 if config.get("use_tls", True):
-                    server.starttls()
+                    server.starttls(context=ssl.create_default_context())
 
-                if config.get("username") and config.get("password"):
+                if config.get("username") and config["password"]:
                     server.login(config["username"], config["password"])
 
                 server.send_message(msg)

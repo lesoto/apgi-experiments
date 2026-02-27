@@ -372,12 +372,12 @@ default_env = "test"
 
 # Environment-specific settings
 [testing.environment.test]
-database_url = "sqlite:///:memory:"
+database_url = "${TEST_DATABASE_URL:sqlite:///:memory:}"
 debug = true
 log_level = "DEBUG"
 
 [testing.environment.ci]
-database_url = "postgresql://test:test@localhost/test_db"
+database_url = "${DATABASE_URL}"
 debug = false
 log_level = "INFO"
 
@@ -385,18 +385,25 @@ log_level = "INFO"
 mock_external = true
 
 [tool.mypy]
+# Incremental strict mode enablement - Phase 1: Basic strictness
+# Enable basic strict mode options first
+strict = false  # Keep false for now, enable incrementally
+
+# Enable some basic strict options
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false  # Will enable in phase 2
+disallow_incomplete_defs = false  # Will enable in phase 2
+check_untyped_defs = false  # Will enable in phase 2
+
+# Enable some useful warnings
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+
 # Ignore missing imports for modules without type stubs
 ignore_missing_imports = true
-
-# Allow untyped defs for existing codebase
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
-check_untyped_defs = false
-
-# Disable strict mode for compatibility
-strict = false
-warn_return_any = false
-warn_unused_configs = false
 
 # Ignore specific modules that don't have type stubs
 [[tool.mypy.overrides]]

@@ -126,9 +126,10 @@ class APGIEquation:
             # when precision-weighted errors cancel out
             surprise = 0.0
         elif surprise > 10:
-            # Log at debug level only - this is expected for large prediction errors
-            self.logger.debug(
-                f"Surprise value {surprise:.3f} exceeds typical range (0-10), clamping to 10"
+            # Log at warning level - large prediction errors should be visible to users
+            self.logger.warning(
+                f"Surprise value {surprise:.3f} exceeds typical range (0-10), clamping to 10. "
+                f"This may indicate unusually large prediction errors."
             )
             surprise = 10.0
 

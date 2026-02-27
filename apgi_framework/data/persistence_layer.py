@@ -6,11 +6,12 @@ Provides unified interface for data storage using SQLite and HDF5 backends.
 
 import hashlib
 import json
+import re
 import shutil
 import sqlite3
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Callable
 
 import h5py
 import numpy as np
@@ -70,6 +71,13 @@ class PersistenceLayer:
         self._init_sqlite()
         if self.backend in ["hdf5", "hybrid"]:
             self._init_hdf5()
+
+    def _validate_experiment_id(self, experiment_id: str) -> None:
+        """Validate experiment_id to prevent path traversal."""
+        if not re.match(r"^[a-zA-Z0-9_\-]+$", experiment_id):
+            raise PersistenceError(
+                f"Invalid experiment_id: {experiment_id}. Must contain only alphanumeric characters, underscores, and hyphens"
+            )
 
     def _init_sqlite(self):
         """Initialize SQLite database for metadata storage."""
@@ -207,10 +215,15 @@ class PersistenceLayer:
                 raise PersistenceError(f"Experiment {experiment_id} not found")
 
             # Load data based on backend
+            data: Dict[str, Any] = {}
             if self.backend == "sqlite":
                 data = self._load_data_sqlite(experiment_id, version)
             elif self.backend in ["hdf5", "hybrid"]:
                 data = self._load_data_hdf5(experiment_id, version)
+            else:
+                raise PersistenceError(
+                    f"Unsupported backend for loading: {self.backend}"
+                )
 
             # Load backup information
             backup_info = self._load_backup_info(experiment_id)
@@ -301,6 +314,7 @@ class PersistenceLayer:
     def _store_data_hdf5(self, dataset: ExperimentalDataset):
         """Store dataset in HDF5 format."""
         experiment_id = dataset.metadata.experiment_id
+        self._validate_experiment_id(experiment_id)
 
         with h5py.File(self.hdf5_path, "a") as f:
             # Create experiment group
@@ -367,6 +381,7 @@ class PersistenceLayer:
         self, experiment_id: str, version: Optional[str] = None
     ) -> Dict[str, Any]:
         """Load dataset from HDF5 format."""
+        self._validate_experiment_id(experiment_id)
         with h5py.File(self.hdf5_path, "r") as f:
             if experiment_id not in f:
                 return {}
@@ -418,9 +433,14 @@ class PersistenceLayer:
     def _store_data_sqlite(self, dataset: ExperimentalDataset):
         """Store dataset in SQLite format (for smaller datasets)."""
         experiment_id = dataset.metadata.experiment_id
+        self._validate_experiment_id(experiment_id)
 
         # Serialize data to JSON/pickle for SQLite storage
         data_file = self.data_path / f"{experiment_id}.pkl"
+
+        # Verify containment within data_path
+        if not data_file.resolve().is_relative_to(self.data_path.resolve()):
+            raise PersistenceError(f"Path traversal detected: {data_file}")
 
         data_to_store = {
             "data": dataset.data,
@@ -435,12 +455,17 @@ class PersistenceLayer:
         self, experiment_id: str, version: Optional[str] = None
     ) -> Dict[str, Any]:
         """Load dataset from SQLite format."""
+        self._validate_experiment_id(experiment_id)
         data_file = self.data_path / f"{experiment_id}.pkl"
+
+        # Verify containment within data_path
+        if not data_file.resolve().is_relative_to(self.data_path.resolve()):
+            raise PersistenceError(f"Path traversal detected: {data_file}")
 
         if not data_file.exists():
             return {}
 
-        return safe_pickle_load(data_file)
+        return safe_pickle_load(data_file)  # type: ignore
 
     def _store_version(self, experiment_id: str, version: DataVersion):
         """Store version information."""
@@ -743,7 +768,7 @@ class PersistenceLayer:
             if not metadata:
                 raise PersistenceError(f"Experiment {experiment_id} not found")
 
-            info = {
+            info: Dict[str, Any] = {
                 "experiment_id": experiment_id,
                 "metadata": {
                     "name": metadata.experiment_name,
@@ -793,7 +818,7 @@ class PersistenceLayer:
         Returns:
             Dict with structure information and size estimates
         """
-        structure = {
+        structure: Dict[str, Any] = {
             "datasets": [],
             "subgroups": [],
             "estimated_size_mb": 0,
@@ -870,7 +895,7 @@ class PersistenceLayer:
     def process_large_dataset(
         self,
         experiment_id: str,
-        processor_func: callable,
+        processor_func: Callable[[Any], Any],
         data_type: str = "processed_data",
         chunk_size: int = 1000,
     ):

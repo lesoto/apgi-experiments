@@ -146,7 +146,9 @@ class ExperimentalControlManager:
         accuracy = np.mean(accuracies)
 
         # Calculate consistency (inverse of coefficient of variation)
-        consistency_score = 1.0 - (rt_std / rt_mean) if rt_mean > 0 else 0.0
+        consistency_score = (
+            min(1.0, max(0.0, 1.0 - (rt_std / rt_mean))) if rt_mean > 0 else 0.0
+        )
 
         # Determine if system is intact based on thresholds
         thresholds = self.config["response_time_thresholds"]

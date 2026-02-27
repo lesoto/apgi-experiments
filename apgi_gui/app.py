@@ -1221,19 +1221,27 @@ For more information, visit the project documentation."""
 
     def find(self) -> None:
         """Open find dialog."""
-        raise NotImplementedError("Find functionality not yet implemented")
+        tk.messagebox.showinfo(
+            "Not Yet Implemented", "Find functionality is not yet implemented."
+        )
 
     def find_next(self) -> None:
         """Find next occurrence."""
-        raise NotImplementedError("Find next not yet implemented")
+        tk.messagebox.showinfo(
+            "Not Yet Implemented", "Find next functionality is not yet implemented."
+        )
 
     def find_previous(self) -> None:
         """Find previous occurrence."""
-        raise NotImplementedError("Find previous not yet implemented")
+        tk.messagebox.showinfo(
+            "Not Yet Implemented", "Find previous functionality is not yet implemented."
+        )
 
     def toggle_debug_mode(self) -> None:
         """Toggle debug mode."""
-        raise NotImplementedError("Debug mode not yet implemented")
+        tk.messagebox.showinfo(
+            "Not Yet Implemented", "Debug mode toggle is not yet implemented."
+        )
 
     def show_log(self) -> None:
         """Show application log viewer with pagination."""

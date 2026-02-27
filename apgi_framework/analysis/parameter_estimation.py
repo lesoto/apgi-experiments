@@ -6,7 +6,6 @@ This module implements the complete pipeline for simultaneous estimation of
 and uncertainty quantification.
 """
 
-import warnings
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -552,13 +551,6 @@ class JointParameterFitter:
         Returns:
             New FitResults
         """
-        warnings.warn(
-            "The refit() method is deprecated and will be removed in a future version. "
-            "Use fit_all_subjects() with more iterations instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-
         # This would require storing the data, which we'll skip for now
         raise NotImplementedError(
             "Refitting requires storing original data. "

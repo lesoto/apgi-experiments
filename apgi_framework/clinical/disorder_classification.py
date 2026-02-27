@@ -625,8 +625,14 @@ class DisorderClassification:
             importances = self.classifier.feature_importances_
             feature_importance = dict(zip(self.feature_names, importances))
 
+        # Determine most common predicted disorder
+        from collections import Counter
+
+        most_common_pred = Counter(y_pred).most_common(1)[0][0]
+        predicted_disorder = DisorderType(most_common_pred)
+
         return ClassificationResult(
-            predicted_disorder=DisorderType.CONTROL,  # Placeholder
+            predicted_disorder=predicted_disorder,
             confidence=float(accuracy),
             cv_accuracy=float(accuracy),
             feature_importance=feature_importance,

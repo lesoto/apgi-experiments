@@ -152,7 +152,9 @@ class DeploymentManager:
             # Step 8: Cleanup
             self._cleanup_deployment()
 
-            assert self.deployment_start_time is not None
+            if self.deployment_start_time is None:
+                raise RuntimeError("Deployment start time should be initialized")
+
             deployment_time = (
                 datetime.now() - self.deployment_start_time
             ).total_seconds()

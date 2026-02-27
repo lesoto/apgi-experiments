@@ -51,6 +51,7 @@ ERROR: Could not find a version that satisfies the requirement...
    ```
 
 4. **Use virtual environment**:
+
    ```bash
    python -m venv venv
    # On Windows:
@@ -88,14 +89,14 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 ```
 
-2. **Check Python interpreter**:
+1. **Check Python interpreter**:
 
 ```bash
 which python  # On Windows: where python
 python -c "import sys; print(sys.executable)"
 ```
 
-3. **Reinstall in correct environment**:
+2. **Reinstall in correct environment**:
 
 ```python
 pip uninstall apgi-framework
@@ -527,17 +528,13 @@ ls -lh results/
 3. **Try loading with error handling**:
 
 ```python
-   import json
+import json
 
-   try:
-       with open('results/result.json', 'r') as f:
-           data = json.load(f)
-   except json.JSONDecodeError as e:
-
-```
-
+try:
+    with open('results/primary_result_001.json', 'r') as f:
+        data = json.load(f)
+except json.JSONDecodeError as e:
     print(f"Error at line {e.lineno}: {e.msg}")
-
 ```
 
 ### Problem: Missing data in results

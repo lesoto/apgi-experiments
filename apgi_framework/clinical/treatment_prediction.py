@@ -46,9 +46,8 @@ class TreatmentPredictor:
 
     def predict(self, params: BaselineParameters) -> TreatmentPrediction:
         """Predict treatment response."""
-        # Placeholder implementation
-        return TreatmentPrediction(
-            recommended_treatment=TreatmentType.SSRI,
-            predicted_response=0.7,
-            confidence=0.8,
+        raise NotImplementedError(
+            "Treatment prediction logic has not been implemented yet. "
+            "This is a placeholder that would analyze baseline parameters "
+            "to recommend appropriate treatments and predict response rates."
         )

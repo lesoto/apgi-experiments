@@ -302,7 +302,7 @@ class StanModelCompiler:
 
     def _get_model_hash(self, model_code: str) -> str:
         """Generate hash of model code for caching."""
-        return hashlib.md5(model_code.encode()).hexdigest()
+        return hashlib.sha256(model_code.encode()).hexdigest()
 
     def _get_cache_path(self, model_hash: str) -> Path:
         """Get path to cached compiled model."""
@@ -604,7 +604,8 @@ class HierarchicalBayesianModel:
         if self.model is None:
             self.compile_model()
 
-        assert self.model is not None, "Model compilation failed"
+        if self.model is None:
+            raise RuntimeError("Model compilation failed")
 
         if warmup is None:
             warmup = iter // 2

@@ -276,9 +276,6 @@ class ThresholdManager:
                 scaled_adjustment = total_adjustment * stability_factor
 
                 threshold += scaled_adjustment
-                # Fallback to simple variability adjustment
-                variability_adjustment = 0.1 * recent_variability
-                threshold += float(variability_adjustment)
 
         # Predictive adjustment based on expected future states
         if len(self._ignition_history) >= 30:

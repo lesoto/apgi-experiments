@@ -343,7 +343,9 @@ class DataValidator:
         for col in df.columns:
             if df[col].dtype in ["float64", "int64"]:
                 missing_count = df[col].isnull().sum()
-                missing_percent = (missing_count / len(df)) * 100
+                missing_percent = (
+                    (missing_count / len(df)) * 100 if len(df) > 0 else 0.0
+                )
                 quality_metrics["missing_data"][col] = {
                     "count": int(missing_count),
                     "percentage": float(missing_percent),
@@ -815,12 +817,15 @@ class DataPreprocessor:
                 df_clean = df_clean[~outlier_mask]
 
             elif method == "zscore":
-                z_scores = np.abs(
-                    (df_clean[col] - df_clean[col].mean()) / df_clean[col].std()
-                )
-                outlier_mask = z_scores > threshold
-                outliers_removed += outlier_mask.sum()
-                df_clean = df_clean[~outlier_mask]
+                col_std = df_clean[col].std()
+                if col_std > 0:
+                    z_scores = np.abs((df_clean[col] - df_clean[col].mean()) / col_std)
+                    outlier_mask = z_scores > threshold
+                    outliers_removed += outlier_mask.sum()
+                    df_clean = df_clean[~outlier_mask]
+                else:
+                    # If std is 0, all values are the same, no outliers to remove
+                    pass
 
         self.preprocessing_steps.append(
             f"Removed {outliers_removed} outliers using {method} method"
@@ -906,13 +911,19 @@ class DataPreprocessor:
                 data = df_normalized[col]
 
                 if method == "zscore":
-                    df_normalized.loc[:, col] = (data - data.mean()) / data.std()  # type: ignore
+                    col_std = data.std()
+                    if col_std > 0:
+                        df_normalized.loc[:, col] = (data - data.mean()) / col_std  # type: ignore
                 elif method == "minmax":
-                    df_normalized[col] = (data - data.min()) / (data.max() - data.min())  # type: ignore
+                    col_min = data.min()
+                    col_max = data.max()
+                    if col_max > col_min:
+                        df_normalized[col] = (data - col_min) / (col_max - col_min)  # type: ignore
                 elif method == "robust":
                     median = data.median()
                     mad = np.median(np.abs(data - median))
-                    df_normalized[col] = (data - median) / mad
+                    if mad > 0:
+                        df_normalized[col] = (data - median) / mad
 
         self.preprocessing_steps.append(f"Normalized {columns} using {method} method")
         return df_normalized

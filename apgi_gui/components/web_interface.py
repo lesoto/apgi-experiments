@@ -7,6 +7,8 @@ experiment control, data visualization, and collaborative features.
 
 import json
 import logging
+import os
+import secrets
 import threading
 import time
 from dataclasses import dataclass, field
@@ -23,6 +25,7 @@ logger = logging.getLogger(__name__)
 try:
     from flask import Flask, jsonify, request
     from flask_cors import CORS
+    from werkzeug.utils import secure_filename
 
     FLASK_AVAILABLE = True
 except ImportError:
@@ -177,11 +180,20 @@ class WebInterface:
             template_folder=self.config.template_folder,
         )
 
-        self.app.config["SECRET_KEY"] = "apgi-framework-secret-key"
+        self.app.config["SECRET_KEY"] = os.getenv(
+            "FLASK_SECRET_KEY", secrets.token_hex(32)
+        )
         self.app.config["MAX_CONTENT_LENGTH"] = self.config.max_file_size
 
         # Enable CORS
-        CORS(self.app)
+        CORS(
+            self.app,
+            resources={
+                r"/api/*": {
+                    "origins": [f"http://{self.config.host}:{self.config.port}"]
+                }
+            },
+        )
 
     def _setup_socketio(self):
         """Setup Socket.IO for WebSocket support."""
@@ -605,8 +617,14 @@ class WebInterface:
         if file.filename == "":
             raise ValueError("No file selected")
 
+        if file.filename is None:
+            raise ValueError("Invalid file upload")
+
         # Check file extension
-        filename = file.filename
+        filename = secure_filename(file.filename)
+        if not filename:
+            raise ValueError("Invalid filename")
+
         if filename and not any(
             filename.lower().endswith("." + ext)
             for ext in self.config.allowed_extensions
@@ -630,7 +648,6 @@ class WebInterface:
         result = {
             "filename": filename,
             "size": file_path.stat().st_size,
-            "path": str(file_path),
             "uploaded_at": datetime.now().isoformat(),
         }
 

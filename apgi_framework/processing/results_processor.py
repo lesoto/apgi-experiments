@@ -21,6 +21,7 @@ import numpy as np
 import pandas as pd
 
 from ..analysis.analysis_engine import AnalysisResult
+from ..security.secure_pickle import safe_pickle_dump, safe_pickle_load
 from ..exceptions import ProcessingError, ValidationError
 
 logger = logging.getLogger(__name__)
@@ -611,7 +612,7 @@ class ResultsProcessor:
         # Save as pickle for faster loading
         pickle_path = self.output_dir / f"{processed_result.result_id}.pkl"
         with open(pickle_path, "wb") as pickle_file:
-            pickle.dump(processed_result, pickle_file)
+            safe_pickle_dump(processed_result, pickle_file)
 
         logger.debug(f"Processed result saved: {processed_result.result_id}")
 
@@ -944,7 +945,7 @@ class ResultsProcessor:
             )
 
             with open(pickle_path, "wb") as f:
-                pickle.dump(result, f)
+                safe_pickle_dump(result, f)
 
             export_paths.append(str(pickle_path))
 
@@ -990,7 +991,7 @@ class ResultsProcessor:
             raise FileNotFoundError(f"Processed result {result_id} not found")
 
         with open(pickle_path, "rb") as f:
-            return pickle.load(f)
+            return safe_pickle_load(f)
 
     def list_processed_results(
         self, experiment_type: Optional[str] = None

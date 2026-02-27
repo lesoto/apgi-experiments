@@ -9,7 +9,7 @@
     "steepness": 2.0
   },
   "experimental_config": {
-    "n_trials": 1000,
+    "n_trials": 100,
     "n_participants": 100,
     "random_seed": null,
     "output_directory": "results",

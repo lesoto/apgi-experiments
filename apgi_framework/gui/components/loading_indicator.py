@@ -311,8 +311,8 @@ class LoadingIndicator:
         try:
             self.window.grab_release()
             self.window.destroy()
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"Failed to close loading indicator window: {e}")
 
 
 class ProgressDialog:

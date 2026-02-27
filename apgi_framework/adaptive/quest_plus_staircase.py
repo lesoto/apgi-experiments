@@ -288,12 +288,17 @@ class QuestPlusStaircase:
         # Normalize posteriors and calculate entropies
         p_not_detected_total = 1.0 - p_detected_total
         if p_detected_total > 1e-10:
-            entropy_detected = -entropy_detected / p_detected_total
+            entropy_detected = -entropy_detected / p_detected_total + np.log(
+                p_detected_total
+            )
         else:
             entropy_detected = 0.0
 
         if p_not_detected_total > 1e-10:
-            entropy_not_detected = -entropy_not_detected / p_not_detected_total
+            entropy_not_detected = (
+                -entropy_not_detected / p_not_detected_total
+                + np.log(p_not_detected_total)
+            )
         else:
             entropy_not_detected = 0.0
 

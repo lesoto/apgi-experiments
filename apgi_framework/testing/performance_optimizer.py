@@ -12,6 +12,7 @@ import pickle
 import sqlite3
 import threading
 import time
+import zlib
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
@@ -253,7 +254,7 @@ class ResultCache:
                     entry.test_file,
                     entry.test_hash,
                     json.dumps(entry.dependency_hashes),
-                    pickle.dumps(entry.result),
+                    zlib.compress(pickle.dumps(entry.result)),
                     entry.cached_at,
                     entry.cache_hits,
                 ),
@@ -281,7 +282,7 @@ class ResultCache:
                     test_file=test_file,
                     test_hash=test_hash,
                     dependency_hashes=json.loads(dep_hashes_json),
-                    result=pickle.loads(result_data),
+                    result=pickle.loads(zlib.decompress(result_data)),
                     cached_at=datetime.fromisoformat(cached_at),
                     cache_hits=cache_hits,
                 )

@@ -76,7 +76,7 @@ class DataQualityAssessment:
         """Assess data completeness (missing values)."""
         total_cells = data.shape[0] * data.shape[1]
         missing_cells = data.isnull().sum().sum()
-        completeness = 1 - (missing_cells / total_cells)
+        completeness = 1 - (missing_cells / total_cells) if total_cells > 0 else 0.0
 
         # Missing values by column
         missing_by_column = (data.isnull().sum() / len(data)).to_dict()

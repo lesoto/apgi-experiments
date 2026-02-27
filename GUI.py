@@ -12,6 +12,7 @@ import os
 import subprocess
 import traceback
 from abc import ABC, abstractmethod
+from pathlib import Path
 from tkinter import filedialog, messagebox
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
@@ -232,12 +233,12 @@ try:
     try:
         from apgi_framework.falsification import PrimaryFalsificationTest
     except ImportError:
-        PrimaryFalsificationTest = None
+        PrimaryFalsificationTest = None  # type: ignore
 
     try:
         from apgi_framework.falsification import ConsciousnessWithoutIgnitionTest
     except ImportError:
-        ConsciousnessWithoutIgnitionTest = None
+        ConsciousnessWithoutIgnitionTest = None  # type: ignore
 
     try:
         from apgi_framework.falsification.threshold_insensitivity_test import (
@@ -258,19 +259,19 @@ try:
             HierarchicalBayesianModel  # Alias for compatibility
         )
     except ImportError:
-        BayesianParameterEstimator = None
+        BayesianParameterEstimator = None  # type: ignore
 
     try:
         from apgi_framework.analysis.effect_size_calculator import EffectSizeCalculator
     except ImportError:
-        EffectSizeCalculator = None
+        EffectSizeCalculator = None  # type: ignore
 
     try:
         from apgi_framework.analysis.parameter_estimation import (
             ParameterEstimates as ParameterEstimation,
         )
     except ImportError:
-        ParameterEstimation = None
+        ParameterEstimation = None  # type: ignore
 
     # Clinical applications - use available classes
     try:
@@ -278,14 +279,14 @@ try:
             DisorderClassification as DisorderClassifier,
         )
     except ImportError:
-        DisorderClassifier = None
+        DisorderClassifier = None  # type: ignore
 
     try:
         from apgi_framework.clinical.parameter_extraction import (
             ClinicalParameterExtractor,
         )
     except ImportError:
-        ClinicalParameterExtractor = None
+        ClinicalParameterExtractor = None  # type: ignore
 
     # Neural simulators
     from apgi_framework.simulators.bold_simulator import BOLDSimulator
@@ -297,12 +298,12 @@ try:
     try:
         from apgi_framework.adaptive.quest_plus_staircase import QuestPlusStaircase
     except ImportError:
-        QuestPlusStaircase = None
+        QuestPlusStaircase = None  # type: ignore
 
     try:
         from apgi_framework.adaptive.stimulus_generators import StimulusGenerator
     except ImportError:
-        StimulusGenerator = None
+        StimulusGenerator = None  # type: ignore
 
 except ImportError as e:
     try:
@@ -344,15 +345,15 @@ except ImportError as e:
             logger = logging.getLogger("gui_import_error")
             logger.error(f"Error: Even basic APGI Framework imports failed: {e2}")
         # Set all components to None for graceful degradation
-        ConfigManager = None
-        APGIEquation = None
-        PrecisionCalculator = None
-        PredictionErrorProcessor = None
-        APGIFrameworkCLI = None
-        IntegratedDataManager = None
-        BayesianParameterEstimator = None
-        DisorderClassifier = None
-        QuestPlusStaircase = None
+        ConfigManager = None  # type: ignore
+        APGIEquation = None  # type: ignore
+        PrecisionCalculator = None  # type: ignore
+        PredictionErrorProcessor = None  # type: ignore
+        APGIFrameworkCLI = None  # type: ignore
+        IntegratedDataManager = None  # type: ignore
+        BayesianParameterEstimator = None  # type: ignore
+        DisorderClassifier = None  # type: ignore
+        QuestPlusStaircase = None  # type: ignore
 
 
 class ErrorSeverity(Enum):
@@ -554,24 +555,25 @@ class ConfigurationValidator:
             elif rules["type"] == int:
                 converted_value = int(value)
             else:
-                converted_value = value
+                converted_value = value  # type: ignore
 
-            # Check range
-            if "min" in rules and converted_value < rules["min"]:
-                return False, ValidationError(
-                    field=param_name,
-                    message=f"Value {converted_value} is below minimum {rules['min']}",
-                    severity=ErrorSeverity.MEDIUM,
-                    suggested_value=rules["min"],
-                )
+            # Check range (only for numeric types)
+            if rules["type"] in (float, int):
+                if "min" in rules and converted_value < rules["min"]:
+                    return False, ValidationError(
+                        field=param_name,
+                        message=f"Value {converted_value} is below minimum {rules['min']}",
+                        severity=ErrorSeverity.MEDIUM,
+                        suggested_value=rules["min"],
+                    )
 
-            if "max" in rules and converted_value > rules["max"]:
-                return False, ValidationError(
-                    field=param_name,
-                    message=f"Value {converted_value} is above maximum {rules['max']}",
-                    severity=ErrorSeverity.MEDIUM,
-                    suggested_value=rules["max"],
-                )
+                if "max" in rules and converted_value > rules["max"]:
+                    return False, ValidationError(
+                        field=param_name,
+                        message=f"Value {converted_value} is above maximum {rules['max']}",
+                        severity=ErrorSeverity.MEDIUM,
+                        suggested_value=rules["max"],
+                    )
 
             return True, None
 
@@ -981,8 +983,8 @@ class MatplotlibManager:
                 self.active_figures.remove(fig_id)
             plt.close(fig)
             gc.collect()  # Force garbage collection
-        except Exception:
-            pass  # Ignore errors during cleanup
+        except Exception as e:
+            logging.debug(f"Error during figure cleanup: {e}")
 
     def close_all_figures(self) -> None:
         """Close all active figures."""
@@ -994,8 +996,8 @@ class MatplotlibManager:
                     if id(fig_obj) == fig_id:
                         self.close_figure(fig_obj)
                         break
-            except Exception:
-                pass
+            except Exception as e:
+                logging.debug(f"Error during figure cleanup: {e}")
 
         plt.close("all")
         self.active_figures.clear()
@@ -1010,8 +1012,8 @@ class MatplotlibManager:
                 for i in range(len(fignums) - self.max_figures // 2):
                     fig = plt.figure(fignums[i])
                     self.close_figure(fig)
-        except Exception:
-            pass
+        except Exception as e:
+            logging.debug(f"Error during figure cleanup: {e}")
 
 
 # Global instances
@@ -6642,8 +6644,11 @@ For detailed documentation, please refer to the user manual.
         return []
 
     def get_python_files(self):
-        """Get all Python files in current directory."""
-        return [f for f in os.listdir(".") if f.endswith(".py")]
+        """Get all Python files in project directory."""
+        base_dir = Path(__file__).parent
+        return [
+            str(f.relative_to(base_dir)) for f in base_dir.glob("*.py") if f.is_file()
+        ]
 
     def execute_script(self, script_name):
         """Execute a Python script."""
@@ -6661,9 +6666,21 @@ For detailed documentation, please refer to the user manual.
 
         script_path = None
 
+        # Validate and resolve script path
+        ALLOWED_BASE_DIR = Path(__file__).parent
+        try:
+            script_path_obj = (ALLOWED_BASE_DIR / script_name).resolve()
+            if not script_path_obj.is_relative_to(ALLOWED_BASE_DIR):
+                self.log_to_console(f"Script not in allowed directory: {script_name}")
+                return
+            script_path = str(script_path_obj)
+        except Exception as e:
+            self.log_to_console(f"Error validating script path: {e}")
+            return
+
         # Check if script is in current directory
         if script_name in self.get_python_files():
-            script_path = script_name
+            script_path = str((ALLOWED_BASE_DIR / script_name).resolve())
         # Check tools directory
         elif script_name.startswith("tools/") or script_name == "run_experiments.py":
             if script_name == "run_experiments.py":
@@ -6672,14 +6689,15 @@ For detailed documentation, please refer to the user manual.
                 potential_paths = [script_name]
 
             for potential_path in potential_paths:
-                if os.path.exists(potential_path):
-                    script_path = potential_path
+                full_path = ALLOWED_BASE_DIR / potential_path
+                if full_path.exists() and full_path.is_relative_to(ALLOWED_BASE_DIR):
+                    script_path = str(full_path.resolve())
                     break
         # Check examples directory
         elif script_name.startswith("examples/"):
-            full_path = script_name
-            if os.path.exists(full_path):
-                script_path = full_path
+            full_path = ALLOWED_BASE_DIR / script_name
+            if full_path.exists() and full_path.is_relative_to(ALLOWED_BASE_DIR):
+                script_path = str(full_path.resolve())
         # Check if script is in known experiment scripts
         elif script_name in experiment_scripts:
             for potential_path in [
@@ -6688,8 +6706,9 @@ For detailed documentation, please refer to the user manual.
                 f"examples/{script_name}",
                 f"examples/{script_name.replace('.py', '')}.py",
             ]:
-                if os.path.exists(potential_path):
-                    script_path = potential_path
+                full_path = ALLOWED_BASE_DIR / potential_path
+                if full_path.exists() and full_path.is_relative_to(ALLOWED_BASE_DIR):
+                    script_path = str(full_path.resolve())
                     break
 
         if script_path:
@@ -6716,7 +6735,10 @@ For detailed documentation, please refer to the user manual.
                 # Start a thread to monitor output
                 def monitor_process():
                     try:
-                        stdout, stderr = process.communicate()
+                        # Add timeout to prevent hanging subprocesses
+                        stdout, stderr = process.communicate(
+                            timeout=300
+                        )  # 5 minute timeout
 
                         # Update GUI from main thread
                         def update_gui():
@@ -6735,6 +6757,21 @@ For detailed documentation, please refer to the user manual.
                                 )
 
                         self.after(0, update_gui)
+                    except subprocess.TimeoutExpired:
+                        # Kill the process if it times out
+                        process.kill()
+                        try:
+                            process.communicate(
+                                timeout=5
+                            )  # Give it 5 seconds to die gracefully
+                        except subprocess.TimeoutExpired:
+                            pass  # Process already killed
+                        self.after(
+                            0,
+                            lambda: self.log_to_console(
+                                f"Script {script_name} timed out after 5 minutes and was killed"
+                            ),
+                        )
                     except Exception:
                         self.after(
                             0,

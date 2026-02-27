@@ -87,8 +87,6 @@ class StatisticalTester:
         """
         self.alpha = alpha
         self.random_state = random_state
-        if random_state is not None:
-            np.random.seed(random_state)
 
     def independent_t_test(
         self,
@@ -141,7 +139,7 @@ class StatisticalTester:
             test_type=TestType.INDEPENDENT_T_TEST.value,
             statistic=statistic,
             p_value=p_value,
-            degrees_of_freedom=int(df),
+            degrees_of_freedom=df,
             effect_size=effect_size,
             sample_sizes={"group1": len(group1), "group2": len(group2)},
             assumptions_met=assumptions,

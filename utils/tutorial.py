@@ -39,7 +39,7 @@ except ImportError as e:
 
 try:
     import matplotlib.pyplot as plt
-    import seaborn as sns  # type: ignore
+    import seaborn as sns
 
     VISUALIZATION_AVAILABLE = True
 except ImportError as e:

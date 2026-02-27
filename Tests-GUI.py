@@ -73,7 +73,7 @@ class ToolTip:
         """Display the tooltip"""
         if self.tipwindow or not self.text:
             return
-        bbox = self.widget.bbox("insert")
+        bbox = self.widget.bbox("insert")  # type: ignore
         if bbox is None:
             return
         x, y, _, _ = bbox
@@ -183,7 +183,7 @@ class TestsRunnerGUI:
             for theme_name in self.theme_manager.get_available_themes():
                 theme_menu.add_radiobutton(
                     label=theme_name.capitalize(),
-                    command=lambda t=theme_name: self._set_theme(t),
+                    command=lambda t=theme_name: self._set_theme(t),  # type: ignore
                     variable=tk.StringVar(value=self.theme_manager.current_theme),
                     value=theme_name,
                 )
@@ -220,7 +220,7 @@ class TestsRunnerGUI:
         if hasattr(self, "status_label"):
             fg_color = self.theme_manager.get_theme_color("fg")
             try:
-                self.status_label.config(fg=fg_color)
+                self.status_label.config(fg=fg_color)  # type: ignore
             except tk.TclError:
                 pass
 
@@ -389,7 +389,7 @@ class TestsRunnerGUI:
         selection = tuple(self.scripts_listbox.curselection())
         if selection:
             index = selection[0]
-            return self.scripts[index]
+            return self.scripts[index]  # type: ignore
         return None
 
     def run_selected_script(self) -> None:

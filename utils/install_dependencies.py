@@ -59,7 +59,7 @@ def run_command(command, description):
     """Run a command and handle errors gracefully."""
     print(f"\n📦 {description}...")
     try:
-        subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
+        subprocess.run(command, check=True, capture_output=True, text=True)
         print(f"✅ {description} completed successfully")
         return True
     except subprocess.CalledProcessError as e:
@@ -128,7 +128,7 @@ def install_core_dependencies():
     try:
         # First try without --break-system-packages
         run_command(
-            f"{sys.executable} -m pip install --upgrade pip",
+            [sys.executable, "-m", "pip", "install", "--upgrade", "pip"],
             "Upgrading pip",
         )
         pip_upgraded = True
@@ -136,7 +136,15 @@ def install_core_dependencies():
         try:
             # If that fails, try with --break-system-packages
             run_command(
-                f"{sys.executable} -m pip install --upgrade pip --break-system-packages",
+                [
+                    sys.executable,
+                    "-m",
+                    "pip",
+                    "install",
+                    "--upgrade",
+                    "pip",
+                    "--break-system-packages",
+                ],
                 "Upgrading pip (with system packages override)",
             )
             pip_upgraded = True
@@ -152,14 +160,22 @@ def install_core_dependencies():
     success = False
     try:
         success = run_command(
-            f"{sys.executable} -m pip install -r {requirements_path} --break-system-packages",
+            [
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "-r",
+                str(requirements_path),
+                "--break-system-packages",
+            ],
             "Installing core dependencies",
         )
     except Exception:
         try:
             # Fallback: try without --break-system-packages
             success = run_command(
-                f"{sys.executable} -m pip install -r {requirements_path}",
+                [sys.executable, "-m", "pip", "install", "-r", str(requirements_path)],
                 "Installing core dependencies (fallback)",
             )
         except Exception:
@@ -180,7 +196,14 @@ def install_optional_dependencies():
 
     for package in optional_packages:
         run_command(
-            f"{sys.executable} -m pip install {package} --break-system-packages",
+            [
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                package,
+                "--break-system-packages",
+            ],
             f"Installing {package}",
         )
 

@@ -24,6 +24,7 @@ Usage:
 
 import argparse
 import json
+import logging
 import multiprocessing
 import os
 import queue
@@ -664,9 +665,9 @@ class ComprehensiveTestRunner:
                             results["skipped"] = int(part.split()[0])
                         elif "error" in part:
                             results["errors"] = int(part.split()[0])
-        except Exception:
-            # If parsing fails, continue with default values
-            pass
+        except Exception as e:
+            # If parsing fails, log the error and continue with default values
+            logging.warning(f"Failed to parse pytest output: {e}")
 
     def _print_summary(self, results: Dict[str, Any]):
         """Print a formatted summary of test results."""
