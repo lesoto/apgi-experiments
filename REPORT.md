@@ -1,398 +1,980 @@
-# APGI Framework — End-to-End Application Audit Report
+# APGI Framework — End-to-End Application Audit Report (Security Edition)
 
 **Project:** APGI Framework – Advanced Platform for General Intelligence Research
-**Audit Date:** 2026-02-22
-**Branch Audited:** `claude/app-audit-testing-onxEE`
-**Auditor:** Claude Code (Automated Static + Dynamic Analysis)
-**Report Version:** 1.0
+**Audit Date:** 2026-02-27
+**Branch Audited:** `claude/app-audit-security-h2cMm`
+**Auditor:** Claude Code (Static Analysis · Dynamic Pattern Scan · Dependency Graph Review)
+**Report Version:** 2.0 (supersedes v1.0 dated 2026-02-22)
 
 ---
 
 ## Executive Summary
 
-The APGI Framework is a Python-based scientific research platform for consciousness research, experimental paradigms, and falsification testing of consciousness theories. It consists of a large tkinter/customtkinter desktop GUI (`GUI.py`, `GUI-Launcher.py`, `GUI-Experiment-Registry.py`, `apgi_gui/app.py`, `apps/apgi_falsification_gui.py`, `Tests-GUI.py`, `Utils-GUI.py`), a CLI layer (`apgi_framework/cli.py`), a substantial backend framework, and an extensive pytest test suite.
+The APGI Framework is a Python-based scientific research platform for consciousness research,
+experimental paradigms, and falsification testing. It exposes a large tkinter/customtkinter
+desktop GUI (`GUI.py`, `GUI-Launcher.py`, `GUI-Experiment-Registry.py`, `apgi_gui/app.py`,
+`apps/apgi_falsification_gui.py`, `Tests-GUI.py`, `Utils-GUI.py`), an optional Flask web
+interface (`apgi_gui/components/web_interface.py`), a CLI layer (`apgi_framework/cli.py`),
+~340 Python source files, and an extensive pytest test suite.
 
-**Overall Assessment:** The codebase is structurally ambitious and well-organized at the module level, but contains a significant number of incomplete implementations, stub functions, runtime dependency issues, and test failures that collectively reduce confidence in production readiness. A full suite run (excluding tkinter-dependent GUI tests) recorded **110 failed, 540 passed, 121 skipped, 9 errors** in 780 s across ~780 test items. An additional test-isolation problem was identified: a subset of failures only manifest during the complete suite run and pass when executed in isolation, indicating shared global state between test modules. Several user-facing features raise `NotImplementedError` at runtime. Core modules such as the PDF generator fail to import due to a scoping bug when optional dependencies are absent.
+**This edition focuses on the five mandated audit dimensions with a particular emphasis on
+security.** The most pressing finding is a cluster of independent CRITICAL vulnerabilities —
+hardcoded credentials committed to source control, a path-traversal file-upload endpoint with no
+filename sanitisation, unsafe `pickle.load` from both database and disk, and f-string code
+injection in the experiment runner — that together enable unauthenticated remote code execution
+in the web interface and arbitrary command execution in the desktop GUI. These must be resolved
+before any internet-facing or multi-user deployment.
+
+**Key Metrics (this audit):**
+
+| Metric | Value |
+|--------|-------|
+| Total Python files analysed | 343 |
+| Syntax errors found | 0 |
+| Security vulnerabilities (total) | 27 (7 Critical, 10 High, 7 Medium, 3 Low) |
+| Functional bugs (total) | 24 (6 High, 10 Medium, 8 Low) |
+| Statistical formula bugs | 6 |
+| `NotImplementedError` stubs in production paths | 9 |
+| Missing features vs README / public API | 6 |
+| Unsafe `pickle` call sites (bypassing secure wrapper) | 4 |
+| Hardcoded credentials / secrets | 6 |
 
 ---
 
 ## KPI Scores
 
-| KPI | Score (0–100) | Rationale |
-|-----|:---:|-----------|
-| **1. Functional Completeness** | **48** | Key user-facing features (Find/Find Next/Previous, Debug Mode, PDF/LATEX export, API service startup, consciousness evaluation with real data, coverage visualization) are stubs or raise `NotImplementedError`. Core simulation functions use hardcoded output values. Multiple public APIs (`QuestPlusParameters`, `StorageManager`, `IntegratedDataManager`, `APGIEquation`, stimulus generators) are missing documented methods or reject expected constructor arguments. |
-| **2. UI/UX Consistency** | **61** | Theme toggling, undo/redo, zoom, keyboard shortcuts, and help dialogs are implemented in `apgi_gui/app.py`. Menu structure is coherent. However, missing features (Find, Debug) are exposed in menus without guards, and some components that load conditionally can silently fail. |
-| **3. Responsiveness & Performance** | **68** | Long-running operations are generally offloaded to background threads. Some threshold-detection tests time out (>30 s), indicating potential infinite loops or unbounded computations in psychometric fitting. The `performance_monitor.py` module imports `tkinter` at the module top level, blocking headless usage. |
-| **4. Error Handling & Resilience** | **55** | The CLI's `self.logger` is initialized to `None` and used before `setup_logging()` is called, causing `AttributeError` crashes. The PDF generator module raises `NameError` on import when `reportlab` is missing. Config manager's `save_preset` does not create nested parent directories. Corrupted JSON in presets is not caught as `ConfigurationError`. Several modules catch broad `Exception` silently. |
-| **5. Overall Implementation Quality** | **58** | Syntax is clean (no parse errors across all 7 main GUI files). Linting produces only 1 flake8 issue across the framework. Module organisation is logical. However, a large number of abstract methods and concrete classes have `pass`-body stubs, the staircase rule parser uses an undocumented format, and two major GUI features (`run_consciousness_evaluation`, `short_term_apgi_model`, `combined_apgi_analysis`) output hardcoded results regardless of input data. |
+| Dimension | Score | RAG | Rationale |
+|-----------|:-----:|:---:|-----------|
+| **Functional Completeness** | 52 / 100 | 🔴 | Core APGI math engine solid; 9 `NotImplementedError` stubs in user-facing paths; `TreatmentPredictor.predict()` always returns a hardcoded SSRI stub; `DisorderClassification.evaluate()` always returns `CONTROL`; EEG `.set` export silently writes `.csv`/`.npy` instead; batch re-fit not implemented |
+| **UI / UX Consistency** | 60 / 100 | 🟡 | Consistent customtkinter styling; Find / Debug menu items crash on click; experiment description parser inverted (always shows "No description"); help dialogs incomplete; status-bar feedback inconsistent |
+| **Responsiveness & Performance** | 70 / 100 | 🟡 | ThreadPoolExecutor used throughout; long-running ops off main thread; no progress cancellation in several GUI dialogs; 100 % CPU busy-wait in `PrecisionTimer.wait_until`; SQLite cache bloats with large pickled objects |
+| **Error Handling & Resilience** | 50 / 100 | 🔴 | Bare `pass` in ≥14 except blocks; `assert` as runtime guard (disabled with `-O`); `ErrorRecoveryStrategy` subclass never overrides abstract methods; `data` variable potentially unbound in `load_dataset`; swallowed exceptions mask failures throughout |
+| **Security** | 34 / 100 | 🔴 | 7 CRITICAL issues including hardcoded Flask secret, path-traversal upload, unsafe pickle.load, committed credentials (DB / Jupyter / Grafana), f-string code injection, and unvalidated CWD script execution |
+
+> **RAG key:** 🟢 ≥ 80 · 🟡 60–79 · 🔴 < 60
+
+**Overall Health Score: 53 / 100** 🔴
+
+The framework is suitable for offline research prototyping on a trusted machine. It **must not** be deployed as a web service until the CRITICAL security issues are resolved.
 
 ---
 
-## Bug Inventory
+## Section 1 — Security Vulnerability Inventory
 
-### CRITICAL Severity
-
-| ID | Component | Description | Reproduction Steps | Expected | Actual |
-|----|-----------|-------------|-------------------|----------|--------|
-| **BUG-001** | `apgi_framework/reporting/pdf_generator.py:53` | `NameError` on module import when `reportlab` is not installed — `A4` used as a dataclass default value outside the `try` block | `python -c "import apgi_framework.reporting.pdf_generator"` without `reportlab` installed | Module imports cleanly; PDF generation raises `ImportError` with a message | `NameError: name 'A4' is not defined` — entire module fails to import |
-| **BUG-002** | `apgi_framework/cli.py:179,637–639` | `AttributeError` crash when `initialize_controller()` is called before `setup_logging()` — `self.logger` is `None` | Instantiate `APGIFrameworkCLI()`, call `cli.initialize_controller()` directly (as the test does) | Method succeeds or raises a descriptive error | `AttributeError: 'NoneType' object has no attribute 'info'` / `'error'` |
-| **BUG-003** | `apgi_framework/optimization/performance_monitor.py:11` | `import tkinter as tk` at module top level — fails on headless servers or any environment without `python3-tk` | `python -c "from apgi_framework.optimization.performance_monitor import PerformanceAlert"` in a headless env | Module imports with a fallback or raises `ImportError` with a helpful message | `ModuleNotFoundError: No module named 'tkinter'` — blocks all users of this module including `test_performance_properties.py` |
+### 1.1 Critical Vulnerabilities
 
 ---
 
-### HIGH Severity
+#### SEC-01 · Hardcoded Flask Session Secret Key
 
-| ID | Component | Description | Reproduction Steps | Expected | Actual |
-|----|-----------|-------------|-------------------|----------|--------|
-| **BUG-004** | `apgi_gui/app.py:1224,1228,1232,1236` | Four user-facing menu actions raise `NotImplementedError` at runtime — **Find**, **Find Next**, **Find Previous**, **Debug Mode** | Launch `apgi_gui/app.py`; trigger Edit → Find (or keyboard shortcut) | A search dialog opens (or feature is visibly disabled/greyed out) | `NotImplementedError: Find functionality not yet implemented` — unhandled exception |
-| **BUG-005** | `apgi_framework/config/config_manager.py:329–331` | `save_preset()` does not create nested parent directories, causing `FileNotFoundError` when the presets path contains intermediate directories that do not exist | Set `manager.presets_dir = Path("/tmp/x/sub/presets")` (non-existent parent); call `manager.save_preset("name")` | Directory tree created automatically | `FileNotFoundError: No such file or directory` |
-| **BUG-006** | `apgi_framework/config/config_manager.py:346` | `load_preset()` does not catch `json.JSONDecodeError` — corrupted preset files propagate a raw JSON error instead of a `ConfigurationError` | Write `{invalid json` to a preset file; call `manager.load_preset("corrupted")` | `ConfigurationError: Invalid preset file: ...` | `json.decoder.JSONDecodeError: Expecting property name ...` |
-| **BUG-007** | `apgi_framework/research/threshold_detection_paradigm.py:393` | Staircase rule parser rejects the conventional `"3up_1down"` notation (expected format is 3 underscore-separated tokens like `"3_up_down"`) | `AdaptiveStaircase(rule="3up_1down")` | Staircase initialises with 3-up/1-down rule | `ValidationError: Invalid staircase rule: 3up_1down` |
-| **BUG-008** | `apgi_framework/data/storage_manager.py` | `store_dataset()` validation requires three specific domain fields (`apgi_parameters`, `neural_signatures`, `consciousness_assessments`), making the storage layer unusable for generic datasets or during testing with minimal data | Create a `DataSet` with `data={"key": "value"}`; call `storage.store_dataset(dataset)` | Dataset stored successfully | `StorageError: Dataset validation failed: ['Missing required data field: apgi_parameters', ...]` |
-| **BUG-009** | `apgi_framework/analysis/statistical_report_generator.py:374` | `ReportFormat.PDF` and `ReportFormat.LATEX` are defined in the enum but raise `ValueError: Export format ... not yet implemented` when used | Call `generator.export_results(data, format_type=ReportFormat.PDF)` | PDF exported to file | `ValueError: Export format ReportFormat.PDF not yet implemented` |
-| **BUG-010** | `tests/integration/test_integration_properties.py:861` | Property-based test creates a temporary directory without `exist_ok=True`, causing `FileExistsError` on repeated Hypothesis shrinking runs | Run `pytest tests/integration/test_integration_properties.py::TestAPGIFrameworkCompatibilityProperties::test_apgi_test_fixture_compatibility` | Tests pass under all generated examples | `FileExistsError: [Errno 17] File exists` |
-| **BUG-011** | `apgi_framework/testing/ci_integrator.py:99` | CI integrator silently produces empty `changed_files` list when repository has no prior commits (`HEAD~1` does not exist), breaking CI impact-analysis workflows on fresh clones | Run `CIIntegrator.get_change_impact()` on a repo with a single commit | Returns a sensible default or raises a descriptive error | `git diff` fails with `fatal: ambiguous argument 'HEAD~1'`; `changed_files = []` silently |
+| Field | Detail |
+|-------|--------|
+| **File** | `apgi_gui/components/web_interface.py:180` |
+| **Severity** | 🔴 CRITICAL |
+| **CWE** | CWE-798 Use of Hard-coded Credentials |
+| **OWASP** | A07:2021 – Identification and Authentication Failures |
 
----
-
-### MEDIUM Severity
-
-| ID | Component | Description | Reproduction Steps | Expected | Actual |
-|----|-----------|-------------|-------------------|----------|--------|
-| **BUG-012** | `apgi_framework/monitoring/realtime_monitor.py:598` | `global _global_monitor` declared but the name is never actually assigned inside the scope — dead/broken code | `python -m flake8 apgi_framework/monitoring/realtime_monitor.py` | No lint warnings | `F824 global _global_monitor is unused: name is never assigned in scope` |
-| **BUG-013** | `GUI.py` — `run_consciousness_evaluation()` | Function outputs hardcoded fake metric values (0.78, 0.65, 0.82) regardless of any loaded data | Click **Consciousness Evaluation** button with any dataset | Real computed consciousness metrics | Hardcoded strings logged to console; dialog says "completed successfully" |
-| **BUG-014** | `GUI.py` — `short_term_apgi_model()` / `combined_apgi_analysis()` | Both methods log static strings and show a success dialog without performing any actual computation | Click either button | Model runs against loaded data | Static text output; no real analysis performed |
-| **BUG-015** | `apgi_framework/deployment/automation.py:455` | `_start_api_service()` logs `"API service startup not implemented yet"` and returns without doing anything | Call `automation.start_services()` in a multi-service deployment config | API service starts | Nothing happens; log message is the only output |
-| **BUG-016** | `apgi_framework/cli.py` — `test_cli_unknown_command` | Unknown CLI command exits with code `2` (argparse default) instead of documented exit code `1` | Run `apgi-test unknown-command` | Exit code `1` | Exit code `2` |
-| **BUG-017** | `tests/test_error_telemetry.py` — `test_initialization_creates_directory` | `ErrorTelemetry` does not create the telemetry directory on initialization — `telemetry_file` path does not exist | Instantiate `ErrorTelemetry(base_dir=tmpdir)`; check `telemetry.telemetry_file.exists()` | File created at init | `AssertionError: assert False` |
-| **BUG-018** | `apgi_framework/core/` — `TestAPGIAgent::test_agent_parameter_validation` | Agent does not raise `ValueError` for out-of-range parameters as documented | Pass boundary-violating params to `APGIAgent`; expect `ValueError` | `ValueError` raised | No exception raised — parameters silently accepted |
-| **BUG-019** | `tests/test_diagnostics_cli.py` | Multiple mock targets use `.return_value` on non-mockable method objects; `sys.exit` called more times than expected in warning/failure scenarios | `pytest tests/test_diagnostics_cli.py` | Tests pass | `AttributeError: 'method' object has no attribute 'return_value'`; exit call count mismatch |
-| **BUG-020** | `apgi_framework/testing/test_threshold_detection.py` | Multiple threshold detection tests exceed the 30-second timeout, indicating unbounded loops or hanging psychometric fits | `pytest tests/test_threshold_detection.py --timeout=30` | Tests complete in <10 s | `Failed: Timeout (>30.0s)` for cross-modal comparison, confidence interval, and report generation tests |
-
----
-
-### LOW Severity
-
-| ID | Component | Description | Reproduction Steps | Expected | Actual |
-|----|-----------|-------------|-------------------|----------|--------|
-| **BUG-021** | `apgi_framework/gui/coverage_visualization.py` | Entire widget class is a Qt (`PySide6`) stub — all 30+ rendering methods are bare `pass` bodies; no visualisation is actually rendered | Import module without PySide6 | Graceful degradation with tkinter fallback | Fallback stubs expose no API whatsoever; widget tree is non-functional |
-| **BUG-022** | `apgi_framework/validation/enhanced_error_handling.py:113,117` | Two abstract methods defined but body is bare `raise NotImplementedError` (not `@abstractmethod`) — subclasses may not be forced to implement them | Instantiate a subclass that doesn't override these methods | `TypeError` at instantiation | No error at instantiation; `NotImplementedError` deferred to call time |
-| **BUG-023** | `pyproject.toml:201–210` | `addopts` includes `--cov=apgi_framework` but `pytest-cov` is not in the minimal `dependencies` list — running `pytest` without installing `[dev]` fails immediately | `pip install -e . && pytest` | Test suite runs | `ERROR: unrecognized arguments: --cov=apgi_framework ...` |
-| **BUG-024** | `apgi_framework/config/config_manager.py:212` | `presets_dir = Path("config/presets")` is a relative path — resolves differently depending on the working directory at import time | Run tests from a temp directory; create `ConfigManager` | Presets stored relative to project root | Presets stored in unexpected locations when CWD differs from project root |
-| **BUG-025** | `apgi_framework/data/storage_manager.py` — `test_concurrent_access` | Concurrent `store_dataset` calls on minimal/empty data dicts all fail validation — zero successful writes when ≥4 are expected | Run `pytest tests/test_data_management.py::TestStorageManager::test_concurrent_access` | ≥4 concurrent writes succeed | `assert 0 >= 4` — all concurrent writes rejected by validator |
-| **BUG-026** | Test suite — multiple files | **Test isolation failure:** ~15+ tests pass individually but fail during the full suite run due to shared global state pollution between modules (affected files: `test_deployment_properties`, `test_error_handling_properties`, `test_falsification_coverage`, `test_config_manager` logging variants, `test_utils_basic::TestPerformanceProfiler`) | `pytest tests/` (full run) vs `pytest tests/test_deployment_properties.py` (isolated) | Tests pass in both contexts | Tests fail only in the full suite run |
-| **BUG-027** | `apgi_framework/core/equation.py` | `APGIEquation` missing expected public methods `set_parameters()` and `calculate()` | `eq = APGIEquation(); eq.set_parameters({})` | Method executes | `AttributeError: 'APGIEquation' object has no attribute 'set_parameters'` |
-| **BUG-028** | `apgi_framework/adaptive/quest_plus_staircase.py` | `QuestPlusParameters` rejects `step_size_min` kwarg; `QuestPlusStaircase` missing `current_level` and `step_up` attributes; `StaircaseState` has no `UP` member — widespread API mismatch between tests and implementation | `QuestPlusParameters(step_size_min=0.1)` | Parameter accepted | `TypeError: unexpected keyword argument 'step_size_min'` |
-| **BUG-029** | `apgi_framework/research/stimulus_generators.py` | `ToneParameters`, `GaborParameters`, `CO2PuffParameters` reject their expected primary kwargs (`frequency`, `size`, `concentration`) — constructor API does not match documented/tested interface | `ToneParameters(frequency=440)` | Parameter accepted | `TypeError: unexpected keyword argument 'frequency'` |
-| **BUG-030** | `apgi_framework/data/data_manager.py` + `storage_manager.py` | `IntegratedDataManager` rejects `storage_path` constructor arg and is missing `query_experiments()` method; `StorageManager` is missing `retrieve_dataset()` method; `query_datasets()` returns `dict` but callers expect an object with `.experiment_ids` | `IntegratedDataManager(storage_path="/tmp/x")` | Manager created | `TypeError: unexpected keyword argument 'storage_path'`; `AttributeError: no attribute 'query_experiments'`; `AttributeError: no attribute 'retrieve_dataset'` |
-| **BUG-031** | Multiple modules — systemic relative-path issue | At least 4 modules resolve output directories relative to CWD at runtime: `config/presets` (ConfigManager), `logs/telemetry` (ErrorTelemetry), `apgi_output/performance_profiles` (PerformanceProfiler), `config` (error_handler). All fail with `FileNotFoundError` when CWD differs from the project root | Instantiate any of these classes from a temp directory or test runner | Directory created relative to project root | `FileNotFoundError: [Errno 2] No such file or directory: 'config'` (etc.) |
-| **BUG-032** | `apgi_framework/system_validator.py` | Validation test names returned as "Title Case" (e.g., `"Threshold Management"`) but tests compare against `"snake_case"` (e.g., `"threshold_management"`) — naming convention mismatch | `assert validator.get_test_name() == "threshold_management"` | Strings match | `AssertionError: 'Threshold Management' == 'threshold_management'` |
-| **BUG-033** | `apgi_framework/system_validator.py` | `ValidationSuite.total_execution_time` computed via float addition returns `0.30000000000000004` where tests assert `== 0.3` — exact float equality used instead of `pytest.approx` | `assert suite.total_execution_time == 0.3` | Assertion passes | `AssertionError: assert 0.30000000000000004 == 0.3` |
-| **BUG-034** | `apgi_framework/workflow_orchestrator.py` | Summary report contains `"APGI Framework Testing - Workflow Summary"` header but test asserts presence of `"WORKFLOW SUMMARY"` | `assert 'WORKFLOW SUMMARY' in orchestrator.save_summary_report()` | Assertion passes | `AssertionError: 'WORKFLOW SUMMARY' not found in output` |
-| **BUG-035** | `apgi_framework/research/threshold_detection_paradigm.py` | `PsychometricFunction` is missing the `_extract_threshold_at_performance()` method expected by callers | `fn._extract_threshold_at_performance(0.75)` | Value returned | `AttributeError: 'PsychometricFunction' object has no attribute '_extract_threshold_at_performance'` |
-| **BUG-036** | `apgi_framework/testing/framework.py` — `FrameworkTestCase` | Constructor requires a `module` positional argument not documented; callers that omit it get a `TypeError` | `FrameworkTestCase()` | Instance created with defaults | `TypeError: __init__() missing 1 required positional argument: 'module'` |
-
----
-
-## Missing Features / Incomplete Implementations
-
-| # | Feature / Component | Location | Status | Impact |
-|---|---------------------|----------|--------|--------|
-| 1 | **Find / Find Next / Find Previous** (text search in results/logs) | `apgi_gui/app.py:1222–1232` | `NotImplementedError` stub | High — menu items and keyboard shortcuts are wired but non-functional |
-| 2 | **Debug Mode toggle** | `apgi_gui/app.py:1234–1236` | `NotImplementedError` stub | Medium — developer-facing, but exposed in UI |
-| 3 | **PDF export** of statistical analysis reports | `apgi_framework/analysis/statistical_report_generator.py:374` | Enum value defined; `ValueError` raised on use | High — PDF is a first-class documented export format |
-| 4 | **LATEX export** of statistical analysis reports | `apgi_framework/analysis/statistical_report_generator.py:374` | Same as PDF | Medium |
-| 5 | **API service startup** in deployment automation | `apgi_framework/deployment/automation.py:453–456` | Logs placeholder message; does nothing | High for server/multi-service deployment scenarios |
-| 6 | **Real consciousness evaluation** | `GUI.py:6454–6472` | Hardcoded outputs (0.78, 0.65, 0.82) regardless of data | Critical for research validity |
-| 7 | **Short-term APGI model analysis** | `GUI.py:6473–6480` | Static string output only | High |
-| 8 | **Combined APGI analysis** | `GUI.py:6481–6488` | Static string output only | High |
-| 9 | **Coverage visualisation widget** (Qt/PySide6) | `apgi_framework/gui/coverage_visualization.py` | 30+ methods all bare `pass` | Medium — optional Qt UI path is entirely unrendered |
-| 10 | **PDF report generation** (ReportLab) | `apgi_framework/reporting/pdf_generator.py` | Module crashes on import when `reportlab` absent (scoping bug) | High — module is part of the reporting subsystem |
-| 11 | **Adaptive staircase rule parsing** | `apgi_framework/research/threshold_detection_paradigm.py:390–399` | Does not accept standard `"3up_1down"` notation | Medium — affects all psychophysics experiments using staircases |
-| 12 | **Telemetry directory creation on init** | `apgi_framework/logging/error_telemetry.py` | Directory not created in `__init__` | Low — logging silently fails |
-| 13 | **CLI logger initialization before use** | `apgi_framework/cli.py:179` | `self.logger = None` used before `setup_logging()` | High — CLI crashes when controller initialisation fails |
-| 14 | **Generic dataset storage** | `apgi_framework/data/storage_manager.py` | Requires 3 domain-specific fields; no support for arbitrary research data | Medium |
-| 15 | **Presets directory auto-creation with nested paths** | `apgi_framework/config/config_manager.py:329` | `open()` without `parent.mkdir(parents=True, exist_ok=True)` | Medium |
-| 16 | **`GUI-Simple.py` missing** | `GUI-Launcher.py:223,703` | File referenced in launcher app registry and `launch_simple_gui()` but does not exist on disk | High |
-
----
-
-## Test Suite Summary
-
-Tests were executed against all modules that can be imported without a display server (`DISPLAY`). Tests requiring `tkinter`/`customtkinter` were excluded as the test environment lacks `python3-tk`.
-
-| Test File | Passed | Failed | Skipped | Key Failures |
-|-----------|:------:|:------:|:-------:|--------------|
-| `test_core_models.py` | 70 | 0 | 0 | — |
-| `test_core_analysis.py` | 18 | 0 | 0 | — |
-| `test_input_validation.py` | 22 | 0 | 0 | — |
-| `test_edge_cases.py` | 29 | 0 | 0 | — |
-| `test_clinical_module.py` + variants | 56 | 0 | 0 | — |
-| `test_pci_calculator.py` | 34 | 0 | 0 | — |
-| `test_pharmacological_simulator.py` | 35 | 0 | 0 | — |
-| `test_statistical_analysis_validation.py` | 28 | 0 | 0 | — |
-| `test_falsification_coverage.py` | 8 | 0 | 0 | — |
-| `test_cross_species_validation.py` | 5 | 0 | 0 | — |
-| `test_config_manager.py` | 18 | 3 | 0 | `save_preset` no parent-mkdir; corrupted JSON not caught; invalid JSON not caught |
-| `test_error_telemetry.py` | 19 | 2 | 0 | Dir not created on init; mock target mismatch |
-| `test_core_coverage.py` | 108 | 1 | 0 | `APGIAgent` does not raise `ValueError` on bad params |
-| `test_cli_module.py` | 40 | 2 | 0 | `logger=None` before `setup_logging()` |
-| `test_cli_coverage.py` | 40 | 7 | 0 | `sys.exit(0)` raised from test context; unknown cmd exits 2 not 1 |
-| `test_new_components.py` | 32 | 1 | 86 | Staircase rule `"3up_1down"` rejected |
-| `test_diagnostics_cli.py` | 17 | 4 | 9 | Mock attribute error; `sys.exit` call count mismatch |
-| `test_workflow_orchestrator.py` | 12 | 8 | 0 | Orchestrator workflow steps fail end-to-end |
-| `test_system_validator.py` | 22 | 11 | 0 | Validator suite, equation accuracy, simulation tests |
-| `test_data_management.py` | 18 | 15 | 0 | `StorageManager` rejects datasets without domain-specific fields |
-| `test_adaptive_comprehensive.py` | 5 | 14 | 0 | `QuestPlusStaircase`, `StimulusGenerators`, `SessionManager` |
-| `test_threshold_detection.py` | 8 | 16 | 0 | Timeout; rule parsing; all extended-paradigm tests |
-| `integration/test_integration_properties.py` | 19 | 2 | 2 | `FileExistsError` in property tests; error-handling workflow |
-| `integration/test_end_to_end_workflow.py` | 0 | 1 | 0 | 9 ERRORS | CI integrator `HEAD~1`; component interaction |
-| `test_performance_properties.py` | — | — | — | **Entirely excluded** — `tkinter` unavailable (BUG-003) |
-| `tests/framework/test_equation.py` | 0 | 2 | 0 | `APGIEquation` missing `set_parameters()` and `calculate()` (BUG-027) |
-| `test_adaptive_comprehensive.py` (full) | 5 | 21 | 0 | API mismatch: `QuestPlusParameters`, `StaircaseState`, `QuestPlusStaircase`, stimulus generators, `SessionConfiguration` (BUG-028, BUG-029) |
-| `test_activity_logging_properties.py` | varies | 3 | 0 | Execution ID not logged; test name not in output; concurrent logging drops entries |
-| `test_data_management.py` (full) | 3 | 15 | 0 | `IntegratedDataManager` / `StorageManager` API mismatch (BUG-030) |
-
-**Full suite result (confirmed, 3 independent runs):** ~106–110 failed, 540–544 passed, 121 skipped, 9 errors — variance between runs confirms test isolation issues (BUG-026).
-
-**Note on test isolation:** Several failures (`test_deployment_properties`, `test_error_handling_properties`, `test_falsification_coverage`, `test_config_manager` logging variants, `test_utils_basic::TestPerformanceProfiler`) pass when run in isolation but fail during the full suite run. This indicates **shared global state / test-order dependency** across modules — an additional quality issue not captured per-file above.
-
----
-
-## UI / UX Findings
-
-| Area | Finding | Severity |
-|------|---------|----------|
-| Menu items (Edit → Find) | Wired to `NotImplementedError`; user receives an unhandled exception dialog | High |
-| Menu items (Debug Mode) | Same — raises `NotImplementedError` | Medium |
-| Consciousness evaluation button | Returns instantly with hardcoded numbers; no progress indicator or real computation | High |
-| APGI model buttons | Return instantly with generic success dialog; no computation | High |
-| Theme toggle | Implemented; recursively propagates to child widgets | ✓ OK |
-| Undo/Redo | Implemented with memory-limited stack | ✓ OK |
-| Zoom (Ctrl+= / Ctrl+-) | Implemented; scales fonts and window size | ✓ OK |
-| Keyboard shortcuts | Registered via `_setup_standard_shortcuts`; most functional | ✓ Mostly OK |
-| Help dialog | Context-sensitive help implemented per-tab | ✓ OK |
-| Recent files list | Persisted to JSON; loaded on startup | ✓ OK |
-| Status bar | Updates on operations; colour-coded by level | ✓ OK |
-| Preferences dialog | Full preferences dialog with save/reset implemented | ✓ OK |
-| Log viewer | Implemented with filtering and export | ✓ OK |
-| Tab navigation | Next/Previous tab via keyboard shortcut | ✓ OK |
-
----
-
-## Responsiveness & Performance Findings
-
-| Area | Finding | Severity |
-|------|---------|----------|
-| Long-running tests | Offloaded to `threading.Thread` in all experiment runner methods | ✓ OK |
-| Psychometric fitting | `threshold_detection_paradigm.py` operations exceed 30 s in test scenarios; potential infinite loop in fitting loop | High |
-| Figure management | `MatplotlibManager` limits figures to 20 and cleans up oldest; GC called after close | ✓ OK |
-| Memory (undo stack) | `_get_object_size()` tracks undo stack memory, trimmed by size | ✓ OK |
-| tkinter import in performance module | `performance_monitor.py` imports `tkinter` unconditionally at module level — blocks all non-GUI usage | Critical |
-| Dataset concurrency | `StorageManager` concurrent writes all fail due to overly strict validator | Medium |
-
----
-
-## Cross-Browser / Cross-Platform Compatibility
-
-This is a desktop Python/tkinter application; standard web browser compatibility is not applicable. Platform-relevant findings:
-
-| Platform Area | Finding | Severity |
-|---------------|---------|----------|
-| Linux headless | `tkinter`/`customtkinter` require `python3-tk` system package; README documents this but no runtime guard exists | Medium |
-| Linux headless | `performance_monitor.py` hard-imports `tkinter`; blocks non-GUI usage and the entire `test_performance_properties.py` suite | Critical |
-| Windows paths | `security_validator.py` references Windows-specific paths (`C:\Windows\`, `C:\Program Files\`) which is intentional for validation; fine | ✓ OK |
-| Dependency isolation | `reportlab` optional but `pdf_generator.py` fails to import when absent due to module-level use of `A4` outside the try block | Critical |
-| `pyproject.toml` addopts | `--cov` flags in `addopts` break `pytest` without `pytest-cov` installed; not in minimal `dependencies` | Medium |
-| `GUI-Simple.py` missing | `GUI-Launcher.py:223,703` registers and can launch `GUI-Simple.py` but the file does not exist in the repository | High |
-
----
-
-## Actionable Recommendations for Remediation
-
-### Priority 1 — Critical (Fix immediately before any release)
-
-**REC-001: Fix `pdf_generator.py` `A4` scoping bug**
-Move the `ReportConfig.page_size` default from `A4` to a string constant (`"A4"`) or use a `field(default_factory=...)` with a lazy lookup. Alternatively define `A4 = (595.28, 841.89)` as a fallback in the `except ImportError` block.
+**Evidence:**
 ```python
-# In the except ImportError block:
-A4 = (595.28, 841.89)
-inch = 72.0
+self.app.config["SECRET_KEY"] = "apgi-framework-secret-key"
 ```
 
-**REC-002: Fix `cli.py` `NoneType` logger crash**
-Initialize `self.logger` to a real logger in `__init__` instead of `None`:
+The static string `"apgi-framework-secret-key"` is the seed for Flask's session cookie signing. Any attacker who knows this string (it is committed to the repository) can forge arbitrary session cookies, bypass authentication, and hijack sessions.
+
+**Contrast** with `apgi_framework/gui/interactive_dashboard.py:79-80`, which correctly uses:
 ```python
-def __init__(self):
-    self.controller = None
-    self.logger = logging.getLogger(__name__)
+self.app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", os.urandom(24).hex())
 ```
 
-**REC-003: Wrap `tkinter` import in `performance_monitor.py`**
-Guard the top-level import:
+**Fix:**
 ```python
-try:
-    import tkinter as tk
-    TKINTER_AVAILABLE = True
-except ImportError:
-    TKINTER_AVAILABLE = False
+import secrets
+self.app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", secrets.token_hex(32))
 ```
 
 ---
 
-### Priority 2 — High (Fix before general availability)
+#### SEC-02 · Path Traversal in File Upload Handler
 
-**REC-004: Implement or disable Find/Find Next/Find Previous/Debug Mode**
-Either implement a basic text-search dialog in `apgi_gui/app.py` or disable/grey-out the menu items and keyboard shortcuts. Remove the bare `raise NotImplementedError` so users do not encounter unhandled exceptions.
+| Field | Detail |
+|-------|--------|
+| **File** | `apgi_gui/components/web_interface.py:619-625` |
+| **Severity** | 🔴 CRITICAL |
+| **CWE** | CWE-22 Improper Limitation of a Pathname to a Restricted Directory |
+| **OWASP** | A01:2021 – Broken Access Control |
 
-**REC-005: Replace hardcoded analysis outputs**
-`run_consciousness_evaluation()`, `short_term_apgi_model()`, and `combined_apgi_analysis()` in `GUI.py` must call actual model code. At minimum, wire them to the existing framework functions in `apgi_framework/` and display real computed results.
-
-**REC-006: Fix `config_manager.save_preset()` directory creation**
-Add `preset_path.parent.mkdir(parents=True, exist_ok=True)` before the `open()` call.
-
-**REC-007: Catch `JSONDecodeError` in `load_preset()`**
-Wrap `json.load()` in a try/except and re-raise as `ConfigurationError`.
-
-**REC-008: Fix staircase rule parser**
-Accept the standard notation `"3up_1down"` by parsing the string with a regex:
+**Evidence:**
 ```python
-import re
-m = re.match(r'(\d+)up_(\d+)down', rule)
-if not m:
-    raise ValidationError(...)
-up_count, down_count = int(m.group(1)), int(m.group(2))
+upload_dir = Path("uploads")
+upload_dir.mkdir(exist_ok=True)
+if filename:
+    file_path = upload_dir / filename   # filename is raw user input
+    file.save(str(file_path))
 ```
 
-**REC-009: Implement PDF and LATEX export formats**
-In `statistical_report_generator.py`, add a `_export_pdf()` method that uses the existing `pdf_generator.py` module, and a `_export_latex()` method. Remove the two unimplemented format cases from the `ValueError`.
+Only a file-extension check is applied. `filename` comes directly from `request.files["file"].filename` and is never sanitised with Werkzeug's `secure_filename()` or the project's own `InputSanitizer.sanitize_filename()` (which exists but is not called).
 
-**REC-010: Implement API service startup**
-`_start_api_service()` in `deployment/automation.py` must either start a real service (Flask/FastAPI) or raise a `NotImplementedError` with a clear message rather than silently returning.
+**Reproduction:**
+```bash
+curl -F "file=@evil.json;filename=../../apgi_framework/__init__.py" http://localhost:5000/api/upload
+```
+
+**Fix:**
+```python
+from werkzeug.utils import secure_filename
+filename = secure_filename(file.filename)
+if not filename:
+    raise ValueError("Invalid filename")
+file_path = upload_dir / filename
+```
 
 ---
 
-### Priority 3 — Medium (Fix before beta)
+#### SEC-03 · Unsafe `pickle.loads` / `pickle.load` Without Validation
 
-**REC-011: Fix `StorageManager` validation to support generic datasets**
-Move the domain-specific field requirements (`apgi_parameters`, `neural_signatures`, `consciousness_assessments`) from mandatory to optional/configurable validation, or add a `strict=False` mode for non-domain data.
+| Field | Detail |
+|-------|--------|
+| **Files** | `apgi_framework/testing/performance_optimizer.py:284` · `apgi_framework/testing/memory_efficient_runner.py:430` |
+| **Severity** | 🔴 CRITICAL |
+| **CWE** | CWE-502 Deserialization of Untrusted Data |
+| **OWASP** | A08:2021 – Software and Data Integrity Failures |
 
-**REC-012: Use absolute path for `presets_dir`**
-In `ConfigManager.__init__`, resolve the presets directory relative to the config file location or the package root:
+**Evidence:**
 ```python
-self.presets_dir = Path(__file__).parent.parent / "config" / "presets"
+# performance_optimizer.py:284
+result=pickle.loads(result_data),   # result_data is a raw BLOB from SQLite
+
+# memory_efficient_runner.py:430
+with open(checkpoint_path, "rb") as f:
+    checkpoint = pickle.load(f)     # reads from disk unconditionally
 ```
 
-**REC-013: Fix `pytest` addopts / dependency declaration**
-Move `--cov` flags out of `addopts` in `pyproject.toml` and into a `pytest.ini` or separate `conftest.py` so that users without `pytest-cov` can still run the test suite. Add `pytest-cov` to the base `dependencies` or document the `[dev]` install requirement prominently.
+If an attacker can write to the SQLite database or replace a checkpoint file, they can inject a malicious pickle payload that executes arbitrary code on load. The project ships a fully-functional `RestrictedUnpickler` in `apgi_framework/security/secure_pickle.py` that is **never used** at these sites.
 
-**REC-014: Handle missing `HEAD~1` in CI integrator**
-Catch the `git diff HEAD~1` failure case and fall back to `git diff HEAD` or return an empty-but-valid result:
+**Fix:** Replace with `safe_pickle_load` from `apgi_framework.security.secure_pickle`.
+
+---
+
+#### SEC-04 · Hardcoded Credentials in `docker-compose.yml`
+
+| Field | Detail |
+|-------|--------|
+| **File** | `docker-compose.yml:58, 78, 128` |
+| **Severity** | 🔴 CRITICAL |
+| **CWE** | CWE-798 Use of Hard-coded Credentials |
+
+**Evidence:**
+```yaml
+POSTGRES_PASSWORD=apgi_password       # line 58
+JUPYTER_TOKEN=apgi-dev-token          # line 78
+GF_SECURITY_ADMIN_PASSWORD=admin      # line 128
+```
+
+Three separate sets of credentials are committed in plaintext. The Grafana password `admin` gives full dashboard admin access to anyone who can reach port 3000.
+
+**Fix:** Replace with env-var references and load from a `.env` file that is never committed:
+```yaml
+POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?err}
+GF_SECURITY_ADMIN_PASSWORD: ${GF_ADMIN_PASSWORD:?err}
+```
+
+---
+
+#### SEC-05 · Hardcoded Database Credentials in `pyproject.toml`
+
+| Field | Detail |
+|-------|--------|
+| **File** | `pyproject.toml:380` |
+| **Severity** | 🔴 CRITICAL |
+| **CWE** | CWE-798 Use of Hard-coded Credentials |
+
+**Evidence:**
+```toml
+database_url = "postgresql://test:test@localhost/test_db"
+```
+
+Even "test" credentials committed to source control normalise the practice and are typically reused or leaked through CI logs.
+
+**Fix:** `database_url = "${DATABASE_URL}"`.
+
+---
+
+#### SEC-06 · Code Injection via f-string Script Generation
+
+| Field | Detail |
+|-------|--------|
+| **File** | `GUI-Experiment-Registry.py:618-635, 743-761` |
+| **Severity** | 🔴 CRITICAL |
+| **CWE** | CWE-94 Code Injection |
+| **OWASP** | A03:2021 – Injection |
+
+**Evidence:**
 ```python
-result = subprocess.run(["git", "diff", "--name-only", "HEAD~1"], ...)
+script_content = f"""
+...
+project_root = Path("{project_root}")    # path may contain " characters
+result = run_experiment("{exp_name}", n_participants={params["n_participants"]}, ...)
+"""
+with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
+    f.write(script_content)
+subprocess.run([sys.executable, script_path], ...)
+```
+
+`project_root` is never sanitised. A working-directory path containing `"` would break out of the string literal. `exp_name` comes from the GUI listbox selection, and any future developer who populates the listbox from user input would introduce a trivially exploitable injection.
+
+**Fix:** Use `json.dumps()` for all interpolated values:
+```python
+script_content = (
+    f"project_root = Path({json.dumps(str(project_root))})\n"
+    f"result = run_experiment({json.dumps(exp_name)}, ...)\n"
+)
+```
+
+---
+
+#### SEC-07 · Unvalidated `.py` Files in CWD Executed via Subprocess
+
+| Field | Detail |
+|-------|--------|
+| **File** | `GUI.py:6644-6714` |
+| **Severity** | 🔴 CRITICAL |
+| **CWE** | CWE-426 Untrusted Search Path |
+
+`get_python_files()` uses `os.listdir(".")` to enumerate Python files without anchoring to the project root. `execute_script()` then validates only with `os.path.exists()`, not by checking membership in a strict allowlist. Any `.py` file in the process CWD (e.g., dropped there by a malicious package or uploaded via the web interface) can be selected and executed.
+
+**Fix:** Anchor `get_python_files()` to `Path(__file__).parent`; resolve every script path and verify it is still inside `ALLOWED_BASE_DIR` before passing to `subprocess`.
+
+---
+
+### 1.2 High Vulnerabilities
+
+---
+
+#### SEC-08 · `shell=True` with Composite String (Command Injection)
+
+| Field | Detail |
+|-------|--------|
+| **File** | `utils/install_dependencies.py:62` |
+| **Severity** | 🟠 HIGH |
+| **CWE** | CWE-78 OS Command Injection |
+
+**Evidence:**
+```python
+subprocess.run(command, shell=True, ...)
+# command is an f-string: f"{sys.executable} -m pip install -r {requirements_path} ..."
+```
+
+If `requirements_path` contains shell metacharacters (space, semicolon, backtick), arbitrary shell commands are executed. Flagged by Bandit B602.
+
+**Fix:** `subprocess.run([sys.executable, "-m", "pip", "install", "-r", str(requirements_path)], check=True)`
+
+---
+
+#### SEC-09 · Wildcard CORS — Any Origin Accepted
+
+| Field | Detail |
+|-------|--------|
+| **File** | `apgi_gui/components/web_interface.py:184, 189` |
+| **Severity** | 🟠 HIGH |
+| **CWE** | CWE-942 Permissive Cross-domain Policy |
+
+```python
+CORS(self.app)                                  # allows all origins
+cors_allowed_origins="*"                        # SocketIO wildcard too
+```
+
+Combined with the hardcoded secret key (SEC-01), any malicious website the user visits can make authenticated requests to the locally-running Flask server.
+
+**Fix:** `CORS(self.app, resources={r"/api/*": {"origins": ["http://localhost:5000"]}})`
+
+---
+
+#### SEC-10 · Path Traversal via Unsanitised `experiment_id` in HDF5 and Filesystem Paths
+
+| Field | Detail |
+|-------|--------|
+| **File** | `apgi_framework/data/persistence_layer.py:304-311, 370-374, 423, 438, 528, 636` |
+| **Severity** | 🟠 HIGH |
+| **CWE** | CWE-22 Path Traversal |
+
+**Evidence:**
+```python
+exp_group = f.create_group(experiment_id)   # HDF5 traversal via "/" in ID
+data_file = self.data_path / f"{experiment_id}.pkl"  # filesystem traversal
+```
+
+HDF5 group names containing `/` act as path separators inside the HDF5 virtual filesystem. Filesystem paths built from unsanitised `experiment_id` can escape `self.data_path`. Both read and delete operations are affected.
+
+**Fix:** Validate `experiment_id` against `^[a-zA-Z0-9_\-]+$`; for filesystem paths additionally resolve and verify containment within `self.data_path`.
+
+---
+
+#### SEC-11 · Path Traversal in BIDS Export via Unsanitised `subject_id`
+
+| Field | Detail |
+|-------|--------|
+| **File** | `apgi_framework/export/bids_export.py:136-141` |
+| **Severity** | 🟠 HIGH |
+| **CWE** | CWE-22 Path Traversal |
+
+```python
+output_dir = self.bids_root / f"sub-{subject_id}"
+```
+
+`_sanitize_string` is called for BIDS *filenames* but not for directory construction. `subject_id = "../../../etc"` escapes `bids_root`.
+
+**Fix:** Apply `_sanitize_string` to `subject_id` and verify `output_dir.resolve().is_relative_to(self.bids_root.resolve())`.
+
+---
+
+#### SEC-12 · Global NumPy RNG Mutation (Thread-Unsafe, Reproducibility Violation)
+
+| Field | Detail |
+|-------|--------|
+| **Files** | `apgi_framework/analysis/effect_size_calculator.py:83-85` · `apgi_framework/analysis/statistical_tester.py:91` |
+| **Severity** | 🟠 HIGH |
+| **CWE** | CWE-362 Concurrent Execution Using Shared Resource |
+
+```python
+np.random.seed(random_state)  # Mutates global RNG state for entire process
+```
+
+Destroys reproducibility for all concurrent numpy random operations (other threads, test runs). Registered as a security concern because it can corrupt statistical outputs in ways that are hard to detect.
+
+**Fix:** `self.rng = np.random.default_rng(random_state)` and use `self.rng` exclusively.
+
+---
+
+#### SEC-13 · Hardcoded Python Binary (`"python"`) Instead of `sys.executable`
+
+| Field | Detail |
+|-------|--------|
+| **File** | `GUI.py:6704` |
+| **Severity** | 🟠 HIGH |
+| **CWE** | CWE-426 Untrusted Search Path |
+
+```python
+subprocess.Popen(["python", script_path], ...)
+```
+
+Resolves `python` via `PATH`, allowing PATH-based injection attacks and failing silently on systems where only `python3` is in PATH.
+
+**Fix:** `subprocess.Popen([sys.executable, script_path], ...)`
+
+---
+
+#### SEC-14 · Fallback Stubs Raise `ImportError` on Instantiation in GUI-Experiment-Registry
+
+| Field | Detail |
+|-------|--------|
+| **File** | `GUI-Experiment-Registry.py:63-80, 208-237` |
+| **Severity** | 🟠 HIGH |
+| **CWE** | CWE-755 Improper Handling of Exceptional Conditions |
+
+The fallback class definitions for `_KeyboardManager`, `_UndoRedoManager`, `_WidgetTracker`, and `_ThemeManager` raise `ImportError` in `__init__`. The guard `if "_KeyboardManager" in locals()` is always `True` (the names are module-level), so the application always attempts to instantiate the broken fallbacks, crashing `__init__` when dependencies are absent.
+
+**Fix:** Initialize all four manager attributes to `None` in the `except ImportError` blocks.
+
+---
+
+#### SEC-15 · Inverted Docstring Parser — Experiment Descriptions Never Shown
+
+| Field | Detail |
+|-------|--------|
+| **File** | `GUI-Experiment-Registry.py:469-485` |
+| **Severity** | 🟠 HIGH |
+| **CWE** | CWE-670 Always-Incorrect Control Flow |
+
+```python
+in_docstring = False
+in_docstring = not in_docstring   # immediately set to True before any processing
+```
+
+`in_docstring` is toggled to `True` before the loop, so the first `"""` causes an immediate break. No docstring content is ever extracted — users always see "No description available."
+
+**Fix:** Remove the premature toggle at line 471.
+
+---
+
+#### SEC-16 · CI/CD Security Scans Never Fail the Pipeline
+
+| Field | Detail |
+|-------|--------|
+| **File** | `utils/cicd_pipeline.py:330-348` |
+| **Severity** | 🟠 HIGH |
+| **CWE** | CWE-693 Protection Mechanism Failure |
+
+```python
 if result.returncode != 0:
-    result = subprocess.run(["git", "diff", "--name-only", "HEAD"], ...)
+    logger.warning("Security vulnerabilities found")
+    # Don't fail pipeline for security warnings
 ```
 
-**REC-015: Add `exist_ok=True` in property-based integration test**
-In `test_integration_properties.py:861`, change:
-```python
-project_dir.mkdir(parents=True)
-```
-to:
-```python
-project_dir.mkdir(parents=True, exist_ok=True)
-```
+Both `safety` and `bandit` scans log warnings but `_run_security_scan()` unconditionally returns `True`, meaning security scan failures **never** block deployment.
 
-**REC-016: Fix `threshold_detection_paradigm.py` performance**
-Profile and fix the psychometric function fitting path that causes >30 s hangs in `test_adaptive_comprehensive.py` and `test_threshold_detection.py`. Add iteration limits and convergence guards.
-
-**REC-017: Implement `ErrorTelemetry` directory creation**
-Create the telemetry directory (and default file) in `ErrorTelemetry.__init__()`:
-```python
-self.telemetry_file.parent.mkdir(parents=True, exist_ok=True)
-```
-
-**REC-018: Fix unknown CLI command exit code**
-In `cli.py`, intercept unknown commands before argparse exits with code 2:
-```python
-parser.error = lambda msg: sys.exit(1)
-```
-or handle unrecognised subcommands explicitly and call `sys.exit(1)`.
+**Fix:** Return `False` on `bandit` HIGH-severity findings; configure `safety` to fail on known CVEs.
 
 ---
 
-### Priority 4 — Low (Quality improvements)
+### 1.3 Medium Vulnerabilities
 
-**REC-019: Fix systemic relative-path issues across modules**
-Audit every module that constructs file paths at runtime. Replace all occurrences of `Path("config/presets")`, `Path("logs/telemetry")`, `Path("apgi_output/...")`, etc. with paths anchored to a known absolute reference:
+---
+
+#### SEC-17 · Unsafe `pickle.dump` Without Checksum in `batch_processor.py`
+
+| Field | Detail |
+|-------|--------|
+| **File** | `utils/batch_processor.py:350` · `apgi_framework/processing/results_processor.py:612-614` |
+| **Severity** | 🟡 MEDIUM |
+| **CWE** | CWE-502 Deserialization of Untrusted Data |
+
+Raw `pickle.dump` without checksums or `safe_pickle_dump`. Files can be replaced between write and read. **Fix:** Use `safe_pickle_dump`.
+
+---
+
+#### SEC-18 · `assert` Used as Runtime Guard (Disabled Under `-O`)
+
+| Field | Detail |
+|-------|--------|
+| **Files** | `apgi_framework/workflow_orchestrator.py:412,433,440,503,530,540` · `apgi_framework/deployment/automation.py:155` · `apgi_framework/analysis/bayesian_models.py:607` |
+| **Severity** | 🟡 MEDIUM |
+| **CWE** | CWE-617 Reachable Assertion |
+
+Python's `-O` optimisation flag removes all `assert` statements. These guards protect against silent `NoneType` `AttributeError` crashes. **Fix:** Replace with `if x is None: raise RuntimeError(...)`.
+
+---
+
+#### SEC-19 · SMTP Without Explicit TLS Certificate Context
+
+| Field | Detail |
+|-------|--------|
+| **File** | `apgi_framework/testing/notification_manager.py:596-601` |
+| **Severity** | 🟡 MEDIUM |
+| **CWE** | CWE-297 Improper Validation of Certificate with Host Mismatch |
+
+`server.starttls()` without `ssl.create_default_context()` may not enforce certificate validation on all Python builds. **Fix:** `server.starttls(context=ssl.create_default_context())`.
+
+---
+
+#### SEC-20 · `_update_config_from_dict` Uses `setattr` Without Type Validation
+
+| Field | Detail |
+|-------|--------|
+| **File** | `apgi_framework/config/manager.py:261-266` |
+| **Severity** | 🟡 MEDIUM |
+
+Config values from YAML/JSON are applied via `setattr` without type coercion. A string in a field typed as `bool` or `int` silently stores the wrong type, producing downstream errors. **Fix:** Validate and coerce types at assignment.
+
+---
+
+#### SEC-21 · `APGI_SECRET_KEY` Not Validated at Startup
+
+| Field | Detail |
+|-------|--------|
+| **File** | `apgi_framework/config/manager.py:201-235` |
+| **Severity** | 🟡 MEDIUM |
+
+`APGI_SECRET_KEY` is not read by `_load_environment_config()`. No minimum-length check exists; the key may be empty or absent in non-development environments with no diagnostic.
+
+---
+
+#### SEC-22 · MD5 Used for Model Cache Key
+
+| Field | Detail |
+|-------|--------|
+| **File** | `apgi_framework/analysis/bayesian_models.py:303` |
+| **Severity** | 🟡 MEDIUM |
+| **CWE** | CWE-327 Use of Broken Cryptographic Algorithm |
+
+`hashlib.md5(model_code.encode()).hexdigest()` — MD5 is cryptographically broken. **Fix:** Use `hashlib.sha256`.
+
+---
+
+#### SEC-23 · `secure_pickle._is_valid_pickle_format` Checks Incorrect Byte Set
+
+| Field | Detail |
+|-------|--------|
+| **File** | `apgi_framework/security/secure_pickle.py:153-155` |
+| **Severity** | 🟡 MEDIUM |
+
 ```python
-BASE_DIR = Path(__file__).parent.parent  # project root
-self.presets_dir = BASE_DIR / "config" / "presets"
+valid_protocols = {b"\x80", b"}", b")", b".", b"0", b"1", b"2"}
 ```
-Apply the same pattern to `error_handler.py`, `error_telemetry.py`, and `performance_monitor.py`.
 
-**REC-020: Fix test isolation / shared global state**
-Use `pytest-xdist` isolation or `autouse` fixtures that reset global singletons (`APGILogManager`, `ErrorTelemetry`, `ConfigManager`) between tests. Alternatively, run `pytest --forked` (via `pytest-forked`) to guarantee process isolation. Use `monkeypatch` or `importlib.reload()` in affected test modules rather than relying on module-level singletons persisting across tests.
-
-**REC-025: Implement missing `APGIEquation` public API**
-Add `set_parameters(params: dict)` and `calculate()` (or `compute()`) methods to `APGIEquation`. These are referenced directly in `tests/framework/test_equation.py` and appear to be core documented methods.
-
-**REC-026: Reconcile `QuestPlus*` / stimulus generator / session API**
-Align `QuestPlusParameters`, `QuestPlusStaircase`, `StaircaseState`, `ToneParameters`, `GaborParameters`, `CO2PuffParameters`, and `SessionConfiguration` constructors with the kwargs expected by the test suite. Either add the missing parameters to the dataclasses or update tests to match the actual implemented signatures — but do not leave them silently mismatched.
-
-**REC-027: Fix `IntegratedDataManager` / `StorageManager` API**
-Add `storage_path` constructor parameter to `IntegratedDataManager`. Implement missing `query_experiments()` and `StorageManager.retrieve_dataset()` methods. Fix `query_datasets()` to return an object with `.experiment_ids` rather than a raw `dict`.
-
-**REC-028: Normalise `SystemValidator` test name casing**
-Change validator test names from "Title Case" to `snake_case` (or update tests to match), and replace `== 0.3` float comparisons with `pytest.approx(0.3)`.
-
-**REC-029: Fix `WorkflowOrchestrator` summary header**
-Change the summary template to include `"WORKFLOW SUMMARY"` as a section header, or update the test assertion to match `"APGI Framework Testing - Workflow Summary"`.
-
-**REC-030: Add `_extract_threshold_at_performance()` to `PsychometricFunction`**
-Implement this private helper method which is called by threshold-extraction code and expected by tests.
-
-**REC-031: Fix `FrameworkTestCase` constructor**
-Make the `module` argument optional with a sensible default, or document it clearly as required and update all callers.
-
-**REC-021: Implement `coverage_visualization.py` Qt widget**
-Either complete the PySide6 widget implementation or remove it and implement an equivalent tkinter widget since the rest of the UI uses tkinter/customtkinter.
-
-**REC-022: Fix `global _global_monitor` in `realtime_monitor.py`**
-Remove or populate the unused `global` declaration (flake8 F824).
-
-**REC-023: Add `@abstractmethod` decorator to `enhanced_error_handling.py` stubs**
-The two methods raising `NotImplementedError` should be decorated with `@abstractmethod` and the class should inherit from `ABC` to enforce implementation at subclass instantiation time.
-
-**REC-024: Enforce `APGIAgent` parameter validation**
-The test `test_agent_parameter_validation` expects `ValueError` for out-of-range parameters. Implement boundary checks in the agent's `__init__` or `set_parameters()` method.
-
-**REC-032: Add `system_tk_available` guard to all top-level tkinter GUI modules**
-Wrap all `import tkinter` statements in optional/guarded imports across `apgi_framework/gui/` so that headless imports (for unit testing or CLI-only usage) gracefully degrade.
+`b"}"`, `b")"`, `b"."` are individual pickle opcodes that appear mid-stream, not at the start of a valid pickle. This produces unreliable validation results. **Fix:** Use `pickletools` opcode parsing.
 
 ---
 
-## Appendix — Files Audited
-
-| File | Lines | Notes |
-|------|------:|-------|
-| `GUI.py` | ~6750 | Main desktop GUI — extensive, mostly functional |
-| `GUI-Launcher.py` | ~1500 | Launcher GUI — clean, no syntax errors |
-| `GUI-Experiment-Registry.py` | ~850 | Registry GUI — 2 bare `pass` stubs in exception handlers |
-| `apgi_gui/app.py` | ~1700 | Alternative GUI app — 4 `NotImplementedError` stubs |
-| `apps/apgi_falsification_gui.py` | ~2000 | Falsification GUI — 7 bare `pass` stubs |
-| `Tests-GUI.py` | ~900 | Test runner GUI — 2 bare `pass` in error handlers |
-| `Utils-GUI.py` | ~600 | Utils GUI — no stubs found |
-| `apgi_framework/cli.py` | ~2200 | CLI — logger init bug (BUG-002) |
-| `apgi_framework/reporting/pdf_generator.py` | ~400 | Critical import bug (BUG-001) |
-| `apgi_framework/gui/coverage_visualization.py` | ~450 | Qt widget — 30+ stub methods |
-| `apgi_framework/optimization/performance_monitor.py` | ~200 | Unconditional tkinter import (BUG-003) |
-| `apgi_framework/config/config_manager.py` | ~400 | `save_preset` / `load_preset` bugs |
-| `apgi_framework/analysis/statistical_report_generator.py` | ~380 | PDF/LATEX formats unimplemented |
-| `apgi_framework/deployment/automation.py` | ~500 | API service startup stub |
-| `apgi_framework/research/threshold_detection_paradigm.py` | ~600 | Rule parser bug; performance issues |
+### 1.4 Low Vulnerabilities
 
 ---
 
-*Report generated by automated code analysis (static + dynamic) on branch `claude/app-audit-testing-onxEE`. All reproduction steps were verified against the live codebase.*
+#### SEC-24 · Division by Zero in `eta_squared` (Analysis Engine)
+
+**File:** `apgi_framework/analysis/analysis_engine.py:313` — `eta_squared = between_var / total_var` when all observations are constant. **Fix:** Guard `if total_var == 0: eta_squared = 0.0`.
+
+#### SEC-25 · Division by Zero in Cohen's d / Hedges' g
+
+**File:** `apgi_framework/analysis/effect_size_calculator.py:112,115` — When `n1 == n2 == 1` or both groups have zero variance. **Fix:** Validate minimum group sizes and guard `pooled_std == 0`.
+
+#### SEC-26 · Full Deserialization During Pickle Validation (DoS)
+
+**File:** `apgi_framework/security/secure_pickle.py:423-438` — `validate_pickle_security()` fully deserializes the object during validation. A large payload consumes unbounded memory. **Fix:** Add file size cap before loading.
+
+---
+
+## Section 2 — Functional Bug Inventory
+
+### Priority: High
+
+---
+
+#### BUG-01 · `TreatmentPredictor.predict()` Is a Stub — Always Returns Hardcoded SSRI
+
+| File | `apgi_framework/clinical/treatment_prediction.py:47-54` |
+|------|---|
+| **Severity** | 🟠 HIGH |
+
+```python
+def predict(self, params: BaselineParameters) -> TreatmentPrediction:
+    # Placeholder implementation
+    return TreatmentPrediction(
+        recommended_treatment=TreatmentType.SSRI,
+        predicted_response=0.7,
+        confidence=0.8,
+    )
+```
+
+Every patient receives the same SSRI recommendation with a fixed 70 % response rate regardless of input parameters. No warning or error is raised.
+
+**Fix:** Raise `NotImplementedError` with a clear message, or implement the actual treatment-matching logic.
+
+---
+
+#### BUG-02 · Double-Application of Variability Adjustment in `ThresholdManager`
+
+| File | `apgi_framework/core/threshold.py:278-281` |
+|------|---|
+| **Severity** | 🟠 HIGH |
+
+```python
+scaled_adjustment = total_adjustment * stability_factor   # includes variability_adjustment
+threshold += scaled_adjustment
+# Fallback to simple variability adjustment
+variability_adjustment = 0.1 * recent_variability
+threshold += float(variability_adjustment)   # BUG: applied a second time
+```
+
+The variability component is added twice — once inside `total_adjustment * stability_factor` and once as a raw addition. This corrupts the threshold value on every adaptive update.
+
+**Fix:** Remove lines 279–281.
+
+---
+
+#### BUG-03 · `DisorderClassification.evaluate()` Always Returns `DisorderType.CONTROL`
+
+| File | `apgi_framework/clinical/disorder_classification.py:629` |
+|------|---|
+| **Severity** | 🟠 HIGH |
+
+```python
+return ClassificationResult(
+    predicted_disorder=DisorderType.CONTROL,  # Placeholder
+    ...
+)
+```
+
+The field is hardcoded. The function correctly computes accuracy and confusion matrices but returns a wrong prediction type. **Fix:** Set `predicted_disorder` to the most common predicted class, or use a batch-evaluation result type.
+
+---
+
+#### BUG-04 · `NotImplementedError` in Production GUI Menu Items
+
+| File | `apgi_gui/app.py:1224-1236` |
+|------|---|
+| **Severity** | 🟠 HIGH |
+
+`find()`, `find_next()`, `find_previous()`, `toggle_debug_mode()` all raise `NotImplementedError` — visible, enabled menu items that crash on click.
+
+**Fix:** Replace with graceful "not yet implemented" dialogs.
+
+---
+
+#### BUG-05 · EEG Export Writes `.csv`/`.npy` Instead of Promised `.set`
+
+| File | `apgi_framework/export/bids_export.py:170-177` |
+|------|---|
+| **Severity** | 🟠 HIGH |
+
+```python
+csv_path = output_path.with_suffix(".csv")
+df.to_csv(csv_path, index=False)
+np.save(output_path.with_suffix(".npy"), data)
+# output_path (.set) is NEVER written
+```
+
+`export_eeg_data` records the `.set` path as the canonical output, which does not exist. All subsequent reads of the returned path fail.
+
+**Fix:** Either write a proper `.set` file using MNE-Python, or change the export format and update the path consistently.
+
+---
+
+#### BUG-06 · BIDS Behavioral Export Fails for Any Subject Beyond `sub-01`
+
+| File | `apgi_framework/export/bids_export.py:280-296` |
+|------|---|
+| **Severity** | 🟠 HIGH |
+
+`output_dir.mkdir()` is never called before writing behavioral data. `_create_bids_structure` only creates `sub-01/ses-01/…` directories. Writing to any other subject or session raises `FileNotFoundError`.
+
+**Fix:** Add `output_dir.mkdir(parents=True, exist_ok=True)` before each write.
+
+---
+
+### Priority: Medium
+
+---
+
+#### BUG-07 · `ErrorRecoveryStrategy` Subclass Never Overrides Abstract Methods
+
+| File | `apgi_framework/validation/enhanced_error_handling.py:111-117` |
+|------|---|
+| **Severity** | 🟡 MEDIUM |
+
+`DataValidationRecovery(ErrorRecoveryStrategy)` inherits `can_handle()` and `recover()` which raise `NotImplementedError`. The subclass is `pass`. Any invocation of the recovery subsystem raises `NotImplementedError`.
+
+**Fix:** Implement both methods in `DataValidationRecovery` or use `abc.ABC` / `@abstractmethod`.
+
+---
+
+#### BUG-08 · `ParameterEstimator.refit()` Raises After Deprecation Warning
+
+| File | `apgi_framework/analysis/parameter_estimation.py:558-565` |
+|------|---|
+| **Severity** | 🟡 MEDIUM |
+
+Issues a deprecation warning *and then* unconditionally raises `NotImplementedError`. The warning misleads callers into thinking an alternative exists. **Fix:** Remove the deprecation warning or implement the method.
+
+---
+
+#### BUG-09 · Thread-Unsafe Global Singletons
+
+| Files | `apgi_framework/config/manager.py:449-451` and three others |
+|-------|---|
+| **Severity** | 🟡 MEDIUM |
+
+All four global singleton factories (`ConfigurationManager`, `ActivityLogger`, `LoggingUtils`, `PathManager`) use an unprotected read-check-write pattern, enabling race conditions that create duplicate instances with divergent state.
+
+**Fix:** Wrap with `threading.Lock()`.
+
+---
+
+#### BUG-10 · Incorrect Eta-squared Confidence Interval (Central vs Non-Central F)
+
+| File | `apgi_framework/analysis/effect_size_calculator.py:449-468` |
+|------|---|
+| **Severity** | 🟡 MEDIUM |
+
+`_eta_squared_ci` uses `scipy.stats.f.ppf` (central F quantiles) instead of the non-central F inversion required by the Smithson/Steiger method. Produces meaningless confidence intervals. The `omega_squared` method inherits the same wrong CI. **Fix:** Use `scipy.stats.ncf` for proper non-central F inversion.
+
+---
+
+#### BUG-11 · `consistency_score` Unbounded Below Zero in `ExperimentalControl`
+
+| File | `apgi_framework/experimental_control.py:149` |
+|------|---|
+| **Severity** | 🟡 MEDIUM |
+
+`consistency_score = 1.0 - (rt_std / rt_mean)` can be negative for high-variability participants, corrupting subsequent `control_score` arithmetic. **Fix:** `max(0.0, 1.0 - (rt_std / rt_mean))`.
+
+---
+
+#### BUG-12 · QUEST+ Expected Entropy Normalization is Mathematically Incorrect
+
+| File | `apgi_framework/adaptive/quest_plus_staircase.py:281-285` |
+|------|---|
+| **Severity** | 🟡 MEDIUM |
+
+Accumulated entropy before normalization is divided by the sum (`-entropy / p_detected_total`). Shannon entropy requires normalising the posterior distribution first, then computing `−Σ p_norm log p_norm`. The current formula is algebraically different, producing incorrect information gain estimates and therefore suboptimal stimulus selection.
+
+---
+
+#### BUG-13 · Welch's Degrees of Freedom Truncated to `int`
+
+| File | `apgi_framework/analysis/statistical_tester.py:128` |
+|------|---|
+| **Severity** | 🟡 MEDIUM |
+
+`degrees_of_freedom=int(df)` truncates the Welch-Satterthwaite continuous df, producing inconsistent results vs. scipy's internal calculation. **Fix:** Store as `float(df)`.
+
+---
+
+#### BUG-14 · `_calculate_icc` Always Returns `0.0` for Single-Value Pairs
+
+| File | `apgi_framework/clinical/parameter_extraction.py:660-668` |
+|------|---|
+| **Severity** | 🟡 MEDIUM |
+
+`self._calculate_icc([val1], [val2])` passes single-element lists; the early-exit check fires immediately, returning 0.0 for every ICC. All test-retest reliability metrics are meaningless.
+
+---
+
+#### BUG-15 · `AnalysisEngine.__init__` Crashes When seaborn Is Not Installed
+
+| File | `apgi_framework/analysis/analysis_engine.py:78-79` |
+|------|---|
+| **Severity** | 🟡 MEDIUM |
+
+```python
+sns.set_palette("husl")   # sns is None when seaborn is absent
+```
+
+`HAS_SEABORN` is declared but never checked here. Every `AnalysisEngine` instantiation fails with `AttributeError` when seaborn is absent.
+
+**Fix:** `if HAS_SEABORN and sns is not None: sns.set_palette("husl")`
+
+---
+
+#### BUG-16 · `data` Variable Potentially Unbound in `PersistenceLayer.load_dataset`
+
+| File | `apgi_framework/data/persistence_layer.py:209-220` |
+|------|---|
+| **Severity** | 🟡 MEDIUM |
+
+If `self.backend` is mutated after `__init__`, neither branch runs and `data` is referenced unbound, raising `UnboundLocalError` instead of a meaningful exception.
+
+**Fix:** Initialize `data: Dict[str, Any] = {}` before the conditional.
+
+---
+
+### Priority: Low
+
+---
+
+#### BUG-17 · `update_config` Does Not Persist to File
+
+`apgi_framework/config/manager.py:415-423` — In-memory only; settings lost on restart. **Fix:** Call `save_config()` or document explicitly.
+
+#### BUG-18 · Division by Zero in `data_quality_assessment.py` for Empty DataFrame
+
+`utils/data_quality_assessment.py:79` — `total_cells == 0`. **Fix:** Guard `if total_cells == 0`.
+
+#### BUG-19 · Division by Zero in `data_processor.py` for Empty DataFrame
+
+`utils/data_processor.py:400` — `len(data) == 0`. **Fix:** Guard with `len(data) or 1`.
+
+#### BUG-20 · Subprocess Process Leak on Timeout in Experiment Registry
+
+`GUI-Experiment-Registry.py:645-650` — `TimeoutExpired` is not caught; the child process is never killed. **Fix:** Catch `subprocess.TimeoutExpired` and call `process.kill()`.
+
+#### BUG-21 · 100% CPU Busy-Wait in `PrecisionTimer.wait_until`
+
+`apgi_framework/adaptive/task_control.py:185` — `while time.perf_counter() < target: pass` pegs CPU. **Fix:** Hybrid sleep + busy-wait for the final millisecond.
+
+#### BUG-22 · Two-Group Bootstrap Uses Identical Indices for Independent Samples
+
+`apgi_framework/analysis/effect_size_calculator.py:364-377` — Both arrays resampled with the same index set, preserving phantom paired structure. **Fix:** Use independent `np.random.choice` calls per array.
+
+#### BUG-23 · `validate_against_criterion` Returns Fake Correlations
+
+`apgi_framework/clinical/parameter_extraction.py:826-845` — Ignores `criterion_measures` input; returns a fixed linear transform of parameter values presented as empirical Pearson correlations.
+
+#### BUG-24 · `Optional[str]` Annotation Missing Across All 13 Exception Classes
+
+`apgi_framework/exceptions.py:34+` — `operation: str = None` is a type error; should be `Optional[str] = None`. Affects `MathematicalError` and 12 sibling classes.
+
+---
+
+## Section 3 — Missing Features Log
+
+| ID | Feature | Specification Reference | Status | Severity |
+|----|---------|------------------------|--------|----------|
+| MF-01 | **Find / Find Next / Find Previous** | README §2 "GUI Applications"; `apgi_gui/app.py` menu structure | `NotImplementedError` at runtime | 🟠 HIGH |
+| MF-02 | **Debug Mode** toggle | `apgi_gui/app.py:1236` | `NotImplementedError` at runtime | 🟠 HIGH |
+| MF-03 | **`ParameterEstimator.refit()`** | Public API docstring; documented workflow | Not implemented; raises | 🟠 HIGH |
+| MF-04 | **`TreatmentPredictor` real predictions** | `clinical/treatment_prediction.py` public API | Hardcoded stub returns SSRI always | 🟠 HIGH |
+| MF-05 | **EEG BIDS `.set` export** | BIDS EEG specification; `export/bids_export.py` signature | `.csv`/`.npy` written, `.set` never created | 🟠 HIGH |
+| MF-06 | **Error Recovery strategy implementations** | `enhanced_error_handling.py` architecture | Stub — `DataValidationRecovery` never overrides base | 🟡 MEDIUM |
+
+---
+
+## Section 4 — UI/UX Consistency Findings
+
+| ID | Location | Issue | Severity |
+|----|----------|-------|----------|
+| UI-01 | `apgi_gui/app.py` Edit/Debug menu | Menu items visible and enabled but crash on click with `NotImplementedError` | 🟠 HIGH |
+| UI-02 | `GUI-Experiment-Registry.py:469-485` | Docstring parser inverted; all experiments show "No description available" | 🟠 HIGH |
+| UI-03 | `GUI.py:6704` | Hardcoded `"python"` binary silently fails on Linux where `python3` is the only interpreter | 🟠 HIGH |
+| UI-04 | `GUI-Experiment-Registry.py` | No progress indicator during 5-minute experiment timeout; user sees frozen UI | 🟡 MEDIUM |
+| UI-05 | Multiple `except Exception: pass` | Errors swallowed silently; no user feedback on failure | 🟡 MEDIUM |
+| UI-06 | `apgi_gui/components/web_interface.py` | File upload JSON response includes full server-side `path` — information disclosure | 🟡 MEDIUM |
+| UI-07 | `apgi_framework/core/equation.py:124-133` | Surprise clamped silently to [0,10] at DEBUG log level; misleads callers with large prediction errors | 🟢 LOW |
+
+---
+
+## Section 5 — Performance & Responsiveness Findings
+
+| ID | Location | Issue | Severity |
+|----|----------|-------|----------|
+| PERF-01 | `GUI-Experiment-Registry.py` | No cancellation mechanism for running experiments; hung subprocess blocks until 300 s timeout | 🟡 MEDIUM |
+| PERF-02 | `apgi_framework/testing/performance_optimizer.py` | SQLite cache stores full `pickle.dumps()` blob per result entry; large objects bloat the DB | 🟡 MEDIUM |
+| PERF-03 | `apgi_framework/adaptive/task_control.py:185` | 100% CPU busy-wait for entire timing wait; causes thermal throttling in long sessions | 🟡 MEDIUM |
+| PERF-04 | `apgi_framework/analysis/analysis_engine.py:329` | ANOVA loop spawns `min(group_cols, 4)` threads; GIL contention for DataFrames with many columns | 🟢 LOW |
+| PERF-05 | `docker-compose.yml` | Full source tree mounted as volume (`.:/app`); all container writes hit host filesystem | 🟢 LOW |
+
+---
+
+## Section 6 — Error Handling & Resilience Findings
+
+| ID | Location | Issue | Severity |
+|----|----------|-------|----------|
+| EH-01 | `apgi_framework/validation/enhanced_error_handling.py` | Recovery strategy base raises `NotImplementedError`; subclass never overrides → recovery always fails | 🟠 HIGH |
+| EH-02 | `apgi_framework/data/persistence_layer.py:209-220` | `data` variable unbound if backend attribute mutated after init | 🟡 MEDIUM |
+| EH-03 | `apgi_framework/workflow_orchestrator.py` et al. | `assert` guards disabled under `-O` → silent `AttributeError` in production | 🟡 MEDIUM |
+| EH-04 | `utils/gui-simple-experiment-runner.py` | 14+ bare `pass` exception blocks hide all errors | 🟡 MEDIUM |
+| EH-05 | `run_tests.py:349,669` | `except Exception: pass` swallows test-runner errors; output appears empty | 🟡 MEDIUM |
+| EH-06 | `GUI.py:996-998, 1012-1014` | Bare `except Exception: pass` in two critical GUI init paths | 🟡 MEDIUM |
+| EH-07 | `apgi_framework/config/manager.py` | `update_config()` broad `except Exception` re-raises but does not restore previous state | 🟢 LOW |
+
+---
+
+## Section 7 — Prioritised Remediation Roadmap
+
+### Sprint 1 — Immediate (Before Any Web Deployment)
+
+| # | Issue | File | Effort |
+|---|-------|------|--------|
+| 1 | SEC-04 — Rotate & move docker-compose credentials to `.env` | `docker-compose.yml` | S |
+| 2 | SEC-05 — Remove hardcoded DB URL from pyproject.toml | `pyproject.toml` | XS |
+| 3 | SEC-01 — Randomise Flask SECRET_KEY from env var | `web_interface.py:180` | XS |
+| 4 | SEC-02 — Sanitise upload filename with `secure_filename()` | `web_interface.py:624` | XS |
+| 5 | SEC-03 — Replace unsafe `pickle.load` with `safe_pickle_load` | 2 call sites | S |
+| 6 | SEC-09 — Restrict CORS to `localhost` | `web_interface.py:184` | XS |
+| 7 | SEC-08 — Replace `shell=True` with list-form subprocess | `install_dependencies.py:62` | XS |
+| 8 | SEC-06 — Fix f-string code injection (use `json.dumps`) | `GUI-Experiment-Registry.py` | S |
+| 9 | SEC-07 — Anchor script execution to project root allowlist | `GUI.py:6644` | S |
+
+### Sprint 2 — High Priority (Before Beta Release)
+
+| # | Issue | File | Effort |
+|---|-------|------|--------|
+| 10 | BUG-01 — Add real logic to `TreatmentPredictor.predict()` | `treatment_prediction.py:47` | L |
+| 11 | BUG-02 — Remove duplicate variability adjustment | `threshold.py:278-281` | XS |
+| 12 | BUG-03 — Fix `DisorderClassification.evaluate()` return field | `disorder_classification.py:629` | S |
+| 13 | BUG-04 — Replace `NotImplementedError` menu raises with dialogs | `apgi_gui/app.py:1224-1236` | S |
+| 14 | BUG-05 — Fix EEG `.set` export (write file or change format) | `bids_export.py:170-177` | M |
+| 15 | BUG-06 — Add `mkdir(parents=True)` to BIDS behavioral export | `bids_export.py:280-296` | XS |
+| 16 | SEC-13 — Replace `"python"` with `sys.executable` | `GUI.py:6704` | XS |
+| 17 | SEC-15 — Fix inverted docstring parser | `GUI-Experiment-Registry.py:471` | XS |
+| 18 | SEC-16 — Fail CI pipeline on security scan findings | `cicd_pipeline.py:330-348` | S |
+| 19 | SEC-14 — Fix broken fallback stubs in Registry GUI | `GUI-Experiment-Registry.py:208-237` | S |
+| 20 | BUG-09 — Add `threading.Lock()` to global singleton factories | 4 modules | S |
+| 21 | SEC-18 — Convert `assert` guards to `if`/`raise RuntimeError` | `workflow_orchestrator.py` et al. | S |
+
+### Sprint 3 — Medium Priority
+
+| # | Issue | File | Effort |
+|---|-------|------|--------|
+| 22 | SEC-10/11 — Validate `experiment_id`/`subject_id` for path traversal | `persistence_layer.py` · `bids_export.py` | S |
+| 23 | BUG-10 — Fix eta-squared CI (use non-central F) | `effect_size_calculator.py:449` | M |
+| 24 | BUG-12 — Fix QUEST+ entropy normalization | `quest_plus_staircase.py:281` | S |
+| 25 | BUG-15 — Guard `sns.set_palette` behind `HAS_SEABORN` | `analysis_engine.py:79` | XS |
+| 26 | BUG-11 — Clamp `consistency_score` to [0,1] | `experimental_control.py:149` | XS |
+| 27 | SEC-17 — Replace raw pickle.dump with `safe_pickle_dump` | `batch_processor.py`, `results_processor.py` | S |
+| 28 | SEC-19 — Add explicit SSL context to SMTP | `notification_manager.py:596` | XS |
+| 29 | SEC-22 — Replace MD5 cache key with SHA-256 | `bayesian_models.py:303` | XS |
+| 30 | BUG-07 — Implement `DataValidationRecovery` methods | `enhanced_error_handling.py` | M |
+| 31 | UI-06 — Remove server path from upload JSON response | `web_interface.py:633` | XS |
+| 32 | EH-04/05/06 — Add logging to bare-pass exception handlers | multiple files | S |
+
+### Sprint 4 — Hardening
+
+| # | Issue | Effort |
+|---|-------|--------|
+| 33 | BUG-17 — Auto-persist config on `update_config()` | XS |
+| 34 | BUG-18/19 — Division-by-zero guards in data utils | XS |
+| 35 | BUG-20 — Kill subprocess on timeout | XS |
+| 36 | BUG-21 — Hybrid sleep + busy-wait in `PrecisionTimer` | S |
+| 37 | BUG-22 — Independent bootstrap resampling per group | XS |
+| 38 | BUG-24 — Fix `str = None` type annotation in all 13 exception classes | XS |
+| 39 | LOW-07 — Enable mypy strict mode incrementally in `pyproject.toml` | M |
+
+> **Effort key:** XS < 1 h · S < 1 day · M < 1 week · L > 1 week
+
+---
+
+## Appendix A — All Security Findings (Summary Table)
+
+| ID | File | Line | Severity | Category | Title |
+|----|------|------|----------|----------|-------|
+| SEC-01 | `apgi_gui/components/web_interface.py` | 180 | 🔴 CRITICAL | Auth | Hardcoded Flask secret key |
+| SEC-02 | `apgi_gui/components/web_interface.py` | 619-625 | 🔴 CRITICAL | Injection | Path traversal in file upload |
+| SEC-03 | `performance_optimizer.py` / `memory_efficient_runner.py` | 284 / 430 | 🔴 CRITICAL | Deserialisation | Unsafe `pickle.load` |
+| SEC-04 | `docker-compose.yml` | 58, 78, 128 | 🔴 CRITICAL | Auth | Hardcoded infra credentials |
+| SEC-05 | `pyproject.toml` | 380 | 🔴 CRITICAL | Auth | Hardcoded DB URL with credentials |
+| SEC-06 | `GUI-Experiment-Registry.py` | 618-635 | 🔴 CRITICAL | Injection | f-string code injection |
+| SEC-07 | `GUI.py` | 6644-6714 | 🔴 CRITICAL | Execution | Unvalidated CWD scripts executed |
+| SEC-08 | `utils/install_dependencies.py` | 62 | 🟠 HIGH | Injection | `shell=True` command injection |
+| SEC-09 | `apgi_gui/components/web_interface.py` | 184, 189 | 🟠 HIGH | Config | Wildcard CORS |
+| SEC-10 | `apgi_framework/data/persistence_layer.py` | 304, 423 | 🟠 HIGH | Injection | Path traversal via `experiment_id` |
+| SEC-11 | `apgi_framework/export/bids_export.py` | 136-141 | 🟠 HIGH | Injection | Path traversal via `subject_id` |
+| SEC-12 | `effect_size_calculator.py` / `statistical_tester.py` | 85 / 91 | 🟠 HIGH | Concurrency | Global NumPy RNG mutation |
+| SEC-13 | `GUI.py` | 6704 | 🟠 HIGH | Path | Hardcoded `"python"` binary |
+| SEC-14 | `GUI-Experiment-Registry.py` | 208-237 | 🟠 HIGH | Logic | Broken fallback stubs crash `__init__` |
+| SEC-15 | `GUI-Experiment-Registry.py` | 471 | 🟠 HIGH | Logic | Inverted docstring parser |
+| SEC-16 | `utils/cicd_pipeline.py` | 330-348 | 🟠 HIGH | Config | Security scans never fail pipeline |
+| SEC-17 | `batch_processor.py` / `results_processor.py` | 350 / 613 | 🟡 MEDIUM | Deserialisation | Unsafe `pickle.dump` (no checksum) |
+| SEC-18 | `workflow_orchestrator.py` et al. | Various | 🟡 MEDIUM | Logic | `assert` as runtime guard |
+| SEC-19 | `notification_manager.py` | 596-601 | 🟡 MEDIUM | Crypto | SMTP without explicit TLS context |
+| SEC-20 | `apgi_framework/config/manager.py` | 261-266 | 🟡 MEDIUM | Validation | `setattr` without type validation |
+| SEC-21 | `apgi_framework/config/manager.py` | 201-235 | 🟡 MEDIUM | Auth | `APGI_SECRET_KEY` not validated |
+| SEC-22 | `apgi_framework/analysis/bayesian_models.py` | 303 | 🟡 MEDIUM | Crypto | MD5 for cache key |
+| SEC-23 | `apgi_framework/security/secure_pickle.py` | 153-155 | 🟡 MEDIUM | Validation | Incorrect pickle format byte check |
+| SEC-24 | `apgi_framework/analysis/analysis_engine.py` | 313 | 🟢 LOW | Math | `eta_squared` division by zero |
+| SEC-25 | `apgi_framework/analysis/effect_size_calculator.py` | 112, 115 | 🟢 LOW | Math | Cohen's d / Hedges' g division by zero |
+| SEC-26 | `apgi_framework/security/secure_pickle.py` | 423-438 | 🟢 LOW | DoS | Full deserialisation during validation |
+
+---
+
+## Appendix B — All Bugs (Summary Table)
+
+| ID | File | Line | Severity | Category | Title |
+|----|------|------|----------|----------|-------|
+| BUG-01 | `clinical/treatment_prediction.py` | 47 | 🟠 HIGH | Incomplete | `predict()` always returns hardcoded SSRI |
+| BUG-02 | `core/threshold.py` | 278 | 🟠 HIGH | Logic | Variability adjustment applied twice |
+| BUG-03 | `clinical/disorder_classification.py` | 629 | 🟠 HIGH | Incomplete | `evaluate()` always returns `CONTROL` |
+| BUG-04 | `apgi_gui/app.py` | 1224-1236 | 🟠 HIGH | Incomplete | 4 menu items raise `NotImplementedError` |
+| BUG-05 | `export/bids_export.py` | 170-177 | 🟠 HIGH | Logic | `.set` file never written |
+| BUG-06 | `export/bids_export.py` | 280-296 | 🟠 HIGH | Bug | Missing `mkdir` for new subjects |
+| BUG-07 | `validation/enhanced_error_handling.py` | 111-117 | 🟡 MEDIUM | Incomplete | Recovery subclass never overrides methods |
+| BUG-08 | `analysis/parameter_estimation.py` | 558-565 | 🟡 MEDIUM | Incomplete | `refit()` raises after deprecation warning |
+| BUG-09 | `config/manager.py` et al. | 449 | 🟡 MEDIUM | Concurrency | Thread-unsafe global singletons |
+| BUG-10 | `analysis/effect_size_calculator.py` | 449-468 | 🟡 MEDIUM | Statistics | Central F used for eta-squared CI |
+| BUG-11 | `experimental_control.py` | 149 | 🟡 MEDIUM | Math | `consistency_score` unbounded below 0 |
+| BUG-12 | `adaptive/quest_plus_staircase.py` | 281-285 | 🟡 MEDIUM | Statistics | Incorrect entropy normalization |
+| BUG-13 | `analysis/statistical_tester.py` | 128 | 🟡 MEDIUM | Statistics | Welch's df truncated to `int` |
+| BUG-14 | `clinical/parameter_extraction.py` | 660 | 🟡 MEDIUM | Statistics | ICC always returns 0.0 |
+| BUG-15 | `analysis/analysis_engine.py` | 78-79 | 🟡 MEDIUM | Crash | `sns.set_palette()` when seaborn absent |
+| BUG-16 | `data/persistence_layer.py` | 209-220 | 🟡 MEDIUM | Logic | `data` potentially unbound |
+| BUG-17 | `config/manager.py` | 415-423 | 🟢 LOW | UX | Config not persisted after update |
+| BUG-18 | `utils/data_quality_assessment.py` | 79 | 🟢 LOW | Math | Division by zero on empty DataFrame |
+| BUG-19 | `utils/data_processor.py` | 400 | 🟢 LOW | Math | Division by zero on empty DataFrame |
+| BUG-20 | `GUI-Experiment-Registry.py` | 645-650 | 🟢 LOW | Resource | Process not killed on timeout |
+| BUG-21 | `adaptive/task_control.py` | 185 | 🟢 LOW | Performance | 100% CPU busy-wait loop |
+| BUG-22 | `analysis/effect_size_calculator.py` | 364-377 | 🟢 LOW | Statistics | Shared indices for independent bootstrap |
+| BUG-23 | `clinical/parameter_extraction.py` | 826-845 | 🟢 LOW | Statistics | `validate_against_criterion` ignores input data |
+| BUG-24 | `apgi_framework/exceptions.py` | 34+ | 🟢 LOW | Types | `str = None` annotation error (13 classes) |
+
+---
+
+## Appendix C — Files Audited in This Cycle
+
+Core framework, security modules, GUI files, analysis engine, clinical modules, adaptive modules,
+export layer, deployment utilities, configuration, docker/CI configuration. 343 Python files
+checked for syntax errors (0 found). All files listed in the README "Entry Points" section and
+"Utils Scripts" section reviewed.
+
+---
+
+*Report generated by Claude Code automated static analysis — 2026-02-27*
+*Supersedes previous audit report v1.0 (2026-02-22, branch `claude/app-audit-testing-onxEE`)*
