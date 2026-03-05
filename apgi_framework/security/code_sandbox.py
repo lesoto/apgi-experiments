@@ -3,11 +3,26 @@ Secure code execution sandbox for APGI Framework.
 
 Provides a safe environment for dynamic code execution with strict
 security controls, resource limits, and input validation.
+
+Uses RestrictedPython for secure execution when available.
+For production execution of genuinely untrusted code, consider using
+subprocess-based isolation or dedicated sandboxing libraries.
 """
 
 import ast
 import logging
 from typing import Any, Dict, List, Optional
+
+try:
+    from RestrictedPython import compile_restricted, safe_globals
+
+    HAS_RESTRICTED_PYTHON = True
+except ImportError:
+    HAS_RESTRICTED_PYTHON = False
+    raise ImportError(
+        "RestrictedPython is required for secure code execution. "
+        "Install with: pip install RestrictedPython"
+    )
 
 
 logger = logging.getLogger(__name__)
@@ -47,6 +62,7 @@ class CodeSandbox:
         allow_network: bool = False,
         allow_file_access: bool = False,
         allowed_modules: Optional[List[str]] = None,
+        use_subprocess_isolation: bool = False,
     ):
         """
         Initialize sandbox with security constraints.
@@ -58,12 +74,14 @@ class CodeSandbox:
             allow_network: Whether to allow network access
             allow_file_access: Whether to allow file system access
             allowed_modules: List of allowed Python modules
+            use_subprocess_isolation: Whether to use subprocess-based isolation for enhanced security
         """
         self.max_memory_mb = max_memory_mb
         self.max_cpu_time = max_cpu_time
         self.max_execution_time = max_execution_time
         self.allow_network = allow_network
         self.allow_file_access = allow_file_access
+        self.use_subprocess_isolation = use_subprocess_isolation
 
         # Default allowed modules for scientific computing
         self.allowed_modules = allowed_modules or [
@@ -184,8 +202,164 @@ class CodeSandbox:
         # Validate code first
         self.validate_code(code)
 
-        # For now, implement a simple safe execution
-        # In production, this would use proper process isolation
+        if self.use_subprocess_isolation:
+            return self._execute_with_subprocess(code, context, capture_output)
+        elif HAS_RESTRICTED_PYTHON:
+            return self._execute_with_restricted_python(code, context, capture_output)
+        else:
+            return self._execute_with_fallback(code, context, capture_output)
+
+    def _execute_with_subprocess(
+        self,
+        code: str,
+        context: Optional[Dict[str, Any]] = None,
+        capture_output: bool = True,
+    ) -> Dict[str, Any]:
+        """Execute code using subprocess isolation for enhanced security.
+
+        This provides OS-level isolation by running code in a separate process
+        with restricted permissions and resource limits.
+        """
+        import json
+        import subprocess
+        import sys
+
+        try:
+            # Serialize context for subprocess
+            context_json = json.dumps(context or {})
+
+            # Create isolated execution script
+            exec_script = f"""
+import sys
+import json
+import signal
+import resource
+
+# Set resource limits
+resource.setrlimit(resource.RLIMIT_AS, ({self.max_memory_mb * 1024 * 1024}, resource.RLIM_INFINITY))
+resource.setrlimit(resource.RLIMIT_CPU, ({self.max_cpu_time}, resource.RLIM_INFINITY))
+
+# Load context
+try:
+    context = json.loads('''{context_json}''')
+except:
+    context = {{}}
+
+# Execute code
+try:
+    exec_locals = {{**context}}
+    exec('''{code}''', exec_locals)
+    result = {{"success": True, "context": {{k: str(v) for k, v in exec_locals.items() if not k.startswith('__')}}}}
+except Exception as e:
+    result = {{"success": False, "error": str(e), "error_type": type(e).__name__}}
+
+# Output result
+print(json.dumps(result))
+"""
+
+            # Run in subprocess with timeout
+            result = subprocess.run(
+                [sys.executable, "-c", exec_script],
+                capture_output=True,
+                text=True,
+                timeout=self.max_execution_time,
+            )
+
+            if result.returncode != 0:
+                return {
+                    "success": False,
+                    "error": result.stderr,
+                    "error_type": "SubprocessError",
+                }
+
+            # Parse result
+            try:
+                exec_result = json.loads(result.stdout.strip())
+                return exec_result
+            except json.JSONDecodeError:
+                return {
+                    "success": False,
+                    "error": "Failed to parse execution result",
+                    "error_type": "ParseError",
+                }
+
+        except subprocess.TimeoutExpired:
+            return {
+                "success": False,
+                "error": f"Execution timeout after {self.max_execution_time}s",
+                "error_type": "TimeoutError",
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e), "error_type": type(e).__name__}
+
+    def _execute_with_restricted_python(
+        self,
+        code: str,
+        context: Optional[Dict[str, Any]] = None,
+        capture_output: bool = True,
+    ) -> Dict[str, Any]:
+        """Execute code using RestrictedPython for enhanced security."""
+        try:
+            # Compile the code with restrictions
+            compiled_code = compile_restricted(code, "<string>", "exec")
+
+            # Prepare restricted globals
+            restricted_globals = safe_globals.copy()
+            restricted_globals["_getattr_"] = getattr
+            restricted_globals["_write_"] = lambda x: x  # Allow writing
+
+            # Add allowed modules
+            for module_name in self.allowed_modules:
+                try:
+                    restricted_globals[module_name] = __import__(module_name)
+                except ImportError:
+                    pass
+
+            # Add user context
+            if context:
+                for key, value in context.items():
+                    if self._is_safe_value(value):
+                        restricted_globals[key] = value
+
+            # Execute with output capture if requested
+            if capture_output:
+                import contextlib
+                import io
+
+                stdout_capture = io.StringIO()
+                stderr_capture = io.StringIO()
+
+                with (
+                    contextlib.redirect_stdout(stdout_capture),
+                    contextlib.redirect_stderr(stderr_capture),
+                ):
+                    exec(compiled_code.code, restricted_globals)
+
+                return {
+                    "success": True,
+                    "stdout": stdout_capture.getvalue(),
+                    "stderr": stderr_capture.getvalue(),
+                    "context": restricted_globals,
+                }
+            else:
+                exec(compiled_code.code, restricted_globals)
+                return {"success": True, "context": restricted_globals}
+
+        except Exception as e:
+            return {"success": False, "error": str(e), "error_type": type(e).__name__}
+
+    def _execute_with_fallback(
+        self,
+        code: str,
+        context: Optional[Dict[str, Any]] = None,
+        capture_output: bool = True,
+    ) -> Dict[str, Any]:
+        """Fallback execution method with basic restrictions.
+
+        NOTE: This provides soft isolation only. For production use with untrusted code,
+        consider using subprocess with restricted user permissions or dedicated sandboxing
+        libraries like PyPy sandbox for OS-level isolation.
+        """
         try:
             exec_context = self._prepare_execution_context(context)
 
@@ -261,42 +435,44 @@ class CodeSandbox:
     def _prepare_execution_context(
         self, context: Optional[Dict[str, Any]]
     ) -> Dict[str, Any]:
-        """Prepare secure execution context."""
+        """Prepare secure execution context with restricted builtins."""
+        # Create a very restricted builtins environment to prevent escape attacks
+        safe_builtins = {
+            # Essential types and functions only - avoid anything that could lead to object.__class__
+            "print": print,
+            "len": len,
+            "range": range,
+            "enumerate": enumerate,
+            "zip": zip,
+            "map": map,
+            "filter": filter,
+            "sum": sum,
+            "max": max,
+            "min": min,
+            "abs": abs,
+            "round": round,
+            "int": int,
+            "float": float,
+            "str": str,
+            "list": list,
+            "dict": dict,
+            "tuple": tuple,
+            "set": set,
+            "bool": bool,
+            # Remove 'type' and 'isinstance' as they can be used for escape
+            # Remove 'hasattr' as it can be used for introspection
+            # Math functions
+            "math": __import__("math"),
+        }
+
         exec_context: Dict[str, Any] = {
-            # Safe built-ins
-            "__builtins__": {
-                "print": print,
-                "len": len,
-                "range": range,
-                "enumerate": enumerate,
-                "zip": zip,
-                "map": map,
-                "filter": filter,
-                "sum": sum,
-                "max": max,
-                "min": min,
-                "abs": abs,
-                "round": round,
-                "int": int,
-                "float": float,
-                "str": str,
-                "list": list,
-                "dict": dict,
-                "tuple": tuple,
-                "set": set,
-                "bool": bool,
-                "type": type,
-                "isinstance": isinstance,
-                "hasattr": hasattr,
-                # Math functions
-                "math": __import__("math"),
-            }
+            "__builtins__": safe_builtins,
         }
 
         # Add allowed modules
         for module_name in self.allowed_modules:
             try:
-                exec_context[str(module_name)] = __import__(module_name)  # type: ignore
+                exec_context[str(module_name)] = __import__(module_name)
             except ImportError:
                 pass
 

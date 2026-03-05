@@ -302,7 +302,10 @@ class MemoryEfficientTestRunner(BatchTestRunner):
 
             # Create checkpoint periodically
             if (i + 1) % self.checkpoint_interval == 0:
-                assert self.current_execution_id is not None
+                if self.current_execution_id is None:
+                    raise RuntimeError(
+                        "Current execution ID must be set before creating checkpoint."
+                    )
                 self._create_checkpoint(
                     execution_id=self.current_execution_id,
                     completed_tests=completed_tests,
@@ -427,8 +430,7 @@ class MemoryEfficientTestRunner(BatchTestRunner):
             raise FileNotFoundError(f"Checkpoint file not found: {checkpoint_file}")
 
         try:
-            with open(checkpoint_path, "rb") as f:
-                checkpoint = safe_pickle_load(f)
+            checkpoint = safe_pickle_load(checkpoint_path)
 
             logger.info(f"Resuming execution from checkpoint: {checkpoint_file}")
             logger.info(f"Completed tests: {len(checkpoint.completed_tests)}")

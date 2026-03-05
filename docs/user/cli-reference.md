@@ -252,7 +252,7 @@ python -m apgi_framework.cli generate-config [OPTIONS]
 
 #### generate-config Options
 
-__--output__
+### --output
 
 Output file path for configuration.
 
@@ -264,7 +264,7 @@ __Type__: String (file path)
 __Default__: "apgi_config.json"  
 __Required__: No
 
-__--template__
+### --template
 
 Configuration template type.
 
@@ -316,7 +316,7 @@ python -m apgi_framework.cli validate-system [OPTIONS]
 
 #### validate-system Options
 
-__--detailed__
+### --detailed
 
 Show detailed validation results for each component.
 
@@ -348,11 +348,13 @@ python -m apgi_framework.cli --config my_config.json validate-system --detailed
 #### Output
 
 __Simple Output__:
+
 ```text
 System Validation: PASS
 ```
 
 __Detailed Output__:
+
 ```text
 ============================================================
 System Validation Results (Detailed)
@@ -387,7 +389,7 @@ python -m apgi_framework.cli status
 python -m apgi_framework.cli --config my_config.json status
 ```
 
-#### Output
+#### System Status Output
 
 ```text
 ==================================================
@@ -416,7 +418,7 @@ python -m apgi_framework.cli set-params [OPTIONS]
 
 #### set-params Options
 
-__--extero-precision__
+### --extero-precision
 
 Set exteroceptive precision value.
 
@@ -429,7 +431,7 @@ __Range__: 0.1-10.0
 __Default__: 2.0  
 __Required__: No
 
-__--intero-precision__
+### --intero-precision
 
 Set interoceptive precision value.
 
@@ -442,7 +444,7 @@ __Range__: 0.1-10.0
 __Default__: 1.5  
 __Required__: No
 
-__--threshold__
+### --threshold
 
 Set ignition threshold value.
 
@@ -455,7 +457,7 @@ __Range__: 0.5-10.0
 __Default__: 3.5  
 __Required__: No
 
-__--steepness__
+### --steepness
 
 Set sigmoid steepness value.
 
@@ -468,7 +470,7 @@ __Range__: 0.1-5.0
 __Default__: 2.0  
 __Required__: No
 
-__--somatic-gain__
+### --somatic-gain
 
 Set somatic marker gain value.
 
@@ -795,7 +797,7 @@ python -m apgi_framework.cli \
 The CLI uses standard exit codes:
 
 | Code | Meaning | Description |
-|------|---------|-------------|
+| ------ | --------- | ------------- |
 | 0 | Success | Command completed successfully |
 | 1 | Error | General error occurred |
 | 2 | Usage Error | Invalid command or arguments |

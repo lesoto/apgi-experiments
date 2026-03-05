@@ -26,7 +26,7 @@ sys.path.insert(0, str(project_root))
 try:
     from apgi_framework.logging.standardized_logging import get_logger
 
-    logger = get_logger("results_visualization_panel")  # type: ignore[assignment]
+    logger = get_logger("results_visualization_panel")
 except ImportError as e:
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger("results_visualization_panel")  # type: ignore[assignment]
@@ -876,20 +876,75 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
 
         for n in sample_sizes:
             # Simplified power calculation (would use proper statistical methods)
-            power = 1 - np.exp(-n * effect_sizes**2 / 100)  # Mock calculation
-            self.ax4.plot(effect_sizes, power, label=f"n={n}", linewidth=2)
+            power = 1 - (1 + (effect_sizes * np.sqrt(n / 2)) ** -1) ** -1
+            self.ax4.plot(effect_sizes, power, label=f"n={n}")
 
-        self.ax4.axhline(
-            y=0.8,
-            color=self.plot_colors["warning"],
-            linestyle="--",
-            label="Adequate Power",
-        )
         self.ax4.set_xlabel("Effect Size")
         self.ax4.set_ylabel("Statistical Power")
         self.ax4.set_title("Power Analysis", fontweight="bold")
         self.ax4.legend()
         self.ax4.grid(True, alpha=0.3)
+
+    def _plot_3d_phase_portrait(
+        self, x_data, y_data, z_data, title="3D Phase Portrait"
+    ):
+        """Plot 3D phase portrait for advanced visualization."""
+        from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
+
+        # Create 3D axes
+        fig = plt.figure(figsize=(10, 8))
+        ax = fig.add_subplot(111, projection="3d")
+
+        # Plot the trajectory
+        ax.plot(
+            x_data, y_data, z_data, lw=2, alpha=0.8, color=self.plot_colors["primary"]
+        )
+
+        # Add markers for start and end
+        ax.scatter(
+            [x_data[0]], [y_data[0]], [z_data[0]], color="green", s=100, label="Start"
+        )
+        ax.scatter(
+            [x_data[-1]], [y_data[-1]], [z_data[-1]], color="red", s=100, label="End"
+        )
+
+        ax.set_xlabel("X Axis")
+        ax.set_ylabel("Y Axis")
+        ax.set_zlabel("Z Axis")
+        ax.set_title(title, fontweight="bold")
+        ax.legend()
+
+        return fig
+
+    def _plot_cross_spectral_analysis(self, signal1, signal2, fs=1000):
+        """Plot cross-spectral analysis between two signals."""
+        from scipy import signal
+
+        # Compute cross-spectral density
+        f, Pxy = signal.coherence(signal1, signal2, fs=fs)
+
+        # Create figure
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
+
+        # Plot coherence
+        ax1.plot(f, Pxy, color=self.plot_colors["primary"], lw=2)
+        ax1.set_xlabel("Frequency (Hz)")
+        ax1.set_ylabel("Coherence")
+        ax1.set_title("Cross-Spectral Coherence", fontweight="bold")
+        ax1.set_ylim([0, 1])
+        ax1.grid(True, alpha=0.3)
+
+        # Plot phase
+        f, Cxy = signal.csd(signal1, signal2, fs=fs)
+        phase = np.angle(Cxy)
+        ax2.plot(f, phase, color=self.plot_colors["secondary"], lw=2)
+        ax2.set_xlabel("Frequency (Hz)")
+        ax2.set_ylabel("Phase (radians)")
+        ax2.set_title("Cross-Spectral Phase", fontweight="bold")
+        ax2.grid(True, alpha=0.3)
+
+        plt.tight_layout()
+        return fig
 
     def _plot_success_rate_timeline(
         self, timestamps: List[datetime], success_rates: List[float]

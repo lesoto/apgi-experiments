@@ -251,7 +251,10 @@ class TestValidateParameters:
     @patch("sys.exit")
     def test_validate_parameters_success(self, mock_exit, mock_get_validator):
         """Test successful parameter validation."""
-        mock_validator = MockValidator()
+        mock_validator = MagicMock(spec=MockValidator)
+        mock_validator.validate_apgi_parameters.return_value = MockValidationResult(
+            True, "Parameters valid"
+        )
         mock_get_validator.return_value = mock_validator
 
         # Mock args with valid parameters
@@ -273,7 +276,7 @@ class TestValidateParameters:
     @patch("sys.exit")
     def test_validate_parameters_failure(self, mock_exit, mock_get_validator):
         """Test failed parameter validation."""
-        mock_validator = MockValidator()
+        mock_validator = MagicMock(spec=MockValidator)
         mock_validator.validate_apgi_parameters.return_value = MockValidationResult(
             False, "Parameters invalid"
         )

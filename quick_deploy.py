@@ -152,7 +152,11 @@ class QuickDeploy:
             print("2. Production (for real use)")
 
             while True:
-                choice = input("Enter choice [1-2]: ").strip()
+                try:
+                    choice = input("Enter choice [1-2]: ").strip()
+                except (EOFError, KeyboardInterrupt):
+                    print("No input received, using default (1. Development)")
+                    choice = "1"
                 if choice == "1":
                     if self.manager:
                         self.manager.config.environment = "development"
@@ -172,7 +176,11 @@ class QuickDeploy:
             print(f"[AUTO/NON-INTERACTIVE] Using default port {default_port}")
             port = default_port
         else:
-            port = input(f"Enter web port [{default_port}]: ").strip()
+            try:
+                port = input(f"Enter web port [{default_port}]: ").strip()
+            except (EOFError, KeyboardInterrupt):
+                print("No input received, using default port")
+                port = default_port
         if port:
             try:
                 port_num = int(port)
@@ -189,7 +197,11 @@ class QuickDeploy:
             print(f"[AUTO/NON-INTERACTIVE] Using default data directory {default_data}")
             data_dir = default_data
         else:
-            data_dir_input = input(f"Data directory [{default_data}]: ").strip()
+            try:
+                data_dir_input = input(f"Data directory [{default_data}]: ").strip()
+            except (EOFError, KeyboardInterrupt):
+                print("No input received, using default data directory")
+                data_dir_input = ""
             data_dir = Path(data_dir_input) if data_dir_input else default_data
         if data_dir:
             if self.manager:
@@ -201,7 +213,13 @@ class QuickDeploy:
             if self.manager:
                 self.manager.config.backup_enabled = True
         else:
-            backup_choice = input("Enable automatic backups? [Y/n]: ").strip().lower()
+            try:
+                backup_choice = (
+                    input("Enable automatic backups? [Y/n]: ").strip().lower()
+                )
+            except (EOFError, KeyboardInterrupt):
+                print("No input received, enabling backups by default")
+                backup_choice = "y"
             if self.manager:
                 self.manager.config.backup_enabled = backup_choice != "n"
 
@@ -432,7 +450,10 @@ Examples:
         if not deployer.check_prerequisites():
             if not args.auto:
                 if IS_INTERACTIVE:
-                    input("Press Enter to exit...")
+                    try:
+                        input("Press Enter to exit...")
+                    except (EOFError, KeyboardInterrupt):
+                        pass
                 else:
                     print("[NON-INTERACTIVE] Prerequisites not met, exiting.")
             sys.exit(1)
@@ -441,7 +462,10 @@ Examples:
         if not deployer.interactive_setup():
             if not args.auto:
                 if IS_INTERACTIVE:
-                    input("Press Enter to exit...")
+                    try:
+                        input("Press Enter to exit...")
+                    except (EOFError, KeyboardInterrupt):
+                        pass
                 else:
                     print("[NON-INTERACTIVE] Setup failed, exiting.")
             sys.exit(1)
@@ -450,14 +474,20 @@ Examples:
         if deployer.deploy():
             if not args.auto:
                 if IS_INTERACTIVE:
-                    input("\nPress Enter to exit...")
+                    try:
+                        input("\nPress Enter to exit...")
+                    except (EOFError, KeyboardInterrupt):
+                        pass
                 else:
                     print("[NON-INTERACTIVE] Deployment successful.")
             sys.exit(0)
         else:
             if not args.auto:
                 if IS_INTERACTIVE:
-                    input("\nPress Enter to exit...")
+                    try:
+                        input("\nPress Enter to exit...")
+                    except (EOFError, KeyboardInterrupt):
+                        pass
                 else:
                     print("[NON-INTERACTIVE] Deployment failed.")
             sys.exit(1)

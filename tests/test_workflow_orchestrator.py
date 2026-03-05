@@ -361,30 +361,55 @@ class TestWorkflowOrchestrator:
 
     def test_run_primary_tests(self):
         """Test primary falsification tests stage."""
+        self.orchestrator.current_workflow = WorkflowResult(
+            workflow_id="test",
+            start_time=datetime.now(),
+            overall_status=WorkflowStatus.RUNNING,
+        )
         result = self.orchestrator._run_primary_tests()
 
         assert isinstance(result, dict)
 
     def test_run_secondary_tests(self):
         """Test secondary falsification tests stage."""
+        self.orchestrator.current_workflow = WorkflowResult(
+            workflow_id="test",
+            start_time=datetime.now(),
+            overall_status=WorkflowStatus.RUNNING,
+        )
         result = self.orchestrator._run_secondary_tests()
 
         assert isinstance(result, dict)
 
     def test_run_statistical_analysis(self):
         """Test statistical analysis stage."""
+        self.orchestrator.current_workflow = WorkflowResult(
+            workflow_id="test",
+            start_time=datetime.now(),
+            overall_status=WorkflowStatus.RUNNING,
+        )
         result = self.orchestrator._run_statistical_analysis()
 
         assert isinstance(result, dict)
 
     def test_run_result_aggregation(self):
         """Test result aggregation stage."""
+        self.orchestrator.current_workflow = WorkflowResult(
+            workflow_id="test",
+            start_time=datetime.now(),
+            overall_status=WorkflowStatus.RUNNING,
+        )
         result = self.orchestrator._run_result_aggregation()
 
         assert isinstance(result, dict)
 
     def test_run_report_generation(self):
         """Test report generation stage."""
+        self.orchestrator.current_workflow = WorkflowResult(
+            workflow_id="test",
+            start_time=datetime.now(),
+            overall_status=WorkflowStatus.RUNNING,
+        )
         result = self.orchestrator._run_report_generation()
 
         assert isinstance(result, dict)
@@ -536,7 +561,7 @@ class TestModuleFunctions:
                 overall_status=WorkflowStatus.COMPLETED,
             )
 
-            result = run_standard_falsification_workflow(mock_controller)
+            result = run_standard_falsification_workflow(controller=mock_controller)
 
             assert isinstance(result, WorkflowResult)
             mock_orchestrator.run_complete_workflow.assert_called_once()

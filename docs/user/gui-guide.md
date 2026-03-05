@@ -21,7 +21,7 @@ A visual walkthrough of the APGI Framework Testing System GUI.
 │  ┌──────────────┐  ┌──────────────────────┐  ┌────────────────────┐   │
 │  │              │  │                      │  │                    │   │
 │  │     Test     │  │     Parameter        │  │      Results       │   │
-│  │  Selection   │  │   Configuration      │  │      Display       │   │
+│  │  Selection   │  │   Configuration      │  │       Display       │   │
 │  │    Panel     │  │       Panel          │  │       Panel        │   │
 │  │              │  │                      │  │                    │   │
 │  │  [Primary]   │  │  Extero Precision:   │  │  Falsification     │   │
@@ -58,7 +58,7 @@ A visual walkthrough of the APGI Framework Testing System GUI.
 
 The left panel contains buttons for each falsification test type.
 
-```
+```text
 ┌──────────────────────┐
 │   Test Selection     │
 ├──────────────────────┤
@@ -101,7 +101,7 @@ The left panel contains buttons for each falsification test type.
 
 The center panel allows you to configure APGI parameters and experimental settings.
 
-```
+```text
 ┌─────────────────────────────────┐
 │   Parameter Configuration       │
 ├─────────────────────────────────┤
@@ -167,7 +167,7 @@ The center panel allows you to configure APGI parameters and experimental settin
 
 When hovering over [i] icons:
 
-```
+```text
 ┌─────────────────────────────────────┐
 │ Exteroceptive Precision             │
 │                                     │
@@ -185,6 +185,7 @@ When hovering over [i] icons:
 ### Validation Feedback
 
 **Valid Input:**
+
 ```python
 Threshold:
 ┌─────────────┐
@@ -193,6 +194,7 @@ Threshold:
 ```
 
 **Invalid Input:**
+
 ```python
 Threshold:
 ┌═════════════┐
@@ -283,7 +285,7 @@ Time: 45.2 seconds
 
 The right panel displays test results and visualizations.
 
-```
+```text
 ┌─────────────────────────────────────┐
 │         Results Display             │
 ├─────────────────────────────────────┤
@@ -376,7 +378,7 @@ Insufficient evidence (low power)
 
 ### Confidence Level Visualization
 
-```
+```text
 Confidence Level: 0.87
 
 Low                    High
@@ -389,7 +391,7 @@ Low                    High
 
 ### Statistical Significance Indicators
 
-```
+```text
 P-value: 0.002
 
 *** p < 0.001  (Extremely significant)
@@ -407,6 +409,8 @@ ns  p ≥ 0.05   (Not significant)
 │ File   Edit   View   Tools   Help                           │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+```text
 ┌──────────────┬──────────────┐
 │   Test 1     │   Test 2     │
 ├──────────────┼──────────────┤

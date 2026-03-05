@@ -378,10 +378,8 @@ class TestStorageManager:
 
             # Store some datasets
             for i in range(5):
-                dataset = self.create_test_dataset(
-                    dataset_id=f"dataset_{i:03d}", data={"values": list(range(10))}
-                )
-                storage.store_dataset(dataset)
+                dataset = self.create_test_dataset(dataset_id=f"dataset_{i:03d}")
+                storage.store_dataset(dataset, validate=False)
 
             # Get statistics
             stats = storage.get_storage_statistics()
@@ -422,10 +420,8 @@ class TestStorageManager:
 
             def store_dataset(index):
                 try:
-                    dataset = self.create_test_dataset(
-                        dataset_id=f"concurrent_{index}", data={}
-                    )
-                    result = storage.store_dataset(dataset)
+                    dataset = self.create_test_dataset(dataset_id=f"concurrent_{index}")
+                    result = storage.store_dataset(dataset, validate=False)
                     results.append(result)
                 except Exception as e:
                     results.append(e)

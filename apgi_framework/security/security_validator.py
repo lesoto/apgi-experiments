@@ -327,19 +327,66 @@ class SecurityValidator:
             if len(result) > max_length:
                 result = result[:max_length] + "... [truncated]"
 
-            # Remove potential sensitive patterns
-            sensitive_patterns = ["password", "token", "key", "secret", "credential"]
+            # Enhanced sensitive patterns including variations
+            sensitive_patterns = [
+                # Basic patterns
+                "password",
+                "passwd",
+                "pass",
+                "pwd",
+                "token",
+                "auth_token",
+                "api_token",
+                "access_token",
+                "key",
+                "api_key",
+                "secret_key",
+                "private_key",
+                "public_key",
+                "secret",
+                "credential",
+                "credentials",
+                # Database and environment patterns
+                "db_password",
+                "db_pass",
+                "database_password",
+                "postgres_password",
+                "mysql_password",
+                "sqlite_password",
+                # Cloud and service patterns
+                "aws_secret",
+                "aws_key",
+                "azure_secret",
+                "gcp_key",
+                "stripe_secret",
+                "twilio_token",
+                "sendgrid_key",
+                # Generic sensitive patterns
+                "bearer",
+                "authorization",
+                "auth",
+                "session",
+            ]
+
             result_lower = result.lower()
 
             for pattern in sensitive_patterns:
                 if pattern in result_lower:
-                    # Simple redaction - replace with placeholder
-                    result = re.sub(
-                        f"{pattern}[^\\s]*",
-                        f"{pattern}=[REDACTED]",
-                        result,
-                        flags=re.IGNORECASE,
-                    )
+                    # Improved redaction - match key-value pairs and redact values
+                    # Pattern matches: key="value", key='value', key=value, key: value, etc.
+                    patterns_to_redact = [
+                        rf"{re.escape(pattern)}\s*[:=]\s*['\"]?([^'\"\s]+)['\"]?",
+                        rf"{re.escape(pattern)}\s*['\"]?([^'\"\s]+)['\"]?",
+                        rf"(['\"]?{re.escape(pattern)}['\"]?\s*[:=]\s*['\"]?)([^'\"\s,]*)",
+                    ]
+
+                    for redact_pattern in patterns_to_redact:
+                        result = re.sub(
+                            redact_pattern,
+                            r"\1[REDACTED]",
+                            result,
+                            flags=re.IGNORECASE,
+                        )
 
             return result
         except Exception as e:

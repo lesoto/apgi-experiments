@@ -208,9 +208,16 @@ class ConfigManager:
         self.stimulus_params = StimulusParameters()
         self._lock = threading.RLock()  # Thread-safe access to configuration
 
-        # Preset management
-        self.presets_dir = Path("config/presets")
-        self.presets_dir.mkdir(parents=True, exist_ok=True)
+        # Preset management - only create if in a proper project context
+        try:
+            self.presets_dir = Path("config/presets")
+            self.presets_dir.mkdir(parents=True, exist_ok=True)
+        except (OSError, PermissionError):
+            # In test environments or when config dir is not writable,
+            # fall back to a temporary directory
+            import tempfile
+
+            self.presets_dir = Path(tempfile.mkdtemp(prefix="apgi_config_presets_"))
 
         if config_path:
             config_file = self.path_manager.resolve_path(config_path)

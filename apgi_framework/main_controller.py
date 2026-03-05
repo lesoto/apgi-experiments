@@ -349,7 +349,10 @@ class MainApplicationController:
 
     def _validate_mathematical_engine(self) -> bool:
         """Validate mathematical engine components."""
-        assert self._mathematical_engine is not None
+        if self._mathematical_engine is None:
+            raise RuntimeError(
+                "Mathematical engine must be initialized before validation."
+            )
         try:
             equation = self._mathematical_engine["equation"]
 
@@ -389,8 +392,8 @@ class MainApplicationController:
             )
 
             # Validate results are in expected ranges
-            basic_valid = 0 <= surprise <= 10 and 0 <= probability <= 1
-            integrated_valid = (
+            basic_valid = bool(0 <= surprise <= 10 and 0 <= probability <= 1)
+            integrated_valid = bool(
                 0 <= integrated_surprise <= 10 and 0 <= integrated_probability <= 1
             )
 
@@ -402,7 +405,10 @@ class MainApplicationController:
 
     def _validate_neural_simulators(self) -> bool:
         """Validate neural simulator components."""
-        assert self._neural_simulators is not None
+        if self._neural_simulators is None:
+            raise RuntimeError(
+                "Neural simulators must be initialized before validation."
+            )
         try:
             # Test each simulator
             p3b_sig = self._neural_simulators["p3b"].generate_conscious_signature()
@@ -440,7 +446,8 @@ class MainApplicationController:
 
     def _validate_data_manager(self) -> bool:
         """Validate data management components."""
-        assert self._data_manager is not None
+        if self._data_manager is None:
+            raise RuntimeError("Data manager must be initialized before validation.")
         try:
             # Check data manager components that are actually initialized
             required_components = ["storage", "validator"]

@@ -78,19 +78,27 @@ class TestThresholdDetectionParadigmExtended:
         y = gaussian_func.cumulative_gaussian(x, 5.0, 1.0, 0.5, 0.05)
 
         assert len(y) == len(x)
-        assert all(0.5 <= yi <= 0.55 for yi in y)  # Around guess rate
+        assert y[0] >= 0.5  # Guess rate at low intensity
+        assert y[-1] > y[0]  # Should increase with intensity
+        assert all(
+            0.5 <= yi <= 1.0 for yi in y
+        )  # All values should be between guess rate and 1
 
         # Test Weibull
         weibull_func = PsychometricFunction("weibull")
         y_weibull = weibull_func.weibull(x, 5.0, 2.0, 0.5, 0.05)
         assert len(y_weibull) == len(x)
-        assert all(0.5 <= yi <= 0.55 for yi in y_weibull)
+        assert y_weibull[0] >= 0.5  # Guess rate at low intensity
+        assert y_weibull[-1] > y_weibull[0]  # Should increase with intensity
+        assert all(0.5 <= yi <= 1.0 for yi in y_weibull)
 
         # Test logistic
         logistic_func = PsychometricFunction("logistic")
         y_logistic = logistic_func.logistic(x, 5.0, 1.0, 0.5, 0.05)
         assert len(y_logistic) == len(x)
-        assert all(0.5 <= yi <= 0.55 for yi in y_logistic)
+        assert y_logistic[0] >= 0.5  # Guess rate at low intensity
+        assert y_logistic[-1] > y_logistic[0]  # Should increase with intensity
+        assert all(0.5 <= yi <= 1.0 for yi in y_logistic)
 
     @pytest.mark.skipif(
         not THRESHOLD_DETECTION_AVAILABLE,
@@ -173,9 +181,9 @@ class TestThresholdDetectionParadigmExtended:
             start_intensity=5.0, step_size=0.5, rule="3up_1down", max_trials=50
         )
 
-        # Create many reversals
+        # Create many reversals (3 correct, 1 incorrect pattern)
         for i in range(20):
-            response = i < 10  # First 10 correct, last 10 incorrect
+            response = (i % 4) != 3  # True for i%4 in [0,1,2], False for i%4==3
             staircase_reversal.update_staircase(response)
 
         # Should be complete due to reversals

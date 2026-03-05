@@ -156,6 +156,11 @@ class TestErrorTelemetry:
 
     def test_enable_error_reporting_true(self):
         """Test enabling error reporting."""
+        # Reset the global telemetry instance to ensure it's None
+        import apgi_framework.logging.error_telemetry
+
+        apgi_framework.logging.error_telemetry._telemetry = None
+
         with patch(
             "apgi_framework.logging.error_telemetry.ErrorTelemetry"
         ) as mock_class:

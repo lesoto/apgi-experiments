@@ -19,14 +19,15 @@ class TestAPGIEquation:
         """Test equation parameter handling."""
         # Basic test - just ensure parameter methods exist
         equation = APGIEquation()
-        assert hasattr(equation, "set_parameters")
+        assert hasattr(equation, "calculate_surprise")
+        assert hasattr(equation, "calculate_ignition_probability")
         # TODO: Add comprehensive parameter validation tests
 
     def test_equation_calculation(self):
         """Test equation calculation methods."""
         # Basic test - just ensure calculation methods exist
         equation = APGIEquation()
-        assert hasattr(equation, "calculate")
+        assert hasattr(equation, "calculate_full_equation")
         # TODO: Add comprehensive calculation tests
 
 

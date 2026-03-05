@@ -160,7 +160,10 @@ class DeploymentValidator:
 
     def _validate_system_requirements(self) -> None:
         """Validate system requirements."""
-        assert self.current_report is not None
+        if self.current_report is None:
+            raise RuntimeError(
+                "Validation report must be initialized before this step."
+            )
         self.logger.info("Validating system requirements...")
 
         try:
@@ -201,7 +204,10 @@ class DeploymentValidator:
 
     def _validate_dependencies(self, skip_optional: bool) -> None:
         """Validate dependency installation."""
-        assert self.current_report is not None
+        if self.current_report is None:
+            raise RuntimeError(
+                "Validation report must be initialized before this step."
+            )
         self.logger.info("Validating dependencies...")
 
         try:
@@ -243,7 +249,10 @@ class DeploymentValidator:
 
     def _validate_hardware_configuration(self) -> None:
         """Validate hardware configuration."""
-        assert self.current_report is not None
+        if self.current_report is None:
+            raise RuntimeError(
+                "Validation report must be initialized before this step."
+            )
         self.logger.info("Validating hardware configuration...")
 
         try:
@@ -282,7 +291,10 @@ class DeploymentValidator:
 
     def _run_functional_tests(self) -> None:
         """Run functional tests."""
-        assert self.current_report is not None
+        if self.current_report is None:
+            raise RuntimeError(
+                "Validation report must be initialized before this step."
+            )
         self.logger.info("Running functional tests...")
 
         try:
@@ -359,7 +371,10 @@ class DeploymentValidator:
 
     def _run_integration_tests(self) -> None:
         """Run integration tests."""
-        assert self.current_report is not None
+        if self.current_report is None:
+            raise RuntimeError(
+                "Validation report must be initialized before this step."
+            )
         self.logger.info("Running integration tests...")
 
         try:
@@ -423,7 +438,10 @@ class DeploymentValidator:
 
     def _run_performance_tests(self) -> None:
         """Run performance tests."""
-        assert self.current_report is not None
+        if self.current_report is None:
+            raise RuntimeError(
+                "Validation report must be initialized before this step."
+            )
         self.logger.info("Running performance tests...")
 
         try:

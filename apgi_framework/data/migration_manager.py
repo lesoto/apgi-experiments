@@ -8,6 +8,7 @@ and parameter estimation functionality.
 import sqlite3
 from pathlib import Path
 from typing import Dict, List, Optional
+import re
 
 from ..exceptions import APGIFrameworkError
 from .parameter_estimation_schema import ParameterEstimationSchema
@@ -36,6 +37,21 @@ class MigrationManager:
         """
         self.db_path = Path(db_path)
         self.parameter_estimation_schema = ParameterEstimationSchema(db_path)
+
+    def _validate_table_name(self, table_name: str) -> bool:
+        """
+        Validate table name to prevent SQL injection.
+
+        Only allows alphanumeric characters, underscores, and hyphens.
+        Must start with a letter or underscore.
+        """
+        if not table_name or not isinstance(table_name, str):
+            return False
+
+        # Table name must match valid identifier pattern
+        # Start with letter/underscore, followed by letters/numbers/underscores/hyphens
+        pattern = r"^[a-zA-Z_][a-zA-Z0-9_-]*$"
+        return bool(re.match(pattern, table_name)) and len(table_name) <= 128
 
     def get_migration_status(self) -> Dict[str, Optional[str]]:
         """
@@ -192,6 +208,12 @@ class MigrationManager:
 
                 table_info = {}
                 for (table_name,) in cursor.fetchall():
+                    # Validate table name to prevent SQL injection
+                    if not self._validate_table_name(table_name):
+                        raise MigrationError(
+                            f"Invalid table name detected: {table_name}"
+                        )
+
                     cursor = conn.execute(f"PRAGMA table_info({table_name})")
                     columns = [
                         row[1] for row in cursor.fetchall()

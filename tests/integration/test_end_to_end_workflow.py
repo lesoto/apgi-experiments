@@ -71,6 +71,7 @@ class TestEndToEndWorkflow:
         file_channel = create_file_channel(
             "test_notifications", str(self.temp_dir / "notifications.log")
         )
+        file_channel.success_notification = True  # Ensure notification is always sent
         self.notification_manager.add_channel(file_channel)
 
     def teardown_method(self):

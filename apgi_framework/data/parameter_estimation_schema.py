@@ -28,6 +28,17 @@ class ParameterEstimationSchema:
 
     SCHEMA_VERSION = "1.0.0"
 
+    # Whitelist of allowed table names for security
+    ALLOWED_TABLES = {
+        "trial_quality_metrics",
+        "parameter_estimates",
+        "oddball_trials",
+        "heartbeat_trials",
+        "detection_trials",
+        "parameter_estimation_trials",
+        "parameter_estimation_sessions",
+    }
+
     def __init__(self, db_path: Path):
         """
         Initialize schema manager.
@@ -433,6 +444,8 @@ class ParameterEstimationSchema:
                 conn.execute("PRAGMA foreign_keys = OFF")
 
                 for table in tables_to_drop:
+                    if table not in self.ALLOWED_TABLES:
+                        raise SchemaError(f"Illegal table name: {table}")
                     conn.execute(f"DROP TABLE IF EXISTS {table}")
 
                 # Remove schema version record

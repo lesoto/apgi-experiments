@@ -9,9 +9,11 @@ This guide provides detailed, step-by-step tutorials for common APGI Framework w
 ## 📚 Tutorial 1: Your First Parameter Estimation Experiment
 
 ### Objective
+
 Learn to run a basic parameter estimation experiment and interpret the results.
 
 ### Prerequisites
+
 - APGI Framework deployed (see [Quick Start Guide](quick_start_guide.md))
 - Basic understanding of Bayesian concepts
 
@@ -23,7 +25,7 @@ Learn to run a basic parameter estimation experiment and interpret the results.
 2. Navigate to `http://localhost:8000`
 3. You should see the APGI Framework dashboard
 
-### Expected View:
+### Expected View
 
 - Welcome screen with navigation menu
 - "New Experiment" button prominently displayed
@@ -38,10 +40,9 @@ Learn to run a basic parameter estimation experiment and interpret the results.
    - **Description**: "Learning basic parameter estimation"
    - **Type**: Select "Parameter Estimation"
    - **Data Source**: "Simulated Data"
-
 3. Click **"Create Experiment"**
 
-### Troubleshooting:
+### Troubleshooting
 
 - If button is disabled, ensure all required fields are filled
 - If experiment type is not available, check framework is fully loaded
@@ -54,7 +55,7 @@ Learn to run a basic parameter estimation experiment and interpret the results.
 2. Set the following initial values:
 
 | Parameter                     | Value | Description                           |
-|-------------------------------|-------|---------------------------------------|
+| ----------------------------- | ----- | ------------------------------------- |
 | θ₀ (Ignition Threshold)       | 0.5   | Threshold for conscious ignition       |
 | Πᵢ (Interoceptive Precision)  | 1.0   | Precision of interoceptive signals    |
 | β (Somatic Bias)              | 0.0   | Baseline somatic bias                  |
@@ -74,7 +75,7 @@ Learn to run a basic parameter estimation experiment and interpret the results.
 2. Click **"Start Experiment"**
 3. You'll see a progress bar and real-time updates
 
-### What to Watch For:
+### What to Watch For
 
 - Progress percentage updating
 - Parameter estimates changing in real-time
@@ -90,12 +91,10 @@ While the experiment runs:
    - Lines should stabilize over time
    - Credible intervals should narrow
    - R̂ values should approach 1.0
-
 2. **Check Convergence Status**
    - Green checkmark = converged
    - Yellow warning = still converging
    - Red X = convergence issues
-
 3. **Monitor Resource Usage**
    - CPU usage should be moderate
    - Memory usage should be stable
@@ -110,12 +109,10 @@ Once the experiment completes:
    - Final parameter estimates
    - 95% credible intervals
    - Convergence diagnostics
-
 2. **Examine Trace Plots**
    - Look for stationarity
    - Check for good mixing
    - Identify any outliers
-
 3. **Review Posterior Distributions**
    - Should be approximately normal
    - No multiple modes
@@ -130,7 +127,6 @@ Once the experiment completes:
    - **CSV**: For spreadsheet analysis
    - **JSON**: For programmatic use
    - **PDF Report**: Complete analysis report
-
 3. Select destination and save
 
 ---
@@ -138,6 +134,7 @@ Once the experiment completes:
 ## 📊 Tutorial 2: Real-time Monitoring Setup
 
 ### Objective
+
 Set up and use real-time monitoring for live data streams.
 
 ---
@@ -155,13 +152,11 @@ Set up and use real-time monitoring for live data streams.
 2. Click **"Start Streaming"**
 3. Wait for connection status to show "Connected"
 
-### Expected Status Indicators:
+### Expected Status Indicators
 
 - 🟢 Streaming: Active
 - 🔌 Connection: Connected
 - 📊 Data Processing: Normal
-
----
 
 ### Step 3: Monitor EEG Data
 
@@ -170,8 +165,7 @@ Set up and use real-time monitoring for live data streams.
    - Signal quality indicator (green = good)
    - Artifact rate percentage
    - P3b and HEP amplitude displays
-
-3. **Interpret Quality Metrics:**
+3. **Interpret Quality Metrics**
    - Quality > 0.8 = Excellent
    - Quality 0.6-0.8 = Good
    - Quality < 0.6 = Needs attention
@@ -186,8 +180,7 @@ Set up and use real-time monitoring for live data streams.
    - Pupil Diameter
    - Heart Rate
    - Parameter Estimates
-
-3. **Plot Features:**
+3. **Plot Features**
    - Auto-scaling Y-axes
    - 30-second rolling window
    - Color-coded data streams
@@ -201,7 +194,6 @@ Set up and use real-time monitoring for live data streams.
    - EEG quality < 0.7
    - Pupil data loss > 20%
    - Heart rate outside 40-100 BPM
-
 3. Click **"Enable Alerts"**
 
 ---
@@ -209,6 +201,7 @@ Set up and use real-time monitoring for live data streams.
 ## 🔬 Tutorial 3: Advanced Parameter Configuration
 
 ### Objective
+
 Learn to configure advanced parameters for specific experimental paradigms.
 
 ---
@@ -253,17 +246,17 @@ For multi-subject analysis:
 Advanced sampling settings:
 
 | Setting           | Recommended Value | When to Use                 |
-|-------------------|-------------------|-----------------------------|
+| ----------------- | ----------------- | --------------------------- |
 | Chains            | 4                 | Standard analysis           |
 | Iterations        | 4000              | Complex models              |
 | Thin              | 2                 | Large datasets              |
 | Adapt Delta       | 0.95              | Difficult posteriors        |
-
 ---
 
 ## 📈 Tutorial 4: Batch Processing and Automation
 
 ### Objective
+
 Process multiple experiments automatically.
 
 ---
@@ -281,7 +274,7 @@ Process multiple experiments automatically.
       "trials": 1000
     },
     {
-      "name": "Subject_02", 
+      "name": "Subject_02",
       "parameters": {"theta0": 0.6, "pi_i": 1.2, "beta": 0.1},
       "trials": 1000
     }
@@ -303,6 +296,7 @@ Process multiple experiments automatically.
 ### Step 3: Monitor Progress
 
 Batch processing dashboard shows:
+
 - Individual experiment status
 - Overall progress
 - Resource utilization
@@ -313,9 +307,8 @@ Batch processing dashboard shows:
 ## 🔍 Tutorial 5: Model Comparison and Validation
 
 ### Objective
-Compare different models and validate results.
 
----
+Compare different models and validate results.
 
 ### Step 1: Set Up Model Comparison
 
@@ -323,7 +316,6 @@ Compare different models and validate results.
    - **Model A**: Basic APGI
    - **Model B**: APGI with learning
    - **Model C**: Hierarchical APGI
-
 2. Use same data for all models
 
 ---
@@ -341,7 +333,7 @@ Compare different models and validate results.
 
 ### Step 3: Interpret Results
 
-### Model Selection Criteria:
+### Model Selection Criteria
 
 - Lower WAIC = Better model
 - Lower LOO-CV = Better predictive performance
@@ -355,7 +347,6 @@ Compare different models and validate results.
    - K-fold validation
    - Leave-one-subject-out
    - Temporal validation
-
 2. Sensitivity analysis:
    - Prior sensitivity
    - Parameter identifiability
@@ -366,6 +357,7 @@ Compare different models and validate results.
 ## 🛠️ Tutorial 6: Custom Analysis Pipeline
 
 ### Objective
+
 Create custom analysis workflows.
 
 ---
@@ -385,12 +377,10 @@ Drag and drop analysis steps:
    - Filter artifacts
    - Normalize signals
    - Segment epochs
-
 2. **Parameter Estimation**
    - Configure sampler
    - Set priors
    - Define likelihood
-
 3. **Post-processing**
    - Convergence checks
    - Posterior predictive checks
@@ -409,6 +399,7 @@ Drag and drop analysis steps:
 ## 📝 Tutorial 7: Report Generation
 
 ### Objective
+
 Generate professional analysis reports.
 
 ---
@@ -421,11 +412,8 @@ Generate professional analysis reports.
    - **Standard**: Basic results summary
    - **Detailed**: Full analysis report
    - **Publication**: Journal-ready format
-
 ---
-
 ### Step 2: Customize Report
-
 Add sections:
 - Executive summary
 - Methods description
@@ -433,35 +421,31 @@ Add sections:
 - Figures and plots
 - Discussion points
 - Supplementary materials
-
 ---
-
 ### Step 3: Export and Share
-
 1. Preview report
 2. Make final adjustments
 3. Export in desired format:
    - PDF (for sharing)
    - LaTeX (for publication)
    - HTML (for web)
-
 ---
-
 ## 🔧 Common Workflow Patterns
-
 ### Pattern 1: Exploratory Analysis
+
 1. Quick parameter sweep
 2. Visualize results
 3. Identify promising configurations
 4. Refine and repeat
-
 ### Pattern 2: Confirmatory Analysis
+
 1. Pre-register analysis plan
 2. Collect data
 3. Run pre-specified analysis
 4. Report results transparently
 
 ### Pattern 3: Multi-site Study
+
 1. Standardize protocols
 2. Batch process sites
 3. Meta-analysis
@@ -470,12 +454,10 @@ Add sections:
 ---
 
 ## 💡 Pro Tips
-
 ### Efficiency Tips
 - Use keyboard shortcuts (Ctrl+S to save, Ctrl+R to run)
 - Bookmark frequently used configurations
 - Use templates for similar experiments
-
 ### Quality Assurance
 - Always check convergence diagnostics
 - Validate with simulated data first
@@ -487,15 +469,14 @@ Add sections:
 - Document parameter choices
 
 ---
-
 ## 🆘 Getting Help
 
 ### Built-in Help
 - **F1**: Context-sensitive help
 - **Help Menu**: Complete documentation
 - **Tool Tips**: Hover over elements
-
 ### Video Tutorials
+
 - [Basic Setup](link-to-video)
 - [Advanced Analysis](link-to-video)
 - [Troubleshooting](link-to-video)
@@ -508,9 +489,7 @@ Add sections:
 ---
 
 ## 📚 Next Steps
-
 After completing these tutorials:
-
 1. **Explore Examples**: Check the `examples/` directory
 2. **Read API Docs**: Learn programmatic interface
 3. **Join Community**: Connect with other users
@@ -519,9 +498,7 @@ After completing these tutorials:
 ---
 
 ### Happy Analyzing! 🧠✨
-
 ---
-
-**Version**: 1.0  
-**Last Updated**: 2025-01-11  
+**Version**: 1.0
+**Last Updated**: 2025-01-11
 **See Also**: [Quick Start Guide](quick_start_guide.md), [Troubleshooting](troubleshooting.md)

@@ -92,8 +92,8 @@ python my_first_test.py
 
 **Falsification Status:**
 
-- `NOT FALSIFIED` = Framework survived this test ✅
-- `FALSIFIED` = Framework contradicted by evidence ⚠️
+- `NOT FALSIFIED` = Framework survived this test
+- `FALSIFIED` = Framework contradicted by evidence
 
 **Confidence Level:**
 
@@ -125,11 +125,11 @@ Statistical Power: 0.85
 
 **What this means:**
 
-- ✅ Framework survived this test
-- ✅ High confidence (0.87)
-- ✅ Highly significant (p = 0.002)
-- ✅ Medium-large effect (d = 0.62)
-- ✅ Well-powered study (0.85)
+- Framework survived this test
+- High confidence (0.87)
+- Highly significant (p = 0.002)
+- Medium-large effect (d = 0.62)
+- Well-powered study (0.85)
 
 **Conclusion:** Strong evidence supporting the framework.
 
@@ -290,7 +290,7 @@ python GUI-Launcher.py
 ### Parameter Ranges
 
 | Parameter | Range | Default |
-|-----------|-------|---------|
+| ----------- | ------- | --------- |
 | extero_precision | 0.1-10.0 | 2.0 |
 | intero_precision | 0.1-10.0 | 1.5 |
 | threshold | 0.5-10.0 | 3.5 |
@@ -300,7 +300,7 @@ python GUI-Launcher.py
 ### Test Types
 
 | Test | Command | Description |
-|------|---------|-------------|
+| ------ | --------- | ------------- |
 | Primary | `primary` | Full ignition without consciousness |
 | Consciousness Without Ignition | `consciousness-without-ignition` | Consciousness without ignition |
 | Threshold Insensitivity | `threshold-insensitivity` | Neuromodulatory effects |

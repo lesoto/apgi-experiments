@@ -102,7 +102,7 @@ class APGIError:
         }
 
 
-class ErrorRecoveryStrategy:
+class ErrorRecoveryStrategy(abc.ABC):
     """Base class for error recovery strategies."""
 
     def __init__(self, name: str, description: str):
@@ -112,12 +112,12 @@ class ErrorRecoveryStrategy:
     @abc.abstractmethod
     def can_handle(self, error: APGIError) -> bool:
         """Check if this strategy can handle the error."""
-        raise NotImplementedError
+        pass
 
     @abc.abstractmethod
     def recover(self, error: APGIError, **kwargs) -> bool:
         """Attempt to recover from the error."""
-        raise NotImplementedError
+        pass
 
 
 class DataValidationRecovery(ErrorRecoveryStrategy):
@@ -434,7 +434,13 @@ for i in range(0, len(data), chunk_size):
         exception_name = type(exception).__name__
 
         if exception_name in self.error_patterns:
-            return self.error_patterns[exception_name]["solutions"]
+            solutions = self.error_patterns[exception_name]["solutions"]
+            # Ensure we return List[ErrorSolution]
+            if isinstance(solutions, list) and all(
+                isinstance(s, ErrorSolution) for s in solutions
+            ):
+                return solutions
+            return []
 
         # Generate generic solutions based on category
         generic_solutions = {

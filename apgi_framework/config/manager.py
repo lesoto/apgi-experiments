@@ -45,8 +45,8 @@ class DatabaseConfig:
     host: str = "localhost"
     port: int = 5432
     database: str = "apgi_framework"
-    username: str = "apgi_user"
-    password: str = ""
+    username: str = ""  # Require explicit configuration
+    password: str = ""  # Require explicit configuration
     pool_size: int = 5
     max_overflow: int = 10
     echo: bool = False
@@ -428,11 +428,20 @@ class ConfigurationManager:
         if self.config.experimental.max_participants <= 0:
             errors.append("Max participants must be positive")
 
-        # Validate secret key
-        if not self.config.secret_key or len(self.config.secret_key) < 32:
-            errors.append(
-                "Secret key must be at least 32 characters long and not empty"
-            )
+        # Validate database credentials for non-SQLite backends
+        # SQLite typically uses a file path for database name and empty host
+        is_sqlite = (
+            not self.config.database.host
+            or Path(self.config.database.database).exists()
+            or self.config.database.database.endswith(".db")
+            or self.config.database.database.startswith("file:")
+        )
+
+        if not is_sqlite:
+            if not self.config.database.username:
+                errors.append("Database username is required for non-SQLite backends")
+            if not self.config.database.password:
+                errors.append("Database password is required for non-SQLite backends")
 
         return errors
 

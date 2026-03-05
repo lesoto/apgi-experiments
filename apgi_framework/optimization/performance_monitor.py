@@ -8,10 +8,8 @@ system resources, operation performance, and optimization opportunities.
 import queue
 import threading
 import time
-import tkinter as tk
 from collections import deque
 from dataclasses import dataclass
-from tkinter import ttk
 from typing import Any, Callable, Dict, List, Optional
 
 import numpy as np
@@ -21,6 +19,90 @@ from ..logging.standardized_logging import get_logger
 from .performance_profiler import get_profiler
 
 logger = get_logger(__name__)
+
+# Try to import tkinter for GUI components
+try:
+    import tkinter as tk
+    from tkinter import ttk
+
+    HAS_TKINTER = True
+except ImportError:
+    HAS_TKINTER = False
+
+    # Create dummy classes for headless environments
+    class DummyTk:
+        @staticmethod
+        def StringVar():
+            return None
+
+        class Listbox:
+            def __init__(self, *args, **kwargs):
+                pass
+
+            def insert(self, *args):
+                pass
+
+            def delete(self, *args):
+                pass
+
+            def pack(self, *args, **kwargs):
+                pass
+
+            def itemconfig(self, *args):
+                pass
+
+            size = 0
+
+        class Toplevel:
+            def __init__(self, *args, **kwargs):
+                pass
+
+            def title(self, *args):
+                pass
+
+            def geometry(self, *args):
+                pass
+
+        class Text:
+            def __init__(self, *args, **kwargs):
+                pass
+
+            def insert(self, *args):
+                pass
+
+            def configure(self, *args):
+                pass
+
+            def pack(self, *args, **kwargs):
+                pass
+
+    class DummyTtk:
+        @staticmethod
+        def LabelFrame(*args, **kwargs):
+            return None
+
+        @staticmethod
+        def Frame(*args, **kwargs):
+            return None
+
+        @staticmethod
+        def Label(*args, **kwargs):
+            return None
+
+        @staticmethod
+        def Progressbar(*args, **kwargs):
+            return None
+
+        @staticmethod
+        def Scrollbar(*args, **kwargs):
+            return None
+
+        @staticmethod
+        def Button(*args, **kwargs):
+            return None
+
+    tk = DummyTk  # type: ignore
+    ttk = DummyTtk  # type: ignore
 
 
 @dataclass
@@ -584,4 +666,6 @@ def create_performance_monitor_gui(
     parent, monitor: Optional[SystemMonitor] = None
 ) -> PerformanceMonitorGUI:
     """Create a performance monitor GUI component."""
+    if not HAS_TKINTER:
+        raise ImportError("tkinter is not available. GUI components cannot be created.")
     return PerformanceMonitorGUI(parent, monitor)

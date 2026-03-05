@@ -6,13 +6,16 @@
 2. [Understanding Falsification Logic](#understanding-falsification-logic)
 3. [Statistical Metrics Explained](#statistical-metrics-explained)
 4. [Test-Specific Interpretations](#test-specific-interpretations)
+
 5. [Common Scenarios](#common-scenarios)
+
 6. [Decision Trees](#decision-trees)
+
 7. [Reporting Guidelines](#reporting-guidelines)
 
 ## Introduction
 
-This guide helps you interpret the results of APGI Framework falsification tests. Proper interpretation is crucial for:
+This guide helps you interpret results of APGI Framework falsification tests. Proper interpretation is crucial for:
 
 - Understanding what the results mean for the framework
 - Making informed decisions about next steps
@@ -21,7 +24,7 @@ This guide helps you interpret the results of APGI Framework falsification tests
 
 ### Key Principle
 
-Falsification testing follows Karl Popper's philosophy: we attempt to **disprove** the theory. A theory that survives rigorous falsification attempts gains credibility, while one that fails is either rejected or requires modification.
+Falsification testing follows Karl Popper's philosophy: we attempt to **disprove** a theory. A theory that survives rigorous falsification attempts gains credibility, while one that fails is either rejected or requires modification.
 
 ## Understanding Falsification Logic
 
@@ -31,13 +34,13 @@ Falsification testing follows Karl Popper's philosophy: we attempt to **disprove
 
 ##### Criterion: Full ignition signatures WITHOUT consciousness
 
-##### Logic:
+##### Logic: Ignition Without Consciousness
 
 - APGI Framework predicts: Ignition → Consciousness
 - Falsification occurs if: Ignition ∧ ¬Consciousness
 - If falsified: Framework is decisively refuted
 
-#### What to Look for
+#### What to Look for: Ignition Signatures
 
 - All neural signatures present (P3b > 5μV, gamma PLV > 0.3, BOLD Z > 3.1, PCI > 0.4)
 - No subjective report of consciousness
@@ -48,13 +51,13 @@ Falsification testing follows Karl Popper's philosophy: we attempt to **disprove
 
 ##### Criterion: Consciousness WITHOUT ignition signatures
 
-##### Logic:
+##### Logic: Consciousness Without Ignition
 
 - APGI Framework predicts: Consciousness → Ignition
 - Falsification occurs if: Consciousness ∧ ¬Ignition
 - If falsified: Alternative routes to consciousness exist
 
-#### What to Look for
+#### What to Look For: Consciousness Without Ignition
 
 - Conscious reports (subjective + above-chance forced-choice)
 - Subthreshold neural signatures (P3b < 2μV, gamma PLV < 0.15, PCI < 0.3)
@@ -65,13 +68,13 @@ Falsification testing follows Karl Popper's philosophy: we attempt to **disprove
 
 ##### Criterion: Threshold unaffected by neuromodulation
 
-##### Logic:
+##### Logic: Neuromodulation Effects
 
 - APGI Framework predicts: Neuromodulators → Threshold changes
 - Falsification occurs if: Neuromodulation ∧ ¬Threshold change
 - If falsified: Threshold is fixed, not dynamic
 
-#### What to Look For
+#### What to Look For: Neuromodulation Tests
 
 - Pharmacological manipulation (propranolol, L-DOPA, SSRIs, physostigmine)
 - No significant threshold modulation
@@ -81,13 +84,13 @@ Falsification testing follows Karl Popper's philosophy: we attempt to **disprove
 
 ##### Criterion: No preferential interoceptive weighting
 
-##### Logic:
+##### Logic: Interoceptive Bias
 
 - APGI Framework predicts: Interoceptive signals have special status (β > 1)
 - Falsification occurs if: β ≈ 1 (no bias)
 - If falsified: Interoception has no special role
 
-#### What to Look For
+#### What to Look For: Interoceptive Weighting
 
 - β (interoceptive/exteroceptive weighting ratio) between 0.95-1.05
 - Equal weighting of interoceptive and exteroceptive signals
@@ -95,27 +98,27 @@ Falsification testing follows Karl Popper's philosophy: we attempt to **disprove
 
 ### Falsification vs. Confirmation
 
-#### Important: These tests are designed to **falsify**, not confirm.
+#### Important: These tests are designed to **falsify**, not confirm
 
 | Result        | Interpretation                    | Strength               |
 |---------------|-----------------------------------|------------------------|
 | NOT Falsified | Framework survives this test      | Moderate support       |
 | Falsified     | Framework contradicted            | Strong evidence against |
 
-#### Key Point: "Not falsified" ≠ "proven true". It means that the framework survived this particular challenge.
+#### Key Point: "Not falsified" ≠ "proven true". It means that the framework survived this particular challenge
 
 ## Statistical Metrics Explained
 
 ### Confidence Level
 
-#### Definition: Degree of certainty in the falsification result.
+#### Definition: Degree of certainty in the falsification result
 
 #### Range: 0.0 (no confidence) to 1.0 (complete confidence)
 
-#### Interpretation:
+#### Interpretation
 
 | Range       | Interpretation                    | Action                                  |
-|-------------|-----------------------------------|-----------------------------------------|
+|-------------|-----------------------------------|------------------------------------------|
 | 0.0 - 0.5   | Low confidence                    | Increase sample size, check data quality    |
 | 0.5 - 0.7   | Moderate confidence                | Acceptable for exploratory research        |
 | 0.7 - 0.9   | High confidence                   | Acceptable for most purposes               |
@@ -138,11 +141,11 @@ Interpretation: High confidence in the result.
 **Interpretation**:
 
 | P-value    | Interpretation            | Significance |
-|-------------|--------------------------|-------------|
-| < 0.001     | Extremely significant      | ***         |
-| < 0.01      | Highly significant         | **          |
-| < 0.05      | Significant               | *           |
-| ≥ 0.05      | Not significant           | ns          |
+|------------|--------------------------|-------------|
+| < 0.001    | Extremely significant     | ***         |
+| < 0.01     | Highly significant        | **          |
+| < 0.05     | Significant              | *           |
+| ≥ 0.05     | Not significant          | ns          |
 
 **Common Misinterpretations**:
 
@@ -166,12 +169,12 @@ Only 0.3% chance of observing this if null hypothesis true.
 
 **Interpretation**:
 
-| d          | Interpretation            | Practical Significance           |
+| d          | Interpretation            | Practical Significance          |
 |------------|--------------------------|--------------------------------|
-| < 0.2      | Negligible               | Very small, may not matter        |
-| 0.2 - 0.5  | Small                    | Noticeable to experts             |
-| 0.5 - 0.8  | Medium                   | Noticeable to informed observers   |
-| ≥ 0.8      | Large                    | Obvious to anyone                |
+| < 0.2      | Negligible               | Very small, may not matter       |
+| 0.2 - 0.5  | Small                   | Noticeable to experts            |
+| 0.5 - 0.8  | Medium                  | Noticeable to informed observers  |
+| ≥ 0.8      | Large                   | Obvious to anyone               |
 
 **Why it matters**: P-values depend on sample size, but effect sizes don't. A large sample can make a tiny effect "significant" (low p-value) but practically meaningless (small d).
 
@@ -191,12 +194,12 @@ Difference is noticeable and practically meaningful.
 
 **Interpretation**:
 
-| Power       | Interpretation            | Action                                |
-|-------------|--------------------------|---------------------------------------|
-| < 0.5       | Underpowered             | Increase sample size significantly          |
-| 0.5 - 0.8   | Adequate                 | Acceptable for exploratory work          |
-| ≥ 0.8       | Well-powered             | Standard target for research             |
-| ≥ 0.95      | Very well-powered         | Excellent for detecting effects          |
+| Power      | Interpretation            | Action                           |
+|------------|--------------------------|----------------------------------|
+| < 0.5      | Underpowered             | Increase sample size significantly |
+| 0.5 - 0.8  | Adequate                 | Acceptable for exploratory work   |
+| ≥ 0.8      | Well-powered             | Standard target for research      |
+| ≥ 0.95     | Very well-powered         | Excellent for detecting effects   |
 
 **Why it matters**: Low power means you might miss real effects (false negatives). High power ensures you can detect effects if they exist.
 
@@ -316,12 +319,15 @@ Effect Size: 1.24
 ```python
 is_falsified=False, confidence=0.52, p_value=0.18
 ```
+
 **Interpretation**: Inconclusive. Increase sample size.
 
 **Significant but small effect**:
+
 ```python
 is_falsified=True, effect_size=0.15, p_value=0.03
 ```
+
 **Interpretation**: Statistically significant but practically negligible. May not be meaningful falsification.
 
 ### Consciousness Without Ignition Test
@@ -329,6 +335,7 @@ is_falsified=True, effect_size=0.15, p_value=0.03
 #### Interpretation Guide
 
 **NOT Falsified**:
+
 ```python
 Violation Rate: 8% (< 20% threshold)
 Interpretation: Consciousness rarely occurs without ignition.
@@ -336,6 +343,7 @@ Framework prediction supported.
 ```
 
 **FALSIFIED**:
+
 ```python
 Violation Rate: 27% (> 20% threshold)
 Interpretation: Consciousness frequently occurs without ignition.
@@ -353,6 +361,7 @@ Framework falsified.
 #### Interpretation Guide
 
 **NOT Falsified**:
+
 ```python
 Threshold Modulation: Significant (p < 0.05)
 Propranolol: -0.4 units
@@ -361,6 +370,7 @@ Interpretation: Threshold is neuromodulatory-sensitive as predicted.
 ```
 
 **FALSIFIED**:
+
 ```python
 Threshold Modulation: Not significant (p = 0.42)
 All drugs: No significant effect
@@ -378,6 +388,7 @@ Framework prediction violated.
 #### Interpretation Guide
 
 **NOT Falsified**:
+
 ```python
 β (intero/extero ratio): 1.45 (95% CI: [1.32, 1.58])
 Interpretation: Significant interoceptive bias (β > 1).
@@ -385,6 +396,7 @@ Framework prediction supported.
 ```
 
 **FALSIFIED**:
+
 ```python
 β (intero/extero ratio): 0.98 (95% CI: [0.94, 1.02])
 Interpretation: No interoceptive bias (β ≈ 1).

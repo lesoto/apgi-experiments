@@ -42,6 +42,9 @@ class MockController:
         self._falsification_tests = None
         self._data_manager = None
 
+        # Add equation_processor mock
+        self.equation_processor = mock.Mock()
+
         # Mock common method calls
         self.get_mathematical_engine = mock.Mock(
             return_value={
@@ -188,7 +191,7 @@ class TestValidationSuite:
         assert suite.failed_count == 1
         assert suite.total_count == 2
         assert suite.success_rate == 50.0
-        assert suite.total_execution_time == 0.3
+        assert suite.total_execution_time == pytest.approx(0.3)
 
     def test_empty_validation_suite(self):
         """Test empty ValidationSuite properties."""

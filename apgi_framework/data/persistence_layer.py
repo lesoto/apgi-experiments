@@ -6,6 +6,7 @@ Provides unified interface for data storage using SQLite and HDF5 backends.
 
 import hashlib
 import json
+import os
 import re
 import shutil
 import sqlite3
@@ -16,6 +17,8 @@ from typing import Any, Dict, List, Optional, Union, Callable
 import h5py
 import numpy as np
 import pandas as pd
+import psycopg2
+from psycopg2.extras import Json
 
 from ..exceptions import APGIFrameworkError
 from ..security.secure_pickle import (
@@ -50,12 +53,12 @@ class PersistenceLayer:
 
         Args:
             storage_path: Base path for data storage
-            backend: Storage backend ('sqlite', 'hdf5', or 'hybrid')
+            backend: Storage backend ('sqlite', 'hdf5', 'hybrid', or 'postgresql')
         """
         self.storage_path = Path(storage_path)
         self.backend = backend.lower()
 
-        if self.backend not in ["sqlite", "hdf5", "hybrid"]:
+        if self.backend not in ["sqlite", "hdf5", "hybrid", "postgresql"]:
             raise PersistenceError(f"Unsupported backend: {backend}")
 
         # Create storage directories
@@ -71,6 +74,8 @@ class PersistenceLayer:
         self._init_sqlite()
         if self.backend in ["hdf5", "hybrid"]:
             self._init_hdf5()
+        if self.backend == "postgresql":
+            self._init_postgresql()
 
     def _validate_experiment_id(self, experiment_id: str) -> None:
         """Validate experiment_id to prevent path traversal."""
@@ -159,6 +164,130 @@ class PersistenceLayer:
                 f.attrs["version"] = "1.0.0"
                 f.attrs["description"] = "APGI Framework Experimental Data Storage"
 
+    def _init_postgresql(self):
+        """Initialize PostgreSQL database for large-scale data storage."""
+        # Get database connection parameters from environment or config
+        self.db_host = os.getenv("POSTGRES_HOST", "localhost")
+        self.db_port = int(os.getenv("POSTGRES_PORT", "5432"))
+        self.db_name = os.getenv("POSTGRES_DB", "apgi_experiments")
+        self.db_user = os.getenv("POSTGRES_USER", "apgi_user")
+        self.db_password = os.getenv("POSTGRES_PASSWORD", "")
+
+        try:
+            # Test connection
+            conn = psycopg2.connect(
+                host=self.db_host,
+                port=self.db_port,
+                dbname=self.db_name,
+                user=self.db_user,
+                password=self.db_password,
+            )
+            conn.close()
+
+            # Create tables if they don't exist
+            self._create_postgresql_tables()
+
+        except psycopg2.Error as e:
+            raise PersistenceError(f"Failed to connect to PostgreSQL: {e}")
+
+    def _create_postgresql_tables(self):
+        """Create necessary tables in PostgreSQL database."""
+        with psycopg2.connect(
+            host=self.db_host,
+            port=self.db_port,
+            dbname=self.db_name,
+            user=self.db_user,
+            password=self.db_password,
+        ) as conn:
+            with conn.cursor() as cursor:
+                # Experiments table
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS experiments (
+                        experiment_id VARCHAR(255) PRIMARY KEY,
+                        experiment_name VARCHAR(255),
+                        description TEXT,
+                        created_at TIMESTAMP,
+                        updated_at TIMESTAMP,
+                        researcher VARCHAR(255),
+                        institution VARCHAR(255),
+                        n_participants INTEGER,
+                        n_trials INTEGER,
+                        conditions JSONB,
+                        parameters JSONB,
+                        data_format VARCHAR(50),
+                        file_paths JSONB,
+                        total_size_mb REAL,
+                        current_version VARCHAR(50),
+                        tags JSONB,
+                        category VARCHAR(100),
+                        data_quality_score REAL,
+                        completeness_percentage REAL,
+                        validation_status VARCHAR(50)
+                    )
+                """
+                )
+
+                # Versions table
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS versions (
+                        version_id VARCHAR(255) PRIMARY KEY,
+                        experiment_id VARCHAR(255) REFERENCES experiments(experiment_id),
+                        version_number VARCHAR(50),
+                        created_at TIMESTAMP,
+                        created_by VARCHAR(255),
+                        description TEXT,
+                        parent_version VARCHAR(255),
+                        checksum VARCHAR(255),
+                        size_bytes BIGINT
+                    )
+                """
+                )
+
+                # Backups table
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS backups (
+                        backup_id VARCHAR(255) PRIMARY KEY,
+                        experiment_id VARCHAR(255) REFERENCES experiments(experiment_id),
+                        backup_path TEXT,
+                        created_at TIMESTAMP,
+                        backup_type VARCHAR(50),
+                        size_bytes BIGINT,
+                        checksum VARCHAR(255),
+                        compression_ratio REAL,
+                        retention_days INTEGER,
+                        status VARCHAR(50)
+                    )
+                """
+                )
+
+                # Data chunks table for large datasets
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS data_chunks (
+                        chunk_id SERIAL PRIMARY KEY,
+                        experiment_id VARCHAR(255) REFERENCES experiments(experiment_id),
+                        data_type VARCHAR(50),
+                        chunk_index INTEGER,
+                        total_chunks INTEGER,
+                        data JSONB,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """
+                )
+
+                # Indexes for performance
+                cursor.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_experiments_created ON experiments(created_at)"
+                )
+                cursor.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_data_chunks_experiment ON data_chunks(experiment_id, data_type)"
+                )
+
+            conn.commit()
+
     def store_dataset(self, dataset: ExperimentalDataset) -> str:
         """
         Store experimental dataset with metadata.
@@ -181,6 +310,8 @@ class PersistenceLayer:
             elif self.backend == "hybrid":
                 # Store large numerical data in HDF5, metadata in SQLite
                 self._store_data_hdf5(dataset)
+            elif self.backend == "postgresql":
+                self._store_data_postgresql(dataset)
 
             # Create initial version
             version = DataVersion(
@@ -220,6 +351,8 @@ class PersistenceLayer:
                 data = self._load_data_sqlite(experiment_id, version)
             elif self.backend in ["hdf5", "hybrid"]:
                 data = self._load_data_hdf5(experiment_id, version)
+            elif self.backend == "postgresql":
+                data = self._load_data_postgresql(experiment_id, version)
             else:
                 raise PersistenceError(
                     f"Unsupported backend for loading: {self.backend}"
@@ -243,6 +376,13 @@ class PersistenceLayer:
             raise PersistenceError(f"Failed to load dataset {experiment_id}: {str(e)}")
 
     def _store_metadata(self, metadata: ExperimentMetadata):
+        """Store experiment metadata in SQLite or PostgreSQL."""
+        if self.backend == "postgresql":
+            self._store_metadata_postgresql(metadata)
+        else:
+            self._store_metadata_sqlite(metadata)
+
+    def _store_metadata_sqlite(self, metadata: ExperimentMetadata):
         """Store experiment metadata in SQLite."""
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
@@ -276,7 +416,73 @@ class PersistenceLayer:
             )
             conn.commit()
 
+    def _store_metadata_postgresql(self, metadata: ExperimentMetadata):
+        """Store experiment metadata in PostgreSQL."""
+        with psycopg2.connect(
+            host=self.db_host,
+            port=self.db_port,
+            dbname=self.db_name,
+            user=self.db_user,
+            password=self.db_password,
+        ) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO experiments VALUES (
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                    ) ON CONFLICT (experiment_id) DO UPDATE SET
+                        experiment_name = EXCLUDED.experiment_name,
+                        description = EXCLUDED.description,
+                        updated_at = EXCLUDED.updated_at,
+                        researcher = EXCLUDED.researcher,
+                        institution = EXCLUDED.institution,
+                        n_participants = EXCLUDED.n_participants,
+                        n_trials = EXCLUDED.n_trials,
+                        conditions = EXCLUDED.conditions,
+                        parameters = EXCLUDED.parameters,
+                        data_format = EXCLUDED.data_format,
+                        file_paths = EXCLUDED.file_paths,
+                        total_size_mb = EXCLUDED.total_size_mb,
+                        current_version = EXCLUDED.current_version,
+                        tags = EXCLUDED.tags,
+                        category = EXCLUDED.category,
+                        data_quality_score = EXCLUDED.data_quality_score,
+                        completeness_percentage = EXCLUDED.completeness_percentage,
+                        validation_status = EXCLUDED.validation_status
+                """,
+                    (
+                        metadata.experiment_id,
+                        metadata.experiment_name,
+                        metadata.description,
+                        metadata.created_at,
+                        metadata.updated_at,
+                        metadata.researcher,
+                        metadata.institution,
+                        metadata.n_participants,
+                        metadata.n_trials,
+                        Json(metadata.conditions),
+                        Json(metadata.parameters),
+                        metadata.data_format,
+                        Json(metadata.file_paths),
+                        metadata.total_size_mb,
+                        metadata.current_version,
+                        Json(metadata.tags),
+                        metadata.category,
+                        metadata.data_quality_score,
+                        metadata.completeness_percentage,
+                        metadata.validation_status,
+                    ),
+                )
+            conn.commit()
+
     def _load_metadata(self, experiment_id: str) -> Optional[ExperimentMetadata]:
+        """Load experiment metadata from SQLite or PostgreSQL."""
+        if self.backend == "postgresql":
+            return self._load_metadata_postgresql(experiment_id)
+        else:
+            return self._load_metadata_sqlite(experiment_id)
+
+    def _load_metadata_sqlite(self, experiment_id: str) -> Optional[ExperimentMetadata]:
         """Load experiment metadata from SQLite."""
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
@@ -310,6 +516,50 @@ class PersistenceLayer:
                 completeness_percentage=row["completeness_percentage"],
                 validation_status=row["validation_status"],
             )
+
+    def _load_metadata_postgresql(
+        self, experiment_id: str
+    ) -> Optional[ExperimentMetadata]:
+        """Load experiment metadata from PostgreSQL."""
+        with psycopg2.connect(
+            host=self.db_host,
+            port=self.db_port,
+            dbname=self.db_name,
+            user=self.db_user,
+            password=self.db_password,
+        ) as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+                cursor.execute(
+                    "SELECT * FROM experiments WHERE experiment_id = %s",
+                    (experiment_id,),
+                )
+                row = cursor.fetchone()
+
+                if not row:
+                    return None
+
+                return ExperimentMetadata(
+                    experiment_id=row["experiment_id"],
+                    experiment_name=row["experiment_name"],
+                    description=row["description"],
+                    created_at=row["created_at"],
+                    updated_at=row["updated_at"],
+                    researcher=row["researcher"],
+                    institution=row["institution"],
+                    n_participants=row["n_participants"],
+                    n_trials=row["n_trials"],
+                    conditions=row["conditions"],
+                    parameters=row["parameters"],
+                    data_format=row["data_format"],
+                    file_paths=row["file_paths"],
+                    total_size_mb=row["total_size_mb"],
+                    current_version=row["current_version"],
+                    tags=row["tags"],
+                    category=row["category"],
+                    data_quality_score=row["data_quality_score"],
+                    completeness_percentage=row["completeness_percentage"],
+                    validation_status=row["validation_status"],
+                )
 
     def _store_data_hdf5(self, dataset: ExperimentalDataset):
         """Store dataset in HDF5 format."""
@@ -451,6 +701,79 @@ class PersistenceLayer:
 
         safe_pickle_dump(data_to_store, data_file)
 
+    def _store_data_postgresql(self, dataset: ExperimentalDataset):
+        """Store dataset in PostgreSQL format for large-scale data handling."""
+        experiment_id = dataset.metadata.experiment_id
+        self._validate_experiment_id(experiment_id)
+
+        with psycopg2.connect(
+            host=self.db_host,
+            port=self.db_port,
+            dbname=self.db_name,
+            user=self.db_user,
+            password=self.db_password,
+        ) as conn:
+            with conn.cursor() as cursor:
+                # Store data in chunks for large datasets
+                chunk_size = 100  # Adjust based on data size
+                data_types = ["data", "raw_data", "processed_data", "analysis_results"]
+
+                for data_type in data_types:
+                    data_dict = getattr(dataset, data_type, {}) or {}
+
+                    if not data_dict:
+                        continue
+
+                    # Convert data to serializable format
+                    serializable_data = self._prepare_data_for_postgresql(data_dict)
+
+                    # Split into chunks if too large
+                    items = list(serializable_data.items())
+                    total_chunks = (len(items) + chunk_size - 1) // chunk_size
+
+                    for i in range(0, len(items), chunk_size):
+                        chunk_items = dict(items[i : i + chunk_size])
+                        chunk_index = i // chunk_size
+
+                        cursor.execute(
+                            """
+                            INSERT INTO data_chunks (experiment_id, data_type, chunk_index, total_chunks, data)
+                            VALUES (%s, %s, %s, %s, %s)
+                        """,
+                            (
+                                experiment_id,
+                                data_type,
+                                chunk_index,
+                                total_chunks,
+                                Json(chunk_items),
+                            ),
+                        )
+
+            conn.commit()
+
+    def _prepare_data_for_postgresql(self, data_dict: Dict[str, Any]) -> Dict[str, Any]:
+        """Prepare data for PostgreSQL storage by converting numpy arrays and complex objects."""
+        prepared = {}
+
+        for key, value in data_dict.items():
+            if isinstance(value, np.ndarray):
+                # Convert numpy arrays to lists
+                prepared[key] = value.tolist()
+            elif isinstance(value, dict):
+                # Recursively prepare nested dictionaries
+                prepared[key] = self._prepare_data_for_postgresql(value)
+            elif isinstance(value, list):
+                # Handle lists of arrays or complex objects
+                prepared[key] = [
+                    item.tolist() if isinstance(item, np.ndarray) else item
+                    for item in value
+                ]
+            else:
+                # Store scalar values and other serializable objects
+                prepared[key] = value
+
+        return prepared
+
     def _load_data_sqlite(
         self, experiment_id: str, version: Optional[str] = None
     ) -> Dict[str, Any]:
@@ -466,6 +789,49 @@ class PersistenceLayer:
             return {}
 
         return safe_pickle_load(data_file)  # type: ignore
+
+    def _load_data_postgresql(
+        self, experiment_id: str, version: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Load dataset from PostgreSQL format."""
+        self._validate_experiment_id(experiment_id)
+
+        with psycopg2.connect(
+            host=self.db_host,
+            port=self.db_port,
+            dbname=self.db_name,
+            user=self.db_user,
+            password=self.db_password,
+        ) as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+                # Load data by type
+                data_types = ["data", "raw_data", "processed_data", "analysis_results"]
+                result = {}
+
+                for data_type in data_types:
+                    cursor.execute(
+                        """
+                        SELECT data, chunk_index
+                        FROM data_chunks
+                        WHERE experiment_id = %s AND data_type = %s
+                        ORDER BY chunk_index
+                    """,
+                        (experiment_id, data_type),
+                    )
+
+                    chunks = cursor.fetchall()
+                    if chunks:
+                        # Reassemble chunks
+                        type_data = {}
+                        for chunk in chunks:
+                            chunk_data = chunk["data"]
+                            if isinstance(chunk_data, str):
+                                chunk_data = json.loads(chunk_data)
+                            type_data.update(chunk_data)
+
+                        result[data_type] = type_data
+
+                return result
 
     def _store_version(self, experiment_id: str, version: DataVersion):
         """Store version information."""

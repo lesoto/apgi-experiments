@@ -446,15 +446,41 @@ class BIDSExporter:
             "Columns": [],
         }
 
-        # Add data type specific information
+        # Add data type specific information with proper column descriptions
         if data_type.lower() == "pupil":
-            json_data["Description"] = "Pupillometry data"
+            json_data[
+                "Description"
+            ] = "Pupillometry data measuring pupil diameter over time"
             json_data["Units"] = "mm"
-            json_data["Columns"] = ["pupil_diameter_left", "pupil_diameter_right"]
+            json_data["Columns"] = [
+                {
+                    "name": "pupil_diameter_left",
+                    "description": "Left eye pupil diameter in millimeters",
+                    "units": "mm",
+                },
+                {
+                    "name": "pupil_diameter_right",
+                    "description": "Right eye pupil diameter in millimeters",
+                    "units": "mm",
+                },
+            ]
         elif data_type.lower() == "cardiac":
-            json_data["Description"] = "Cardiac data"
+            json_data[
+                "Description"
+            ] = "Cardiac physiological data including heart rate and heart rate variability"
             json_data["Units"] = ["bpm", "ms"]
-            json_data["Columns"] = ["heart_rate", "hrv_rmssd"]
+            json_data["Columns"] = [
+                {
+                    "name": "heart_rate",
+                    "description": "Heart rate in beats per minute",
+                    "units": "bpm",
+                },
+                {
+                    "name": "hrv_rmssd",
+                    "description": "Heart rate variability - root mean square of successive differences",
+                    "units": "ms",
+                },
+            ]
         else:
             json_data["Description"] = f"{data_type} physiological data"
             json_data["Units"] = "unknown"

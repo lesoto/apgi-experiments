@@ -89,15 +89,29 @@ class ChangeAnalyzer:
         try:
             # Get changed files from git
             result = subprocess.run(
-                ["git", "diff", "--name-only", base_ref],
+                ["git", "diff", "--name-only", f"{base_ref}..HEAD"],
                 capture_output=True,
                 text=True,
                 cwd=self.project_root,
             )
 
             if result.returncode != 0:
-                self.logger.warning(f"Git diff failed: {result.stderr}")
-                return self._fallback_analysis()
+                # Check if it's because HEAD~1 doesn't exist (shallow repo)
+                if "ambiguous argument" in result.stderr and base_ref == "HEAD~1":
+                    self.logger.warning("HEAD~1 not available, falling back to HEAD")
+                    # Fall back to comparing working tree to HEAD
+                    result = subprocess.run(
+                        ["git", "diff", "--name-only", "HEAD"],
+                        capture_output=True,
+                        text=True,
+                        cwd=self.project_root,
+                    )
+                    if result.returncode != 0:
+                        self.logger.warning(f"Git diff HEAD failed: {result.stderr}")
+                        return self._fallback_analysis()
+                else:
+                    self.logger.warning(f"Git diff failed: {result.stderr}")
+                    return self._fallback_analysis()
 
             changed_files = [f.strip() for f in result.stdout.split("\n") if f.strip()]
             return self._analyze_file_changes(changed_files)

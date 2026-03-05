@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, cast
 
 from ..logging.standardized_logging import get_logger
+from ..security.secure_pickle import RestrictedUnpickler, SecurePickleValidator
 from .batch_runner import BatchExecutionSummary, BatchTestRunner, TestResult
 
 logger = get_logger(__name__)
@@ -260,6 +261,30 @@ class ResultCache:
                 ),
             )
 
+    def _safe_load_pickle_data(self, compressed_data: bytes) -> Any:
+        """Safely load compressed pickle data using secure unpickling."""
+        import io
+
+        try:
+            # Decompress first
+            decompressed_data = zlib.decompress(compressed_data)
+
+            # Create validator and check data
+            validator = SecurePickleValidator()
+            if not validator.validate_pickle_data(decompressed_data):
+                raise ValueError("Pickle data failed security validation")
+
+            # Use restricted unpickler
+            with io.BytesIO(decompressed_data) as data_stream:
+                unpickler = RestrictedUnpickler(
+                    data_stream, allowed_types=set(validator.ALLOWED_TYPES)
+                )
+                return unpickler.load()
+
+        except Exception as e:
+            logger.error(f"Failed to safely load pickle data: {e}")
+            raise ValueError(f"Unsafe or corrupted pickle data: {e}")
+
     def _load_from_database(self, test_file: str) -> Optional[CacheEntry]:
         """Load cache entry from database."""
         try:
@@ -282,7 +307,7 @@ class ResultCache:
                     test_file=test_file,
                     test_hash=test_hash,
                     dependency_hashes=json.loads(dep_hashes_json),
-                    result=pickle.loads(zlib.decompress(result_data)),
+                    result=self._safe_load_pickle_data(result_data),
                     cached_at=datetime.fromisoformat(cached_at),
                     cache_hits=cache_hits,
                 )
@@ -364,7 +389,7 @@ class ResultCache:
 class ParallelExecutionOptimizer:
     """Optimizes parallel test execution based on performance profiles."""
 
-    def __init__(self):  # type: ignore
+    def __init__(self) -> None:
         self.execution_profiles: Dict[str, ExecutionProfile] = {}
         self.benchmarks: List[PerformanceBenchmark] = []
         self._profiles_lock = threading.Lock()

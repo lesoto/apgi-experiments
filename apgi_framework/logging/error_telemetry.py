@@ -8,7 +8,7 @@ improving the framework.
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from .standardized_logging import get_logger
 
@@ -31,6 +31,9 @@ class ErrorTelemetry:
 
         # Load existing telemetry
         self._load_telemetry()
+
+        # Create initial telemetry file if it doesn't exist
+        self._save_telemetry()
 
     def _load_telemetry(self) -> None:
         """Load existing telemetry data."""
@@ -70,14 +73,22 @@ class ErrorTelemetry:
             context: Additional context information
             user_id: Anonymous user identifier (optional)
         """
+        # Sanitize context to prevent serialization issues
+        sanitized_context = self._sanitize_for_json(
+            context or {}, max_depth=3, max_items=10
+        )
+        sanitized_system_info = self._sanitize_for_json(
+            self._get_system_info(), max_depth=2, max_items=5
+        )
+
         error_report = {
             "timestamp": datetime.now().isoformat(),
             "error_type": error_type,
             "error_message": error_message,
             "traceback": traceback,
-            "context": context or {},
+            "context": sanitized_context,
             "user_id": user_id,
-            "system_info": self._get_system_info(),
+            "system_info": sanitized_system_info,
         }
 
         self.telemetry_data["errors"].append(error_report)
@@ -88,6 +99,47 @@ class ErrorTelemetry:
 
         self._save_telemetry()
         logger.debug(f"Error reported: {error_type} - {error_message}")
+
+    def _sanitize_for_json(
+        self, data: Any, max_depth: int = 3, max_items: int = 10, current_depth: int = 0
+    ) -> Any:
+        """Sanitize data for JSON serialization by limiting depth and size."""
+        if current_depth >= max_depth:
+            return str(data)[:100] + "..." if len(str(data)) > 100 else str(data)
+
+        if isinstance(data, dict):
+            sanitized_dict: Dict[str, Any] = {}
+            for i, (key, value) in enumerate(data.items()):
+                if i >= max_items:
+                    sanitized_dict[
+                        "...truncated"
+                    ] = f"{len(data) - max_items} more items"
+                    break
+                sanitized_dict[str(key)[:50]] = self._sanitize_for_json(
+                    value, max_depth, max_items, current_depth + 1
+                )
+            return sanitized_dict
+
+        elif isinstance(data, (list, tuple)):
+            sanitized_list: List[Any] = []
+            for i, item in enumerate(data):
+                if i >= max_items:
+                    sanitized_list.append(f"...{len(data) - max_items} more items")
+                    break
+                sanitized_list.append(
+                    self._sanitize_for_json(
+                        item, max_depth, max_items, current_depth + 1
+                    )
+                )
+            return sanitized_list
+
+        elif isinstance(data, (int, float, bool, type(None))):
+            return data
+
+        else:
+            # Convert other types to string representation
+            str_repr = str(data)
+            return str_repr[:200] + "..." if len(str_repr) > 200 else str_repr
 
     def _get_system_info(self) -> Dict[str, Any]:
         """Get basic system information for telemetry."""
@@ -112,7 +164,7 @@ class ErrorTelemetry:
             return {"total_errors": 0, "error_types": {}, "recent_errors": []}
 
         # Count error types
-        error_types = {}
+        error_types: Dict[str, int] = {}
         for error in errors:
             error_type = error.get("error_type", "Unknown")
             error_types[error_type] = error_types.get(error_type, 0) + 1
