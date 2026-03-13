@@ -45,6 +45,8 @@ ERROR: Could not find a version that satisfies the requirement...
 
 3. **Install dependencies individually**:
 
+   1. **Check dependencies**:
+
    ```bash
    pip install numpy scipy matplotlib pandas
    pip install -r requirements.txt
@@ -112,10 +114,13 @@ ImportError: libGL.so.1: cannot open shared object file
 ```
 
 **Causes**:
+
 - Missing system libraries (especially for GUI)
 
 **Solutions**:
+
 **Ubuntu/Debian**:
+
 ```bash
 sudo apt-get update
 sudo apt-get install python3-pyqt5 libgl1-mesa-glx
@@ -145,6 +150,7 @@ APGIFrameworkError: System not initialized. Call initialize_system() first.
 **Cause**:
 
 - Forgot to call `initialize_system()`
+
 **Solution**:
 
 ```python
@@ -168,26 +174,31 @@ APGIFrameworkError: Failed to initialize system: ...
 - Invalid configuration
 - Missing dependencies
 - Corrupted files
+
 **Solutions**:
 
 1. **Run system validation**:
 
 ```bash
 python -m apgi_framework.cli validate-system --detailed
-```python
+```
+
 1. **Check configuration**:
+
 ```python
 from apgi_framework.config import ConfigManager
 config_manager = ConfigManager()
 apgi_params = config_manager.get_apgi_parameters()
 print(apgi_params)  # Verify parameters are valid
 ```
+
 1. **Reset to defaults**:
 
 ```bash
 python -m apgi_framework.cli generate-config --output config.json
 python -m apgi_framework.cli --config config.json validate-system
 ```
+
 1. **Enable debug logging**:
 
 ```python
@@ -211,17 +222,21 @@ Mathematical Engine: FAIL
 - Component integration issues
 - Invalid parameters
 - Missing files
+
 **Solutions**:
 
 1. **Check detailed validation**:
 
 ```bash
 python -m apgi_framework.cli validate-system --detailed
-```python
+```
+
 1. **Verify file structure**:
+
 ```bash
 ls -R apgi_framework/  # Check all modules present
 ```
+
 1. **Test individual components**:
 
 ```python
@@ -240,10 +255,13 @@ print(f"Surprise: {result}")  # Should print a number
 - Test runs for hours without completing
 - No progress updates
 - High CPU usage
+
 **Causes**:
+
 - Too many trials
 - Infinite loop (bug)
 - Resource constraints
+
 **Solutions**:
 
 1. **Reduce trial count for testing**:
@@ -260,6 +278,7 @@ logging.basicConfig(level=logging.INFO)
 # Progress will be logged
 result = test.run_test(n_trials=1000)
 ```
+
 1. **Check system resources**:
 
 ```bash
@@ -269,6 +288,7 @@ htop
 # Windows
 Task Manager (Ctrl+Shift+Esc)
 ```
+
 1. **Kill and restart**:
 
 ```bash
@@ -290,6 +310,7 @@ RuntimeWarning: invalid value encountered in divide
 - Extreme parameter values
 - Numerical instability
 - Division by zero
+
 **Solutions**:
 
 1. **Check parameter ranges**:
@@ -311,6 +332,7 @@ config_manager.update_apgi_parameters(
 from apgi_framework.core import APGIEquation
 equation = APGIEquation(numerical_stability=True)
 ```
+
 1. **Avoid extreme values**:
 
 ```python
@@ -330,6 +352,7 @@ ModuleNotFoundError: No module named 'scipy'
 **Cause**:
 
 - Missing scipy dependency
+
 **Solution**:
 
 ```bash
@@ -342,9 +365,12 @@ pip install scipy
 
 - Every test returns identical results
 - No variation across trials
+
 **Causes**:
+
 - Random seed set and not changing
 - Bug in simulation
+
 **Solutions**:
 
 1. **Remove random seed**:
@@ -369,10 +395,13 @@ logging.basicConfig(level=logging.DEBUG)
 
 - No files in output directory
 - "Permission denied" errors
+
 **Causes**:
+
 - Invalid output path
 - Permission issues
 - Disk full
+
 **Solutions**:
 
 1. **Check output directory**:
@@ -381,6 +410,7 @@ logging.basicConfig(level=logging.DEBUG)
 ls -la results/
 # Should show files after test completion
 ```
+
 1. **Verify permissions**:
 
 ```bash
@@ -389,6 +419,7 @@ chmod 755 results/
 # Windows
 # Right-click folder → Properties → Security
 ```
+
 1. **Use absolute path**:
 
 ```python
@@ -396,6 +427,7 @@ config_manager.update_experimental_config(
     output_directory="/absolute/path/to/results"
 )
 ```
+
 1. **Check disk space**:
 
 ```bash
@@ -416,6 +448,7 @@ JSONDecodeError: Expecting value: line 1 column 1
 - Corrupted JSON file
 - Incomplete save
 - Wrong file format
+
 **Solutions**:
 
 1. **Verify file is valid JSON**:
@@ -430,6 +463,7 @@ python -m json.tool results/primary_result_*.json
 ls -lh results/
 # Files should be > 0 bytes
 ```
+
 1. **Try loading with error handling**:
 
 ```python
@@ -447,10 +481,13 @@ except json.JSONDecodeError as e:
 
 - Result file missing expected fields
 - `KeyError` when accessing results
+
 **Causes**:
+
 - Incomplete test execution
-- Version mismatch
+- No results loaded
 - Partial save
+
 **Solutions**:
 
 1. **Check for errors during test**:
@@ -458,6 +495,7 @@ except json.JSONDecodeError as e:
 ```bash
 cat results/apgi_framework.log | grep ERROR
 ```
+
 1. **Verify test completed**:
 
 ```python
@@ -467,6 +505,7 @@ if 'detailed_results' in result_data:
 else:
     print("Test may have been interrupted")
 ```
+
 1. **Re-run test**:
 
 ```bash
@@ -481,11 +520,14 @@ python -m apgi_framework.cli run-test primary --trials 1000
 
 - Tests take much longer than expected
 - System becomes unresponsive
+
 **Causes**:
+
 - Too many trials
 - Insufficient resources
 - Debug logging enabled
 - Other processes consuming resources
+
 **Solutions**:
 
 1. **Reduce trial count**:
@@ -494,15 +536,18 @@ python -m apgi_framework.cli run-test primary --trials 1000
 # Start with fewer trials
 python -m apgi_framework.cli run-test primary --trials 500
 ```
+
 1. **Disable debug logging**:
 
 ```bash
 python -m apgi_framework.cli --log-level WARNING run-test primary
 ```
+
 1. **Close other applications**:
 
 - Close unnecessary programs
 - Check background processes
+
 1. **Use batch processing efficiently**:
 
 ```bash
@@ -517,10 +562,13 @@ python -m apgi_framework.cli run-batch --all-tests
 
 - System runs out of memory
 - "MemoryError" exceptions
+
 **Causes**:
+
 - Too many trials stored in memory
 - Large datasets
 - Memory leak
+
 **Solutions**:
 
 1. **Process in batches**:
@@ -539,6 +587,7 @@ config_manager.update_experimental_config(
     save_intermediate=True
 )
 ```
+
 1. **Monitor memory usage**:
 
 ```bash
@@ -555,13 +604,14 @@ Task Manager → Performance → Memory
 
 **Symptoms**:
 
-```
+```text
 ImportError: No module named 'PyQt5'
 ```
 
 **Cause**:
 
 - Missing GUI dependencies
+
 **Solution**:
 
 ```bash
@@ -574,9 +624,13 @@ pip install PyQt5
 
 - GUI becomes unresponsive
 - "Not Responding" message
+
 **Cause**:
+
 - Long-running test blocking GUI thread
+
 **Solution**:
+
 - This is expected behavior for long tests
 - Wait for test to complete
 - Progress should update when test finishes
@@ -588,20 +642,25 @@ pip install PyQt5
 
 - Empty visualization panel
 - "No data to display" message
+
 **Causes**:
+
 - Test not completed
 - No results loaded
 - Visualization error
+
 **Solutions**:
 
 1. **Ensure test completed**:
 
 - Check progress panel shows 100%
 - Look for completion message
+
 1. **Try reloading results**:
 
 - File → Load Results
 - Select result file
+
 1. **Check for errors**:
 
 ```bash
@@ -623,6 +682,7 @@ python: No module named apgi_framework.cli
 - Wrong directory
 - Package not installed
 - Python path issue
+
 **Solutions**:
 
 1. **Check working directory**:
@@ -631,11 +691,13 @@ python: No module named apgi_framework.cli
 pwd  # Should be in project root
 ls apgi_framework/  # Should see cli.py
 ```
+
 1. **Use full path**:
 
 ```bash
 python -m apgi_framework.cli --help
 ```
+
 1. **Install package**:
 
 ```bash
@@ -654,6 +716,7 @@ error: invalid choice: 'test'
 
 - Typo in command name
 - Wrong argument format
+
 **Solution**:
 
 ```bash
@@ -676,6 +739,7 @@ FileNotFoundError: [Errno 2] No such file or directory: 'config.json'
 - File doesn't exist
 - Wrong path
 - Wrong directory
+
 **Solutions**:
 
 1. **Generate default configuration**:
@@ -683,11 +747,13 @@ FileNotFoundError: [Errno 2] No such file or directory: 'config.json'
 ```bash
 python -m apgi_framework.cli generate-config --output config.json
 ```
+
 1. **Use absolute path**:
 
 ```bash
 python -m apgi_framework.cli --config /full/path/to/config.json run-test primary
 ```
+
 1. **Check file exists**:
 
 ```bash
@@ -738,6 +804,7 @@ config_manager.update_apgi_parameters(
 ```bash
 python -m json.tool config.json
 ```
+
 1. **Check file is being loaded**:
 
 ```python
@@ -746,6 +813,7 @@ with open('config.json', 'r') as f:
     config = json.load(f)
     print(config)  # Verify contents
 ```
+
 1. **Specify config explicitly**:
 
 ```bash
@@ -788,26 +856,36 @@ python -m apgi_framework.cli run-test primary --trials 2000
 
 ```bash
 python -m apgi_framework.cli run-test primary --trials 2000
-```python
-2. **Check data variation**:
+```
+
+1. **Check data variation**:
+
 ```python
 # Verify data has variation
 print(f"Mean: {np.mean(data)}")
 print(f"Std: {np.std(data)}")  # Should be > 0
 ```
+
 1. **Enable debug logging**:
 
 ```python
 import logging
 logging.basicConfig(level=logging.DEBUG)
-```python
+```
+
 ### Problem: Inconsistent results across runs
+
 **Symptoms**:
+
 - Different results each time
 - Cannot reproduce findings
+
 **Cause**:
+
 - Random seed not set
+
 **Solution**:
+
 ```python
 # Set random seed for reproducibility
 config_manager.update_experimental_config(random_seed=42)

@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 try:
     from flask import Flask, jsonify, request
     from flask_cors import CORS
+    from flask_wtf.csrf import CSRFProtect  # type: ignore
     from werkzeug.utils import secure_filename
 
     FLASK_AVAILABLE = True
@@ -180,9 +181,17 @@ class WebInterface:
             template_folder=self.config.template_folder,
         )
 
-        self.app.config["SECRET_KEY"] = os.getenv(
-            "FLASK_SECRET_KEY", secrets.token_hex(32)
-        )
+        # Generate secure SECRET_KEY if not provided
+        secret_key = os.getenv("FLASK_SECRET_KEY")
+        if not secret_key:
+            logger.warning(
+                "FLASK_SECRET_KEY not set in environment. "
+                "Generating random key - sessions will be invalidated on restart. "
+                "Set FLASK_SECRET_KEY environment variable for production."
+            )
+            secret_key = secrets.token_hex(32)
+
+        self.app.config["SECRET_KEY"] = secret_key
         self.app.config["MAX_CONTENT_LENGTH"] = self.config.max_file_size
 
         # Enable CORS
@@ -195,10 +204,20 @@ class WebInterface:
             },
         )
 
+        # Enable CSRF protection
+        try:
+            self.csrf = CSRFProtect(self.app)
+            logger.info("CSRF protection enabled")
+        except ImportError:
+            logger.warning("flask-wtf not available - CSRF protection disabled")
+            self.csrf = None
+
     def _setup_socketio(self):
         """Setup Socket.IO for WebSocket support."""
         self.socketio = SocketIO(
-            self.app, cors_allowed_origins="*", async_mode="threading"
+            self.app,
+            cors_allowed_origins=["http://localhost:5000", "http://127.0.0.1:5000"],
+            async_mode="threading",
         )
 
         # Setup Socket.IO event handlers
@@ -313,6 +332,42 @@ class WebInterface:
             except Exception as e:
                 return jsonify({"success": False, "error": str(e)}), 500
 
+        @self.app.route("/api/config")
+        def get_config():
+            """Get current configuration."""
+            try:
+                config = {
+                    "title": self.config.title,
+                    "host": self.config.host,
+                    "port": self.config.port,
+                    "enable_websockets": self.config.enable_websockets,
+                    "enable_file_upload": self.config.enable_file_upload,
+                    "max_file_size": self.config.max_file_size,
+                }
+                return jsonify({"success": True, "data": config})
+            except Exception as e:
+                return jsonify({"success": False, "error": str(e)}), 500
+
+        @self.app.route("/api/config", methods=["PUT"])
+        def update_config():
+            """Update configuration."""
+            try:
+                data = request.get_json()
+                if not data:
+                    return jsonify({"success": False, "error": "No data provided"}), 400
+
+                # Update config attributes safely
+                if "title" in data:
+                    self.config.title = data["title"]
+                if "enable_websockets" in data:
+                    self.config.enable_websockets = data["enable_websockets"]
+                if "enable_file_upload" in data:
+                    self.config.enable_file_upload = data["enable_file_upload"]
+
+                return jsonify({"success": True, "message": "Configuration updated"})
+            except Exception as e:
+                return jsonify({"success": False, "error": str(e)}), 500
+
     def _render_main_dashboard(self) -> str:
         """Render the main dashboard HTML."""
         # Create a simple HTML dashboard
@@ -396,7 +451,8 @@ class WebInterface:
         function addLog(message) {
             const log = document.getElementById('log');
             const timestamp = new Date().toLocaleTimeString();
-            log.innerHTML += '[' + timestamp + '] ' + message + '\\n';
+            const textNode = document.createTextNode('[' + timestamp + '] ' + message + '\n');
+            log.appendChild(textNode);
             log.scrollTop = log.scrollHeight;
         }
         
@@ -432,26 +488,53 @@ class WebInterface:
         }
         
         function displayExperiments(experiments) {
-            const list = document.getElementById('experiments-list');
-            if (experiments.length === 0) {
-                list.innerHTML = '<p>No experiments found</p>';
-                return;
+            const list = document.getElementById('experiment-list');
+            // Remove all children safely instead of using innerHTML
+            while (list.firstChild) {
+                list.removeChild(list.firstChild);
             }
-            
-            let html = '<table border="1" style="width: 100%; border-collapse: collapse;">';
-            html += '<tr><th>Name</th><th>Status</th><th>Created</th><th>Actions</th></tr>';
-            
-            experiments.forEach(exp => {
-                html += '<tr>';
-                html += '<td>' + exp.name + '</td>';
-                html += '<td>' + exp.status + '</td>';
-                html += '<td>' + exp.created_at + '</td>';
-                html += '<td><button class="btn" onclick="runExperiment(\\'' + exp.id + '\\')">Run</button></td>';
-                html += '</tr>';
+
+            const table = document.createElement('table');
+            table.style.width = '100%';
+            table.style.borderCollapse = 'collapse';
+            table.border = '1';
+
+            const headerRow = document.createElement('tr');
+            const headers = ['Name', 'Status', 'Created', 'Actions'];
+            headers.forEach(headerText => {
+                const th = document.createElement('th');
+                th.textContent = headerText;
+                headerRow.appendChild(th);
             });
-            
-            html += '</table>';
-            list.innerHTML = html;
+            table.appendChild(headerRow);
+
+            experiments.forEach(exp => {
+                const row = document.createElement('tr');
+
+                const nameCell = document.createElement('td');
+                nameCell.textContent = exp.name;
+                row.appendChild(nameCell);
+
+                const statusCell = document.createElement('td');
+                statusCell.textContent = exp.status;
+                row.appendChild(statusCell);
+
+                const createdCell = document.createElement('td');
+                createdCell.textContent = exp.created_at;
+                row.appendChild(createdCell);
+
+                const actionCell = document.createElement('td');
+                const runButton = document.createElement('button');
+                runButton.className = 'btn';
+                runButton.textContent = 'Run';
+                runButton.onclick = () => runExperiment(exp.id);
+                actionCell.appendChild(runButton);
+                row.appendChild(actionCell);
+
+                table.appendChild(row);
+            });
+
+            list.appendChild(table);
         }
         
         function createExperiment() {
@@ -600,6 +683,9 @@ class WebInterface:
 
             if self.socketio:
                 self.socketio.emit("experiment_update", experiment)
+
+        # Call the simulation
+        simulate_completion()
 
         # Run in background thread
         thread = threading.Thread(target=simulate_completion)

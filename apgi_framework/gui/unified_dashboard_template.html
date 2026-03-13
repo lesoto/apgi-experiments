@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .card h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+        
+        .status-online {
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        .status-offline {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        
+        .btn:hover {
+            background: #5568d3;
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .log-container {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+        
+        .metric {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .metric-label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{title}}</h1>
+        <p>Real-time experiment monitoring and control</p>
+    </div>
+    
+    <div class="grid">
+        <div class="card">
+            <h3>System Status</h3>
+            <p>Status: <span id="system-status" class="status-online">Online</span></p>
+            <p>Active Experiments: <span id="active-experiments">0</span></p>
+            <p>Completed Experiments: <span id="completed-experiments">0</span></p>
+        </div>
+        
+        <div class="card">
+            <h3>Quick Actions</h3>
+            <button class="btn" onclick="createExperiment()">New Experiment</button>
+            <button class="btn" onclick="refreshData()">Refresh Data</button>
+            <button class="btn" onclick="showUpload()">Upload Data</button>
+        </div>
+        
+        <div class="card">
+            <h3>Real-time Metrics</h3>
+            <div class="metric" id="cpu-usage">--</div>
+            <div class="metric-label">CPU Usage</div>
+            <div class="metric" id="memory-usage">--</div>
+            <div class="metric-label">Memory Usage</div>
+        </div>
+        
+        <div class="card">
+            <h3>Real-time Log</h3>
+            <div class="log-container" id="log"></div>
+        </div>
+    </div>
+    
+    <div class="card" style="margin: 20px;">
+        <h3>Experiments</h3>
+        <div id="experiments-list">
+            <p class="loading">Loading experiments...</p>
+        </div>
+    </div>
+    
+    <script>
+        // WebSocket connection for real-time updates
+        let socket;
+        
+        function connectWebSocket() {
+            if (typeof io !== 'undefined') {
+                socket = io();
+                
+                socket.on('connect', function() {
+                    addLog('Connected to server');
+                });
+                
+                socket.on('experiment_update', function(data) {
+                    updateExperimentStatus(data);
+                    addLog('Experiment update: ' + data.name);
+                });
+                
+                socket.on('system_status', function(data) {
+                    updateSystemStatus(data);
+                });
+                
+                socket.on('metrics_update', function(data) {
+                    updateMetrics(data);
+                });
+            }
+        }
+        
+        function addLog(message) {
+            const log = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const textNode = document.createTextNode('[' + timestamp + '] ' + message + '\n');
+            log.appendChild(textNode);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function updateSystemStatus(data) {
+            document.getElementById('system-status').textContent = data.online ? 'Online' : 'Offline';
+            document.getElementById('system-status').className = data.online ? 'status-online' : 'status-offline';
+            document.getElementById('active-experiments').textContent = data.active_experiments || 0;
+            document.getElementById('completed-experiments').textContent = data.completed_experiments || 0;
+        }
+        
+        function updateMetrics(data) {
+            if (data.cpu_usage !== undefined) {
+                document.getElementById('cpu-usage').textContent = (data.cpu_usage * 100).toFixed(1) + '%';
+            }
+            if (data.memory_usage !== undefined) {
+                document.getElementById('memory-usage').textContent = (data.memory_usage * 100).toFixed(1) + '%';
+            }
+        }
+        
+        function refreshData() {
+            fetch('/api/experiments')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayExperiments(data.data);
+                    }
+                })
+                .catch(error => {
+                    addLog('Error loading experiments: ' + error);
+                });
+            
+            fetch('/api/system/status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateSystemStatus(data.data);
+                    }
+                })
+                .catch(error => {
+                    addLog('Error loading system status: ' + error);
+                });
+        }
+        
+        function displayExperiments(experiments) {
+            const list = document.getElementById('experiments-list');
+            // Remove all children safely
+            while (list.firstChild) {
+                list.removeChild(list.firstChild);
+            }
+
+            if (experiments.length === 0) {
+                list.innerHTML = '<p class="loading">No experiments found</p>';
+                return;
+            }
+
+            const table = document.createElement('table');
+            
+            const headerRow = document.createElement('tr');
+            const headers = ['Name', 'Status', 'Created', 'Actions'];
+            headers.forEach(headerText => {
+                const th = document.createElement('th');
+                th.textContent = headerText;
+                headerRow.appendChild(th);
+            });
+            table.appendChild(headerRow);
+
+            experiments.forEach(exp => {
+                const row = document.createElement('tr');
+
+                const nameCell = document.createElement('td');
+                nameCell.textContent = exp.name;
+                row.appendChild(nameCell);
+
+                const statusCell = document.createElement('td');
+                statusCell.textContent = exp.status;
+                row.appendChild(statusCell);
+
+                const createdCell = document.createElement('td');
+                createdCell.textContent = exp.created_at;
+                row.appendChild(createdCell);
+
+                const actionCell = document.createElement('td');
+                const runButton = document.createElement('button');
+                runButton.className = 'btn';
+                runButton.textContent = 'Run';
+                runButton.onclick = () => runExperiment(exp.id);
+                actionCell.appendChild(runButton);
+                row.appendChild(actionCell);
+
+                table.appendChild(row);
+            });
+
+            list.appendChild(table);
+        }
+        
+        function createExperiment() {
+            const name = prompt('Enter experiment name:');
+            if (name) {
+                fetch('/api/experiments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        description: 'Web interface experiment'
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        addLog('Created experiment: ' + name);
+                        refreshData();
+                    } else {
+                        addLog('Error creating experiment: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    addLog('Error creating experiment: ' + error);
+                });
+            }
+        }
+        
+        function runExperiment(experimentId) {
+            fetch('/api/experiments/' + experimentId + '/run', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    addLog('Started experiment: ' + experimentId);
+                    refreshData();
+                } else {
+                    addLog('Error running experiment: ' + data.error);
+                }
+            })
+            .catch(error => {
+                addLog('Error running experiment: ' + error);
+            });
+        }
+        
+        function showUpload() {
+            addLog('File upload feature - implement file input dialog');
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            connectWebSocket();
+            refreshData();
+            
+            // Auto-refresh every 30 seconds
+            setInterval(refreshData, 30000);
+        });
+    </script>
+    
+    {% if enable_websockets %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    {% endif %}
+</body>
+</html>

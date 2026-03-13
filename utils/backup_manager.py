@@ -27,7 +27,6 @@ from typing import Any, Dict, List, Optional, Union
 # Add project root to Python path for direct execution
 if __name__ == "__main__":
     import sys
-    from pathlib import Path
 
     PROJECT_ROOT = Path(__file__).parent.parent
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -39,7 +38,6 @@ try:
     apgi_logger = get_logger(__name__)
 except ImportError:
     import logging
-    from typing import Any
 
     # Create a fallback logger
     class MockAPGILogger:

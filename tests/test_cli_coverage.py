@@ -46,10 +46,12 @@ class TestCLIExecution:
                     args.config = None  # Add config mock
                     mock_parser.return_value.parse_args.return_value = args
 
-                    result = cli.run()
-                    assert result is None  # CLI run() doesn't return values
+                    # CLI run() calls sys.exit(0) which raises SystemExit
+                    with pytest.raises(SystemExit) as exc_info:
+                        cli.run()
+                    assert exc_info.value.code == 0
                     mock_run.assert_called_once()
-                    mock_init.assert_called_once()
+                    # run-test handles its own controller initialization, so initialize_controller is NOT called
 
     def test_cli_run_batch_command(self):
         """Test CLI run method with run-batch command."""
@@ -73,8 +75,10 @@ class TestCLIExecution:
                     args.config = None  # Add config mock
                     mock_parser.return_value.parse_args.return_value = args
 
-                    result = cli.run()
-                    assert result is None  # CLI run() doesn't return values
+                    # CLI run() calls sys.exit(0) which raises SystemExit
+                    with pytest.raises(SystemExit) as exc_info:
+                        cli.run()
+                    assert exc_info.value.code == 0
                     mock_batch.assert_called_once()
                     mock_init.assert_called_once()
 
@@ -97,8 +101,10 @@ class TestCLIExecution:
                 args.config = None  # Add config mock
                 mock_parser.return_value.parse_args.return_value = args
 
-                result = cli.run()
-                assert result is None  # CLI run() doesn't return values
+                # CLI run() calls sys.exit(0) which raises SystemExit
+                with pytest.raises(SystemExit) as exc_info:
+                    cli.run()
+                assert exc_info.value.code == 0
                 mock_config.assert_called_once()
                 # Note: initialize_controller is NOT called for generate-config command
 
@@ -122,8 +128,10 @@ class TestCLIExecution:
                     args.config = None  # Add config mock
                     mock_parser.return_value.parse_args.return_value = args
 
-                    result = cli.run()
-                    assert result is None  # CLI run() doesn't return values
+                    # CLI run() calls sys.exit(0) which raises SystemExit
+                    with pytest.raises(SystemExit) as exc_info:
+                        cli.run()
+                    assert exc_info.value.code == 0
                     mock_validate.assert_called_once()
                     mock_init.assert_called_once()
 
@@ -146,8 +154,11 @@ class TestCLIExecution:
                     args.config = None  # Add config mock
                     mock_parser.return_value.parse_args.return_value = args
 
-                    result = cli.run()
-                    assert result is None  # CLI run() doesn't return values
+                    # CLI run() calls sys.exit(0) which raises SystemExit
+                    with pytest.raises(SystemExit) as exc_info:
+                        cli.run()
+                    assert exc_info.value.code == 0
+                    mock_status.assert_called_once()
                     mock_status.assert_called_once()
                     mock_init.assert_called_once()
 
@@ -174,8 +185,10 @@ class TestCLIExecution:
                     args.config = None  # Add config mock
                     mock_parser.return_value.parse_args.return_value = args
 
-                    result = cli.run()
-                    assert result is None  # CLI run() doesn't return values
+                    # CLI run() calls sys.exit(0) which raises SystemExit
+                    with pytest.raises(SystemExit) as exc_info:
+                        cli.run()
+                    assert exc_info.value.code == 0
                     mock_params.assert_called_once()
                     mock_init.assert_called_once()
 
@@ -193,9 +206,10 @@ class TestCLIExecution:
             mock_parser.return_value.parse_args.return_value = args
 
             with patch.object(cli.logger, "error") as mock_error:
+                # CLI run() calls sys.exit(2) for unknown command
                 with pytest.raises(SystemExit) as exc_info:
                     cli.run()
-                assert exc_info.value.code == 1
+                assert exc_info.value.code == 2
                 mock_error.assert_called_with("Unknown command: unknown-command")
 
     def test_cli_error_handling(self):

@@ -14,11 +14,36 @@ import logging
 from typing import Any, Dict, List, Optional
 
 try:
-    from RestrictedPython import compile_restricted, safe_globals
+    from RestrictedPython import compile_restricted, safe_globals  # type: ignore
 
     HAS_RESTRICTED_PYTHON = True
 except ImportError:
     HAS_RESTRICTED_PYTHON = False
+    # Fallback definition for safe_globals
+    safe_globals = {
+        "__builtins__": {
+            "print": print,
+            "len": len,
+            "range": range,
+            "enumerate": enumerate,
+            "zip": zip,
+            "map": map,
+            "filter": filter,
+            "sum": sum,
+            "max": max,
+            "min": min,
+            "abs": abs,
+            "round": round,
+            "int": int,
+            "float": float,
+            "str": str,
+            "list": list,
+            "dict": dict,
+            "tuple": tuple,
+            "set": set,
+            "bool": bool,
+        }
+    }
     raise ImportError(
         "RestrictedPython is required for secure code execution. "
         "Install with: pip install RestrictedPython"
@@ -223,12 +248,22 @@ class CodeSandbox:
         import json
         import subprocess
         import sys
+        import tempfile
 
         try:
-            # Serialize context for subprocess
+            # Serialize context for subprocess with proper escaping
             context_json = json.dumps(context or {})
+            # Escape single quotes in the JSON to prevent code injection
+            escaped_context_json = context_json.replace("'", "\\'")
 
-            # Create isolated execution script
+            # Write code to temporary file instead of embedding it
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".py", delete=False, encoding="utf-8"
+            ) as code_file:
+                code_file.write(code)
+                code_file_path = code_file.name
+
+            # Create isolated execution script with proper escaping
             exec_script = f"""
 import sys
 import json
@@ -241,14 +276,15 @@ resource.setrlimit(resource.RLIMIT_CPU, ({self.max_cpu_time}, resource.RLIM_INFI
 
 # Load context
 try:
-    context = json.loads('''{context_json}''')
+    context = json.loads('{escaped_context_json}')
 except:
     context = {{}}
 
-# Execute code
+# Execute code from file
 try:
     exec_locals = {{**context}}
-    exec('''{code}''', exec_locals)
+    with open('{code_file_path}', 'r', encoding='utf-8') as f:
+        exec(f.read(), exec_locals)
     result = {{"success": True, "context": {{k: str(v) for k, v in exec_locals.items() if not k.startswith('__')}}}}
 except Exception as e:
     result = {{"success": False, "error": str(e), "error_type": type(e).__name__}}

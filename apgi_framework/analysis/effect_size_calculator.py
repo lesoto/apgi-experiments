@@ -11,8 +11,8 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
-import scipy.stats as stats  # type: ignore
-from scipy.stats import t, ncf  # type: ignore
+import scipy.stats as stats
+from scipy.stats import t, ncf
 
 
 class EffectSizeType(Enum):

@@ -174,7 +174,11 @@ class TutorialRunner:
             if ANALYSIS_AVAILABLE and PANDAS_AVAILABLE:
                 # Use real descriptive analyzer
                 analyzer = AnalysisEngine()
-                df = pd.DataFrame(data)
+                # Remove metadata dict to avoid pandas DataFrame creation issues
+                data_for_df = data.copy()
+                if "metadata" in data_for_df:
+                    data_for_df.pop("metadata")
+                df = pd.DataFrame(data_for_df)
 
                 # Calculate descriptive statistics
                 if hasattr(analyzer, "calculate_descriptive_stats"):
@@ -241,7 +245,11 @@ class TutorialRunner:
             if ANALYSIS_AVAILABLE and PANDAS_AVAILABLE:
                 # Use real comparative analyzer
                 analyzer = EffectSizeCalculator()
-                df = pd.DataFrame(data)
+                # Remove metadata dict to avoid pandas DataFrame creation issues
+                data_for_df = data.copy()
+                if "metadata" in data_for_df:
+                    data_for_df.pop("metadata")
+                df = pd.DataFrame(data_for_df)
 
                 # Group by condition and compare
                 control_data = df[df["conditions"] == "control"]

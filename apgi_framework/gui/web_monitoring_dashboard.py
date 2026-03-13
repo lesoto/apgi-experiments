@@ -21,7 +21,7 @@ from typing import Dict, List, Optional, Any, Union
 import warnings
 
 try:
-    from flask import Flask, render_template_string
+    from flask import Flask, render_template_string, jsonify
     from flask_socketio import SocketIO, emit
 
     FLASK_AVAILABLE = True
@@ -55,12 +55,18 @@ class WebMonitoringDashboard:
             Port number for the web server
         """
         if not FLASK_AVAILABLE:
-            raise ImportError("Flask required for web dashboard")
+            raise ImportError(
+                "Flask and Flask-SocketIO are required for the web dashboard. "
+                "Install them with: pip install flask flask-socketio"
+            )
 
         self.host = host
         self.port = port
         self.app = Flask(__name__)
-        self.socketio = SocketIO(self.app, cors_allowed_origins="*")
+        self.socketio = SocketIO(
+            self.app,
+            cors_allowed_origins=["http://localhost:5000", "http://127.0.0.1:5000"],
+        )
 
         # Data storage for web clients
         self.current_data: Dict[str, Union[Dict[str, Any], List[Dict[str, Any]]]] = {
@@ -92,6 +98,21 @@ class WebMonitoringDashboard:
         def get_data():
             """API endpoint to get current data."""
             return self.current_data
+
+        @self.app.route("/api/experiments")
+        def get_experiments():
+            """API endpoint to get list of experiments."""
+            return jsonify({"experiments": []})
+
+        @self.app.route("/api/experiment/<experiment_id>")
+        def get_experiment(experiment_id):
+            """API endpoint to get experiment details."""
+            return jsonify({"id": experiment_id, "name": "", "status": "not_found"})
+
+        @self.app.route("/api/config")
+        def get_config():
+            """API endpoint to get configuration."""
+            return jsonify({"config": self.current_data.get("parameters", {})})
 
     def _setup_socket_handlers(self):
         """Setup SocketIO event handlers."""

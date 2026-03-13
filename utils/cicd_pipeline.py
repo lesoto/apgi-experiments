@@ -206,7 +206,7 @@ class CICDPipeline:
             # Unit tests
             logger.info("Running unit tests...")
             result = subprocess.run(
-                ["python", "-m", "pytest", "tests/unit/", "-v", "--tb=short"],
+                [sys.executable, "-m", "pytest", "tests/unit/", "-v", "--tb=short"],
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
@@ -221,7 +221,14 @@ class CICDPipeline:
             # Integration tests
             logger.info("Running integration tests...")
             result = subprocess.run(
-                ["python", "-m", "pytest", "tests/integration/", "-v", "--tb=short"],
+                [
+                    sys.executable,
+                    "-m",
+                    "pytest",
+                    "tests/integration/",
+                    "-v",
+                    "--tb=short",
+                ],
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
@@ -237,13 +244,14 @@ class CICDPipeline:
             logger.info("Generating coverage report...")
             result = subprocess.run(
                 [
-                    "python",
+                    sys.executable,
                     "-m",
                     "pytest",
                     "--cov=apgi_framework",
                     "--cov-report=html",
-                    "--cov-report=xml",
                     "--cov-report=term",
+                    "tests/",
+                    "--tb=short",
                 ],
                 cwd=self.project_root,
                 capture_output=True,
@@ -277,7 +285,7 @@ class CICDPipeline:
             # Build source distribution
             logger.info("Building source distribution...")
             result = subprocess.run(
-                ["python", "-m", "build", "--sdist"],
+                [sys.executable, "-m", "build", "--sdist"],
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
@@ -291,7 +299,7 @@ class CICDPipeline:
             # Build wheel distribution
             logger.info("Building wheel distribution...")
             result = subprocess.run(
-                ["python", "-m", "build", "--wheel"],
+                [sys.executable, "-m", "build", "--wheel"],
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
@@ -393,25 +401,28 @@ class CICDPipeline:
 
     def _deploy_to_staging(self) -> bool:
         """Deploy to staging environment."""
-        logger.info("Deploying to staging...")
-
         try:
             # Use quick_deploy.py for staging deployment
             result = subprocess.run(
-                ["python", "quick_deploy.py", "--auto", "--environment", "development"],
+                [
+                    sys.executable,
+                    "quick_deploy.py",
+                    "--auto",
+                    "--environment",
+                    "development",
+                ],
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
-                timeout=300,  # 5 minute timeout
             )
 
-            if result.returncode != 0:
+            if result.returncode == 0:
+                logger.info("Staging deployment successful")
+                return True
+            else:
                 logger.error("Staging deployment failed")
                 logger.error(result.stderr)
                 return False
-
-            logger.info("Staging deployment successful")
-            return True
 
         except subprocess.TimeoutExpired:
             logger.error("Staging deployment timed out")
@@ -455,7 +466,13 @@ class CICDPipeline:
 
             # Deploy with production settings
             result = subprocess.run(
-                ["python", "quick_deploy.py", "--auto", "--environment", "production"],
+                [
+                    sys.executable,
+                    "quick_deploy.py",
+                    "--auto",
+                    "--environment",
+                    "production",
+                ],
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,

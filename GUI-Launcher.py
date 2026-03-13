@@ -219,13 +219,6 @@ class ComprehensiveGUILauncher:
                     "command": self.launch_full_gui,
                 },
                 {
-                    "name": "Simple GUI",
-                    "file": "GUI-Simple.py",
-                    "description": "Streamlined interface for essential functions",
-                    "icon": "[Fast]",
-                    "command": self.launch_simple_gui,
-                },
-                {
                     "name": "APGI Framework App",
                     "file": "apgi_gui/app.py",
                     "description": "Modern CustomTkinter-based framework application",
@@ -697,10 +690,6 @@ class ComprehensiveGUILauncher:
     def launch_full_gui(self):
         """Launch the full-featured GUI."""
         self.launch_python_script("GUI.py", "Full-Featured GUI")
-
-    def launch_simple_gui(self):
-        """Launch simple GUI."""
-        self.launch_python_script("GUI-Simple.py", "Simple GUI")
 
     def launch_apgi_gui_app(self):
         """Launch APGI Framework App."""

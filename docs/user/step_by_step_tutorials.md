@@ -8,7 +8,7 @@ This guide provides detailed, step-by-step tutorials for common APGI Framework w
 
 ## 📚 Tutorial 1: Your First Parameter Estimation Experiment
 
-### Objective
+### Objective: Parameter Estimation
 
 Learn to run a basic parameter estimation experiment and interpret the results.
 
@@ -52,20 +52,21 @@ Learn to run a basic parameter estimation experiment and interpret the results.
 ### Step 3: Configure Parameters
 
 1. In the experiment setup page, you'll see parameter configuration
+
 2. Set the following initial values:
 
-| Parameter                     | Value | Description                           |
-| ----------------------------- | ----- | ------------------------------------- |
-| θ₀ (Ignition Threshold)       | 0.5   | Threshold for conscious ignition       |
-| Πᵢ (Interoceptive Precision)  | 1.0   | Precision of interoceptive signals    |
-| β (Somatic Bias)              | 0.0   | Baseline somatic bias                  |
+| Parameter                      | Value | Description                          |
+|--------------------------------|-------|--------------------------------------|
+| theta_0 (Ignition Threshold)   | 0.5   | Threshold for conscious ignition     |
+| Pi_i (Interoceptive Precision)  | 1.0   | Precision of interoceptive signals  |
+| beta (Somatic Bias)             | 0.0   | Baseline somatic bias                 |
 
-3. **Advanced Settings** (click to expand):
+1. **Advanced Settings** (click to expand)
    - **Number of Trials**: 1000
    - **Burn-in Period**: 200
    - **Sampling Rate**: 10 Hz
 
-4. Click **"Save Configuration"**
+2. Click **"Save Configuration"**
 
 ---
 
@@ -133,7 +134,7 @@ Once the experiment completes:
 
 ## 📊 Tutorial 2: Real-time Monitoring Setup
 
-### Objective
+### Objective: Real-time Monitoring
 
 Set up and use real-time monitoring for live data streams.
 
@@ -200,7 +201,7 @@ Set up and use real-time monitoring for live data streams.
 
 ## 🔬 Tutorial 3: Advanced Parameter Configuration
 
-### Objective
+### Objective: Advanced Parameters
 
 Learn to configure advanced parameters for specific experimental paradigms.
 
@@ -246,16 +247,17 @@ For multi-subject analysis:
 Advanced sampling settings:
 
 | Setting           | Recommended Value | When to Use                 |
-| ----------------- | ----------------- | --------------------------- |
+|-------------------|-------------------|-----------------------------|
 | Chains            | 4                 | Standard analysis           |
 | Iterations        | 4000              | Complex models              |
 | Thin              | 2                 | Large datasets              |
 | Adapt Delta       | 0.95              | Difficult posteriors        |
+
 ---
 
 ## 📈 Tutorial 4: Batch Processing and Automation
 
-### Objective
+### Objective: Batch Processing
 
 Process multiple experiments automatically.
 
@@ -306,7 +308,7 @@ Batch processing dashboard shows:
 
 ## 🔍 Tutorial 5: Model Comparison and Validation
 
-### Objective
+### Objective: Model Comparison
 
 Compare different models and validate results.
 
@@ -356,7 +358,7 @@ Compare different models and validate results.
 
 ## 🛠️ Tutorial 6: Custom Analysis Pipeline
 
-### Objective
+### Objective: Analysis Pipeline
 
 Create custom analysis workflows.
 
@@ -398,7 +400,7 @@ Drag and drop analysis steps:
 
 ## 📝 Tutorial 7: Report Generation
 
-### Objective
+### Objective: Report Generation
 
 Generate professional analysis reports.
 
@@ -412,31 +414,40 @@ Generate professional analysis reports.
    - **Standard**: Basic results summary
    - **Detailed**: Full analysis report
    - **Publication**: Journal-ready format
----
+
 ### Step 2: Customize Report
+
 Add sections:
+
 - Executive summary
 - Methods description
 - Results tables
 - Figures and plots
 - Discussion points
 - Supplementary materials
+
 ---
+
 ### Step 3: Export and Share
+
 1. Preview report
 2. Make final adjustments
 3. Export in desired format:
    - PDF (for sharing)
    - LaTeX (for publication)
    - HTML (for web)
+
 ---
+
 ## 🔧 Common Workflow Patterns
+
 ### Pattern 1: Exploratory Analysis
 
 1. Quick parameter sweep
 2. Visualize results
 3. Identify promising configurations
 4. Refine and repeat
+
 ### Pattern 2: Confirmatory Analysis
 
 1. Pre-register analysis plan
@@ -454,27 +465,35 @@ Add sections:
 ---
 
 ## 💡 Pro Tips
+
 ### Efficiency Tips
+
 - Use keyboard shortcuts (Ctrl+S to save, Ctrl+R to run)
 - Bookmark frequently used configurations
 - Use templates for similar experiments
+
 ### Quality Assurance
+
 - Always check convergence diagnostics
 - Validate with simulated data first
 - Document analysis decisions
 
 ### Collaboration
+
 - Share experiment configurations
 - Use version control for analysis scripts
 - Document parameter choices
 
 ---
+
 ## 🆘 Getting Help
 
 ### Built-in Help
+
 - **F1**: Context-sensitive help
 - **Help Menu**: Complete documentation
 - **Tool Tips**: Hover over elements
+
 ### Video Tutorials
 
 - [Basic Setup](link-to-video)
@@ -482,14 +501,17 @@ Add sections:
 - [Troubleshooting](link-to-video)
 
 ### Community Support
+
 - [User Forum](link-to-forum)
 - [Stack Overflow](link-to-so)
 - [Office Hours](link-to-hours)
 
 ---
 
-## 📚 Next Steps
+### 📚 Next Steps
+
 After completing these tutorials:
+
 1. **Explore Examples**: Check the `examples/` directory
 2. **Read API Docs**: Learn programmatic interface
 3. **Join Community**: Connect with other users
@@ -498,6 +520,7 @@ After completing these tutorials:
 ---
 
 ### Happy Analyzing! 🧠✨
+
 ---
 **Version**: 1.0
 **Last Updated**: 2025-01-11

@@ -155,6 +155,7 @@ class ThresholdManager:
             new_threshold = self._adaptive_threshold_update(context)
 
         else:
+            # Defensive fallback for unexpected enum values
             warnings.warn(f"Unknown adaptation type: {self.adaptation_type}")
             new_threshold = self.baseline_threshold
 
@@ -315,7 +316,7 @@ class ThresholdManager:
             autocorr_stability = 0.5
 
         # Combine stability metrics
-        overall_stability = (
+        overall_stability: float = (
             variance_stability + trend_consistency + autocorr_stability
         ) / 3.0
 

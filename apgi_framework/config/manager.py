@@ -392,6 +392,19 @@ class ConfigurationManager:
         """
         errors = []
 
+        # Validate secret key for production
+        if self.config.environment == "production" and not self.config.secret_key:
+            errors.append("APGI_SECRET_KEY must be set in production environment")
+
+        # Auto-generate secret key for development if not set
+        if self.config.environment == "development" and not self.config.secret_key:
+            import secrets
+
+            self.config.secret_key = secrets.token_hex(32)
+            logger.warning(
+                "Auto-generated development secret key - set APGI_SECRET_KEY for production"
+            )
+
         # Validate paths
         try:
             validate_path(

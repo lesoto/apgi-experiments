@@ -284,7 +284,7 @@ class APGILogger:
         logger.add(
             main_log_file,
             format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {name}:{function}:{line} - {message}",
-            level="DEBUG",
+            level="INFO",  # Changed from DEBUG to INFO to avoid capturing sensitive data
             rotation="10 MB",
             retention="30 days",
             compression="zip",

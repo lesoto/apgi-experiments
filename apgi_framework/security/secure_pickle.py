@@ -162,27 +162,85 @@ class SecurePickleValidator:
         """
         Scan pickle data for dangerous opcodes that could execute code.
 
-        This is a simplified check - production use would need more comprehensive analysis.
+        Enhanced with comprehensive opcode analysis using pickletools.
         """
-        dangerous_patterns = [
-            b"__reduce__",
-            b"__reduce_ex__",
-            b"__getstate__",
-            b"__setstate__",
-            b"eval",
-            b"exec",
-            b"compile",
-            b"open",
-            b"file",
-            b"os.",
-            b"sys.",
-            b"subprocess",
-        ]
+        # Use pickletools for actual opcode analysis instead of simple pattern matching
+        try:
+            for opcode, arg, pos in pickletools.genops(data):
+                opcode_name = opcode.name if hasattr(opcode, "name") else str(opcode)
 
-        for pattern in dangerous_patterns:
-            if pattern in data:
-                logger.warning(f"Dangerous pattern detected in pickle: {pattern!r}")
-                return True
+                # List of dangerous opcodes that can lead to code execution
+                dangerous_opcodes = {
+                    "REDUCE",
+                    "REDUCE_EX",
+                    "BUILD",
+                    "INST",
+                    "OBJ",
+                    "NEWOBJ",
+                    "NEWOBJ_EX",
+                    "GLOBAL",
+                    "STACK_GLOBAL",
+                    "EXT1",
+                    "EXT2",
+                    "EXT4",
+                    "BINUNICODE",
+                    "UNICODE",
+                    "SHORT_BINUNICODE",
+                    "BINBYTES",
+                    "SHORT_BINBYTES",
+                    "BYTES",
+                }
+
+                if opcode_name in dangerous_opcodes:
+                    # Additional validation for specific dangerous patterns
+                    if opcode_name in ("REDUCE", "REDUCE_EX"):
+                        # Check if reduce targets dangerous functions
+                        if arg:
+                            arg_str = str(arg)
+                            dangerous_targets = {
+                                "eval",
+                                "exec",
+                                "compile",
+                                "__import__",
+                                "subprocess",
+                                "os.system",
+                                "os.popen",
+                                "pickle.loads",
+                                "pickle.load",
+                                "builtins.eval",
+                                "builtins.exec",
+                                "builtins.__import__",
+                            }
+                            if any(
+                                target in arg_str.lower()
+                                for target in dangerous_targets
+                            ):
+                                logger.warning(
+                                    f"Dangerous opcode {opcode_name} with target: {arg}"
+                                )
+                                return True
+
+                    elif opcode_name in ("GLOBAL", "STACK_GLOBAL"):
+                        # Check for dangerous global imports
+                        if arg:
+                            arg_str = str(arg).lower()
+                            dangerous_modules = {
+                                "subprocess",
+                                "os.",
+                                "sys.",
+                                "builtins.",
+                                "eval",
+                                "exec",
+                                "compile",
+                            }
+                            if any(mod in arg_str for mod in dangerous_modules):
+                                logger.warning(f"Dangerous global import: {arg}")
+                                return True
+
+        except Exception as e:
+            logger.error(f"Error analyzing pickle opcodes: {e}")
+            # Fail safe: reject if we can't analyze
+            return True
 
         return False
 

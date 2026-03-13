@@ -134,7 +134,8 @@ except ImportError:
 
 # Import theme manager
 try:
-    from apgi_gui.utils.theme_manager import ThemeManager, get_system_theme_preference
+    from apgi_gui.components.theme_manager import AdvancedThemeManager
+    from apgi_gui.utils.theme_manager import get_system_theme_preference
 
     THEME_AVAILABLE = True
 except ImportError:
@@ -219,7 +220,7 @@ class ExperimentRegistryGUI:
 
         # Initialize theme manager
         if THEME_AVAILABLE:
-            self.theme_manager = ThemeManager(self.root)
+            self.theme_manager = AdvancedThemeManager(self.root)
             # Try to load system preference
             system_theme = get_system_theme_preference()
             self.theme_manager.set_theme(system_theme)
@@ -239,7 +240,7 @@ class ExperimentRegistryGUI:
             )
             # Run all experiments
             self.keyboard_manager.bind_shortcut(
-                "Ctrl+Shift+R", self.run_all_experiments, "Run all experiments"
+                "Ctrl+Shift+R", self._run_all_experiments, "Run all experiments"
             )
 
     def initialize_experiment_status(self):
@@ -401,7 +402,7 @@ class ExperimentRegistryGUI:
         self.cancel_button.pack(side=tk.LEFT, padx=(0, 5))
 
         self.run_all_button = ttk.Button(
-            button_frame, text="Run All Experiments", command=self.run_all_experiments
+            button_frame, text="Run All Experiments", command=self._run_all_experiments
         )
         self.run_all_button.pack(side=tk.LEFT, padx=(0, 5))
 

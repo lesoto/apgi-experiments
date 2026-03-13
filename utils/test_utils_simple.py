@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 def test_dependency_checker():
     """Test dependency checker functionality."""
     try:
-        from utils.dependency_checker import CORE_DEPENDENCIES
+        from dependency_checker import CORE_DEPENDENCIES
 
         print("✓ DependencyChecker imported successfully")
         print(f"✓ Found {len(CORE_DEPENDENCIES)} core dependencies")
@@ -35,7 +35,7 @@ def test_dependency_checker():
 def test_parameter_validator():
     """Test parameter validator functionality."""
     try:
-        from utils.parameter_validator import APGIParameterValidator
+        from parameter_validator import APGIParameterValidator
 
         validator = APGIParameterValidator()
         print("✓ APGIParameterValidator imported successfully")
@@ -56,7 +56,7 @@ def test_parameter_validator():
 def test_config_manager():
     """Test config manager functionality."""
     try:
-        from utils.config_manager import ConfigManager
+        from config_manager import ConfigManager
 
         with tempfile.TemporaryDirectory() as temp_dir:
             config_file = Path(temp_dir) / "test_config.json"
@@ -79,7 +79,7 @@ def test_config_manager():
 def test_error_handler():
     """Test error handler functionality."""
     try:
-        from utils.error_handler import ErrorHandler
+        from error_handler import ErrorHandler
 
         handler = ErrorHandler()
         print("✓ ErrorHandler imported and initialized successfully")
@@ -100,7 +100,7 @@ def test_error_handler():
 def test_logging_config():
     """Test logging configuration functionality."""
     try:
-        from utils.logging_config import LogEntry
+        from logging_config import LogEntry
 
         entry = LogEntry(
             timestamp="2023-01-01T12:00:00",
@@ -129,7 +129,7 @@ def test_logging_config():
 
 def test_utils_directory_structure():
     """Test utils directory structure."""
-    utils_dir = Path(__file__).parent / "utils"
+    utils_dir = Path(__file__).parent
 
     assert utils_dir.exists(), "Utils directory does not exist"
     assert utils_dir.is_dir(), "Utils path is not a directory"

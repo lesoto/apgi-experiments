@@ -176,7 +176,7 @@ apgi-deploy = "apgi_framework.deployment.automation:main"
 apgi-dashboard = "apgi_framework.gui.interactive_dashboard:main"
 
 [tool.setuptools]
-packages = ["apgi_framework", "tests"]
+packages = ["apgi_framework", "apgi_gui", "tests"]
 include-package-data = true
 
 [tool.setuptools.package-data]
@@ -385,7 +385,7 @@ log_level = "INFO"
 mock_external = true
 
 [tool.mypy]
-# Incremental strict mode enablement - Phase 1: Basic strictness
+# Incremental strict mode enablement - Phase 2: Enhanced strictness
 # Enable basic strict mode options first
 strict = false  # Keep false for now, enable incrementally
 
@@ -396,11 +396,15 @@ disallow_untyped_defs = false  # Will enable in phase 2
 disallow_incomplete_defs = false  # Will enable in phase 2
 check_untyped_defs = false  # Will enable in phase 2
 
-# Enable some useful warnings
+# Phase 2: Enable stricter type checking
 warn_redundant_casts = true
 warn_unused_ignores = true
 warn_no_return = true
 warn_unreachable = true
+no_implicit_optional = true
+
+# Enable strict type checking for new code
+strict_optional = true
 
 # Ignore missing imports for modules without type stubs
 ignore_missing_imports = true
@@ -434,3 +438,46 @@ module = [
 ignore_missing_imports = true
 disallow_untyped_defs = false
 check_untyped_defs = false
+
+[tool.flake8]
+# Maximum line length
+max-line-length = 100
+# Exclude certain directories
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    ".eggs",
+    "*.egg-info",
+    ".venv",
+    "venv",
+    ".tox",
+    "htmlcov",
+    ".coverage",
+    ".pytest_cache",
+    ".mypy_cache",
+    "coverage_html_report",
+]
+# Ignore certain errors
+ignore = [
+    "E203",  # whitespace before ':'
+    "E501",  # line too long (handled by black)
+    "W503",  # line break before binary operator
+    "BLK997",  # Invalid TOML file (false positive)
+]
+# Select specific errors to check
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "C",  # mccabe complexity
+]
+per-file-ignores = [
+    "*/tests/*: E501, BLK997",
+    "test_*.py: E501, BLK997",
+    "*_test.py: E501, BLK997",
+    "examples/*: E501, BLK997",
+    "benchmarks/*: E501, BLK997",
+    "utils/*: E501, BLK997",
+]

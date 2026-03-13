@@ -31,9 +31,16 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 import yaml
+
+try:
+    import jsonschema
+
+    JSONSCHEMA_AVAILABLE = True
+except ImportError:
+    JSONSCHEMA_AVAILABLE = False
 
 # Scientific computing imports for built-in experiments
 try:
@@ -191,7 +198,7 @@ class ComprehensiveExperimentRunner:
         return logging.getLogger(__name__)
 
     def _load_config(self) -> Dict[str, Any]:
-        """Load experiment configuration."""
+        """Load experiment configuration with schema validation."""
         if self.config_file:
             config_path = Path(self.config_file)
             if not config_path.exists():
@@ -201,15 +208,25 @@ class ComprehensiveExperimentRunner:
             try:
                 if config_path.suffix.lower() == ".json":
                     with open(config_path) as f:
-                        return json.load(f)  # type: ignore
+                        config = json.load(f)
                 elif config_path.suffix.lower() in [".yaml", ".yml"]:
                     with open(config_path) as f:
-                        return yaml.safe_load(f)  # type: ignore
+                        config = yaml.safe_load(f)
                 else:
                     self.logger.error(
                         f"Unsupported config format: {config_path.suffix}"
                     )
                     sys.exit(1)
+
+                # Validate config against schema
+                if JSONSCHEMA_AVAILABLE:
+                    self._validate_config_schema(config)
+                else:
+                    self.logger.warning(
+                        "jsonschema not available, skipping schema validation"
+                    )
+
+                return cast(Dict[str, Any], config)
             except Exception as e:
                 self.logger.error(f"Error loading config: {e}")
                 sys.exit(1)
@@ -223,6 +240,55 @@ class ComprehensiveExperimentRunner:
                 "parallel": False,
                 "max_workers": 4,
             }
+
+    def _validate_config_schema(self, config: Dict[str, Any]) -> None:
+        """Validate configuration against schema."""
+        schema = {
+            "type": "object",
+            "properties": {
+                "experiments": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "type": {"type": "string"},
+                            "name": {"type": "string"},
+                            "trials": {"type": "number", "minimum": 1},
+                            "participants": {"type": "number", "minimum": 1},
+                            "seed": {"type": "number"},
+                        },
+                        "required": ["type"],
+                        "additionalProperties": True,
+                    },
+                },
+                "output_dir": {"type": "string"},
+                "parallel": {"type": "boolean"},
+                "max_workers": {"type": "number", "minimum": 1, "maximum": 32},
+                "logging": {
+                    "type": "object",
+                    "properties": {
+                        "level": {
+                            "type": "string",
+                            "enum": ["DEBUG", "INFO", "WARNING", "ERROR"],
+                        },
+                        "format": {"type": "string"},
+                    },
+                    "additionalProperties": True,
+                },
+            },
+            "required": ["experiments"],
+            "additionalProperties": True,
+        }
+
+        try:
+            jsonschema.validate(config, schema)
+            self.logger.info("Configuration schema validation passed")
+        except jsonschema.ValidationError as e:
+            self.logger.error(f"Configuration schema validation failed: {e.message}")
+            sys.exit(1)
+        except jsonschema.SchemaError as e:
+            self.logger.error(f"Schema error: {e.message}")
+            sys.exit(1)
 
     def run_cli_command(self, args) -> None:
         """Run direct CLI command using APGI Framework."""
@@ -366,7 +432,19 @@ class ComprehensiveExperimentRunner:
         # Execute experiment
         self.logger.info(f"Executing: {' '.join(cmd)}")
 
-        result = subprocess.run(cmd, cwd=self.base_dir, capture_output=True, text=True)
+        try:
+            result = subprocess.run(
+                cmd, cwd=self.base_dir, capture_output=True, text=True
+            )
+        except FileNotFoundError as e:
+            error_msg = f"Command not found: {cmd[0]}. Please ensure the experiment script exists."
+            raise RuntimeError(error_msg) from e
+        except subprocess.SubprocessError as e:
+            error_msg = f"Subprocess error: {e}"
+            raise RuntimeError(error_msg) from e
+        except Exception as e:
+            error_msg = f"Unexpected error running experiment: {e}"
+            raise RuntimeError(error_msg) from e
 
         if result.returncode != 0:
             error_msg = f"Experiment failed with exit code {result.returncode}"

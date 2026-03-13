@@ -29,11 +29,11 @@ try:
     MATPLOTLIB_AVAILABLE = True
 except ImportError:
     MATPLOTLIB_AVAILABLE = False
-    plt_type: Any = None  # type: ignore[assignment]
-    Figure_type: Any = None  # type: ignore[assignment]
+    plt_type: Any = None
+    Figure_type: Any = None
 
 try:
-    import seaborn as sns  # type: ignore
+    import seaborn as sns
 
     SEABORN_AVAILABLE = True
     sns.set_style("whitegrid")
@@ -42,7 +42,7 @@ except ImportError:
     sns = None  # type: ignore
 
 try:
-    from scipy import stats  # type: ignore
+    from scipy import stats
 
     SCIPY_AVAILABLE = True
 except ImportError:

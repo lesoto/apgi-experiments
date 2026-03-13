@@ -136,8 +136,11 @@ class APGIEquation:
         return float(surprise)
 
     def calculate_ignition_probability(
-        self, surprise: float, threshold: float, steepness: float = 2.0
-    ) -> float:
+        self,
+        surprise: Union[float, np.ndarray],
+        threshold: float,
+        steepness: float = 2.0,
+    ) -> Union[float, np.ndarray]:
         """
         Calculate ignition probability using logistic sigmoid function.
 
@@ -157,8 +160,29 @@ class APGIEquation:
         if steepness <= 0:
             raise MathematicalError("Steepness parameter must be positive")
 
-        # Calculate sigmoid input
-        sigmoid_input = steepness * (surprise - threshold)
+        # Handle both single values and arrays
+        sigmoid_input: Union[float, np.ndarray]
+        if isinstance(surprise, (float, int)):
+            # Single value case
+            if surprise > 10:
+                # Log at warning level - large prediction errors should be visible to users
+                self.logger.warning(
+                    f"Surprise value {surprise:.3f} exceeds typical range (0-10), clamping to 10. "
+                    f"This may indicate unusually large prediction errors."
+                )
+                surprise = 10.0
+
+            sigmoid_input = steepness * (surprise - threshold)
+        elif isinstance(surprise, np.ndarray):
+            # Array case - calculate for each element
+            if np.any(surprise > 10):
+                self.logger.warning(
+                    "Surprise values exceed typical range (0-10), clamping to 10. "
+                    "This may indicate unusually large prediction errors."
+                )
+                surprise = np.clip(surprise, 0, 10)
+
+            sigmoid_input = steepness * (surprise - threshold)
 
         # Apply numerical stability if enabled
         if self.numerical_stability:
@@ -172,7 +196,9 @@ class APGIEquation:
         except (OverflowError, FloatingPointError) as e:
             raise MathematicalError(f"Numerical error in sigmoid calculation: {e}")
 
-        return float(probability)
+        return (
+            probability if isinstance(probability, np.ndarray) else float(probability)
+        )
 
     def is_ignition_triggered(
         self,
@@ -196,7 +222,11 @@ class APGIEquation:
         probability = self.calculate_ignition_probability(
             surprise, threshold, steepness
         )
-        return probability >= probability_threshold
+        # Handle both scalar and array cases
+        if isinstance(probability, np.ndarray):
+            return bool(np.any(probability >= probability_threshold))
+        else:
+            return bool(probability >= probability_threshold)
 
     def _logistic_sigmoid(
         self, x: Union[float, np.ndarray]
@@ -230,10 +260,10 @@ class APGIEquation:
             return result
         else:
             if x >= 0:
-                return 1.0 / (1.0 + np.exp(-x))
+                return float(1.0 / (1.0 + np.exp(-x)))
             else:
                 exp_x = np.exp(x)
-                return exp_x / (1.0 + exp_x)
+                return float(exp_x / (1.0 + exp_x))
 
     def calculate_full_equation(
         self,
@@ -268,7 +298,19 @@ class APGIEquation:
             surprise, threshold, steepness
         )
 
-        return surprise, probability
+        # Ensure we return float types as specified in the signature
+        surprise_float = (
+            float(surprise)
+            if isinstance(surprise, (float, int))
+            else float(np.mean(surprise))
+        )
+        probability_float = (
+            float(probability)
+            if isinstance(probability, (float, int))
+            else float(np.mean(probability))
+        )
+
+        return surprise_float, probability_float
 
     def calculate_integrated_surprise(
         self,
@@ -410,7 +452,19 @@ class APGIEquation:
             surprise=surprise, threshold=current_threshold, steepness=steepness
         )
 
-        return surprise, probability
+        # Ensure we return float types as specified in the signature
+        surprise_float = (
+            float(surprise)
+            if isinstance(surprise, (float, int))
+            else float(np.mean(surprise))
+        )
+        probability_float = (
+            float(probability)
+            if isinstance(probability, (float, int))
+            else float(np.mean(probability))
+        )
+
+        return surprise_float, probability_float
 
     def update_threshold_from_ignition(
         self, ignition_occurred: bool, context: Optional["ContextType"] = None
@@ -488,22 +542,22 @@ class APGIEquation:
                 ]
                 for method in required_methods:
                     if not hasattr(self.precision_calculator, method):
-                        validation_results["precision_calculator"]["errors"].append(  # type: ignore
+                        validation_results["precision_calculator"]["errors"].append(
                             f"Missing required method: {method}"
                         )
                     else:
-                        validation_results["precision_calculator"]["configured"] = True  # type: ignore
+                        validation_results["precision_calculator"]["configured"] = True
 
                 # Test basic functionality
                 test_precision = (
                     self.precision_calculator.calculate_exteroceptive_precision(1.0)
                 )
                 if not isinstance(test_precision, (int, float)) or test_precision <= 0:
-                    validation_results["precision_calculator"]["errors"].append(  # type: ignore
+                    validation_results["precision_calculator"]["errors"].append(
                         "Invalid precision calculation result"
                     )
                 else:
-                    validation_results["precision_calculator"]["compatible"] = True  # type: ignore
+                    validation_results["precision_calculator"]["compatible"] = True
 
             except Exception as e:
                 validation_results["precision_calculator"]["errors"].append(
@@ -526,24 +580,26 @@ class APGIEquation:
                 ]
                 for method in required_methods:
                     if not hasattr(self.prediction_error_processor, method):
-                        validation_results["prediction_error_processor"]["errors"].append(f"Missing required method: {method}")  # type: ignore
+                        validation_results["prediction_error_processor"][
+                            "errors"
+                        ].append(f"Missing required method: {method}")
                     else:
                         validation_results["prediction_error_processor"][
                             "configured"
-                        ] = True  # type: ignore
+                        ] = True
 
                 # Test basic functionality
                 test_error = (
                     self.prediction_error_processor.process_exteroceptive_error(1.0)
                 )
                 if not isinstance(test_error, (int, float)):
-                    validation_results["prediction_error_processor"]["errors"].append(  # type: ignore
+                    validation_results["prediction_error_processor"]["errors"].append(
                         "Invalid error calculation result"
                     )
                 else:
                     validation_results["prediction_error_processor"][
                         "compatible"
-                    ] = True  # type: ignore
+                    ] = True
 
             except Exception as e:
                 validation_results["prediction_error_processor"]["errors"].append(
@@ -560,11 +616,11 @@ class APGIEquation:
                 required_methods = ["calculate_somatic_gain"]
                 for method in required_methods:
                     if not hasattr(self.somatic_marker_engine, method):
-                        validation_results["somatic_marker_engine"]["errors"].append(  # type: ignore
+                        validation_results["somatic_marker_engine"]["errors"].append(
                             f"Missing required method: {method}"
                         )
                     else:
-                        validation_results["somatic_marker_engine"]["configured"] = True  # type: ignore
+                        validation_results["somatic_marker_engine"]["configured"] = True
 
                 # Test basic functionality
                 from .somatic_marker import ContextType
@@ -573,11 +629,11 @@ class APGIEquation:
                     context=ContextType.NEUTRAL, arousal=1.0, valence=0.0, stakes=1.0
                 )
                 if not isinstance(test_gain, (int, float)) or test_gain < 0:
-                    validation_results["somatic_marker_engine"]["errors"].append(  # type: ignore
+                    validation_results["somatic_marker_engine"]["errors"].append(
                         "Invalid somatic gain calculation result"
                     )
                 else:
-                    validation_results["somatic_marker_engine"]["compatible"] = True  # type: ignore
+                    validation_results["somatic_marker_engine"]["compatible"] = True
 
             except Exception as e:
                 validation_results["somatic_marker_engine"]["errors"].append(
@@ -594,11 +650,11 @@ class APGIEquation:
                 required_methods = ["get_current_threshold", "update_threshold"]
                 for method in required_methods:
                     if not hasattr(self.threshold_manager, method):
-                        validation_results["threshold_manager"]["errors"].append(  # type: ignore
+                        validation_results["threshold_manager"]["errors"].append(
                             f"Missing required method: {method}"
                         )
                     else:
-                        validation_results["threshold_manager"]["configured"] = True  # type: ignore
+                        validation_results["threshold_manager"]["configured"] = True
 
                 # Test basic functionality
                 from .somatic_marker import ContextType
@@ -607,11 +663,11 @@ class APGIEquation:
                     context=ContextType.NEUTRAL, arousal=1.0
                 )
                 if not isinstance(test_threshold, (int, float)) or test_threshold <= 0:
-                    validation_results["threshold_manager"]["errors"].append(  # type: ignore
+                    validation_results["threshold_manager"]["errors"].append(
                         "Invalid threshold value"
                     )
                 else:
-                    validation_results["threshold_manager"]["compatible"] = True  # type: ignore
+                    validation_results["threshold_manager"]["compatible"] = True
 
             except Exception as e:
                 validation_results["threshold_manager"]["errors"].append(

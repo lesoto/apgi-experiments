@@ -3,7 +3,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, cast
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 class UserPreferences:
     """Manage user preferences and settings persistence."""
 
-    def __init__(self, config_dir: Path = None):
+    def __init__(self, config_dir: Optional[Path] = None):
         """Initialize user preferences manager.
 
         Args:
@@ -19,6 +19,8 @@ class UserPreferences:
         """
         if config_dir is None:
             config_dir = Path.home() / ".apgi_framework"
+        else:
+            config_dir = Path(config_dir)
 
         self.config_dir = config_dir
         self.config_file = config_dir / "preferences.json"
@@ -64,7 +66,7 @@ class UserPreferences:
 
     def get_recent_files(self) -> List[str]:
         """Get list of recent files."""
-        return self.preferences.get("recent_files", [])
+        return cast(List[str], self.preferences.get("recent_files", []))
 
     def add_recent_file(self, file_path: str) -> None:
         """Add a file to recent files list."""
@@ -96,7 +98,7 @@ class UserPreferences:
 
     def get_window_geometry(self) -> str:
         """Get window geometry."""
-        return self.preferences.get("window_geometry", "")
+        return cast(str, self.preferences.get("window_geometry", ""))
 
     def get_preference(self, key: str, default: Any = None) -> Any:
         """Get a preference value."""

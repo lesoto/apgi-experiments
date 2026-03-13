@@ -187,16 +187,16 @@ class DefaultParameters:
         try:
             if rules["type"] == "float":
                 float_value = float(value)
-                min_val = rules["min"]  # type: ignore[assignment]
-                max_val = rules["max"]  # type: ignore[assignment]
+                min_val = rules["min"]
+                max_val = rules["max"]
 
                 if float_value < min_val or float_value > max_val:  # type: ignore[operator]
                     return False, f"Value must be between {min_val} and {max_val}"
 
             elif rules["type"] == "int":
                 int_value = int(value)
-                min_val = rules["min"]  # type: ignore[assignment]
-                max_val = rules["max"]  # type: ignore[assignment]
+                min_val = rules["min"]
+                max_val = rules["max"]
 
                 if int_value < min_val or int_value > max_val:  # type: ignore[operator]
                     return False, f"Value must be between {min_val} and {max_val}"

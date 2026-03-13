@@ -53,6 +53,14 @@ try:
 except ImportError:
     HAS_PYTEST = False
 
+# Check if pytest-xdist is available for parallel execution
+try:
+    import pytest_xdist  # noqa: F401
+
+    HAS_PYTEST_XDIST = True
+except ImportError:
+    HAS_PYTEST_XDIST = False
+
 # Add project root to path
 project_root = Path(__file__).parent.absolute()
 sys.path.insert(0, str(project_root))
@@ -516,11 +524,16 @@ class ComprehensiveTestRunner:
                 ]
             )
 
-        # Add parallel execution if enabled
-        if parallel and multiprocessing.cpu_count() > 1:
+        # Add parallel execution if enabled and pytest-xdist is available
+        if parallel and HAS_PYTEST_XDIST and multiprocessing.cpu_count() > 1:
             cmd.extend(["-n", str(multiprocessing.cpu_count())])
             print(
                 f"Running tests in parallel with {multiprocessing.cpu_count()} workers"
+            )
+        elif parallel and not HAS_PYTEST_XDIST:
+            print(
+                "⚠️  Parallel execution requested but pytest-xdist not installed."
+                " Running tests sequentially. Install with: pip install pytest-xdist"
             )
 
         # Add test markers and categories
@@ -644,27 +657,31 @@ class ComprehensiveTestRunner:
     def _parse_pytest_output(self, output: str, results: Dict[str, Any]):
         """Parse pytest output to extract test statistics."""
         try:
+            import re
+
+            # Look for the summary line with test counts
+            # Format: "X passed, Y failed, Z skipped, W errors in ..."
+            # Or: "X passed, Y failed, Z skipped"
+            summary_pattern = r"(\d+)\s+passed(?:,\s+(\d+)\s+failed)?(?:,\s+(\d+)\s+skipped)?(?:,\s+(\d+)\s+errors?)?"
+
             lines = output.split("\n")
             for line in lines:
-                if (
-                    " passed" in line
-                    or " failed" in line
-                    or " skipped" in line
-                    or " error" in line
-                ):
-                    # Parse the summary line
-                    parts = line.split()
-                    for part in parts:
-                        if part.isdigit():
-                            results["total_tests"] += int(part)
-                        elif "passed" in part:
-                            results["passed"] = int(part.split()[0])
-                        elif "failed" in part:
-                            results["failed"] = int(part.split()[0])
-                        elif "skipped" in part:
-                            results["skipped"] = int(part.split()[0])
-                        elif "error" in part:
-                            results["errors"] = int(part.split()[0])
+                match = re.search(summary_pattern, line)
+                if match:
+                    results["passed"] = int(match.group(1))
+                    if match.group(2):
+                        results["failed"] = int(match.group(2))
+                    if match.group(3):
+                        results["skipped"] = int(match.group(3))
+                    if match.group(4):
+                        results["errors"] = int(match.group(4))
+                    results["total_tests"] = (
+                        results["passed"]
+                        + results["failed"]
+                        + results["skipped"]
+                        + results["errors"]
+                    )
+                    break
         except Exception as e:
             # If parsing fails, log the error and continue with default values
             logging.warning(f"Failed to parse pytest output: {e}")
