@@ -100,10 +100,10 @@ Falsification testing follows Karl Popper's philosophy: we attempt to **disprove
 
 #### Important: These tests are designed to **falsify**, not confirm
 
-| Result        | Interpretation              | Strength                |
-|---------------|------------------------------|-------------------------|
-| NOT Falsified | Framework survives this test | Moderate support        |
-| Falsified     | Framework contradicted       | Strong evidence against |
+| Result        | Interpretation                   | Strength                |
+|---------------|----------------------------------|------------------------|
+| NOT Falsified | Framework survives this test     | Moderate support        |
+| Falsified     | Framework contradicted           | Strong evidence against |
 
 #### Key Point: "Not falsified" ≠ "proven true". It means that the framework survived this particular challenge
 
@@ -117,12 +117,12 @@ Falsification testing follows Karl Popper's philosophy: we attempt to **disprove
 
 #### Interpretation
 
-| Range       | Interpretation              | Action                                   |
-|-------------|------------------------------|------------------------------------------|
-| 0.0 - 0.5   | Low confidence               | Increase sample size, check data quality   |
-| 0.5 - 0.7   | Moderate confidence         | Acceptable for exploratory research       |
-| 0.7 - 0.9   | High confidence              | Acceptable for most purposes              |
-| 0.9 - 1.0   | Very high confidence         | Publication-quality evidence              |
+| Range        | Interpretation             | Action                                  |
+|--------------|----------------------------|-----------------------------------------|
+| 0.0 - 0.5    | Low confidence              | Increase sample size, check data quality  |
+| 0.5 - 0.7    | Moderate confidence        | Acceptable for exploratory research      |
+| 0.7 - 0.9    | High confidence             | Acceptable for most purposes             |
+| 0.9 - 1.0    | Very high confidence        | Publication-quality evidence             |
 
 **Example**:
 
@@ -140,12 +140,12 @@ Interpretation: High confidence in the result.
 
 **Interpretation**:
 
-| P-value    | Interpretation         | Significance |
-|------------|------------------------|-------------|
-| < 0.001    | Extremely significant  | ***         |
-| < 0.01     | Highly significant     | **          |
-| < 0.05     | Significant           | *           |
-| ≥ 0.05     | Not significant        | ns          |
+| P-value     | Interpretation          | Significance |
+|-------------|-------------------------|-------------|
+| < 0.001     | Extremely significant   | ***         |
+| < 0.01      | Highly significant      | **          |
+| < 0.05      | Significant            | *           |
+| ≥ 0.05      | Not significant         | ns          |
 
 **Common Misinterpretations**:
 

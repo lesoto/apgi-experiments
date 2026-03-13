@@ -470,14 +470,20 @@ class UnifiedMLClassifier:
             model_type: Type of model to load
             filepath: Path to model file
         """
-        import pickle
+        from ..security.secure_pickle import safe_pickle_load
 
         filepath = Path(filepath)
         if not filepath.exists():
             raise FileNotFoundError(f"Model file not found: {filepath}")
 
-        with open(filepath, "rb") as f:
-            model = pickle.load(f)
+        # Define expected model types for validation
+        expected_types = {
+            ConsciousnessClassifier,
+            DisorderClassifier,
+            BiomarkerClassifierEnsemble,
+        }
+
+        model = safe_pickle_load(filepath, expected_types=expected_types)
 
         # Assign to appropriate classifier
         if model_type == "consciousness":

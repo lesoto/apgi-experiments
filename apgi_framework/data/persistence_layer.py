@@ -6,6 +6,7 @@ Provides unified interface for data storage using SQLite and HDF5 backends.
 
 import hashlib
 import json
+import logging
 import os
 import re
 import shutil
@@ -17,10 +18,10 @@ from typing import Any, Dict, List, Optional, Union, Callable
 import h5py
 import numpy as np
 import pandas as pd
-import psycopg2
-from psycopg2.extras import Json
 
 from ..exceptions import APGIFrameworkError
+
+logger = logging.getLogger(__name__)
 from ..security.secure_pickle import (
     safe_pickle_dump,
     safe_pickle_load,
@@ -48,18 +49,29 @@ class PersistenceLayer:
     """
 
     def __init__(self, storage_path: Union[str, Path], backend: str = "hdf5"):
-        """
-        Initialize persistence layer.
-
-        Args:
-            storage_path: Base path for data storage
-            backend: Storage backend ('sqlite', 'hdf5', 'hybrid', or 'postgresql')
-        """
+        """Initialize persistence layer with specified backend."""
         self.storage_path = Path(storage_path)
-        self.backend = backend.lower()
+        self.storage_path.mkdir(parents=True, exist_ok=True)
+        self.backend = backend
 
-        if self.backend not in ["sqlite", "hdf5", "hybrid", "postgresql"]:
-            raise PersistenceError(f"Unsupported backend: {backend}")
+        # Backend availability flags
+        self.postgresql_available = False
+        self.hdf5_available = True
+        self.sqlite_available = True
+
+        # PostgreSQL-related attributes (set when available)
+        self._psycopg2 = None
+        self._psycopg2_extras_Json = None
+
+        # Initialize backends
+        if backend == "hdf5":
+            self._init_hdf5()
+        elif backend == "postgresql":
+            self._init_postgresql()
+        elif backend == "sqlite":
+            self._init_sqlite()
+        else:
+            raise PersistenceError(f"Unknown backend: {backend}")
 
         # Create storage directories
         self.storage_path.mkdir(parents=True, exist_ok=True)
@@ -166,14 +178,23 @@ class PersistenceLayer:
 
     def _init_postgresql(self):
         """Initialize PostgreSQL database for large-scale data storage."""
-        # Get database connection parameters from environment or config
-        self.db_host = os.getenv("POSTGRES_HOST", "localhost")
-        self.db_port = int(os.getenv("POSTGRES_PORT", "5432"))
-        self.db_name = os.getenv("POSTGRES_DB", "apgi_experiments")
-        self.db_user = os.getenv("POSTGRES_USER", "apgi_user")
-        self.db_password = os.getenv("POSTGRES_PASSWORD", "")
-
         try:
+            # Import psycopg2 only when needed (BUG-015)
+            import psycopg2
+            from psycopg2.extras import Json
+
+            # Store as instance attributes for use in other methods
+            self._psycopg2 = psycopg2
+            self._psycopg2_extras_Json = Json
+            self._psycopg2_extras_RealDictCursor = psycopg2.extras.RealDictCursor
+
+            # Get database connection parameters from environment or config
+            self.db_host = os.getenv("POSTGRES_HOST", "localhost")
+            self.db_port = int(os.getenv("POSTGRES_PORT", "5432"))
+            self.db_name = os.getenv("POSTGRES_DB", "apgi_experiments")
+            self.db_user = os.getenv("POSTGRES_USER", "apgi_user")
+            self.db_password = os.getenv("POSTGRES_PASSWORD", "")
+
             # Test connection
             conn = psycopg2.connect(
                 host=self.db_host,
@@ -184,15 +205,24 @@ class PersistenceLayer:
             )
             conn.close()
 
+            # Mark PostgreSQL as available
+            self.postgresql_available = True
+
             # Create tables if they don't exist
             self._create_postgresql_tables()
 
-        except psycopg2.Error as e:
-            raise PersistenceError(f"Failed to connect to PostgreSQL: {e}")
+        except (ImportError, Exception) as e:
+            # Graceful degradation: Fall back to SQLite if PostgreSQL unavailable (BUG-012)
+            self.postgresql_available = False
+            logger.warning(f"PostgreSQL unavailable, falling back to SQLite: {e}")
+            self._init_sqlite()
 
     def _create_postgresql_tables(self):
         """Create necessary tables in PostgreSQL database."""
-        with psycopg2.connect(
+        if not self.postgresql_available or self._psycopg2 is None:
+            return
+
+        with self._psycopg2.connect(
             host=self.db_host,
             port=self.db_port,
             dbname=self.db_name,
@@ -418,7 +448,10 @@ class PersistenceLayer:
 
     def _store_metadata_postgresql(self, metadata: ExperimentMetadata):
         """Store experiment metadata in PostgreSQL."""
-        with psycopg2.connect(
+        if not self.postgresql_available or self._psycopg2 is None:
+            return
+
+        with self._psycopg2.connect(
             host=self.db_host,
             port=self.db_port,
             dbname=self.db_name,
@@ -460,13 +493,13 @@ class PersistenceLayer:
                         metadata.institution,
                         metadata.n_participants,
                         metadata.n_trials,
-                        Json(metadata.conditions),
-                        Json(metadata.parameters),
+                        self._psycopg2_extras_Json(metadata.conditions),
+                        self._psycopg2_extras_Json(metadata.parameters),
                         metadata.data_format,
-                        Json(metadata.file_paths),
+                        self._psycopg2_extras_Json(metadata.file_paths),
                         metadata.total_size_mb,
                         metadata.current_version,
-                        Json(metadata.tags),
+                        self._psycopg2_extras_Json(metadata.tags),
                         metadata.category,
                         metadata.data_quality_score,
                         metadata.completeness_percentage,
@@ -521,14 +554,19 @@ class PersistenceLayer:
         self, experiment_id: str
     ) -> Optional[ExperimentMetadata]:
         """Load experiment metadata from PostgreSQL."""
-        with psycopg2.connect(
+        if not self.postgresql_available or self._psycopg2 is None:
+            return None
+
+        with self._psycopg2.connect(
             host=self.db_host,
             port=self.db_port,
             dbname=self.db_name,
             user=self.db_user,
             password=self.db_password,
         ) as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conn.cursor(
+                cursor_factory=self._psycopg2_extras_RealDictCursor
+            ) as cursor:
                 cursor.execute(
                     "SELECT * FROM experiments WHERE experiment_id = %s",
                     (experiment_id,),
@@ -706,7 +744,7 @@ class PersistenceLayer:
         experiment_id = dataset.metadata.experiment_id
         self._validate_experiment_id(experiment_id)
 
-        with psycopg2.connect(
+        with self._psycopg2.connect(
             host=self.db_host,
             port=self.db_port,
             dbname=self.db_name,
@@ -745,7 +783,7 @@ class PersistenceLayer:
                                 data_type,
                                 chunk_index,
                                 total_chunks,
-                                Json(chunk_items),
+                                self._psycopg2_extras_Json(chunk_items),
                             ),
                         )
 
@@ -794,16 +832,21 @@ class PersistenceLayer:
         self, experiment_id: str, version: Optional[str] = None
     ) -> Dict[str, Any]:
         """Load dataset from PostgreSQL format."""
+        if not self.postgresql_available or self._psycopg2 is None:
+            return None
+
         self._validate_experiment_id(experiment_id)
 
-        with psycopg2.connect(
+        with self._psycopg2.connect(
             host=self.db_host,
             port=self.db_port,
             dbname=self.db_name,
             user=self.db_user,
             password=self.db_password,
         ) as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conn.cursor(
+                cursor_factory=self._psycopg2_extras_RealDictCursor
+            ) as cursor:
                 # Load data by type
                 data_types = ["data", "raw_data", "processed_data", "analysis_results"]
                 result = {}

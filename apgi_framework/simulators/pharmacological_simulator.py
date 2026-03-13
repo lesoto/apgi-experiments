@@ -101,7 +101,7 @@ class PharmacologicalSimulator:
     for testing neuromodulatory falsification criteria.
     """
 
-    def __init__(self):
+    def __init__(self, random_seed: Optional[int] = None):
         """Initialize pharmacological simulator with drug profiles"""
         self.drug_profiles = self._initialize_drug_profiles()
 
@@ -112,6 +112,9 @@ class PharmacologicalSimulator:
         # Individual variability parameters
         self.default_metabolism_range = (0.7, 1.3)
         self.default_sensitivity_range = (0.8, 1.2)
+
+        # Seeded RNG for reproducibility
+        self.rng = np.random.RandomState(random_seed if random_seed is not None else 42)
 
     def _initialize_drug_profiles(self) -> Dict[str, DrugProfile]:
         """Initialize standard drug profiles for testing"""
@@ -241,9 +244,9 @@ class PharmacologicalSimulator:
 
         # Set individual factors if not provided
         if metabolism_rate is None:
-            metabolism_rate = np.random.uniform(*self.default_metabolism_range)
+            metabolism_rate = self.rng.uniform(*self.default_metabolism_range)
         if sensitivity_factor is None:
-            sensitivity_factor = np.random.uniform(*self.default_sensitivity_range)
+            sensitivity_factor = self.rng.uniform(*self.default_sensitivity_range)
 
         # Create drug administration
         administration = DrugAdministration(
@@ -355,7 +358,7 @@ class PharmacologicalSimulator:
         for time_point, concentration in time_course.items():
             if drug_profile.name == "placebo":
                 # Placebo may have small random effects
-                threshold_change = np.random.normal(0, 0.05)
+                threshold_change = self.rng.normal(0, 0.05)
             else:
                 # Calculate threshold change based on concentration and dose-response
                 normalized_concentration = (
@@ -387,7 +390,7 @@ class PharmacologicalSimulator:
 
                 # Add noise
                 noise = (
-                    np.random.normal(0, 0.1 * abs(threshold_change))
+                    self.rng.normal(0, 0.1 * abs(threshold_change))
                     if threshold_change != 0
                     else 0
                 )
@@ -415,7 +418,7 @@ class PharmacologicalSimulator:
             for time_point, concentration in time_course.items():
                 if drug_profile.name == "placebo":
                     # Placebo effects are minimal and random
-                    effect = np.random.normal(0, 0.02)
+                    effect = self.rng.normal(0, 0.02)
                 else:
                     # Calculate effect based on concentration
                     normalized_concentration = (
@@ -437,7 +440,7 @@ class PharmacologicalSimulator:
                     noise_std = (
                         0.1 * abs(effect_magnitude) if effect_magnitude != 0 else 0.01
                     )
-                    effect = effect_magnitude + np.random.normal(0, noise_std)
+                    effect = effect_magnitude + self.rng.normal(0, noise_std)
 
                 effect_time_course[time_point] = effect
 

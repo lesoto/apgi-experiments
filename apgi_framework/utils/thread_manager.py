@@ -2,6 +2,7 @@
 
 import concurrent.futures
 import logging
+import os
 import threading
 from contextlib import contextmanager
 from typing import Callable, Optional
@@ -25,13 +26,15 @@ class ThreadPoolManager:
     def __init__(self):
         if not hasattr(self, "_initialized"):
             self._initialized = True
+            # Use environment variable or default to 8
+            max_workers = int(os.getenv("APGI_THREAD_POOL_SIZE", "8"))
             self._executor = concurrent.futures.ThreadPoolExecutor(
-                max_workers=8,  # Limit to 8 concurrent threads
+                max_workers=max_workers,
                 thread_name_prefix="apgi-worker",
             )
             self._active_futures = set()
             self._shutdown = False
-            logger.info("ThreadPoolManager initialized with max_workers=8")
+            logger.info(f"ThreadPoolManager initialized with max_workers={max_workers}")
 
     def submit(self, fn: Callable, *args, **kwargs) -> concurrent.futures.Future:
         """Submit a task to the thread pool."""
@@ -200,9 +203,10 @@ def run_in_thread(
 
 def get_thread_stats() -> dict:
     """Get current thread pool statistics."""
+    max_workers = int(os.getenv("APGI_THREAD_POOL_SIZE", "8"))
     return {
         "active_tasks": thread_manager.active_count,
-        "max_workers": 8,
+        "max_workers": max_workers,
         "is_shutdown": thread_manager.is_shutdown,
         "thread_count": threading.active_count(),
     }

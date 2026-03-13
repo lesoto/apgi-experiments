@@ -166,7 +166,9 @@ class PredictiveIgnitionNetwork:
         self.alpha = alpha
 
         # Initialize weight matrix W (global_units x features) as expected by tests
-        self.W = np.random.randn(n_global_units, n_features) * 0.1
+        # Use seeded random for reproducibility
+        rng = np.random.RandomState(42)
+        self.W = rng.randn(n_global_units, n_features) * 0.1
 
         # Initialize precision vector for features
         self.precision = np.ones(n_features)

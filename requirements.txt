@@ -9,6 +9,7 @@ statsmodels>=0.14.0
 psutil>=5.9.0
 scikit-learn>=1.3.0
 customtkinter>=5.2.0
+psycopg2-binary>=2.9.0
 
 # NOTE: On Linux, tkinter is part of the Python standard library but requires
 # the system package python3-tk to be installed separately:

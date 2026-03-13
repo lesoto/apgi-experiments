@@ -212,6 +212,15 @@ class WebInterface:
             logger.warning("flask-wtf not available - CSRF protection disabled")
             self.csrf = None
 
+        # Add security headers
+        @self.app.after_request
+        def add_security_headers(response):
+            response.headers["X-Frame-Options"] = "DENY"
+            response.headers["X-Content-Type-Options"] = "nosniff"
+            response.headers["Content-Security-Policy"] = "default-src 'self'"
+            response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+            return response
+
     def _setup_socketio(self):
         """Setup Socket.IO for WebSocket support."""
         self.socketio = SocketIO(
@@ -255,12 +264,35 @@ class WebInterface:
     def _setup_routes(self):
         """Setup Flask routes."""
 
+        # Authentication decorator for API endpoints
+        def require_auth(f):
+            """Decorator to require authentication for API endpoints."""
+
+            def wrapper(*args, **kwargs):
+                # Check for API key in header
+                api_key = request.headers.get("X-API-Key")
+                if not api_key:
+                    return (
+                        jsonify({"success": False, "error": "Authentication required"}),
+                        401,
+                    )
+
+                # Validate API key (in production, use proper secret management)
+                valid_key = os.getenv("API_KEY", "default-dev-key-change-in-production")
+                if api_key != valid_key:
+                    return jsonify({"success": False, "error": "Invalid API key"}), 403
+
+                return f(*args, **kwargs)
+
+            return wrapper
+
         @self.app.route("/")
         def index():
             """Main dashboard page."""
             return self._render_main_dashboard()
 
         @self.app.route("/api/experiments")
+        @require_auth
         def get_experiments():
             """Get experiment data API."""
             try:
@@ -270,6 +302,7 @@ class WebInterface:
                 return jsonify({"success": False, "error": str(e)}), 500
 
         @self.app.route("/api/experiments/<experiment_id>")
+        @require_auth
         def get_experiment(experiment_id):
             """Get specific experiment data."""
             try:
@@ -285,6 +318,7 @@ class WebInterface:
                 return jsonify({"success": False, "error": str(e)}), 500
 
         @self.app.route("/api/experiments", methods=["POST"])
+        @require_auth
         def create_experiment():
             """Create new experiment."""
             try:
@@ -295,6 +329,7 @@ class WebInterface:
                 return jsonify({"success": False, "error": str(e)}), 500
 
         @self.app.route("/api/experiments/<experiment_id>/run", methods=["POST"])
+        @require_auth
         def run_experiment(experiment_id):
             """Run an experiment."""
             try:
@@ -304,6 +339,7 @@ class WebInterface:
                 return jsonify({"success": False, "error": str(e)}), 500
 
         @self.app.route("/api/upload", methods=["POST"])
+        @require_auth
         def upload_file():
             """Handle file uploads."""
             if not self.config.enable_file_upload:
@@ -315,6 +351,7 @@ class WebInterface:
                 return jsonify({"success": False, "error": str(e)}), 500
 
         @self.app.route("/api/system/status")
+        @require_auth
         def system_status():
             """Get system status."""
             try:
@@ -324,6 +361,7 @@ class WebInterface:
                 return jsonify({"success": False, "error": str(e)}), 500
 
         @self.app.route("/api/realtime")
+        @require_auth
         def realtime_data():
             """Get real-time data."""
             try:
@@ -333,6 +371,7 @@ class WebInterface:
                 return jsonify({"success": False, "error": str(e)}), 500
 
         @self.app.route("/api/config")
+        @require_auth
         def get_config():
             """Get current configuration."""
             try:

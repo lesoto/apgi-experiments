@@ -10,6 +10,18 @@ This package contains reusable GUI components for the APGI Framework including:
 
 # Import main components with graceful fallback for missing dependencies
 try:
+    from .theme_manager import (
+        AdvancedThemeManager,
+        ThemeColors,
+        ThemeFonts,
+        create_theme_manager,
+    )
+
+    THEME_MANAGER_AVAILABLE = True
+except ImportError:
+    THEME_MANAGER_AVAILABLE = False
+
+try:
     from .theme_toggle import (
         ThemeToggleDialog,
         ThemeToggleWidget,
@@ -47,6 +59,9 @@ def get_available_components():
     """Get list of available GUI components."""
     components = []
 
+    if THEME_MANAGER_AVAILABLE:
+        components.append("theme_manager")
+
     if THEME_TOGGLE_AVAILABLE:
         components.append("theme_toggle")
 
@@ -62,6 +77,7 @@ def get_available_components():
 def is_component_available(component_name: str) -> bool:
     """Check if a specific component is available."""
     availability_map = {
+        "theme_manager": THEME_MANAGER_AVAILABLE,
         "theme_toggle": THEME_TOGGLE_AVAILABLE,
         "backup_manager": BACKUP_MANAGER_AVAILABLE,
         "help_system": HELP_SYSTEM_AVAILABLE,
@@ -73,6 +89,7 @@ def is_component_available(component_name: str) -> bool:
 # Export availability flags
 __all__ = [
     # Availability flags
+    "THEME_MANAGER_AVAILABLE",
     "THEME_TOGGLE_AVAILABLE",
     "BACKUP_MANAGER_AVAILABLE",
     "HELP_SYSTEM_AVAILABLE",
@@ -82,6 +99,16 @@ __all__ = [
 ]
 
 # Conditionally add imports to __all__ if available
+if THEME_MANAGER_AVAILABLE:
+    __all__.extend(
+        [
+            "AdvancedThemeManager",
+            "ThemeColors",
+            "ThemeFonts",
+            "create_theme_manager",
+        ]
+    )
+
 if THEME_TOGGLE_AVAILABLE:
     __all__.extend(
         [

@@ -863,8 +863,8 @@ For more information, visit the project documentation."""
     def close_file(self) -> None:
         """Close the current file."""
         if self.current_file:
-            # Save current state to undo stack
-            self.undo_stack.append(self.main_area.get_data())
+            # Save current state to undo stack with memory tracking
+            self._add_to_undo_stack(self.main_area.get_data())
             self.current_file = None
             self.main_area.clear()
             self.status_bar.set_file(None)

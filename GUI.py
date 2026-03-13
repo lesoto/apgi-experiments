@@ -11,6 +11,7 @@ import logging
 import os
 import subprocess
 import traceback
+import threading
 from abc import ABC, abstractmethod
 from pathlib import Path
 from tkinter import filedialog, messagebox
@@ -989,14 +990,11 @@ class MatplotlibManager:
 
     def close_all_figures(self) -> None:
         """Close all active figures."""
-        for fig_id in list(self.active_figures):
+        for fig_obj in list(self.active_figures):
             try:
-                # Find figure by ID (approximate)
-                for fig in plt.get_fignums():
-                    fig_obj = plt.figure(fig)
-                    if id(fig_obj) == fig_id:
-                        self.close_figure(fig_obj)
-                        break
+                # Only try to close if figure still exists
+                if fig_obj.get_number() in plt.get_fignums():
+                    self.close_figure(fig_obj)
             except Exception as e:
                 logging.debug(f"Error during figure cleanup: {e}")
 
@@ -1148,27 +1146,40 @@ class APGIFrameworkGUI(ctk.CTk):
 
     def _run_test_safely(self, test_type: str, test_function: Callable) -> None:
         """Run a test safely with concurrency control."""
-        if self.test_running:
-            self.log_to_console(
-                f"Test already running ({self.current_test_type}), skipping {test_type}"
-            )
-            return
+        with self._test_lock:
+            if self.test_running:
+                self.log_to_console(
+                    f"Test already running ({self.current_test_type}), skipping {test_type}"
+                )
+                return
 
-        self.test_running = True
-        self.current_test_type = test_type
+            self.test_running = True
+            self.current_test_type = test_type
+
+            # Disable all sidebar buttons during test
+            for btn in self.sidebar_buttons:
+                btn.configure(state="disabled")
 
         try:
             test_function()
         except Exception as e:
             self.log_to_console(f"Error running {test_type}: {e}")
-            self.test_running = False
-            self.current_test_type = None
+            with self._test_lock:
+                self.test_running = False
+                self.current_test_type = None
+                # Re-enable sidebar buttons on error
+                for btn in self.sidebar_buttons:
+                    btn.configure(state="normal")
             raise
 
     def _on_test_complete(self, test_type: str, results=None) -> None:
         """Mark test as completed."""
-        self.test_running = False
-        self.current_test_type = None
+        with self._test_lock:
+            self.test_running = False
+            self.current_test_type = None
+            # Re-enable all sidebar buttons after test completes
+            for btn in self.sidebar_buttons:
+                btn.configure(state="normal")
         self.log_to_console(f"{test_type} completed")
 
     def _setup_window(self) -> None:
@@ -1219,6 +1230,21 @@ class APGIFrameworkGUI(ctk.CTk):
         self.visualizer = None
         self.report_generator = None
 
+        # Load theme preference from config file on startup
+        config_file = Path("config/preferences.json")
+        if config_file.exists():
+            try:
+                with open(config_file, "r") as f:
+                    config = json.load(f)
+                    if "theme" in config:
+                        selected_theme = config["theme"]
+                        if selected_theme == "dark":
+                            ctk.set_appearance_mode("dark")
+                        else:
+                            ctk.set_appearance_mode("light")
+            except Exception as e:
+                self.log_to_console(f"Warning: Could not load theme preference: {e}")
+
         # Falsification test instances
         self.primary_falsification_test = None
         self.cwi_test = None
@@ -1241,6 +1267,10 @@ class APGIFrameworkGUI(ctk.CTk):
         self.current_test_type = None
         self.validation_running = False
         self.cleaning_running = False
+        self._test_lock = threading.Lock()
+
+        # Track sidebar buttons for disabling during tests
+        self.sidebar_buttons: List[ctk.CTkButton] = []
 
         # Test runners (initialized in _initialize_test_runners)
         self.test_runners: Dict[str, Any] = {}
@@ -2097,6 +2127,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 width=200,
             )
             btn.grid(row=idx, column=0, sticky="ew", padx=5, pady=2)
+            self.sidebar_buttons.append(btn)
 
     def create_research_experiments_section(self, parent):
         """Create research experiments section."""
@@ -2119,6 +2150,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 width=200,
             )
             btn.grid(row=idx, column=0, sticky="ew", padx=5, pady=2)
+            self.sidebar_buttons.append(btn)
 
     def create_analysis_tools_section(self, parent):
         """Create analysis tools section."""
@@ -2139,6 +2171,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 width=200,
             )
             btn.grid(row=idx, column=0, sticky="ew", padx=5, pady=2)
+            self.sidebar_buttons.append(btn)
 
     def create_clinical_applications_section(self, parent):
         """Create clinical applications section."""
@@ -2158,6 +2191,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 width=200,
             )
             btn.grid(row=idx, column=0, sticky="ew", padx=5, pady=2)
+            self.sidebar_buttons.append(btn)
 
     def create_data_management_section(self, parent):
         """Create data management section."""
@@ -2178,6 +2212,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 width=200,
             )
             btn.grid(row=idx, column=0, sticky="ew", padx=5, pady=2)
+            self.sidebar_buttons.append(btn)
 
     def create_system_tools_section(self, parent):
         """Create system tools section."""
@@ -2198,6 +2233,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 width=200,
             )
             btn.grid(row=idx, column=0, sticky="ew", padx=5, pady=2)
+            self.sidebar_buttons.append(btn)
 
     def create_visualization_section(self, parent):
         """Create visualization section."""
@@ -2218,6 +2254,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 width=200,
             )
             btn.grid(row=idx, column=0, sticky="ew", padx=5, pady=2)
+            self.sidebar_buttons.append(btn)
 
     def create_export_section(self, parent):
         """Create export section."""
@@ -2237,6 +2274,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 width=200,
             )
             btn.grid(row=idx, column=0, sticky="ew", padx=5, pady=2)
+            self.sidebar_buttons.append(btn)
 
     def create_main_area(self):
         """Create the main area with console and button bar."""
@@ -2360,8 +2398,12 @@ class APGIFrameworkGUI(ctk.CTk):
 
     def _on_test_error(self, test_name, error_msg):
         """Handle test error callback."""
-        self.log_to_console(f"Error in {test_name}: {error_msg}")
-        messagebox.showerror(f"{test_name} Error", f"Test failed: {error_msg}")
+        # Sanitize error message to avoid exposing internal details
+        sanitized_error = str(error_msg)
+        # Remove potentially sensitive paths and internal details
+        sanitized_error = sanitized_error.split("\n")[0]  # Only show first line
+        self.log_to_console(f"Error in {test_name}: {sanitized_error}")
+        messagebox.showerror(f"{test_name} Error", f"Test failed: {sanitized_error}")
         self.update_status("Ready")
 
     def run_cwi_test(self) -> None:
@@ -4994,6 +5036,15 @@ class APGIFrameworkGUI(ctk.CTk):
             )
             autosave_check.pack(anchor="w", padx=20)
 
+            # Auto-save callback
+            def on_autosave_toggle():
+                if autosave_var.get():
+                    self.log_to_console("Auto-save enabled")
+                else:
+                    self.log_to_console("Auto-save disabled")
+
+            autosave_check.configure(command=on_autosave_toggle)
+
             # Data tab
             data_tab = notebook.add("Data")
 
@@ -5090,20 +5141,44 @@ class APGIFrameworkGUI(ctk.CTk):
 
             def save_preferences():
                 try:
-                    # Update data folders
-                    self.data_folder = data_folder_entry.get()
-                    self.results_folder = results_folder_entry.get()
+
+                    def sanitize_path(path):
+                        """Sanitize user-provided path to prevent path traversal."""
+                        # Normalize the path
+                        normalized = os.path.normpath(path)
+                        # Resolve to absolute path
+                        absolute = os.path.abspath(normalized)
+                        # Check for dangerous patterns
+                        if ".." in absolute:
+                            raise ValueError("Path traversal not allowed")
+                        return absolute
+
+                    # Update data folders with sanitization
+                    self.data_folder = sanitize_path(data_folder_entry.get())
+                    self.results_folder = sanitize_path(results_folder_entry.get())
 
                     # Ensure folders exist
                     for folder in [self.data_folder, self.results_folder]:
                         if not os.path.exists(folder):
                             os.makedirs(folder)
 
-                    # Apply theme
-                    if theme_var.get() == "dark":
+                    # Apply theme and persist to config
+                    selected_theme = theme_var.get()
+                    if selected_theme == "dark":
                         ctk.set_appearance_mode("dark")
                     else:
                         ctk.set_appearance_mode("light")
+
+                    # Save theme preference to config file
+                    config_file = Path("config/preferences.json")
+                    config_file.parent.mkdir(parents=True, exist_ok=True)
+                    try:
+                        with open(config_file, "w") as f:
+                            json.dump({"theme": selected_theme}, f)
+                    except Exception as e:
+                        self.log_to_console(
+                            f"Warning: Could not save theme preference: {e}"
+                        )
 
                     self.log_to_console("Preferences saved successfully")
                     messagebox.showinfo(
@@ -6510,39 +6585,27 @@ class APGIFrameworkGUI(ctk.CTk):
 
     def run_consciousness_evaluation(self):
         """Run consciousness evaluation."""
-        self.log_to_console("Running consciousness evaluation...")
-        self.log_to_console("Step 1: Processing neural data")
-        self.log_to_console("Step 2: Calculating consciousness metrics")
-        self.log_to_console("Step 3: Generating evaluation report")
-        self.log_to_console("Consciousness evaluation completed")
-
-        # Update console with results
-        self.log_to_console("=== EVALUATION RESULTS ===")
-        self.log_to_console("Consciousness Index: 0.78")
-        self.log_to_console("Neural Complexity: 0.65")
-        self.log_to_console("Integration Score: 0.82")
-        self.log_to_console("==========================")
-
-        messagebox.showinfo(
-            "Evaluation", "Consciousness evaluation completed successfully."
+        raise NotImplementedError(
+            "Consciousness evaluation is not yet implemented. "
+            "This feature requires integration with the MainApplicationController "
+            "and APGIEquation engine to calculate real metrics."
         )
 
     def short_term_apgi_model(self):
         """Run short-term APGI model analysis."""
-        self.log_to_console("Running Short-Term APGI Model...")
-        self.log_to_console("Model parameters: time_window=2s, overlap=50%")
-        self.log_to_console("Processing temporal dynamics...")
-        self.log_to_console("Short-term APGI analysis completed")
-        messagebox.showinfo("APGI Model", "Short-term APGI model analysis completed.")
+        raise NotImplementedError(
+            "Short-term APGI model analysis is not yet implemented. "
+            "This feature requires integration with the MainApplicationController "
+            "and temporal dynamics analysis components."
+        )
 
     def combined_apgi_analysis(self):
         """Run combined APGI analysis."""
-        self.log_to_console("Running Combined APGI Analysis...")
-        self.log_to_console("Integrating multiple consciousness models")
-        self.log_to_console("Calculating composite scores")
-        self.log_to_console("Generating comprehensive report")
-        self.log_to_console("Combined APGI analysis completed")
-        messagebox.showinfo("APGI Analysis", "Combined APGI analysis completed.")
+        raise NotImplementedError(
+            "Combined APGI analysis is not yet implemented. "
+            "This feature requires integration with the MainApplicationController "
+            "and multi-model analysis components."
+        )
 
     def load_test_data(self):
         """Load test data for experiments."""

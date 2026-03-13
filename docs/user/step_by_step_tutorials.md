@@ -58,8 +58,8 @@ Learn to run a basic parameter estimation experiment and interpret the results.
 | Parameter                      | Value | Description                          |
 |--------------------------------|-------|--------------------------------------|
 | theta_0 (Ignition Threshold)   | 0.5   | Threshold for conscious ignition     |
-| Pi_i (Interoceptive Precision)  | 1.0   | Precision of interoceptive signals  |
-| beta (Somatic Bias)             | 0.0   | Baseline somatic bias                 |
+| Pi_i (Interoceptive Precision) | 1.0   | Precision of interoceptive signals   |
+| beta (Somatic Bias)            | 0.0   | Baseline somatic bias                |
 
 1. **Advanced Settings** (click to expand)
    - **Number of Trials**: 1000

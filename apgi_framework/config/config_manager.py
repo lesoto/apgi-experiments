@@ -222,7 +222,12 @@ class ConfigManager:
         if config_path:
             config_file = self.path_manager.resolve_path(config_path)
             if config_file.exists():
-                self.load_config(config_path)
+                try:
+                    self.load_config(config_path)
+                except ConfigurationError as e:
+                    logger.warning(
+                        f"Failed to load config from {config_path}: {e}. Using defaults."
+                    )
 
     def load_config(self, config_path: str) -> None:
         """Load configuration from JSON file.
@@ -333,6 +338,7 @@ class ConfigManager:
             "stimulus_parameters": self.stimulus_params.__dict__,
         }
 
+        self.presets_dir.mkdir(parents=True, exist_ok=True)
         preset_path = self.presets_dir / f"{name}.json"
         with open(preset_path, "w") as f:
             json.dump(preset_data, f, indent=2)

@@ -414,7 +414,7 @@ class SystemValidator:
             passed = surprise_correct and probability_valid
 
             return ValidationTestResult(
-                test_name="APGI Equation Accuracy",
+                test_name="apgi_equation_accuracy",
                 category=ValidationCategory.MATHEMATICAL_ACCURACY,
                 passed=passed,
                 execution_time=time.time() - start_time,
@@ -425,7 +425,7 @@ class SystemValidator:
 
         except Exception as e:
             return ValidationTestResult(
-                test_name="APGI Equation Accuracy",
+                test_name="apgi_equation_accuracy",
                 category=ValidationCategory.MATHEMATICAL_ACCURACY,
                 passed=False,
                 execution_time=time.time() - start_time,
@@ -459,7 +459,7 @@ class SystemValidator:
             )
 
             return ValidationTestResult(
-                test_name="Precision Calculations",
+                test_name="precision_calculations",
                 category=ValidationCategory.MATHEMATICAL_ACCURACY,
                 passed=passed,
                 execution_time=time.time() - start_time,
@@ -468,7 +468,7 @@ class SystemValidator:
 
         except Exception as e:
             return ValidationTestResult(
-                test_name="Precision Calculations",
+                test_name="precision_calculations",
                 category=ValidationCategory.MATHEMATICAL_ACCURACY,
                 passed=False,
                 execution_time=time.time() - start_time,
@@ -498,7 +498,7 @@ class SystemValidator:
             )
 
             return ValidationTestResult(
-                test_name="Prediction Error Processing",
+                test_name="prediction_error_processing",
                 category=ValidationCategory.MATHEMATICAL_ACCURACY,
                 passed=passed,
                 execution_time=time.time() - start_time,
@@ -510,7 +510,7 @@ class SystemValidator:
 
         except Exception as e:
             return ValidationTestResult(
-                test_name="Prediction Error Processing",
+                test_name="prediction_error_processing",
                 category=ValidationCategory.MATHEMATICAL_ACCURACY,
                 passed=False,
                 execution_time=time.time() - start_time,
@@ -535,7 +535,7 @@ class SystemValidator:
             passed = gain > 0 and gain < 5.0
 
             return ValidationTestResult(
-                test_name="Somatic Marker Calculations",
+                test_name="somatic_marker_calculations",
                 category=ValidationCategory.MATHEMATICAL_ACCURACY,
                 passed=passed,
                 execution_time=time.time() - start_time,
@@ -544,7 +544,7 @@ class SystemValidator:
 
         except Exception as e:
             return ValidationTestResult(
-                test_name="Somatic Marker Calculations",
+                test_name="somatic_marker_calculations",
                 category=ValidationCategory.MATHEMATICAL_ACCURACY,
                 passed=False,
                 execution_time=time.time() - start_time,
@@ -572,7 +572,7 @@ class SystemValidator:
             passed = adjusted_threshold != initial_threshold and adjusted_threshold > 0
 
             return ValidationTestResult(
-                test_name="Threshold Management",
+                test_name="threshold_management",
                 category=ValidationCategory.MATHEMATICAL_ACCURACY,
                 passed=passed,
                 execution_time=time.time() - start_time,
@@ -584,7 +584,7 @@ class SystemValidator:
 
         except Exception as e:
             return ValidationTestResult(
-                test_name="Threshold Management",
+                test_name="threshold_management",
                 category=ValidationCategory.MATHEMATICAL_ACCURACY,
                 passed=False,
                 execution_time=time.time() - start_time,
@@ -619,7 +619,7 @@ class SystemValidator:
             passed = sigmoid_correct
 
             return ValidationTestResult(
-                test_name="Sigmoid Function",
+                test_name="sigmoid_function",
                 category=ValidationCategory.MATHEMATICAL_ACCURACY,
                 passed=passed,
                 execution_time=time.time() - start_time,
@@ -632,7 +632,7 @@ class SystemValidator:
 
         except Exception as e:
             return ValidationTestResult(
-                test_name="Sigmoid Function",
+                test_name="sigmoid_function",
                 category=ValidationCategory.MATHEMATICAL_ACCURACY,
                 passed=False,
                 execution_time=time.time() - start_time,
@@ -682,7 +682,7 @@ class SystemValidator:
                     break
 
             return ValidationTestResult(
-                test_name="Numerical Stability",
+                test_name="numerical_stability",
                 category=ValidationCategory.MATHEMATICAL_ACCURACY,
                 passed=all_stable,
                 execution_time=time.time() - start_time,
@@ -690,7 +690,7 @@ class SystemValidator:
 
         except Exception as e:
             return ValidationTestResult(
-                test_name="Numerical Stability",
+                test_name="numerical_stability",
                 category=ValidationCategory.MATHEMATICAL_ACCURACY,
                 passed=False,
                 execution_time=time.time() - start_time,
@@ -718,7 +718,7 @@ class SystemValidator:
             passed = conscious_valid and unconscious_valid
 
             return ValidationTestResult(
-                test_name="P3b Simulation",
+                test_name="p3b_simulation",
                 category=ValidationCategory.NEURAL_SIMULATION,
                 passed=passed,
                 execution_time=time.time() - start_time,
@@ -736,7 +736,7 @@ class SystemValidator:
 
         except Exception as e:
             return ValidationTestResult(
-                test_name="P3b Simulation",
+                test_name="p3b_simulation",
                 category=ValidationCategory.NEURAL_SIMULATION,
                 passed=False,
                 execution_time=time.time() - start_time,
@@ -752,14 +752,14 @@ class SystemValidator:
             # Simplified test
             passed = True
             return ValidationTestResult(
-                test_name="Gamma Simulation",
+                test_name="gamma_simulation",
                 category=ValidationCategory.NEURAL_SIMULATION,
                 passed=passed,
                 execution_time=time.time() - start_time,
             )
         except Exception as e:
             return ValidationTestResult(
-                test_name="Gamma Simulation",
+                test_name="gamma_simulation",
                 category=ValidationCategory.NEURAL_SIMULATION,
                 passed=False,
                 execution_time=time.time() - start_time,
@@ -772,14 +772,14 @@ class SystemValidator:
         try:
             passed = True
             return ValidationTestResult(
-                test_name="BOLD Simulation",
+                test_name="bold_simulation",
                 category=ValidationCategory.NEURAL_SIMULATION,
                 passed=passed,
                 execution_time=time.time() - start_time,
             )
         except Exception as e:
             return ValidationTestResult(
-                test_name="BOLD Simulation",
+                test_name="bold_simulation",
                 category=ValidationCategory.NEURAL_SIMULATION,
                 passed=False,
                 execution_time=time.time() - start_time,
@@ -792,14 +792,14 @@ class SystemValidator:
         try:
             passed = True
             return ValidationTestResult(
-                test_name="PCI Calculation",
+                test_name="pci_calculation",
                 category=ValidationCategory.NEURAL_SIMULATION,
                 passed=passed,
                 execution_time=time.time() - start_time,
             )
         except Exception as e:
             return ValidationTestResult(
-                test_name="PCI Calculation",
+                test_name="pci_calculation",
                 category=ValidationCategory.NEURAL_SIMULATION,
                 passed=False,
                 execution_time=time.time() - start_time,
@@ -812,14 +812,14 @@ class SystemValidator:
         try:
             passed = True
             return ValidationTestResult(
-                test_name="Signature Validation",
+                test_name="signature_validation",
                 category=ValidationCategory.NEURAL_SIMULATION,
                 passed=passed,
                 execution_time=time.time() - start_time,
             )
         except Exception as e:
             return ValidationTestResult(
-                test_name="Signature Validation",
+                test_name="signature_validation",
                 category=ValidationCategory.NEURAL_SIMULATION,
                 passed=False,
                 execution_time=time.time() - start_time,
@@ -832,14 +832,14 @@ class SystemValidator:
         try:
             passed = True
             return ValidationTestResult(
-                test_name="Signature Thresholds",
+                test_name="signature_thresholds",
                 category=ValidationCategory.NEURAL_SIMULATION,
                 passed=passed,
                 execution_time=time.time() - start_time,
             )
         except Exception as e:
             return ValidationTestResult(
-                test_name="Signature Thresholds",
+                test_name="signature_thresholds",
                 category=ValidationCategory.NEURAL_SIMULATION,
                 passed=False,
                 execution_time=time.time() - start_time,
@@ -878,14 +878,14 @@ class SystemValidator:
         try:
             passed = True
             return ValidationTestResult(
-                test_name="Consciousness Assessment",
+                test_name="consciousness_assessment",
                 category=ValidationCategory.FALSIFICATION_LOGIC,
                 passed=passed,
                 execution_time=time.time() - start_time,
             )
         except Exception as e:
             return ValidationTestResult(
-                test_name="Consciousness Assessment",
+                test_name="consciousness_assessment",
                 category=ValidationCategory.FALSIFICATION_LOGIC,
                 passed=False,
                 execution_time=time.time() - start_time,
