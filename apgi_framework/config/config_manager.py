@@ -455,11 +455,11 @@ class ConfigManager:
             elif section_name == "experimental_config":
                 result = validator.validate_experimental_config(**section_data)
             elif section_name == "retry_config":
-                result = validator.validate_retry_config(**section_data)  # type: ignore
+                result = validator.validate_retry_config(**section_data)
             elif section_name == "performance_thresholds":
-                result = validator.validate_performance_thresholds(**section_data)  # type: ignore
+                result = validator.validate_performance_thresholds(**section_data)
             elif section_name == "stimulus_parameters":
-                result = validator.validate_stimulus_parameters(**section_data)  # type: ignore
+                result = validator.validate_stimulus_parameters(**section_data)
             else:
                 return  # Skip validation for unknown sections
 

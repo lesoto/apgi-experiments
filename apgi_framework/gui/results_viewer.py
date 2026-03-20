@@ -8,12 +8,65 @@ failure highlighting, quick navigation to failure details, and stack trace displ
 import sys
 from typing import Any, Dict, Optional
 
-from ..test_enhancement.models import (
-    FailureCategory,
-    TestFailure,
-    TestResults,
-    TestStatus,
-)
+import enum
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+
+class TestStatus(enum.Enum):
+    PASSED = "passed"
+    FAILED = "failed"
+    SKIPPED = "skipped"
+    ERROR = "error"
+
+
+class FailureCategory(enum.Enum):
+    ASSERTION_ERROR = "assertion_error"
+    RUNTIME_ERROR = "runtime_error"
+    TIMEOUT = "timeout"
+    UNKNOWN = "unknown"
+
+
+@dataclass
+class TestFailure:
+    test_name: str
+    failure_category: FailureCategory
+    error_message: str
+    file_path: Optional[str] = None
+    stack_trace: Optional[str] = None
+    failure_context: Optional[Dict[str, Any]] = None
+
+
+@dataclass
+class TestResults:
+    total_tests: int = 0
+    passed_tests: int = 0
+    failed_tests: int = 0
+    skipped_tests: int = 0
+    error_tests: int = 0
+    execution_time: float = 0.0
+    timestamp: datetime = field(default_factory=datetime.now)
+    failures: List[TestFailure] = field(default_factory=list)
+    test_results: List[Any] = field(default_factory=list)
+
+    @property
+    def passed(self) -> int:
+        return self.passed_tests
+
+    @property
+    def failed(self) -> int:
+        return self.failed_tests
+
+    @property
+    def skipped(self) -> int:
+        return self.skipped_tests
+
+    @property
+    def duration(self) -> float:
+        return self.execution_time
+
+
 from apgi_framework.logging.standardized_logging import get_logger
 
 logger = get_logger(__name__)

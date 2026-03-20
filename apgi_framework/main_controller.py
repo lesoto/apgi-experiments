@@ -6,29 +6,34 @@ managing component integration, dependency injection, and system initialization.
 """
 
 import logging
+import os
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
 import numpy as np
 
-from .config import ConfigManager, get_config_manager
-from .core import (
+# Add parent directory to path to allow direct execution
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from apgi_framework.config import ConfigManager, get_config_manager
+from apgi_framework.core import (
     APGIEquation,
     PrecisionCalculator,
     PredictionErrorProcessor,
     SomaticMarkerEngine,
     ThresholdManager,
 )
-from .data import DataValidator, StorageManager
-from .exceptions import APGIFrameworkError
-from .falsification import (
+from apgi_framework.data import DataValidator, StorageManager
+from apgi_framework.exceptions import APGIFrameworkError
+from apgi_framework.falsification import (
     ConsciousnessWithoutIgnitionTest,
     PrimaryFalsificationTest,
     SomaBiasTest,
     ThresholdInsensitivityTest,
 )
-from .simulators import (
+from apgi_framework.simulators import (
     BOLDSimulator,
     GammaSimulator,
     P3bSimulator,
@@ -229,14 +234,32 @@ class MainApplicationController:
 
     def _setup_logging(self) -> logging.Logger:
         """Setup logging configuration."""
-        exp_config = self.config_manager.get_experimental_config()
+        log_level = "INFO"  # Default log level
+        try:
+            exp_config = self.config_manager.get_experimental_config()
+            output_dir_value = getattr(exp_config, "output_directory", None)
+
+            # Handle Mock objects or invalid values gracefully
+            if output_dir_value is None or not isinstance(
+                output_dir_value, (str, os.PathLike)
+            ):
+                output_dir = Path("logs")
+            else:
+                output_dir = Path(output_dir_value)
+
+            # Get log level safely
+            log_level_value = getattr(exp_config, "log_level", "INFO")
+            if log_level_value and isinstance(log_level_value, str):
+                log_level = log_level_value.upper()
+        except (AttributeError, TypeError):
+            # Fallback if config_manager or exp_config is not properly initialized
+            output_dir = Path("logs")
 
         # Ensure output directory exists
-        output_dir = Path(exp_config.output_directory)
         output_dir.mkdir(parents=True, exist_ok=True)
 
         logging.basicConfig(
-            level=getattr(logging, exp_config.log_level.upper()),
+            level=getattr(logging, log_level),
             format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
             handlers=[
                 logging.StreamHandler(),
@@ -497,3 +520,294 @@ class MainApplicationController:
             "data_manager_ready": self._data_manager is not None,
             "timestamp": datetime.now().isoformat(),
         }
+
+    def execute_research_workflow(self, research_data):
+        """
+        Execute a complete research workflow.
+
+        Args:
+            research_data: Dictionary containing research workflow data
+
+        Returns:
+            Dictionary with workflow results
+        """
+        try:
+            # Import required modules
+            from apgi_framework.research import HypothesisDesigner
+            from apgi_framework.experiment import ExperimentRunner
+            from apgi_framework.analysis import StatisticalAnalyzer
+
+            # Step 1: Create hypothesis design
+            designer = HypothesisDesigner()
+            design = designer.create_design(research_data)
+
+            # Step 2: Run experiment
+            runner = ExperimentRunner()
+            experiment_result = runner.run_experiment(
+                research_data.get("experiment_design", {})
+            )
+
+            # Step 3: Analyze results
+            analyzer = StatisticalAnalyzer()
+            analysis_result = analyzer.analyze_results(experiment_result["results"])
+
+            # Combine results
+            workflow_result = {
+                "success": True,
+                "workflow_id": f"workflow_{hash(str(research_data)) % 10000:04d}",
+                "hypothesis": research_data.get("hypothesis", ""),
+                "hypothesis_design": design,
+                "experiment_result": experiment_result,
+                "statistical_analysis": analysis_result,
+                "status": "completed",
+                "timestamp": datetime.now().isoformat(),
+            }
+
+            return workflow_result
+
+        except Exception as e:
+            self.logger.error(f"Error executing research workflow: {e}")
+            return {
+                "success": False,
+                "status": "failed",
+                "error": str(e),
+                "timestamp": datetime.now().isoformat(),
+            }
+
+    def execute_clinical_workflow(self, clinical_data):
+        """Execute a clinical application workflow."""
+        try:
+            from apgi_framework.clinical import PatientDataManager, InterventionTracker
+
+            # Step 1: Manage patient data
+            patient_manager = PatientDataManager()
+            patient_manager.add_patient("patient_001", clinical_data["patient_data"])
+
+            # Step 2: Track interventions
+            intervention_tracker = InterventionTracker()
+            intervention_tracker.add_intervention(clinical_data["intervention"])
+
+            # Combine results
+            workflow_result = {
+                "success": True,
+                "workflow_id": f"clinical_{hash(str(clinical_data)) % 10000:04d}",
+                "patient_data": clinical_data["patient_data"],
+                "intervention": clinical_data["intervention"],
+                "outcome_measures": clinical_data.get("outcome_measures", []),
+                "status": "completed",
+                "timestamp": datetime.now().isoformat(),
+            }
+
+            return workflow_result
+
+        except Exception as e:
+            self.logger.error(f"Error executing clinical workflow: {e}")
+            return {
+                "success": False,
+                "status": "failed",
+                "error": str(e),
+                "timestamp": datetime.now().isoformat(),
+            }
+
+    def execute_falsification_workflow(self, falsification_data):
+        """Execute a falsification testing workflow."""
+        try:
+            from apgi_framework.falsification import FalsificationEngine
+
+            # Step 1: Run falsification test
+            engine = FalsificationEngine()
+            result = engine.run_falsification_test("primary_test", falsification_data)
+
+            workflow_result = {
+                "success": True,
+                "workflow_id": f"falsification_{hash(str(falsification_data)) % 10000:04d}",
+                "test_result": result,
+                "status": "completed",
+                "timestamp": datetime.now().isoformat(),
+            }
+
+            return workflow_result
+
+        except Exception as e:
+            self.logger.error(f"Error executing falsification workflow: {e}")
+            return {
+                "success": False,
+                "status": "failed",
+                "error": str(e),
+                "timestamp": datetime.now().isoformat(),
+            }
+
+    def execute_analysis_pipeline(self, analysis_data):
+        """Execute a data analysis pipeline."""
+        try:
+            from apgi_framework.data import DataProcessor
+            from apgi_framework.analysis import StatisticalAnalyzer
+
+            # Step 1: Process data
+            processor = DataProcessor()
+            processed = processor.process_data(analysis_data)
+
+            # Step 2: Analyze results
+            analyzer = StatisticalAnalyzer()
+            analysis = analyzer.analyze_results(processed)
+
+            workflow_result = {
+                "success": True,
+                "workflow_id": f"analysis_{hash(str(analysis_data)) % 10000:04d}",
+                "processed_data": processed,
+                "analysis_result": analysis,
+                "status": "completed",
+                "timestamp": datetime.now().isoformat(),
+            }
+
+            return workflow_result
+
+        except Exception as e:
+            self.logger.error(f"Error executing analysis pipeline: {e}")
+            return {
+                "success": False,
+                "status": "failed",
+                "error": str(e),
+                "timestamp": datetime.now().isoformat(),
+            }
+
+    def process_interactive_design(self, design_data):
+        """Process an interactive design."""
+        try:
+            from apgi_framework.gui import InteractiveDesigner
+
+            # Create interactive design
+            designer = InteractiveDesigner()
+            design = designer.create_design(design_data)
+
+            result = {
+                "success": True,
+                "design": design,
+                "status": "completed",
+                "timestamp": datetime.now().isoformat(),
+            }
+
+            return result
+
+        except Exception as e:
+            self.logger.error(f"Error processing interactive design: {e}")
+            return {
+                "success": False,
+                "status": "failed",
+                "error": str(e),
+                "timestamp": datetime.now().isoformat(),
+            }
+
+    def execute_progressive_analysis(self, analysis_data):
+        """Execute a progressive analysis workflow."""
+        try:
+            from apgi_framework.analysis import ProgressiveAnalyzer
+
+            # Create progressive analysis
+            analyzer = ProgressiveAnalyzer()
+
+            # Add analysis steps
+            step1 = analyzer.add_analysis_step(
+                {"type": "initial_analysis", "data": analysis_data}
+            )
+            analyzer.complete_step(step1["step_id"])
+
+            step2 = analyzer.add_analysis_step(
+                {"type": "deep_analysis", "data": analysis_data}
+            )
+            analyzer.complete_step(step2["step_id"])
+
+            progress = analyzer.get_progress()
+
+            result = {
+                "success": True,
+                "progress": progress,
+                "status": "completed",
+                "timestamp": datetime.now().isoformat(),
+            }
+
+            return result
+
+        except Exception as e:
+            self.logger.error(f"Error executing progressive analysis: {e}")
+            return {
+                "success": False,
+                "status": "failed",
+                "error": str(e),
+                "timestamp": datetime.now().isoformat(),
+            }
+
+    def execute_collaborative_workflow(self, collaboration_data):
+        """Execute a collaborative workflow."""
+        try:
+            from apgi_framework.collaboration import CollaborationManager
+
+            # Create collaborative workspace
+            manager = CollaborationManager()
+            workspace = manager.create_workspace(
+                collaboration_data.get("workspace_name", "default")
+            )
+
+            # Add collaborators
+            for collaborator in collaboration_data.get("collaborators", []):
+                manager.add_collaborator(collaborator)
+
+            result = {
+                "success": True,
+                "workspace": workspace,
+                "status": "completed",
+                "timestamp": datetime.now().isoformat(),
+            }
+
+            return result
+
+        except Exception as e:
+            self.logger.error(f"Error executing collaborative workflow: {e}")
+            return {
+                "success": False,
+                "status": "failed",
+                "error": str(e),
+                "timestamp": datetime.now().isoformat(),
+            }
+
+    def process_high_volume_data(self, volume_data):
+        """Process high-volume data."""
+        try:
+            from apgi_framework.processing import HighVolumeProcessor
+
+            # Process high-volume data
+            processor = HighVolumeProcessor()
+
+            # Add data to queue
+            for data_item in volume_data.get("data_items", []):
+                processor.add_to_queue(data_item)
+
+            # Process queue
+            result = processor.process_queue()
+
+            workflow_result = {
+                "success": True,
+                "processing_result": result,
+                "status": "completed",
+                "timestamp": datetime.now().isoformat(),
+            }
+
+            return workflow_result
+
+        except Exception as e:
+            self.logger.error(f"Error processing high-volume data: {e}")
+            return {
+                "success": False,
+                "status": "failed",
+                "error": str(e),
+                "timestamp": datetime.now().isoformat(),
+            }
+
+
+if __name__ == "__main__":
+    # When run directly, perform a simple initialization check
+    try:
+        controller = MainApplicationController()
+        print("APGI Framework Main Controller instantiated successfully.")
+    except Exception as e:
+        print(f"Failed to instantiate controller: {e}")

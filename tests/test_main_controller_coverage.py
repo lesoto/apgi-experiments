@@ -4,11 +4,6 @@ Comprehensive tests for apgi_framework.main_controller module.
 Tests the MainApplicationController class with mocked dependencies.
 """
 
-import os
-from unittest.mock import MagicMock, patch, PropertyMock
-
-import pytest
-
 from apgi_framework.main_controller import MainApplicationController
 
 
@@ -38,8 +33,7 @@ class TestMainApplicationController:
 
     def test_init(self):
         try:
-            controller = MainApplicationController()
-            assert controller is not None
+            MainApplicationController()
         except Exception:
             # If init fails due to missing config dependencies, that's ok
             pass

@@ -321,9 +321,10 @@ class PharmacologicalSimulator:
         adjusted_half_life = drug_profile.half_life / administration.metabolism_rate
 
         time_points = np.arange(0, self.simulation_duration, self.time_resolution)
-        concentrations = {}
+        concentrations: Dict[float, float] = {}
 
         for t in time_points:
+            time_point = float(t)  # Convert numpy scalar to float for dict key
             if drug_profile.name == "placebo":
                 concentration = 0.0
             else:
@@ -331,7 +332,7 @@ class PharmacologicalSimulator:
                 ka = 2.0 / drug_profile.peak_effect_time  # Absorption rate constant
                 ke = 0.693 / adjusted_half_life  # Elimination rate constant
 
-                if t == 0:
+                if time_point == 0:
                     concentration = 0.0
                 else:
                     # One-compartment model with first-order absorption
@@ -339,10 +340,10 @@ class PharmacologicalSimulator:
                         effective_dose
                         * ka
                         / (ka - ke)
-                        * (np.exp(-ke * t) - np.exp(-ka * t))
+                        * (np.exp(-ke * time_point) - np.exp(-ka * time_point))
                     )
 
-            concentrations[t] = max(0.0, concentration)
+            concentrations[time_point] = float(max(0.0, concentration))
 
         return concentrations
 

@@ -6,8 +6,6 @@ HRVAnalyzer, HEPExtractor, CardiacQualityAssessor
 """
 
 import numpy as np
-import pytest
-from scipy import signal as sp_signal
 
 from apgi_framework.neural.cardiac_processor import (
     CardiacProcessor,

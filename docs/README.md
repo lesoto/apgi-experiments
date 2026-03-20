@@ -28,12 +28,28 @@ The APGI Framework is a comprehensive research platform for consciousness studie
 - Neural dynamics analysis
 - Active inference modeling
 
-## Installation
 
-### Basic Installation
+### CLI Usage
 
 ```bash
-pip install apgi-framework-test-enhancement
+# Run tests
+python -m apgi_framework.cli test --all
+
+# Run with coverage
+pytest --cov=apgi_framework
+
+# Run specific categories
+pytest -m unit
+pytest -m integration
+pytest -m gui
+```
+
+### GUI Usage
+
+```bash
+python GUI-Launcher.py          # Recommended entry point
+python GUI.py                   # Direct main GUI
+python GUI-Experiment-Registry.py
 ```
 
 ### Development Installation

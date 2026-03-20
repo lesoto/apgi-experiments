@@ -4,18 +4,13 @@ Comprehensive tests for apgi_framework.validation.system_health module.
 Covers: HealthCheckResult, SystemHealthChecker, get_health_checker
 """
 
-import os
-import sys
-from datetime import datetime
-from unittest.mock import MagicMock, patch
-
-import pytest
-
 from apgi_framework.validation.system_health import (
     HealthCheckResult,
     SystemHealthChecker,
     get_health_checker,
 )
+from datetime import datetime
+from unittest.mock import patch
 
 
 # --- HealthCheckResult ---
@@ -132,7 +127,7 @@ class TestSystemHealthChecker:
                 else NotImplemented,
             },
         )()
-        with patch.object(sys, "version_info", mock_version):
+        with patch("sys.version_info", mock_version):
             status, issues, warnings = self.checker._check_python_environment()
             assert status == "critical"
 

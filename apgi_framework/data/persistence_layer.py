@@ -369,7 +369,7 @@ class PersistenceLayer:
                 raise PersistenceError(f"Experiment {experiment_id} not found")
 
             # Load data based on backend
-            data: Dict[str, Any] = {}
+            data: dict[str, Any] | None = {}
             if self.backend == "sqlite":
                 data = self._load_data_sqlite(experiment_id, version)
             elif self.backend in ["hdf5", "hybrid"]:
@@ -379,6 +379,12 @@ class PersistenceLayer:
             else:
                 raise PersistenceError(
                     f"Unsupported backend for loading: {self.backend}"
+                )
+
+            # Ensure data is not None before using .get()
+            if data is None:
+                raise PersistenceError(
+                    f"Failed to load data for experiment {experiment_id}"
                 )
 
             # Load backup information
@@ -823,7 +829,7 @@ class PersistenceLayer:
 
     def _load_data_postgresql(
         self, experiment_id: str, version: Optional[str] = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any] | None:
         """Load dataset from PostgreSQL format."""
         if not self.postgresql_available or self._psycopg2 is None:
             return None

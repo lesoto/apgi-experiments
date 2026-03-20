@@ -2,7 +2,6 @@
 Tests for Clinical Parameter Extraction in apgi_framework/clinical/parameter_extraction.py.
 """
 
-import pytest
 from datetime import datetime
 from apgi_framework.clinical.parameter_extraction import (
     ClinicalParameterExtractor,
@@ -11,7 +10,6 @@ from apgi_framework.clinical.parameter_extraction import (
     AssessmentTask,
     AssessmentBattery,
     ClinicalParameters,
-    ReliabilityMetrics,
 )
 
 

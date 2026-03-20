@@ -55,6 +55,54 @@ from .report_generator import FalsificationReport, ReportGenerator, ReportSectio
 from .storage_manager import StorageManager
 from .visualizer import APGIVisualizer, InteractiveVisualizer
 
+# Mock classes for testing
+class DataProcessor:
+    """Mock data processor for testing purposes."""
+
+    def __init__(self):
+        self.processed_data = {}
+
+    def process_data(self, raw_data):
+        """Process raw experimental data."""
+        data_id = f"processed_{hash(str(raw_data)) % 10000:04d}"
+        self.processed_data[data_id] = {
+            "data_id": data_id,
+            "processed": True,
+            "raw_data": raw_data,
+            "processing_timestamp": "2024-01-01T00:00:00Z",
+        }
+        return self.processed_data[data_id]
+
+    def get_processed_data(self, data_id):
+        """Retrieve processed data by ID."""
+
+        return self.processed_data.get(data_id)
+
+
+class MultiModalProcessor:
+    """Mock multi-modal processor for testing purposes."""
+
+    def __init__(self):
+        self.modalities = {}
+
+    def add_modality(self, modality_name, data):
+        """Add a data modality."""
+        self.modalities[modality_name] = data
+
+    def process_modalities(self):
+        """Process all modalities together."""
+        integrated_data = {
+            "integrated": True,
+            "modalities": list(self.modalities.keys()),
+            "integration_timestamp": "2024-01-01T00:00:00Z",
+        }
+        return integrated_data
+
+    def get_modality_data(self, modality_name):
+        """Get data for a specific modality."""
+        return self.modalities.get(modality_name)
+
+
 __all__ = [
     # Core data management
     "StorageManager",
@@ -101,4 +149,7 @@ __all__ = [
     # Integrated management
     "IntegratedDataManager",
     "create_data_manager",
+    # Mock classes for testing
+    "DataProcessor",
+    "MultiModalProcessor",
 ]

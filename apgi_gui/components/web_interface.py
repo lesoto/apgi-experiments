@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 try:
     from flask import Flask, jsonify, request
     from flask_cors import CORS
-    from flask_wtf.csrf import CSRFProtect  # type: ignore
+    from flask_wtf.csrf import CSRFProtect
     from werkzeug.utils import secure_filename
 
     FLASK_AVAILABLE = True
@@ -112,7 +112,9 @@ class WebSocketManager:
 
         logger.info(f"Connection {connection_id} left room {room_id}")
 
-    async def send_to_connection(self, connection_id: str, message: Dict[str, Any]):
+    async def send_to_connection(
+        self, connection_id: str, message: Dict[str, Any]
+    ) -> None:
         """Send message to specific connection."""
         if connection_id in self.connections:
             try:
@@ -120,13 +122,21 @@ class WebSocketManager:
             except Exception as e:
                 logger.error(f"Failed to send message to {connection_id}: {e}")
 
-    async def send_to_room(self, room_id: str, message: Dict[str, Any]):
+    async def send_to_room(self, room_id: str, message: Dict[str, Any]) -> None:
         """Send message to all connections in a room."""
         if room_id in self.rooms:
             for connection_id in self.rooms[room_id]:
                 await self.send_to_connection(connection_id, message)
 
-    async def broadcast(self, message: Dict[str, Any]):
+    async def broadcast(self, message: Dict[str, Any]) -> None:
+        """Broadcast message to all connected clients."""
+        for connection_id, websocket in self.connections.items():
+            try:
+                websocket.send(json.dumps(message))
+            except Exception as e:
+                logger.error(f"Error sending to {connection_id}: {e}")
+                # Remove broken connection
+                self.remove_connection(connection_id)
         """Broadcast message to all connections."""
         for connection_id in self.connections:
             await self.send_to_connection(connection_id, message)
@@ -709,28 +719,24 @@ class WebInterface:
         self._notify_event_handlers("experiment_started", experiment)
 
         # Broadcast via WebSocket if available
-        if self.socketio:
+        if self.socketio is not None:
             self.socketio.emit("experiment_update", experiment)
 
         # Simulate experiment execution (in real implementation, this would run the actual experiment)
-        def simulate_completion():
-            time.sleep(2)  # Simulate work
-            experiment["status"] = "completed"
-            experiment["completed_at"] = datetime.now().isoformat()
-            experiment["results"] = {"success": True, "duration": 2.0}
+        self._simulate_completion(experiment)
+        return experiment
 
-            self._notify_event_handlers("experiment_completed", experiment)
+    def _simulate_completion(self, experiment):
+        """Simulate experiment completion."""
+        time.sleep(2)  # Simulate work
+        experiment["status"] = "completed"
+        experiment["completed_at"] = datetime.now().isoformat()
+        experiment["results"] = {"success": True, "duration": 2.0}
 
-            if self.socketio:
-                self.socketio.emit("experiment_update", experiment)
+        self._notify_event_handlers("experiment_completed", experiment)
 
-        # Call the simulation
-        simulate_completion()
-
-        # Run in background thread
-        thread = threading.Thread(target=simulate_completion)
-        thread.daemon = True
-        thread.start()
+        if self.socketio is not None:
+            self.socketio.emit("experiment_update", experiment)
 
         return experiment
 
@@ -884,7 +890,7 @@ class WebInterface:
 
         def run_server():
             try:
-                if self.socketio:
+                if self.socketio is not None:
                     self.socketio.run(
                         self.app,
                         host=self.config.host,

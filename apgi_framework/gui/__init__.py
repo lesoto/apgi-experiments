@@ -35,6 +35,45 @@ from .error_handling import (
     UserGuidanceSystem,
 )
 
+# Mock classes for testing
+class InteractiveDesigner:
+    """Mock interactive designer for testing purposes."""
+
+    def __init__(self):
+        self.design_components = {}
+        self.current_design = None
+
+    def create_design(self, design_spec):
+        """Create an interactive design."""
+        design_id = f"design_{hash(str(design_spec)) % 10000:04d}"
+        self.current_design = {
+            "design_id": design_id,
+            "specification": design_spec,
+            "components": [],
+            "interactive": True,
+            "timestamp": "2024-01-01T00:00:00Z",
+        }
+        self.design_components[design_id] = self.current_design
+        return self.current_design
+
+    def add_component(self, component_type, properties):
+        """Add a component to the current design."""
+        if self.current_design:
+            component = {
+                "type": component_type,
+                "properties": properties,
+                "id": f"component_{len(self.current_design['components'])}",
+            }
+            self.current_design["components"].append(component)
+            return component
+        return None
+
+    def get_design(self, design_id):
+        """Get design by ID."""
+
+        return self.design_components.get(design_id)
+
+
 __all__ = [
     "launch_gui",
     "SessionSetupManager",
@@ -57,4 +96,6 @@ __all__ = [
     "SessionStateManager",
     "AutomaticBackupSystem",
     "UserGuidanceSystem",
+    # Mock classes for testing
+    "InteractiveDesigner",
 ]

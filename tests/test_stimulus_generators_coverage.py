@@ -6,12 +6,10 @@ CO2PuffParameters, GaborPatchGenerator, ToneGenerator, CO2PuffController,
 HeartbeatSynchronizer
 """
 
-import time
 from datetime import datetime, timedelta
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import numpy as np
-import pytest
 
 from apgi_framework.adaptive.stimulus_generators import (
     CO2PuffController,

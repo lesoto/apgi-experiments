@@ -5,7 +5,7 @@ import logging
 import os
 import threading
 from contextlib import contextmanager
-from typing import Callable, Optional
+from typing import Callable, Optional, Any
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +36,7 @@ class ThreadPoolManager:
             self._shutdown = False
             logger.info(f"ThreadPoolManager initialized with max_workers={max_workers}")
 
-    def submit(self, fn: Callable, *args, **kwargs) -> concurrent.futures.Future:
+    def submit(self, fn: Callable, *args, **kwargs) -> concurrent.futures.Future[Any]:
         """Submit a task to the thread pool."""
         if self._shutdown:
             raise RuntimeError("ThreadPoolManager is shutting down")
@@ -46,7 +46,7 @@ class ThreadPoolManager:
         future.add_done_callback(self._active_futures.discard)
 
         logger.debug(f"Submitted task {fn.__name__} to thread pool")
-        return future
+        return future  # type: concurrent.futures.Future[Any]
 
     def submit_with_timeout(
         self,
@@ -69,7 +69,7 @@ class ThreadPoolManager:
         future.add_done_callback(self._active_futures.discard)
 
         logger.debug(f"Submitted task {fn.__name__} with timeout {timeout}s")
-        return future
+        return future  # type: concurrent.futures.Future[Any]
 
     def _wrap_future_with_timeout(
         self, future: concurrent.futures.Future, timeout: float
@@ -167,7 +167,7 @@ class ThreadPoolManager:
     @property
     def is_shutdown(self) -> bool:
         """Check if the manager is shutting down."""
-        return self._shutdown
+        return self._shutdown  # type: ignore
 
 
 # Global instance

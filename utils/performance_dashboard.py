@@ -24,7 +24,7 @@ from typing import Any, Dict, List, Optional, Type
 
 try:
     import dash
-    from dash import callback, dcc, html
+    from dash import Input, Output, dcc, html
 except ImportError:
     dash = None
 
@@ -665,8 +665,8 @@ class ComprehensivePerformanceDashboard:
         """Setup dashboard callbacks."""
 
         @app.callback(
-            callback.Output("loading-output", "children"),
-            [callback.Input("start-btn", "n_clicks")],
+            Output("loading-output", "children"),
+            [Input("start-btn", "n_clicks")],
             prevent_initial_call=True,
         )
         def start_monitoring(n_clicks):
@@ -679,8 +679,8 @@ class ComprehensivePerformanceDashboard:
                 return "Starting performance monitoring..."
 
         @app.callback(
-            callback.Output("loading-output", "children"),
-            [callback.Input("stop-btn", "n_clicks")],
+            Output("loading-output", "children"),
+            [Input("stop-btn", "n_clicks")],
             prevent_initial_call=True,
         )
         def stop_monitoring(n_clicks):
@@ -689,8 +689,8 @@ class ComprehensivePerformanceDashboard:
                 return "Stopping performance monitoring..."
 
         @app.callback(
-            callback.Output("loading-output", "children"),
-            [callback.Input("report-btn", "n_clicks")],
+            Output("loading-output", "children"),
+            [Input("report-btn", "n_clicks")],
             prevent_initial_call=True,
         )
         def generate_report_callback(n_clicks):
@@ -699,8 +699,8 @@ class ComprehensivePerformanceDashboard:
                 return f"Report generated: {len(report.get('summary', {}).get('recommendations', []))} recommendations found"
 
         @app.callback(
-            callback.Output("loading-output", "children"),
-            [callback.Input("clear-btn", "n_clicks")],
+            Output("loading-output", "children"),
+            [Input("clear-btn", "n_clicks")],
             prevent_initial_call=True,
         )
         def clear_data_callback(n_clicks):
@@ -709,7 +709,9 @@ class ComprehensivePerformanceDashboard:
                 return "Performance data cleared"
 
         @app.callback(
-            [callback.Input("update-interval", "value")], prevent_initial_call=True
+            Output("loading-output", "children"),
+            [Input("update-interval", "value")],
+            prevent_initial_call=True,
         )
         def update_interval(interval):
             return f"Update interval set to {interval} seconds"

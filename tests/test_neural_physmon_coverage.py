@@ -8,11 +8,10 @@ HeartRateMonitor, SkinConductanceMonitor, RespirationMonitor, PhysiologicalMonit
 import os
 import tempfile
 import time
-from unittest.mock import MagicMock, patch
-
 import numpy as np
-import pytest
+from unittest.mock import MagicMock
 
+import pytest
 from apgi_framework.neural.physiological_monitoring import (
     HeartRateMonitor,
     PhysiologicalConfig,

@@ -3,15 +3,14 @@ Tests for StorageManager in apgi_framework/data/storage_manager.py.
 """
 
 import pytest
-from pathlib import Path
-from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
+from pathlib import Path
+from datetime import datetime
 from apgi_framework.data.storage_manager import StorageManager, StorageError
 from apgi_framework.data.data_models import (
     ExperimentalDataset,
     ExperimentMetadata,
     QueryFilter,
-    StorageStats,
 )
 
 

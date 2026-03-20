@@ -4,23 +4,20 @@ Comprehensive tests for apgi_framework.adaptive.task_control module.
 Covers: TaskState, ResponseType, TimingEvent, ResponseData, PrecisionTimer,
 ResponseCollector, TaskStateMachine, SessionConfiguration, SessionManager
 """
-
-import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from apgi_framework.adaptive.task_control import (
+    TaskState,
+    ResponseType,
+    TimingEvent,
+    ResponseData,
     PrecisionTimer,
     ResponseCollector,
-    ResponseData,
-    ResponseType,
     SessionConfiguration,
     SessionManager,
-    TaskState,
     TaskStateMachine,
-    TimingEvent,
 )
 
 
