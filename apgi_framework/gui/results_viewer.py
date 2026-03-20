@@ -14,6 +14,10 @@ from ..test_enhancement.models import (
     TestResults,
     TestStatus,
 )
+from apgi_framework.logging.standardized_logging import get_logger
+
+logger = get_logger(__name__)
+
 
 try:
     from PySide6.QtCore import Qt, Signal
@@ -770,10 +774,10 @@ class ResultsViewer(QWidget):
 
                 output_file = Path("test_results_export.json")
                 self._export_json(str(output_file))
-                print(f"Results exported to {output_file}")
+                logger.info(f"Results exported to {output_file}")
 
         except Exception as e:
-            print(f"Export failed: {e}")
+            logger.info(f"Export failed: {e}")
 
     def _export_json(self, file_path: str):
         """Export results to JSON format."""

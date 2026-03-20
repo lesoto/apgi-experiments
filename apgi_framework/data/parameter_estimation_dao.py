@@ -33,8 +33,6 @@ from .parameter_estimation_schema import ParameterEstimationSchema
 class ParameterEstimationDAOError(APGIFrameworkError):
     """Errors in parameter estimation data access operations."""
 
-    pass
-
 
 class ParameterEstimationDAO:
     """

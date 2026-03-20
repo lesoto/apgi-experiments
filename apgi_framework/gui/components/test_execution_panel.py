@@ -15,6 +15,10 @@ from tkinter import messagebox
 from typing import Any, Callable, Dict, Optional, Union
 
 import customtkinter as ctk
+from apgi_framework.logging.standardized_logging import get_logger
+
+logger = get_logger(__name__)
+
 
 # Add project root to Python path for imports
 project_root = Path(__file__).parent.parent.parent
@@ -855,7 +859,7 @@ class ExecutionPanel(ctk.CTkFrame):
 
     def _default_log_callback(self, message: str):
         """Default log callback if none provided."""
-        print(f"[{self.test_name}] {message}")
+        logger.info(f"[{self.test_name}] {message}")
 
     def set_test_started_callback(self, callback: Callable):
         """Set callback for test started events."""

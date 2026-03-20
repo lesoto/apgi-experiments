@@ -19,6 +19,9 @@ from apgi_framework.testing.persistence import (
     TestResultPersistence,
     store_test_results,
 )
+from apgi_framework.logging.standardized_logging import get_logger
+
+logger = get_logger(__name__)
 
 
 def validate_trials_range(value):
@@ -917,14 +920,14 @@ Examples:
                     f"Generating performance report for last {args.days} days"
                 )
                 report = persistence.generate_performance_report(args.days)
-                print(report)
+                logger.info(report)
 
                 # Save report to file
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 report_file = f"performance_report_{timestamp}.md"
                 with open(report_file, "w") as f:
                     f.write(report)
-                print(f"\nReport saved to: {report_file}")
+                logger.info(f"\nReport saved to: {report_file}")
 
             elif args.trends:
                 self.logger.info(
@@ -933,20 +936,20 @@ Examples:
                 trends = persistence.get_performance_trends(args.test_name)
 
                 if not trends:
-                    print("No performance trend data found")
+                    logger.info("No performance trend data found")
                     return
 
-                print(f"\nPerformance Trends (Last {args.days} days):")
-                print(f"{'=' * 80}")
+                logger.info(f"\nPerformance Trends (Last {args.days} days):")
+                logger.info(f"{'=' * 80}")
                 for trend in trends:
-                    print(f"\nTest: {trend['test_name']}")
-                    print(f"  Success Rate: {trend['success_rate']:.1%}")
-                    print(f"  Avg Duration: {trend['avg_duration']:.3f}s")
-                    print(
+                    logger.info(f"\nTest: {trend['test_name']}")
+                    logger.info(f"  Success Rate: {trend['success_rate']:.1%}")
+                    logger.info(f"  Avg Duration: {trend['avg_duration']:.3f}s")
+                    logger.info(
                         f"  Min/Max Duration: {trend['min_duration']:.3f}s / {trend['max_duration']:.3f}s"
                     )
-                    print(f"  Total Executions: {trend['total_executions']}")
-                    print(f"  Last Execution: {trend['last_execution']}")
+                    logger.info(f"  Total Executions: {trend['total_executions']}")
+                    logger.info(f"  Last Execution: {trend['last_execution']}")
 
             elif args.failures:
                 self.logger.info(
@@ -955,34 +958,34 @@ Examples:
                 patterns = persistence.analyze_failure_patterns(args.days)
 
                 if not patterns:
-                    print("No failure pattern data found")
+                    logger.info("No failure pattern data found")
                     return
 
-                print(f"\nFailure Pattern Analysis (Last {args.days} days):")
-                print(f"{'=' * 80}")
+                logger.info(f"\nFailure Pattern Analysis (Last {args.days} days):")
+                logger.info(f"{'=' * 80}")
 
                 if patterns.get("failed_tests"):
-                    print("\nMost Frequently Failing Tests:")
+                    logger.info("\nMost Frequently Failing Tests:")
                     for test in patterns["failed_tests"][:10]:
-                        print(
+                        logger.info(
                             f"  - {test['test_name']}: {test['failure_count']} failures"
                         )
                         if test["error_patterns"]:
-                            print(
+                            logger.info(
                                 f"    Common errors: {test['error_patterns'][:150]}..."
                             )
 
                 if patterns.get("common_errors"):
-                    print("\nMost Common Error Messages:")
+                    logger.info("\nMost Common Error Messages:")
                     for error in patterns["common_errors"][:5]:
-                        print(
+                        logger.info(
                             f"  - {error['count']} occurrences: {error['error_sample']}"
                         )
 
             elif args.export:
                 self.logger.info(f"Exporting test results to {args.export}")
                 persistence.export_results(args.export, args.format, args.days)
-                print(f"Results exported to: {args.export}")
+                logger.info(f"Results exported to: {args.export}")
 
             else:
                 self.logger.error(
@@ -1129,15 +1132,15 @@ Examples:
                 self.logger.info("Discovering all tests...")
                 test_suites = test_utils.discover_all_tests()
 
-                print(f"\nDiscovered {len(test_suites)} test suites:")
-                print(f"{'=' * 60}")
+                logger.info(f"\nDiscovered {len(test_suites)} test suites:")
+                logger.info(f"{'=' * 60}")
 
                 total_tests = 0
                 for suite in test_suites:
                     total_tests += len(suite.test_cases)
-                    print(f"Suite: {suite.name}")
-                    print(f"  Tests: {len(suite.test_cases)}")
-                    print(
+                    logger.info(f"Suite: {suite.name}")
+                    logger.info(f"  Tests: {len(suite.test_cases)}")
+                    logger.info(
                         f"  Estimated Duration: {suite.total_estimated_duration:.2f}s"
                     )
 
@@ -1147,12 +1150,12 @@ Examples:
                             cat = tc.category.value
                             categories[cat] = categories.get(cat, 0) + 1
 
-                        print(f"  Categories: {dict(categories)}")
+                        logger.info(f"  Categories: {dict(categories)}")
 
-                    print()
+                    logger.info()
 
-                print(f"Total Tests: {total_tests}")
-                print(f"{'=' * 60}\n")
+                logger.info(f"Total Tests: {total_tests}")
+                logger.info(f"{'=' * 60}\n")
 
             elif args.list_categories:
                 test_suites = test_utils.discover_all_tests()
@@ -1165,11 +1168,11 @@ Examples:
                         categories.add(cat)
                         category_counts[cat] = category_counts.get(cat, 0) + 1
 
-                print("\nAvailable Test Categories:")
-                print(f"{'=' * 40}")
+                logger.info("\nAvailable Test Categories:")
+                logger.info(f"{'=' * 40}")
                 for category in sorted(categories):
-                    print(f"  {category}: {category_counts[category]} tests")
-                print(f"{'=' * 40}\n")
+                    logger.info(f"  {category}: {category_counts[category]} tests")
+                logger.info(f"{'=' * 40}\n")
 
             elif args.list_modules:
                 test_suites = test_utils.discover_all_tests()
@@ -1183,11 +1186,11 @@ Examples:
                         suite.test_cases
                     )
 
-                print("\nAvailable Test Modules:")
-                print(f"{'=' * 40}")
+                logger.info("\nAvailable Test Modules:")
+                logger.info(f"{'=' * 40}")
                 for module in sorted(modules):
-                    print(f"  {module}: {module_counts[module]} tests")
-                print(f"{'=' * 40}\n")
+                    logger.info(f"  {module}: {module_counts[module]} tests")
+                logger.info(f"{'=' * 40}\n")
 
             elif args.list_tags:
                 test_suites = test_utils.discover_all_tests()
@@ -1200,11 +1203,11 @@ Examples:
                             all_tags.add(tag)
                             tag_counts[tag] = tag_counts.get(tag, 0) + 1
 
-                print("\nAvailable Test Tags:")
-                print(f"{'=' * 40}")
+                logger.info("\nAvailable Test Tags:")
+                logger.info(f"{'=' * 40}")
                 for tag in sorted(all_tags):
-                    print(f"  {tag}: {tag_counts[tag]} tests")
-                print(f"{'=' * 40}\n")
+                    logger.info(f"  {tag}: {tag_counts[tag]} tests")
+                logger.info(f"{'=' * 40}\n")
 
             elif args.export_tree:
                 test_suites = test_utils.discover_all_tests()
@@ -1213,7 +1216,7 @@ Examples:
                 with open(args.export_tree, "w") as f:
                     json.dump(tree_data, f, indent=2, default=str)
 
-                print(f"Test tree exported to: {args.export_tree}")
+                logger.info(f"Test tree exported to: {args.export_tree}")
 
             else:
                 self.logger.error(
@@ -1242,39 +1245,39 @@ Examples:
 
                 # Display enhanced analysis
                 metrics = analysis["metrics"]
-                print(f"\n{'=' * 70}")
-                print("Enhanced Test Coverage Analysis Results")
-                print(f"{'=' * 70}")
-                print(f"Total Modules: {metrics.total_modules}")
-                print(f"Tested Modules: {metrics.tested_modules}")
-                print(f"Total Functions/Methods: {metrics.total_functions}")
-                print(f"Tested Functions/Methods: {metrics.tested_functions}")
-                print(f"Coverage Percentage: {metrics.coverage_percentage:.1f}%")
-                print(f"Coverage Threshold: {args.threshold}%")
-                print(
+                logger.info(f"\n{'=' * 70}")
+                logger.info("Enhanced Test Coverage Analysis Results")
+                logger.info(f"{'=' * 70}")
+                logger.info(f"Total Modules: {metrics.total_modules}")
+                logger.info(f"Tested Modules: {metrics.tested_modules}")
+                logger.info(f"Total Functions/Methods: {metrics.total_functions}")
+                logger.info(f"Tested Functions/Methods: {metrics.tested_functions}")
+                logger.info(f"Coverage Percentage: {metrics.coverage_percentage:.1f}%")
+                logger.info(f"Coverage Threshold: {args.threshold}%")
+                logger.info(
                     f"Threshold Status: {'PASS' if metrics.coverage_percentage >= args.threshold else 'FAIL'}"
                 )
-                print(f"Test Quality Score: {metrics.test_quality_score:.1f}/100")
-                print(f"Total Coverage Gaps: {len(analysis['coverage_gaps'])}")
+                logger.info(f"Test Quality Score: {metrics.test_quality_score:.1f}/100")
+                logger.info(f"Total Coverage Gaps: {len(analysis['coverage_gaps'])}")
 
                 # Show detailed gap analysis
                 gaps = analysis["coverage_gaps"]
                 if gaps:
-                    print("\nCoverage Gap Details:")
-                    print(
+                    logger.info("\nCoverage Gap Details:")
+                    logger.info(
                         f"{'Module':<30} {'Function':<25} {'Priority':<10} {'Complexity'}"
                     )
-                    print(f"{'-' * 80}")
+                    logger.info(f"{'-' * 80}")
 
                     sorted_gaps = sorted(
                         gaps, key=lambda g: g.complexity_score, reverse=True
                     )
                     for gap in sorted_gaps[:20]:  # Show top 20
-                        print(
+                        logger.info(
                             f"{gap.module_name:<30} {gap.function_name:<25} {gap.test_priority:<10} {gap.complexity_score}"
                         )
 
-                print(f"\n{'=' * 70}")
+                logger.info(f"\n{'=' * 70}")
 
             elif args.generate:
                 self.logger.info("Generating missing tests with enhanced options")
@@ -1287,9 +1290,9 @@ Examples:
                     analysis, args.output_dir
                 )
 
-                print(f"\nGenerated {len(generated_files)} test files:")
+                logger.info(f"\nGenerated {len(generated_files)} test files:")
                 for module_name, file_path in generated_files.items():
-                    print(f"  - {module_name}: {file_path}")
+                    logger.info(f"  - {module_name}: {file_path}")
 
             elif args.report:
                 self.logger.info("Generating enhanced coverage report")
@@ -1317,7 +1320,7 @@ Examples:
                         analysis, args.report_file
                     )
 
-                print(f"Enhanced coverage report generated: {report_path}")
+                logger.info(f"Enhanced coverage report generated: {report_path}")
 
             else:
                 self.logger.error(
@@ -1338,16 +1341,16 @@ Examples:
 
                 # Display summary
                 metrics = analysis["metrics"]
-                print(f"\n{'=' * 60}")
-                print("Test Coverage Analysis Results")
-                print(f"{'=' * 60}")
-                print(f"Total Modules: {metrics.total_modules}")
-                print(f"Tested Modules: {metrics.tested_modules}")
-                print(f"Total Functions/Methods: {metrics.total_functions}")
-                print(f"Tested Functions/Methods: {metrics.tested_functions}")
-                print(f"Coverage Percentage: {metrics.coverage_percentage:.1f}%")
-                print(f"Test Quality Score: {metrics.test_quality_score:.1f}/100")
-                print(f"Total Coverage Gaps: {len(analysis['coverage_gaps'])}")
+                logger.info(f"\n{'=' * 60}")
+                logger.info("Test Coverage Analysis Results")
+                logger.info(f"{'=' * 60}")
+                logger.info(f"Total Modules: {metrics.total_modules}")
+                logger.info(f"Tested Modules: {metrics.tested_modules}")
+                logger.info(f"Total Functions/Methods: {metrics.total_functions}")
+                logger.info(f"Tested Functions/Methods: {metrics.tested_functions}")
+                logger.info(f"Coverage Percentage: {metrics.coverage_percentage:.1f}%")
+                logger.info(f"Test Quality Score: {metrics.test_quality_score:.1f}/100")
+                logger.info(f"Total Coverage Gaps: {len(analysis['coverage_gaps'])}")
 
                 # Show priority breakdown
                 gaps = analysis["coverage_gaps"]
@@ -1355,24 +1358,24 @@ Examples:
                 medium_priority = len([g for g in gaps if g.test_priority == "medium"])
                 low_priority = len([g for g in gaps if g.test_priority == "low"])
 
-                print("\nCoverage Gaps by Priority:")
-                print(f"  High Priority: {high_priority}")
-                print(f"  Medium Priority: {medium_priority}")
-                print(f"  Low Priority: {low_priority}")
+                logger.info("\nCoverage Gaps by Priority:")
+                logger.info(f"  High Priority: {high_priority}")
+                logger.info(f"  Medium Priority: {medium_priority}")
+                logger.info(f"  Low Priority: {low_priority}")
 
                 # Show top gaps
                 if gaps:
-                    print("\nTop 10 Coverage Gaps:")
+                    logger.info("\nTop 10 Coverage Gaps:")
                     sorted_gaps = sorted(
                         gaps, key=lambda g: g.complexity_score, reverse=True
                     )
                     for i, gap in enumerate(sorted_gaps[:10], 1):
-                        print(
+                        logger.info(
                             f"  {i:2d}. {gap.module_name}.{gap.function_name} "
                             f"(Complexity: {gap.complexity_score}, Priority: {gap.test_priority})"
                         )
 
-                print(f"\n{'=' * 60}")
+                logger.info(f"\n{'=' * 60}")
 
             elif args.generate:
                 self.logger.info(f"Generating missing tests to {args.output_dir}")
@@ -1381,12 +1384,12 @@ Examples:
                     analysis, args.output_dir
                 )
 
-                print(f"\nGenerated {len(generated_files)} test files:")
+                logger.info(f"\nGenerated {len(generated_files)} test files:")
                 for module_name, file_path in generated_files.items():
-                    print(f"  - {module_name}: {file_path}")
+                    logger.info(f"  - {module_name}: {file_path}")
 
-                print("\nTo run the generated tests:")
-                print(
+                logger.info("\nTo run the generated tests:")
+                logger.info(
                     f"  python -m apgi_framework.cli batch-test --test-paths {args.output_dir}/"
                 )
 
@@ -1396,7 +1399,7 @@ Examples:
                 report_path = generator.generate_coverage_report(
                     analysis, args.report_file
                 )
-                print(f"Coverage report generated: {report_path}")
+                logger.info(f"Coverage report generated: {report_path}")
 
             else:
                 self.logger.error(
@@ -1410,34 +1413,36 @@ Examples:
 
     def _display_batch_test_summary(self, summary: Any) -> None:
         """Display batch test execution summary."""
-        print(f"\n{'=' * 80}")
-        print("APGI Framework Advanced Batch Test Results")
-        print(f"{'=' * 80}")
+        logger.info(f"\n{'=' * 80}")
+        logger.info("APGI Framework Advanced Batch Test Results")
+        logger.info(f"{'=' * 80}")
 
-        print(f"Total Tests: {summary.total_tests}")
-        print(f"Passed: {summary.passed}")
-        print(f"Failed: {summary.failed}")
-        print(f"Skipped: {summary.skipped}")
-        print(f"Errors: {summary.errors}")
-        print(f"Success Rate: {(summary.passed / summary.total_tests * 100):.1f}%")
-        print(f"Total Duration: {summary.total_duration:.2f} seconds")
-        print(f"Start Time: {summary.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
-        print(f"End Time: {summary.end_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        logger.info(f"Total Tests: {summary.total_tests}")
+        logger.info(f"Passed: {summary.passed}")
+        logger.info(f"Failed: {summary.failed}")
+        logger.info(f"Skipped: {summary.skipped}")
+        logger.info(f"Errors: {summary.errors}")
+        logger.info(
+            f"Success Rate: {(summary.passed / summary.total_tests * 100):.1f}%"
+        )
+        logger.info(f"Total Duration: {summary.total_duration:.2f} seconds")
+        logger.info(f"Start Time: {summary.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        logger.info(f"End Time: {summary.end_time.strftime('%Y-%m-%d %H:%M:%S')}")
 
         # Show failed tests if any
         failed_tests = [
             r for r in summary.test_results if r.status in ["failed", "error"]
         ]
         if failed_tests:
-            print(f"\nFailed Tests ({len(failed_tests)}):")
+            logger.info(f"\nFailed Tests ({len(failed_tests)}):")
             for result in failed_tests[:10]:  # Show first 10
-                print(
+                logger.info(
                     f"  - {result.test_name}: {result.error_message or 'No error message'}"
                 )
             if len(failed_tests) > 10:
-                print(f"  ... and {len(failed_tests) - 10} more")
+                logger.info(f"  ... and {len(failed_tests) - 10} more")
 
-        print(f"\n{'=' * 80}\n")
+        logger.info(f"\n{'=' * 80}\n")
 
     def _save_batch_test_summary(self, summary: Any) -> None:
         """Save batch test summary to file."""
@@ -1504,7 +1509,7 @@ Examples:
         """List recent test result files."""
         results_dir = Path("test_results")
         if not results_dir.exists():
-            print("No test results directory found")
+            logger.info("No test results directory found")
             return
 
         result_files = sorted(
@@ -1512,15 +1517,15 @@ Examples:
         )
 
         if not result_files:
-            print("No test result files found")
+            logger.info("No test result files found")
             return
 
-        print("\nRecent Test Results:")
-        print(f"{'=' * 60}")
+        logger.info("\nRecent Test Results:")
+        logger.info(f"{'=' * 60}")
         for i, result_file in enumerate(result_files[:20], 1):  # Show last 20
             mtime = datetime.fromtimestamp(result_file.stat().st_mtime)
             size = result_file.stat().st_size
-            print(
+            logger.info(
                 f"{i:2d}. {result_file.name} ({mtime.strftime('%Y-%m-%d %H:%M:%S')}, {size} bytes)"
             )
 
@@ -1541,33 +1546,35 @@ Examples:
             with open(file_path, "r") as f:
                 data = json.load(f)
 
-            print(f"\nTest Result Details: {result_file}")
-            print(f"{'=' * 60}")
+            logger.info(f"\nTest Result Details: {result_file}")
+            logger.info(f"{'=' * 60}")
 
             if "summary" in data:
                 summary = data["summary"]
-                print(f"Total Tests: {summary.get('total_tests', 'N/A')}")
-                print(f"Passed: {summary.get('passed', 'N/A')}")
-                print(f"Failed: {summary.get('failed', 'N/A')}")
-                print(f"Skipped: {summary.get('skipped', 'N/A')}")
-                print(f"Errors: {summary.get('errors', 'N/A')}")
-                print(f"Duration: {summary.get('total_duration', 'N/A')} seconds")
-                print(f"Start Time: {summary.get('start_time', 'N/A')}")
-                print(f"End Time: {summary.get('end_time', 'N/A')}")
+                logger.info(f"Total Tests: {summary.get('total_tests', 'N/A')}")
+                logger.info(f"Passed: {summary.get('passed', 'N/A')}")
+                logger.info(f"Failed: {summary.get('failed', 'N/A')}")
+                logger.info(f"Skipped: {summary.get('skipped', 'N/A')}")
+                logger.info(f"Errors: {summary.get('errors', 'N/A')}")
+                logger.info(f"Duration: {summary.get('total_duration', 'N/A')} seconds")
+                logger.info(f"Start Time: {summary.get('start_time', 'N/A')}")
+                logger.info(f"End Time: {summary.get('end_time', 'N/A')}")
 
             if "test_results" in data:
-                print("\nTest Results:")
+                logger.info("\nTest Results:")
                 for result in data["test_results"][:10]:  # Show first 10
-                    print(
+                    logger.info(
                         f"  - {result.get('test_name', 'Unknown')}: {result.get('status', 'Unknown')}"
                     )
                     if result.get("error_message"):
-                        print(f"    Error: {result['error_message'][:100]}...")
+                        logger.info(f"    Error: {result['error_message'][:100]}...")
 
                 if len(data["test_results"]) > 10:
-                    print(f"  ... and {len(data['test_results']) - 10} more tests")
+                    logger.info(
+                        f"  ... and {len(data['test_results']) - 10} more tests"
+                    )
 
-            print(f"\n{'=' * 60}\n")
+            logger.info(f"\n{'=' * 60}\n")
 
         except Exception as e:
             self.logger.error(f"Failed to read test result file: {e}")
@@ -1593,7 +1600,7 @@ Examples:
         """Clean old test result files."""
         results_dir = Path("test_results")
         if not results_dir.exists():
-            print("No test results directory to clean")
+            logger.info("No test results directory to clean")
             return
 
         # Remove files older than 7 days
@@ -1608,72 +1615,72 @@ Examples:
                 result_file.unlink()
                 removed_count += 1
 
-        print(f"Cleaned {removed_count} old test result files")
+        logger.info(f"Cleaned {removed_count} old test result files")
 
     def _display_test_result(self, result: Any, test_type: str) -> None:
         """Display individual test result."""
-        print(f"\n{'=' * 60}")
-        print(f"APGI Framework Test Results: {test_type.upper()}")
-        print(f"{'=' * 60}")
+        logger.info(f"\n{'=' * 60}")
+        logger.info(f"APGI Framework Test Results: {test_type.upper()}")
+        logger.info(f"{'=' * 60}")
 
         if hasattr(result, "is_falsified"):
-            print(
+            logger.info(
                 f"Falsification Status: {'FALSIFIED' if result.is_falsified else 'NOT FALSIFIED'}"
             )
-            print(f"Confidence Level: {result.confidence_level:.3f}")
-            print(f"Effect Size: {result.effect_size:.3f}")
-            print(f"P-value: {result.p_value:.6f}")
-            print(f"Statistical Power: {result.statistical_power:.3f}")
+            logger.info(f"Confidence Level: {result.confidence_level:.3f}")
+            logger.info(f"Effect Size: {result.effect_size:.3f}")
+            logger.info(f"P-value: {result.p_value:.6f}")
+            logger.info(f"Statistical Power: {result.statistical_power:.3f}")
         else:
-            print(f"Result: {result}")
+            logger.info(f"Result: {result}")
 
-        print(f"{'=' * 60}\n")
+        logger.info(f"{'=' * 60}\n")
 
     def _display_batch_results(self, results: Dict[str, Any]) -> None:
         """Display batch experiment results."""
-        print(f"\n{'=' * 80}")
-        print("APGI Framework Batch Falsification Test Results")
-        print(f"{'=' * 80}")
+        logger.info(f"\n{'=' * 80}")
+        logger.info("APGI Framework Batch Falsification Test Results")
+        logger.info(f"{'=' * 80}")
 
         for test_type, result in results.items():
-            print(f"\n{test_type.upper()}:")
+            logger.info(f"\n{test_type.upper()}:")
             if "error" in result:
-                print(f"  ERROR: {result['error']}")
+                logger.info(f"  ERROR: {result['error']}")
             elif hasattr(result, "is_falsified"):
-                print(f"  Falsified: {'YES' if result.is_falsified else 'NO'}")
-                print(f"  Confidence: {result.confidence_level:.3f}")
-                print(f"  Effect Size: {result.effect_size:.3f}")
-                print(f"  P-value: {result.p_value:.6f}")
+                logger.info(f"  Falsified: {'YES' if result.is_falsified else 'NO'}")
+                logger.info(f"  Confidence: {result.confidence_level:.3f}")
+                logger.info(f"  Effect Size: {result.effect_size:.3f}")
+                logger.info(f"  P-value: {result.p_value:.6f}")
             else:
-                print(f"  Result: {result}")
+                logger.info(f"  Result: {result}")
 
-        print(f"\n{'=' * 80}\n")
+        logger.info(f"\n{'=' * 80}\n")
 
     def _display_detailed_validation(self, results: Dict[str, Any]) -> None:
         """Display detailed validation results."""
-        print(f"\n{'=' * 60}")
-        print("System Validation Results (Detailed)")
-        print(f"{'=' * 60}")
+        logger.info(f"\n{'=' * 60}")
+        logger.info("System Validation Results (Detailed)")
+        logger.info(f"{'=' * 60}")
 
         for component, status in results.items():
             if component != "overall":
                 status_str = "PASS" if status else "FAIL"
-                print(f"{component.replace('_', ' ').title()}: {status_str}")
+                logger.info(f"{component.replace('_', ' ').title()}: {status_str}")
 
         overall_status = "PASS" if results.get("overall", False) else "FAIL"
-        print(f"\nOverall Status: {overall_status}")
-        print(f"{'=' * 60}\n")
+        logger.info(f"\nOverall Status: {overall_status}")
+        logger.info(f"{'=' * 60}\n")
 
     def _display_simple_validation(self, results: Dict[str, Any]) -> None:
         """Display simple validation results."""
         overall_status = "PASS" if results.get("overall", False) else "FAIL"
-        print(f"System Validation: {overall_status}")
+        logger.info(f"System Validation: {overall_status}")
 
     def _display_system_status(self, status: Dict[str, Any]) -> None:
         """Display system status."""
-        print(f"\n{'=' * 50}")
-        print("APGI Framework System Status")
-        print(f"{'=' * 50}")
+        logger.info(f"\n{'=' * 50}")
+        logger.info("APGI Framework System Status")
+        logger.info(f"{'=' * 50}")
 
         for key, value in status.items():
             if key != "timestamp":
@@ -1681,10 +1688,10 @@ Examples:
                 display_value = (
                     "YES" if value else "NO" if isinstance(value, bool) else str(value)
                 )
-                print(f"{display_key}: {display_value}")
+                logger.info(f"{display_key}: {display_value}")
 
-        print(f"Last Updated: {status.get('timestamp', 'Unknown')}")
-        print(f"{'=' * 50}\n")
+        logger.info(f"Last Updated: {status.get('timestamp', 'Unknown')}")
+        logger.info(f"{'=' * 50}\n")
 
     def _save_test_result(self, result: Any, test_type: str) -> None:
         """Save individual test result to file."""
@@ -1800,9 +1807,9 @@ Examples:
         self, execution, verbose: bool = False, progress_style: str = "bar"
     ) -> None:
         """Display test results in text format."""
-        print(f"\n{'=' * 80}")
-        print("Test Execution Results")
-        print(f"{'=' * 80}")
+        logger.info(f"\n{'=' * 80}")
+        logger.info("Test Execution Results")
+        logger.info(f"{'=' * 80}")
 
         total_tests = len(execution.results)
         passed = len([r for r in execution.results if r.status.value == "passed"])
@@ -1810,12 +1817,12 @@ Examples:
         skipped = len([r for r in execution.results if r.status.value == "skipped"])
         errors = len([r for r in execution.results if r.status.value == "error"])
 
-        print(f"Total Tests: {total_tests}")
-        print(f"Passed: {passed}")
-        print(f"Failed: {failed}")
-        print(f"Skipped: {skipped}")
-        print(f"Errors: {errors}")
-        print(
+        logger.info(f"Total Tests: {total_tests}")
+        logger.info(f"Passed: {passed}")
+        logger.info(f"Failed: {failed}")
+        logger.info(f"Skipped: {skipped}")
+        logger.info(f"Errors: {errors}")
+        logger.info(
             f"Success Rate: {(passed / total_tests * 100):.1f}%"
             if total_tests > 0
             else "N/A"
@@ -1823,23 +1830,23 @@ Examples:
 
         if execution.start_time and execution.end_time:
             duration = (execution.end_time - execution.start_time).total_seconds()
-            print(f"Total Duration: {duration:.2f} seconds")
+            logger.info(f"Total Duration: {duration:.2f} seconds")
 
         # Show failed tests
         failed_tests = [
             r for r in execution.results if r.status.value in ["failed", "error"]
         ]
         if failed_tests and verbose:
-            print("\nFailed Tests:")
-            print(f"{'-' * 60}")
+            logger.info("\nFailed Tests:")
+            logger.info(f"{'-' * 60}")
             for result in failed_tests:
-                print(
+                logger.info(
                     f"  {result.test_case.name}: {result.error_message or 'No error message'}"
                 )
                 if verbose and result.traceback:
-                    print(f"    Traceback: {result.traceback[:200]}...")
+                    logger.info(f"    Traceback: {result.traceback[:200]}...")
 
-        print(f"{'=' * 80}\n")
+        logger.info(f"{'=' * 80}\n")
 
     def _display_results_json(self, execution) -> None:
         """Display test results in JSON format."""
@@ -1868,13 +1875,13 @@ Examples:
                 for result in execution.results
             ],
         }
-        print(json.dumps(results_data, indent=2))
+        logger.info(json.dumps(results_data, indent=2))
 
     def _display_results_xml(self, execution) -> None:
         """Display test results in XML format."""
         # Simple XML output - in a real implementation, you'd use xml.etree.ElementTree
-        print('<?xml version="1.0" encoding="UTF-8"?>')
-        print("<testsuites>")
+        logger.info('<?xml version="1.0" encoding="UTF-8"?>')
+        logger.info("<testsuites>")
 
         for suite in execution.test_suites:
             suite_results = [
@@ -1885,27 +1892,29 @@ Examples:
             failures = len([r for r in suite_results if r.status.value == "failed"])
             errors = len([r for r in suite_results if r.status.value == "error"])
 
-            print(
+            logger.info(
                 f'  <testsuite name="{suite.name}" tests="{len(suite_results)}" failures="{failures}" errors="{errors}">'
             )
 
             for result in suite_results:
-                print(
+                logger.info(
                     f'    <testcase name="{result.test_case.name}" time="{result.duration}">'
                 )
                 if result.status.value == "failed":
-                    print(f'      <failure message="{result.error_message or ""}">')
-                    print(f'        {result.traceback or ""}')
-                    print("      </failure>")
+                    logger.info(
+                        f'      <failure message="{result.error_message or ""}">'
+                    )
+                    logger.info(f'        {result.traceback or ""}')
+                    logger.info("      </failure>")
                 elif result.status.value == "error":
-                    print(f'      <error message="{result.error_message or ""}">')
-                    print(f'        {result.traceback or ""}')
-                    print("      </error>")
-                print("    </testcase>")
+                    logger.info(f'      <error message="{result.error_message or ""}">')
+                    logger.info(f'        {result.traceback or ""}')
+                    logger.info("      </error>")
+                logger.info("    </testcase>")
 
-            print("  </testsuite>")
+            logger.info("  </testsuite>")
 
-        print("</testsuites>")
+        logger.info("</testsuites>")
 
     def _display_results_html(self, execution) -> None:
         """Display test results in HTML format."""
@@ -1964,7 +1973,7 @@ Examples:
 </body>
 </html>
 """
-        print(html_content)
+        logger.info(html_content)
 
     def _save_results_to_file(
         self, execution, output_file: str, format_type: str
@@ -2242,10 +2251,10 @@ def run_failed_tests(result_file: str, parallel: bool = True) -> Any:
                     failed_tests.append(result.get("test_name"))
 
         if not failed_tests:
-            print("No failed tests found in result file")
+            logger.info("No failed tests found in result file")
             return None
 
-        print(f"Found {len(failed_tests)} failed tests to re-run")
+        logger.info(f"Found {len(failed_tests)} failed tests to re-run")
 
         # Run the failed tests using pytest
         import subprocess
@@ -2282,7 +2291,7 @@ def run_failed_tests(result_file: str, parallel: bool = True) -> Any:
         return {"error": "Failed to parse re-run results"}
 
     except Exception as e:
-        print(f"Error re-running failed tests: {e}")
+        logger.info(f"Error re-running failed tests: {e}")
         return {"error": str(e)}
 
 

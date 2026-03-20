@@ -22,6 +22,14 @@ def setup_test_environment():
 
     os.environ.setdefault("DISPLAY", ":99")
 
+    # Set matplotlib to non-interactive backend for headless testing
+    try:
+        import matplotlib
+
+        matplotlib.use("Agg")
+    except ImportError:
+        pass
+
 
 # GUI test configuration
 def pytest_configure(config):

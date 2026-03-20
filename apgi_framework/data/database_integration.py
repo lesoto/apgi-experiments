@@ -38,8 +38,6 @@ from .storage_manager import StorageManager
 class DatabaseIntegrationError(APGIFrameworkError):
     """Database integration specific errors."""
 
-    pass
-
 
 class LargeDatasetHandler:
     """

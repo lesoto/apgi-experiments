@@ -6,7 +6,7 @@ including parameter validation, default values, and experimental settings.
 """
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 import threading
@@ -243,45 +243,70 @@ class ConfigManager:
             with open(config_file, "r") as f:
                 config_data = json.load(f)
 
-            # Validate configuration structure
-            self._validate_config_structure(config_data)
-
-            # Load APGI parameters with validation
-            if "apgi_parameters" in config_data:
-                apgi_data = config_data["apgi_parameters"]
-                self._validate_parameter_section("apgi_parameters", apgi_data)
-                self.apgi_params = APGIParameters(**apgi_data)
-
-            # Load experimental configuration with validation
-            if "experimental_config" in config_data:
-                exp_data = config_data["experimental_config"]
-                self._validate_parameter_section("experimental_config", exp_data)
-                self.experimental_config = ExperimentalConfig(**exp_data)
-
-            # Load retry configuration with validation
-            if "retry_config" in config_data:
-                retry_data = config_data["retry_config"]
-                self._validate_parameter_section("retry_config", retry_data)
-                self.retry_config = RetryConfig(**retry_data)
-
-            # Load performance thresholds with validation
-            if "performance_thresholds" in config_data:
-                perf_data = config_data["performance_thresholds"]
-                self._validate_parameter_section("performance_thresholds", perf_data)
-                self.performance_thresholds = PerformanceThresholds(**perf_data)
-
-            # Load stimulus parameters with validation
-            if "stimulus_parameters" in config_data:
-                stim_data = config_data["stimulus_parameters"]
-                self._validate_parameter_section("stimulus_parameters", stim_data)
-                self.stimulus_params = StimulusParameters(**stim_data)
+            self._apply_config_data(config_data)
 
         except (json.JSONDecodeError, TypeError, ValueError) as e:
             raise ConfigurationError(f"Invalid configuration file: {e}")
         except FileNotFoundError:
             raise ConfigurationError(f"Configuration file not found: {config_path}")
+        except ConfigurationError:
+            raise
         except Exception as e:
             raise ConfigurationError(f"Failed to load configuration: {e}")
+
+    def _apply_config_data(self, config_data: Dict[str, Any]) -> None:
+        """Validate and apply configuration data atomically.
+
+        Args:
+            config_data: Dictionary containing configuration data.
+
+        Raises:
+            ConfigurationError: If configuration data is invalid.
+        """
+        # Validate configuration structure
+        self._validate_config_structure(config_data)
+
+        # Temporary storage for new configuration objects
+        new_objects: Dict[str, Any] = {}
+
+        # Parse and validate each section
+        if "apgi_parameters" in config_data:
+            apgi_data = config_data["apgi_parameters"]
+            self._validate_parameter_section("apgi_parameters", apgi_data)
+            new_objects["apgi_params"] = APGIParameters(**apgi_data)
+
+        if "experimental_config" in config_data:
+            exp_data = config_data["experimental_config"]
+            self._validate_parameter_section("experimental_config", exp_data)
+            new_objects["experimental_config"] = ExperimentalConfig(**exp_data)
+
+        if "retry_config" in config_data:
+            retry_data = config_data["retry_config"]
+            self._validate_parameter_section("retry_config", retry_data)
+            new_objects["retry_config"] = RetryConfig(**retry_data)
+
+        if "performance_thresholds" in config_data:
+            perf_data = config_data["performance_thresholds"]
+            self._validate_parameter_section("performance_thresholds", perf_data)
+            new_objects["performance_thresholds"] = PerformanceThresholds(**perf_data)
+
+        if "stimulus_parameters" in config_data:
+            stim_data = config_data["stimulus_parameters"]
+            self._validate_parameter_section("stimulus_parameters", stim_data)
+            new_objects["stimulus_params"] = StimulusParameters(**stim_data)
+
+        # Update manager state atomically with lock
+        with self._lock:
+            if "apgi_params" in new_objects:
+                self.apgi_params = new_objects["apgi_params"]
+            if "experimental_config" in new_objects:
+                self.experimental_config = new_objects["experimental_config"]
+            if "retry_config" in new_objects:
+                self.retry_config = new_objects["retry_config"]
+            if "performance_thresholds" in new_objects:
+                self.performance_thresholds = new_objects["performance_thresholds"]
+            if "stimulus_params" in new_objects:
+                self.stimulus_params = new_objects["stimulus_params"]
 
     def save_config(self, config_path: str) -> None:
         """Save current configuration to JSON file.
@@ -355,35 +380,19 @@ class ConfigManager:
         if not preset_path.exists():
             raise ConfigurationError(f"Preset not found: {name}")
 
-        with open(preset_path, "r") as f:
-            preset_data = json.load(f)
+        try:
+            with open(preset_path, "r") as f:
+                preset_data = json.load(f)
 
-        # Load APGI parameters
-        if "apgi_parameters" in preset_data:
-            apgi_data = preset_data["apgi_parameters"]
-            self.apgi_params = APGIParameters(**apgi_data)
+            self._apply_config_data(preset_data)
+            logger.info(f"Loaded configuration preset: {name}")
 
-        # Load experimental configuration
-        if "experimental_config" in preset_data:
-            exp_data = preset_data["experimental_config"]
-            self.experimental_config = ExperimentalConfig(**exp_data)
-
-        # Load retry configuration
-        if "retry_config" in preset_data:
-            retry_data = preset_data["retry_config"]
-            self.retry_config = RetryConfig(**retry_data)
-
-        # Load performance thresholds
-        if "performance_thresholds" in preset_data:
-            perf_data = preset_data["performance_thresholds"]
-            self.performance_thresholds = PerformanceThresholds(**perf_data)
-
-        # Load stimulus parameters
-        if "stimulus_parameters" in preset_data:
-            stim_data = preset_data["stimulus_parameters"]
-            self.stimulus_params = StimulusParameters(**stim_data)
-
-        logger.info(f"Loaded configuration preset: {name}")
+        except (json.JSONDecodeError, TypeError, ValueError) as e:
+            raise ConfigurationError(f"Invalid preset file: {e}")
+        except ConfigurationError:
+            raise
+        except Exception as e:
+            raise ConfigurationError(f"Failed to load preset: {e}")
 
     def list_presets(self) -> List[str]:
         """List available configuration presets.
@@ -662,14 +671,19 @@ class ConfigManager:
             **kwargs: Parameter names and values to update.
         """
         with self._lock:
-            for key, value in kwargs.items():
-                if hasattr(self.apgi_params, key):
-                    setattr(self.apgi_params, key, value)
-                else:
-                    raise ConfigurationError(f"Unknown APGI parameter: {key}")
-
-            # Re-validate parameters
-            self.apgi_params.__post_init__()
+            try:
+                # Use replace for atomic update and validation
+                new_params = replace(self.apgi_params, **kwargs)
+                # Ensure __post_init__ is called if replace doesn't do it for some reason
+                # (it does, but just to be sure of consistency)
+                new_params.__post_init__()
+                self.apgi_params = new_params
+            except (TypeError, ValueError) as e:
+                raise ConfigurationError(f"Invalid parameter update: {e}")
+            except ConfigurationError:
+                raise
+            except Exception as e:
+                raise ConfigurationError(f"Failed to update APGI parameters: {e}")
 
     def update_experimental_config(self, **kwargs) -> None:
         """Update experimental configuration.
@@ -678,14 +692,17 @@ class ConfigManager:
             **kwargs: Configuration names and values to update.
         """
         with self._lock:
-            for key, value in kwargs.items():
-                if hasattr(self.experimental_config, key):
-                    setattr(self.experimental_config, key, value)
-                else:
-                    raise ConfigurationError(f"Unknown experimental parameter: {key}")
-
-            # Re-validate configuration
-            self.experimental_config.__post_init__()
+            try:
+                # Use replace for atomic update and validation
+                new_config = replace(self.experimental_config, **kwargs)
+                new_config.__post_init__()
+                self.experimental_config = new_config
+            except (TypeError, ValueError) as e:
+                raise ConfigurationError(f"Invalid configuration update: {e}")
+            except ConfigurationError:
+                raise
+            except Exception as e:
+                raise ConfigurationError(f"Failed to update experimental config: {e}")
 
     def validate(self) -> bool:
         """Validate all configuration objects.

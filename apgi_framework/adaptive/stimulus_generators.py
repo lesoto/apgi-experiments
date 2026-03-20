@@ -148,17 +148,14 @@ class StimulusGenerator(ABC, Generic[T]):
     @abstractmethod
     def initialize(self) -> bool:
         """Initialize the stimulus generator."""
-        pass
 
     @abstractmethod
     def generate_stimulus(self, parameters: T) -> bool:
         """Generate and present stimulus."""
-        pass
 
     @abstractmethod
     def cleanup(self) -> None:
         """Clean up resources."""
-        pass
 
     def validate_timing(self, min_interval_ms: float) -> bool:
         """Validate minimum interval between stimuli."""

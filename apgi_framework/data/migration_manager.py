@@ -17,8 +17,6 @@ from .parameter_estimation_schema import ParameterEstimationSchema
 class MigrationError(APGIFrameworkError):
     """Errors in database migration operations."""
 
-    pass
-
 
 class MigrationManager:
     """

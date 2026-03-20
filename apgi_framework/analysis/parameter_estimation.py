@@ -525,11 +525,11 @@ class JointParameterFitter:
 
         # Print convergence status
         if convergence.converged:
-            print("✓ Model converged successfully")
+            logger.info("✓ Model converged successfully")
         else:
-            print("✗ Model did not converge")
+            logger.info("✗ Model did not converge")
             for warning in convergence.warnings:
-                print(f"  - {warning}")
+                logger.info(f"  - {warning}")
 
         return FitResults(
             parameter_estimates=parameter_estimates,

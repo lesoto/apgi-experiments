@@ -37,8 +37,6 @@ from .data_models import (
 class PersistenceError(APGIFrameworkError):
     """Errors in data persistence operations."""
 
-    pass
-
 
 class PersistenceLayer:
     """
@@ -59,9 +57,14 @@ class PersistenceLayer:
         self.hdf5_available = True
         self.sqlite_available = True
 
-        # PostgreSQL-related attributes (set when available)
-        self._psycopg2 = None
-        self._psycopg2_extras_Json = None
+        # Create storage directories
+        self.storage_path.mkdir(parents=True, exist_ok=True)
+        self.metadata_path = self.storage_path / "metadata"
+        self.data_path = self.storage_path / "data"
+        self.backup_path = self.storage_path / "backups"
+
+        for path in [self.metadata_path, self.data_path, self.backup_path]:
+            path.mkdir(exist_ok=True)
 
         # Initialize backends
         if backend == "hdf5":
@@ -73,17 +76,7 @@ class PersistenceLayer:
         else:
             raise PersistenceError(f"Unknown backend: {backend}")
 
-        # Create storage directories
-        self.storage_path.mkdir(parents=True, exist_ok=True)
-        self.metadata_path = self.storage_path / "metadata"
-        self.data_path = self.storage_path / "data"
-        self.backup_path = self.storage_path / "backups"
-
-        for path in [self.metadata_path, self.data_path, self.backup_path]:
-            path.mkdir(exist_ok=True)
-
-        # Initialize backends
-        self._init_sqlite()
+        # Initialize backends (Legacy support for different backend strings)
         if self.backend in ["hdf5", "hybrid"]:
             self._init_hdf5()
         if self.backend == "postgresql":

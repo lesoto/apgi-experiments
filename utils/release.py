@@ -17,8 +17,6 @@ from typing import Any, Dict, List, Optional, cast
 class ReleaseError(Exception):
     """Custom exception for release errors."""
 
-    pass
-
 
 class ReleaseManager:
     """Enhanced release manager with automated testing and deployment."""

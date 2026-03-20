@@ -75,7 +75,13 @@ class AnalysisEngine:
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         # Initialize plotting style
-        plt.style.use("seaborn-v0_8")
+        try:
+            plt.style.use("seaborn-v0_8")
+        except Exception:
+            try:
+                plt.style.use("seaborn")
+            except Exception:
+                plt.style.use("ggplot")
         if HAS_SEABORN and sns is not None:
             sns.set_palette("husl")
 
@@ -713,12 +719,16 @@ class AnalysisEngine:
                 return [convert_numpy(item) for item in obj]
             elif isinstance(obj, dict):
                 return {key: convert_numpy(value) for key, value in obj.items()}
+            elif hasattr(obj, "name") and "dtype" in str(type(obj)):
+                return str(obj.name)
+            elif isinstance(obj, (np.dtype, type)):
+                return str(obj)
             return obj
 
         summary = convert_numpy(summary)
 
         with open(summary_path, "w") as f:
-            json.dump(summary, f, indent=2)
+            json.dump(summary, f, indent=2, default=str)
 
         # Save detailed data
         data_path = results_dir / f"{result.analysis_id}_data.csv"

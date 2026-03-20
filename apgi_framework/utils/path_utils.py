@@ -12,6 +12,9 @@ import warnings
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
+from apgi_framework.logging.standardized_logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class PathManager:
@@ -582,18 +585,18 @@ if __name__ == "__main__":
     # Example usage
     pm = PathManager()
 
-    print("Platform info:", pm.get_platform_info())
-    print("Common directories:", pm.ensure_common_dirs())
+    logger.info("Platform info:", pm.get_platform_info())
+    logger.info("Common directories:", pm.ensure_common_dirs())
 
     # Test file operations
     with pm.temp_file(suffix=".txt") as temp_file:
         temp_file.write_text("Hello, APGI Framework!")
-        print(f"Created temp file: {temp_file}")
-        print(f"File info: {pm.get_file_info(temp_file)}")
+        logger.info(f"Created temp file: {temp_file}")
+        logger.info(f"File info: {pm.get_file_info(temp_file)}")
 
     # Test safe filename
     unsafe_name = '<>:"/\\|?*.txt'
     safe_name = pm.safe_filename(unsafe_name)
-    print(f"Safe filename: {unsafe_name} -> {safe_name}")
+    logger.info(f"Safe filename: {unsafe_name} -> {safe_name}")
 
-    print("Path utilities test completed.")
+    logger.info("Path utilities test completed.")

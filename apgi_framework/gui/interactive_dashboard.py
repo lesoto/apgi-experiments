@@ -20,7 +20,9 @@ try:
     from flask import Flask, jsonify, render_template, request  # type: ignore
     from flask_socketio import SocketIO, emit  # type: ignore
 except ImportError:
-    print("Warning: flask_socketio not available. Running in limited mode.")
+    import logging
+
+    logging.warning("flask_socketio not available. Running in limited mode.")
 
 import json
 import os
@@ -29,6 +31,10 @@ import threading
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
+from apgi_framework.logging.standardized_logging import get_logger
+
+logger = get_logger(__name__)
+
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
@@ -553,10 +559,10 @@ def create_interactive_dashboard(
         Configured interactive dashboard
     """
     if Flask is None:
-        print(
+        logger.info(
             "Error: Flask and flask_socketio are required for the interactive dashboard."
         )
-        print("Please install them with: pip install flask flask-socketio")
+        logger.info("Please install them with: pip install flask flask-socketio")
         return None
 
     return InteractiveWebDashboard(port=port, host=host)
@@ -564,13 +570,15 @@ def create_interactive_dashboard(
 
 if __name__ == "__main__":
     if Flask is None:
-        print(
+        logger.info(
             "Error: Flask and flask_socketio are required for the interactive dashboard."
         )
-        print("Please install them with: pip install flask flask-socketio")
+        logger.info("Please install them with: pip install flask flask-socketio")
         exit(1)
 
     dashboard = create_interactive_dashboard()
     if dashboard:
-        print(f"Starting interactive dashboard at {dashboard.get_dashboard_url()}")
+        logger.info(
+            f"Starting interactive dashboard at {dashboard.get_dashboard_url()}"
+        )
         dashboard.start_dashboard()

@@ -26,8 +26,6 @@ from .persistence_layer import PersistenceError, PersistenceLayer
 class StorageError(APGIFrameworkError):
     """Errors in storage management operations."""
 
-    pass
-
 
 class StorageManager:
     """

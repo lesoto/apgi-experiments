@@ -397,8 +397,6 @@ class SecurityValidator:
 class SecurityError(Exception):
     """Security-related validation errors."""
 
-    pass
-
 
 # Global validator instance
 _default_validator = SecurityValidator(strict_mode=True)

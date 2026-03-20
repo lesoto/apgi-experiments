@@ -56,19 +56,13 @@ logger = logging.getLogger(__name__)
 class SandboxError(Exception):
     """Sandbox execution errors."""
 
-    pass
-
 
 class SecurityViolationError(SandboxError):
     """Security policy violations."""
 
-    pass
-
 
 class ResourceLimitExceededError(SandboxError):
     """Resource limit exceeded."""
-
-    pass
 
 
 class CodeSandbox:

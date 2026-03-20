@@ -19,12 +19,13 @@ from typing import Any, Dict, List, Optional, Tuple
 from ..config import get_config_manager
 from ..exceptions import APGIFrameworkError
 from ..logging.standardized_logging import get_logger
+from apgi_framework.logging.standardized_logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class DeploymentError(APGIFrameworkError):
     """Deployment-related errors."""
-
-    pass
 
 
 @dataclass
@@ -699,25 +700,27 @@ def main():
     try:
         if args.status:
             status = manager.get_deployment_status()
-            print(json.dumps(status, indent=2))
+            logger.info(json.dumps(status, indent=2))
 
         elif args.list_backups:
             backups = manager.list_backups()
-            print(json.dumps(backups, indent=2))
+            logger.info(json.dumps(backups, indent=2))
 
         elif args.cleanup_backups:
             manager.cleanup_old_backups(args.cleanup_backups)
-            print(f"Cleaned up old backups, keeping {args.cleanup_backups} most recent")
+            logger.info(
+                f"Cleaned up old backups, keeping {args.cleanup_backups} most recent"
+            )
 
         else:
             # Perform deployment
             result = manager.deploy(
                 source_path=args.source, create_backup=not args.no_backup
             )
-            print(json.dumps(result, indent=2))
+            logger.info(json.dumps(result, indent=2))
 
     except Exception as e:
-        print(f"Deployment failed: {e}", file=sys.stderr)
+        logger.info(f"Deployment failed: {e}", file=sys.stderr)
         sys.exit(1)
 
 

@@ -235,7 +235,6 @@ class TestDisorderClassification:
         assert profile.threshold == 3.5
 
         # Remove the old test code that references non-existent methods
-        pass
 
 
 class TestClinicalParameters:

@@ -11,6 +11,9 @@ from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
+from apgi_framework.logging.standardized_logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class BIDSExporter:
@@ -720,7 +723,7 @@ if __name__ == "__main__":
         sampling_rate=1000.0,
     )
 
-    print(f"Exported EEG data to: {eeg_file}")
+    logger.info(f"Exported EEG data to: {eeg_file}")
 
     # Create sample behavioral data
     beh_data = pd.DataFrame(
@@ -737,8 +740,8 @@ if __name__ == "__main__":
         data=beh_data, subject_id="01", task_name="experiment"
     )
 
-    print(f"Exported behavioral data to: {beh_file}")
+    logger.info(f"Exported behavioral data to: {beh_file}")
 
     # Validate structure
     validation = exporter.validate_bids_structure()
-    print("Validation results:", validation)
+    logger.info("Validation results:", validation)

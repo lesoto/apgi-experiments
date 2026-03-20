@@ -20,8 +20,6 @@ logger = logging.getLogger(__name__)
 class SecurePickleError(Exception):
     """Security-related pickle errors."""
 
-    pass
-
 
 class ValidationResult(TypedDict, total=False):
     """Type for pickle validation result dictionary."""

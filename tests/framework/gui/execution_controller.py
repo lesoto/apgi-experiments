@@ -432,7 +432,6 @@ class TestExecutionController(QObject):
         """Update progress monitoring (called by timer)."""
         # This could be used for additional monitoring tasks
         # like memory usage, system resources, etc.
-        pass
 
     def get_execution_statistics(self) -> Dict[str, Any]:
         """Get statistics about test executions."""

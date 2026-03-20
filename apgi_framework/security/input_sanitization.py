@@ -15,8 +15,6 @@ logger = logging.getLogger(__name__)
 class SecurityError(Exception):
     """Security-related exception for input validation failures."""
 
-    pass
-
 
 class InputSanitizer:
     """Sanitize and validate various types of user input."""
@@ -565,24 +563,24 @@ if __name__ == "__main__":
     # Test filename sanitization
     try:
         safe_name = sanitizer.sanitize_filename("../../../etc/passwd")
-        print(f"Sanitized filename: {safe_name}")
+        logger.info(f"Sanitized filename: {safe_name}")
     except SecurityError as e:
-        print(f"Security error: {e}")
+        logger.info(f"Security error: {e}")
 
     # Test path sanitization
     try:
         safe_path = sanitizer.sanitize_path("../data/test.txt", base_dir="./safe")
-        print(f"Safe path: {safe_path}")
+        logger.info(f"Safe path: {safe_path}")
     except SecurityError as e:
-        print(f"Security error: {e}")
+        logger.info(f"Security error: {e}")
 
     # Test text sanitization
     try:
         safe_text = sanitizer.sanitize_text_input("<script>alert('xss')</script>Hello")
-        print(f"Sanitized text: {safe_text}")
+        logger.info(f"Sanitized text: {safe_text}")
     except SecurityError as e:
-        print(f"Security error: {e}")
+        logger.info(f"Security error: {e}")
 
     # Test secure file handler
     handler = SecureFileHandler(allowed_directories=["./test_data"])
-    print("Security tests completed.")
+    logger.info("Security tests completed.")

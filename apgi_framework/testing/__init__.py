@@ -26,15 +26,6 @@ from .ci_integrator import (
     ExecutionResult,
     PreCommitHookManager,
 )
-from .error_handler import (
-    Context,
-    DiagnosticInfo,
-    ErrorCategory,
-    ErrorHandler,
-    ErrorSeverity,
-    ResolutionGuidance,
-    SystemState,
-)
 from .notification_manager import (
     HistoryTracker,
     NotificationChannel,
@@ -44,11 +35,6 @@ from .notification_manager import (
     create_file_channel,
     create_slack_channel,
     create_teams_channel,
-)
-from .performance_optimizer import (
-    PerformanceBenchmark,
-    PerformanceOptimizedTestRunner,
-    ResultCache,
 )
 from .persistence import (
     BatchExecutionRecord,

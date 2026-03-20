@@ -22,8 +22,6 @@ from .data_models import (
 class ValidationError(APGIFrameworkError):
     """Errors in data validation."""
 
-    pass
-
 
 class DataValidator:
     """

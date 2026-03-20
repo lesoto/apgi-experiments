@@ -7,7 +7,6 @@ allowing users to configure and run experiments with various parameters.
 
 __version__ = "0.1.0"
 
-import os
 import sys
 from pathlib import Path
 

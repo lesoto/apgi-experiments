@@ -16,6 +16,10 @@ import threading
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict
+from apgi_framework.logging.standardized_logging import get_logger
+
+logger = get_logger(__name__)
+
 
 # GUI imports
 try:
@@ -45,7 +49,7 @@ try:
 
     UTILS_AVAILABLE = True
 except ImportError as e:
-    print(f"Warning: Test utilities not available: {e}")
+    logger.info(f"Warning: Test utilities not available: {e}")
     UTILS_AVAILABLE = False
 
 
@@ -379,9 +383,9 @@ class ComprehensiveTestRunner:
         cmd = [sys.executable, "-m", "pytest"] + args
 
         if not capture_output:
-            print(f"Running: {' '.join(cmd)}")
-            print(f"PYTHONPATH: {env['PYTHONPATH']}")
-            print("-" * 60)
+            logger.info(f"Running: {' '.join(cmd)}")
+            logger.info(f"PYTHONPATH: {env['PYTHONPATH']}")
+            logger.info("-" * 60)
 
         # Run pytest
         try:
@@ -400,7 +404,7 @@ class ComprehensiveTestRunner:
                 return result
         except KeyboardInterrupt:
             if not capture_output:
-                print("\nTest execution interrupted by user")
+                logger.info("\nTest execution interrupted by user")
             if capture_output:
 
                 class MockResult:
@@ -413,7 +417,7 @@ class ComprehensiveTestRunner:
             return 130
         except subprocess.TimeoutExpired:
             if not capture_output:
-                print(f"\nTest execution timed out after {timeout} seconds")
+                logger.info(f"\nTest execution timed out after {timeout} seconds")
             if capture_output:
 
                 class MockResult:
@@ -428,7 +432,7 @@ class ComprehensiveTestRunner:
             return 124
         except Exception as e:
             if not capture_output:
-                print(f"Error running pytest: {e}")
+                logger.info(f"Error running pytest: {e}")
             if capture_output:
                 error_msg = str(e)
 
@@ -445,8 +449,8 @@ class ComprehensiveTestRunner:
         self, verbose: bool = False, coverage: bool = False, parallel: bool = True
     ) -> Dict[str, Any]:
         """Run all tests with comprehensive reporting."""
-        print("🧪 Running Comprehensive Test Suite")
-        print("=" * 50)
+        logger.info("🧪 Running Comprehensive Test Suite")
+        logger.info("=" * 50)
 
         results = {
             "timestamp": datetime.now().isoformat(),
@@ -482,7 +486,7 @@ class ComprehensiveTestRunner:
         # Add parallel execution if enabled
         if parallel and multiprocessing.cpu_count() > 1:
             cmd.extend(["-n", str(multiprocessing.cpu_count())])
-            print(
+            logger.info(
                 f"Running tests in parallel with {multiprocessing.cpu_count()} workers"
             )
 
@@ -512,7 +516,7 @@ class ComprehensiveTestRunner:
             return results
 
         except Exception as e:
-            print(f"❌ Error running tests: {e}")
+            logger.info(f"❌ Error running tests: {e}")
             results["errors"] = 1
             results["exception"] = str(e)
             return results
@@ -521,8 +525,8 @@ class ComprehensiveTestRunner:
         self, category: str, verbose: bool = False, coverage: bool = False
     ) -> Dict[str, Any]:
         """Run tests for a specific category."""
-        print(f"🧪 Running {category} Tests")
-        print("=" * 30)
+        logger.info(f"🧪 Running {category} Tests")
+        logger.info("=" * 30)
 
         cmd = ["-m", category]
 
@@ -548,11 +552,13 @@ class ComprehensiveTestRunner:
             # Parse basic stats
             self._parse_pytest_output(result.stdout, results)
 
-            print(f"✅ {category} tests completed with exit code: {result.returncode}")
+            logger.info(
+                f"✅ {category} tests completed with exit code: {result.returncode}"
+            )
             return results
 
         except Exception as e:
-            print(f"❌ Error running {category} tests: {e}")
+            logger.info(f"❌ Error running {category} tests: {e}")
             return {"category": category, "error": str(e)}
 
     def run_gui_tests(self, **kwargs) -> Dict[str, Any]:
@@ -573,8 +579,8 @@ class ComprehensiveTestRunner:
 
     def run_specific_test(self, test_path: str, **kwargs) -> Dict[str, Any]:
         """Run a specific test file or test function."""
-        print(f"🧪 Running Specific Test: {test_path}")
-        print("=" * 40)
+        logger.info(f"🧪 Running Specific Test: {test_path}")
+        logger.info("=" * 40)
 
         cmd = [test_path]
 
@@ -597,11 +603,13 @@ class ComprehensiveTestRunner:
                 "timestamp": datetime.now().isoformat(),
             }
 
-            print(f"✅ Test {test_path} completed with exit code: {result.returncode}")
+            logger.info(
+                f"✅ Test {test_path} completed with exit code: {result.returncode}"
+            )
             return results
 
         except Exception as e:
-            print(f"❌ Error running test {test_path}: {e}")
+            logger.info(f"❌ Error running test {test_path}: {e}")
             return {"test_path": test_path, "error": str(e)}
 
     def _parse_pytest_output(self, output: str, results: Dict[str, Any]):
@@ -634,23 +642,23 @@ class ComprehensiveTestRunner:
 
     def _print_summary(self, results: Dict[str, Any]):
         """Print a formatted summary of test results."""
-        print("\n" + "=" * 50)
-        print("📊 TEST SUMMARY")
-        print("=" * 50)
-        print(f"Total Tests: {results['total_tests']}")
-        print(f"✅ Passed: {results['passed']}")
-        print(f"❌ Failed: {results['failed']}")
-        print(f"⏭️  Skipped: {results['skipped']}")
-        print(f"🚨 Errors: {results['errors']}")
-        print(f"⏱️  Duration: {results['duration']:.2f}s")
-        print(f"📅 Timestamp: {results['timestamp']}")
+        logger.info("\n" + "=" * 50)
+        logger.info("📊 TEST SUMMARY")
+        logger.info("=" * 50)
+        logger.info(f"Total Tests: {results['total_tests']}")
+        logger.info(f"✅ Passed: {results['passed']}")
+        logger.info(f"❌ Failed: {results['failed']}")
+        logger.info(f"⏭️  Skipped: {results['skipped']}")
+        logger.info(f"🚨 Errors: {results['errors']}")
+        logger.info(f"⏱️  Duration: {results['duration']:.2f}s")
+        logger.info(f"📅 Timestamp: {results['timestamp']}")
 
         if results.get("exit_code") == 0:
-            print("🎉 All tests passed!")
+            logger.info("🎉 All tests passed!")
         else:
-            print("⚠️  Some tests failed or had errors")
+            logger.info("⚠️  Some tests failed or had errors")
 
-        print("=" * 50)
+        logger.info("=" * 50)
 
 
 def setup_python_path():

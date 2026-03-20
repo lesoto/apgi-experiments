@@ -92,7 +92,6 @@ else:
         def __init__(self, parent=None):
             self.itemChanged = Signal()
             self._children = []
-            pass
 
         def setHeaderLabels(self, labels):
             pass
@@ -181,7 +180,6 @@ else:
     class QPushButton:  # type: ignore[no-redef]
         def __init__(self, text=None, parent=None):
             self.clicked = Signal()
-            pass
 
         def setStyleSheet(self, style):
             pass
@@ -192,7 +190,6 @@ else:
     class QLineEdit:  # type: ignore[no-redef]
         def __init__(self, text=None, parent=None):
             self.textChanged = Signal()
-            pass
 
         def setPlaceholderText(self, text):
             pass
@@ -203,7 +200,6 @@ else:
     class QComboBox:  # type: ignore[no-redef]
         def __init__(self, parent=None):
             self.currentTextChanged = Signal()
-            pass
 
         def addItem(self, item):
             pass
@@ -226,7 +222,6 @@ else:
     class QCheckBox:  # type: ignore[no-redef]
         def __init__(self, text=None, parent=None):
             self.stateChanged = Signal()
-            pass
 
         def setChecked(self, checked):
             pass
@@ -373,7 +368,6 @@ else:
     class QTimer:  # type: ignore[no-redef]
         def __init__(self, parent=None):
             self.timeout = Signal()
-            pass
 
         def setSingleShot(self, single):
             pass

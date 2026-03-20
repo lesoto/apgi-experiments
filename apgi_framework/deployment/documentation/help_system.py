@@ -8,6 +8,9 @@ import logging
 from dataclasses import dataclass
 from enum import Enum
 from typing import Callable, Dict, List, Optional
+from apgi_framework.logging.standardized_logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class HelpContext(Enum):
@@ -441,36 +444,36 @@ class InSystemHelpSystem:
 
     def _print_help_content(self, content: HelpContent) -> None:
         """Print help content to console (fallback)."""
-        print(f"\n{'=' * 60}")
-        print(f"HELP: {content.title}")
-        print(f"{'=' * 60}")
-        print(f"\n{content.description}\n")
+        logger.info(f"\n{'=' * 60}")
+        logger.info(f"HELP: {content.title}")
+        logger.info(f"{'=' * 60}")
+        logger.info(f"\n{content.description}\n")
 
         if content.steps:
-            print("Steps:")
+            logger.info("Steps:")
             for i, step in enumerate(content.steps, 1):
-                print(f"  {i}. {step}")
-            print()
+                logger.info(f"  {i}. {step}")
+            logger.info()
 
         if content.tips:
-            print("Tips:")
+            logger.info("Tips:")
             for tip in content.tips:
-                print(f"  💡 {tip}")
-            print()
+                logger.info(f"  💡 {tip}")
+            logger.info()
 
         if content.warnings:
-            print("Warnings:")
+            logger.info("Warnings:")
             for warning in content.warnings:
-                print(f"  ⚠️  {warning}")
-            print()
+                logger.info(f"  ⚠️  {warning}")
+            logger.info()
 
         if content.related_topics:
-            print("Related Topics:")
+            logger.info("Related Topics:")
             for topic in content.related_topics:
-                print(f"  → {topic}")
-            print()
+                logger.info(f"  → {topic}")
+            logger.info()
 
-        print(f"{'=' * 60}\n")
+        logger.info(f"{'=' * 60}\n")
 
     def search_help(self, query: str) -> List[HelpContent]:
         """

@@ -48,8 +48,6 @@ from ..logging.standardized_logging import get_logger
 class MLIntegrationError(APGIFrameworkError):
     """ML integration specific errors."""
 
-    pass
-
 
 class UnifiedMLClassifier:
     """

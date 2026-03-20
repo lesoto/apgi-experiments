@@ -8,6 +8,10 @@ import pytest
 
 from apgi_framework.cli import APGIFrameworkCLI
 
+print(
+    f"DEBUG: APGIFrameworkCLI imported from {APGIFrameworkCLI.__module__} at {getattr(APGIFrameworkCLI, '__file__', 'unknown')}"
+)
+
 
 class TestCLIExecution:
     """Test CLI execution paths for coverage."""
@@ -208,7 +212,7 @@ class TestCLIExecution:
             with patch.object(cli.logger, "error") as mock_error:
                 # CLI run() calls sys.exit(2) for unknown command
                 with pytest.raises(SystemExit) as exc_info:
-                    cli.run()
+                    APGIFrameworkCLI.run(cli, ["unknown-command"])
                 assert exc_info.value.code == 2
                 mock_error.assert_called_with("Unknown command: unknown-command")
 

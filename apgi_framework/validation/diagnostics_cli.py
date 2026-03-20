@@ -10,13 +10,16 @@ import sys
 from ..config import get_config_manager
 from .parameter_validator import get_validator
 from .system_health import get_health_checker
+from apgi_framework.logging.standardized_logging import get_logger
+
+logger = get_logger(__name__)
 
 
 def run_health_check(args: argparse.Namespace) -> None:
     """Run system health check"""
-    print("\n" + "=" * 60)
-    print("APGI FRAMEWORK SYSTEM HEALTH CHECK")
-    print("=" * 60 + "\n")
+    logger.info("\n" + "=" * 60)
+    logger.info("APGI FRAMEWORK SYSTEM HEALTH CHECK")
+    logger.info("=" * 60 + "\n")
 
     health_checker = get_health_checker()
 
@@ -27,7 +30,7 @@ def run_health_check(args: argparse.Namespace) -> None:
         # Full health check
         result = health_checker.run_full_health_check()
 
-    print(result.get_report())
+    logger.info(result.get_report())
 
     # Exit with appropriate code
     if result.overall_status == "critical":
@@ -40,41 +43,41 @@ def run_health_check(args: argparse.Namespace) -> None:
 
 def run_diagnostics(args: argparse.Namespace) -> None:
     """Run diagnostic information gathering"""
-    print("\n" + "=" * 60)
-    print("APGI FRAMEWORK DIAGNOSTIC INFORMATION")
-    print("=" * 60 + "\n")
+    logger.info("\n" + "=" * 60)
+    logger.info("APGI FRAMEWORK DIAGNOSTIC INFORMATION")
+    logger.info("=" * 60 + "\n")
 
     health_checker = get_health_checker()
     info = health_checker.get_diagnostic_info()
 
-    print("System Information:")
+    logger.info("System Information:")
     for key, value in info.items():
-        print(f"  {key}: {value}")
+        logger.info(f"  {key}: {value}")
 
-    print("\nConfiguration:")
+    logger.info("\nConfiguration:")
     try:
         config_manager = get_config_manager()
         apgi_params = config_manager.get_apgi_parameters()
         exp_config = config_manager.get_experimental_config()
 
-        print("  APGI Parameters:")
-        print(f"    Exteroceptive Precision: {apgi_params.extero_precision}")
-        print(f"    Interoceptive Precision: {apgi_params.intero_precision}")
-        print(f"    Threshold: {apgi_params.threshold}")
+        logger.info("  APGI Parameters:")
+        logger.info(f"    Exteroceptive Precision: {apgi_params.extero_precision}")
+        logger.info(f"    Interoceptive Precision: {apgi_params.intero_precision}")
+        logger.info(f"    Threshold: {apgi_params.threshold}")
 
-        print("  Experimental Config:")
-        print(f"    Trials: {exp_config.n_trials}")
-        print(f"    Participants: {exp_config.n_participants}")
-        print(f"    Alpha Level: {exp_config.alpha_level}")
+        logger.info("  Experimental Config:")
+        logger.info(f"    Trials: {exp_config.n_trials}")
+        logger.info(f"    Participants: {exp_config.n_participants}")
+        logger.info(f"    Alpha Level: {exp_config.alpha_level}")
     except Exception as e:
-        print(f"  Error loading configuration: {str(e)}")
+        logger.info(f"  Error loading configuration: {str(e)}")
 
 
 def validate_parameters(args: argparse.Namespace) -> None:
     """Validate parameters from command line"""
-    print("\n" + "=" * 60)
-    print("PARAMETER VALIDATION")
-    print("=" * 60 + "\n")
+    logger.info("\n" + "=" * 60)
+    logger.info("PARAMETER VALIDATION")
+    logger.info("=" * 60 + "\n")
 
     validator = get_validator()
 
@@ -86,18 +89,18 @@ def validate_parameters(args: argparse.Namespace) -> None:
                 key, value = param_str.split("=")
                 params[key] = float(value)
             except ValueError:
-                print(f"Error: Invalid parameter format: {param_str}")
-                print("Expected format: key=value")
+                logger.info(f"Error: Invalid parameter format: {param_str}")
+                logger.info("Expected format: key=value")
                 sys.exit(1)
 
     if not params:
-        print("No parameters provided. Use --params key=value")
+        logger.info("No parameters provided. Use --params key=value")
         sys.exit(1)
 
     # Validate
     result = validator.validate_apgi_parameters(**params)
 
-    print(result.get_message())
+    logger.info(result.get_message())
 
     if not result.is_valid:
         sys.exit(1)
@@ -108,11 +111,11 @@ def get_parameter_info(args: argparse.Namespace) -> None:
     validator = get_validator()
 
     if not args.parameter:
-        print("Error: No parameter name provided")
+        logger.info("Error: No parameter name provided")
         sys.exit(1)
 
     info = validator.get_parameter_info(args.parameter)
-    print(f"\n{info}\n")
+    logger.info(f"\n{info}\n")
 
 
 def main() -> None:

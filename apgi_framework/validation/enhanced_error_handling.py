@@ -112,12 +112,10 @@ class ErrorRecoveryStrategy(abc.ABC):
     @abc.abstractmethod
     def can_handle(self, error: APGIError) -> bool:
         """Check if this strategy can handle the error."""
-        pass
 
     @abc.abstractmethod
     def recover(self, error: APGIError, **kwargs) -> bool:
         """Attempt to recover from the error."""
-        pass
 
 
 class DataValidationRecovery(ErrorRecoveryStrategy):

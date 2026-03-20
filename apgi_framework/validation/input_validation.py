@@ -18,8 +18,6 @@ logger = get_logger(__name__)
 class ValidationError(Exception):
     """Raised when input validation fails."""
 
-    pass
-
 
 def validate_file_path(
     file_path: Union[str, Path],

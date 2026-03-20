@@ -55,11 +55,12 @@ except ImportError:
 
 # Check if pytest-xdist is available for parallel execution
 try:
-    import pytest_xdist  # noqa: F401
+    import xdist  # noqa: F401
 
     HAS_PYTEST_XDIST = True
 except ImportError:
     HAS_PYTEST_XDIST = False
+
 
 # Add project root to path
 project_root = Path(__file__).parent.absolute()

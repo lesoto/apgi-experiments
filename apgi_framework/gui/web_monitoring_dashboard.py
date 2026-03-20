@@ -533,10 +533,10 @@ def launch_web_dashboard(
     success = dashboard.start_server()
 
     if success:
-        print(f"🌐 Web dashboard launched at http://{host}:{port}")
-        print("Open this URL in your browser to monitor experiments in real-time")
+        logger.info(f"🌐 Web dashboard launched at http://{host}:{port}")
+        logger.info("Open this URL in your browser to monitor experiments in real-time")
     else:
-        print("❌ Failed to launch web dashboard")
+        logger.info("❌ Failed to launch web dashboard")
 
     return dashboard
 
@@ -550,5 +550,5 @@ if __name__ == "__main__":
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        print("\nStopping web dashboard...")
+        logger.info("\nStopping web dashboard...")
         dashboard.stop_server()

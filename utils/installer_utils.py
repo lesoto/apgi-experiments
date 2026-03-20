@@ -14,8 +14,6 @@ from typing import Any, Dict, List, Optional
 class InstallerError(Exception):
     """Custom exception for installer errors."""
 
-    pass
-
 
 def check_python_version(min_version: tuple = (3, 8)) -> bool:
     """Check if Python version meets requirements.

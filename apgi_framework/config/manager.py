@@ -242,7 +242,6 @@ class ConfigurationManager:
         """Load configuration from command line arguments."""
         # This would be called from CLI with parsed arguments
         # Implementation depends on how CLI is structured
-        pass
 
     def _update_config_from_dict(self, config_dict: Dict[str, Any]):
         """Update configuration from dictionary."""

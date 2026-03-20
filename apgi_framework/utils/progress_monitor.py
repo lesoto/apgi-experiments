@@ -10,6 +10,9 @@ import time
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Callable, Optional
+from apgi_framework.logging.standardized_logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class ProgressStatus(Enum):
@@ -164,7 +167,7 @@ class ProgressMonitor:
         # Only update every 0.5 seconds to avoid flickering
         current_time = time.time()
         if current_time - self.last_update_time >= 0.5:
-            print(display, end="", flush=True)
+            logger.info(display, end="", flush=True)
             self.last_update_time = current_time
 
 

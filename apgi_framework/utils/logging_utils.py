@@ -20,6 +20,9 @@ from typing import Any, Dict, List, Optional, Union
 
 from .file_utils import FileUtils
 from .path_utils import get_path_manager
+from apgi_framework.logging.standardized_logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class LogLevel(Enum):
@@ -501,9 +504,9 @@ class LoggingUtils:
                             cleaned_count += 1
                         except Exception as e:
                             # Log cleanup failure to console only to avoid recursion
-                            print(f"Failed to clean up log file {log_file}: {e}")
+                            logger.info(f"Failed to clean up log file {log_file}: {e}")
         except Exception as e:
-            print(f"Error during log cleanup: {e}")
+            logger.info(f"Error during log cleanup: {e}")
 
         if cleaned_count > 0:
             self.log_structured(
@@ -611,7 +614,7 @@ class LoggingUtils:
                                 continue
 
                 except Exception as e:
-                    print(f"Error reading log file {log_file}: {e}")
+                    logger.info(f"Error reading log file {log_file}: {e}")
 
         # Sort by timestamp
         filtered_entries.sort(key=lambda x: x["timestamp"])

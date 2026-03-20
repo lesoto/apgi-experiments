@@ -23,6 +23,10 @@ from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 import warnings
+from apgi_framework.logging.standardized_logging import get_logger
+
+logger = get_logger(__name__)
+
 
 try:
     from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
@@ -363,37 +367,47 @@ class ConsciousnessClassifier:
             return probabilities.numpy()
 
 
-class DeepConsciousnessNet(nn.Module):
-    """Deep neural network for consciousness classification."""
+if PYTORCH_AVAILABLE:
 
-    def __init__(self, input_size: int, hidden_sizes: List[int] = [128, 64, 32]):
-        """
-        Initialize deep network.
+    class DeepConsciousnessNet(nn.Module):
+        """Deep neural network for consciousness classification."""
 
-        Parameters
-        ----------
-        input_size : int
-            Number of input features
-        hidden_sizes : list
-            Sizes of hidden layers
-        """
-        super().__init__()
+        def __init__(self, input_size: int, hidden_sizes: List[int] = [128, 64, 32]):
+            """
+            Initialize deep network.
 
-        layers = []
-        prev_size = input_size
+            Parameters
+            ----------
+            input_size : int
+                Number of input features
+            hidden_sizes : list
+                Sizes of hidden layers
+            """
+            super().__init__()
 
-        for hidden_size in hidden_sizes:
-            layers.extend(
-                [nn.Linear(prev_size, hidden_size), nn.ReLU(), nn.Dropout(0.3)]
-            )
-            prev_size = hidden_size
+            layers = []
+            prev_size = input_size
 
-        layers.append(nn.Linear(prev_size, 2))  # Binary classification
+            for hidden_size in hidden_sizes:
+                layers.extend(
+                    [nn.Linear(prev_size, hidden_size), nn.ReLU(), nn.Dropout(0.3)]
+                )
+                prev_size = hidden_size
 
-        self.network = nn.Sequential(*layers)
+            layers.append(nn.Linear(prev_size, 2))  # Binary classification
 
-    def forward(self, x):
-        return self.network(x)
+            self.network = nn.Sequential(*layers)
+
+        def forward(self, x):
+            return self.network(x)
+
+else:
+
+    class DeepConsciousnessNet:
+        """Dummy class when PyTorch is not available."""
+
+        def __init__(self, *args, **kwargs):
+            raise ImportError("PyTorch required for DeepConsciousnessNet")
 
 
 class BiomarkerClassifierEnsemble:
@@ -776,26 +790,26 @@ if __name__ == "__main__":
 
     results = classifier.evaluate(X, y)
 
-    print("Classification Results:")
-    print(f"Accuracy: {results.accuracy:.3f}")
-    print(f"F1 Score: {results.f1_score:.3f}")
-    print(f"Cross-validation scores: {results.cross_val_scores}")
+    logger.info("Classification Results:")
+    logger.info(f"Accuracy: {results.accuracy:.3f}")
+    logger.info(f"F1 Score: {results.f1_score:.3f}")
+    logger.info(f"Cross-validation scores: {results.cross_val_scores}")
 
     if results.feature_importance:
-        print("\nTop 5 Important Features:")
+        logger.info("\nTop 5 Important Features:")
         sorted_features = sorted(
             results.feature_importance.items(), key=lambda x: x[1], reverse=True
         )
         for name, importance in sorted_features[:5]:
-            print(f"{name}: {importance:.3f}")
+            logger.info(f"{name}: {importance:.3f}")
 
     # Ensemble classification
-    print("\n" + "=" * 50)
-    print("Ensemble Classification:")
+    logger.info("\n" + "=" * 50)
+    logger.info("Ensemble Classification:")
 
     ensemble = BiomarkerClassifierEnsemble()
     ensemble.fit(X, y, feature_names)
 
     ensemble_results = ensemble.evaluate_ensemble(X, y)
-    print(f"Ensemble Accuracy: {ensemble_results['ensemble'].accuracy:.3f}")
-    print(f"Ensemble F1 Score: {ensemble_results['ensemble'].f1_score:.3f}")
+    logger.info(f"Ensemble Accuracy: {ensemble_results['ensemble'].accuracy:.3f}")
+    logger.info(f"Ensemble F1 Score: {ensemble_results['ensemble'].f1_score:.3f}")

@@ -348,6 +348,11 @@ class TestWorkflowOrchestrator:
 
     def test_run_initialization(self):
         """Test initialization stage."""
+        self.orchestrator.current_workflow = WorkflowResult(
+            workflow_id="test",
+            start_time=datetime.now(),
+            overall_status=WorkflowStatus.RUNNING,
+        )
         result = self.orchestrator._run_initialization()
 
         assert isinstance(result, dict)
@@ -355,6 +360,11 @@ class TestWorkflowOrchestrator:
 
     def test_run_system_validation(self):
         """Test system validation stage."""
+        self.orchestrator.current_workflow = WorkflowResult(
+            workflow_id="test",
+            start_time=datetime.now(),
+            overall_status=WorkflowStatus.RUNNING,
+        )
         result = self.orchestrator._run_system_validation()
 
         assert isinstance(result, dict)
@@ -405,6 +415,9 @@ class TestWorkflowOrchestrator:
 
     def test_run_report_generation(self):
         """Test report generation stage."""
+        self.orchestrator.controller.config_manager.get_experimental_config.return_value.output_directory = (
+            "/tmp/test"
+        )
         self.orchestrator.current_workflow = WorkflowResult(
             workflow_id="test",
             start_time=datetime.now(),
@@ -530,17 +543,16 @@ class TestWorkflowOrchestrator:
             overall_status=WorkflowStatus.RUNNING,
         )
 
-        with mock.patch("concurrent.futures.ThreadPoolExecutor") as mock_executor:
-            mock_future = mock.Mock()
-            mock_executor.return_value.__enter__.return_value.submit.return_value = (
-                mock_future
-            )
-            mock_future.result.return_value = {"results": []}
+        mock_executor = mock.Mock()
+        mock_future = mock.Mock()
+        mock_executor.submit.return_value = mock_future
+        mock_future.result.return_value = {"results": []}
+        self.orchestrator.executor = mock_executor
 
-            self.orchestrator._run_parallel_falsification_tests()
+        self.orchestrator._run_parallel_falsification_tests()
 
-            # Verify that parallel execution was attempted
-            mock_executor.assert_called_once()
+        # Verify that parallel execution was attempted
+        assert mock_executor.submit.call_count == 2
 
 
 class TestModuleFunctions:

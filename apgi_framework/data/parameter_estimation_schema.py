@@ -15,8 +15,6 @@ from ..exceptions import APGIFrameworkError
 class SchemaError(APGIFrameworkError):
     """Errors in database schema operations."""
 
-    pass
-
 
 class ParameterEstimationSchema:
     """

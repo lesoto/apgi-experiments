@@ -8,6 +8,9 @@ type checking, and user-friendly error messages.
 import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from apgi_framework.logging.standardized_logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class ValidationError(Exception):
@@ -517,12 +520,12 @@ def safe_input(prompt: str, validator_func=None, **validator_kwargs) -> Any:
                 return validator_func(value, **validator_kwargs)
             return value
         except ValidationError as e:
-            print(f"Validation error: {e}")
+            logger.info(f"Validation error: {e}")
         except KeyboardInterrupt:
-            print("\nInput cancelled.")
+            logger.info("\nInput cancelled.")
             return None
         except Exception:
             return None
         except EOFError:
-            print("\nInput ended.")
+            logger.info("\nInput ended.")
             return None

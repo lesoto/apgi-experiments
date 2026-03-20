@@ -10,30 +10,14 @@ This module provides comprehensive reporting capabilities including:
 
 # Import components with graceful fallback for missing dependencies
 try:
-    from .pdf_generator import (
-        APGIReportTemplate,
-        PDFReportGenerator,
-        ReportConfig,
-        ReportSection,
-        create_pdf_generator,
-        generate_experiment_report,
-    )
+    pass
 
     PDF_GENERATOR_AVAILABLE = True
 except ImportError:
     PDF_GENERATOR_AVAILABLE = False
 
 try:
-    from .template_system import (
-        ReportTemplate,
-        TemplateBuilder,
-        TemplateFormat,
-        TemplateManager,
-        TemplateSection,
-        TemplateVariable,
-        create_template_builder,
-        create_template_manager,
-    )
+    pass
 
     TEMPLATE_SYSTEM_AVAILABLE = True
 except ImportError:

@@ -8,7 +8,7 @@ from typing import Iterable, List, Optional
 DEFAULT_DIR_NAMES = {
     "__pycache__",
     "apgi_output",
-    "cache", 
+    "cache",
     "backups",
     "coverage_html_report",
     ".pytest_cache",

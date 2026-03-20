@@ -272,27 +272,22 @@ class StandardMenuBar:
     @abstractmethod
     def new_file(self) -> None:
         """Create new file (to be implemented by subclasses)."""
-        pass
 
     @abstractmethod
     def open_file(self) -> None:
         """Open file (to be implemented by subclasses)."""
-        pass
 
     @abstractmethod
     def save_file(self) -> None:
         """Save file (to be implemented by subclasses)."""
-        pass
 
     @abstractmethod
     def undo(self) -> None:
         """Undo action (to be implemented by subclasses)."""
-        pass
 
     @abstractmethod
     def redo(self) -> None:
         """Redo action (to be implemented by subclasses)."""
-        pass
 
     def preferences(self) -> None:
         """Show preferences dialog (to be overridden)."""

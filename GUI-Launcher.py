@@ -242,18 +242,11 @@ class ComprehensiveGUILauncher:
                     "command": self.launch_experiment_runner,
                 },
                 {
-                    "name": "Falsification GUI",
-                    "file": "apps/apgi_falsification_gui.py",
-                    "description": "Falsification testing interface for consciousness evaluation experiments",
-                    "icon": "[Lab]",
-                    "command": self.launch_falsification_gui,
-                },
-                {
-                    "name": "Falsification GUI (Refactored)",
-                    "file": "apps/apgi_falsification_gui_refactored.py",
-                    "description": "Falsification testing interface with improved architecture",
-                    "icon": "[Test]",
-                    "command": self.launch_falsification_gui_refactored,
+                    "name": "Simple Experiment Runner",
+                    "file": "utils/gui-simple-experiment-runner.py",
+                    "description": "Simplified GUI for running experiments",
+                    "icon": "[Simple]",
+                    "command": self.launch_simple_experiment_runner,
                 },
             ],
             "Analysis & Visualization": [
@@ -279,6 +272,13 @@ class ComprehensiveGUILauncher:
                     "command": self.launch_monitoring_dashboard,
                 },
                 {
+                    "name": "Web Monitoring Dashboard",
+                    "file": "apgi_framework/gui/web_monitoring_dashboard.py",
+                    "description": "Web-based real-time monitoring",
+                    "icon": "[Browser]",
+                    "command": self.launch_web_monitoring_dashboard,
+                },
+                {
                     "name": "Reporting & Visualization",
                     "file": "apgi_framework/gui/reporting_visualization.py",
                     "description": "Generate reports and visualizations",
@@ -287,6 +287,13 @@ class ComprehensiveGUILauncher:
                 },
             ],
             "Configuration & Tools": [
+                {
+                    "name": "Utils GUI",
+                    "file": "Utils-GUI.py",
+                    "description": "Utility script runner with GUI interface",
+                    "icon": "[Tools]",
+                    "command": self.launch_utils_gui,
+                },
                 {
                     "name": "Task Configuration",
                     "file": "apgi_framework/gui/task_configuration.py",
@@ -332,6 +339,13 @@ class ComprehensiveGUILauncher:
             ],
             "Development & Testing": [
                 {
+                    "name": "Tests GUI",
+                    "file": "Tests-GUI.py",
+                    "description": "Comprehensive test runner with GUI interface",
+                    "icon": "[Tests]",
+                    "command": self.launch_tests_gui,
+                },
+                {
                     "name": "GUI Template",
                     "file": "apps/gui_template_background.py",
                     "description": "Template for GUI development",
@@ -363,7 +377,7 @@ class ComprehensiveGUILauncher:
                 },
                 {
                     "name": "Experiment Runner (CLI)",
-                    "file": "tools/run_experiments.py",
+                    "file": "run_experiments.py",
                     "description": "Command-line experiment runner with all experiments",
                     "icon": "[CLI]",
                     "command": self.launch_experiment_runner_cli,
@@ -392,17 +406,17 @@ class ComprehensiveGUILauncher:
             ],
             "Setup & Deployment": [
                 {
-                    "name": "Setup Script",
-                    "file": "setup.py",
-                    "description": "Installation and setup script",
+                    "name": "Installer Utility",
+                    "file": "utils/install_dependencies.py",
+                    "description": "Installation and dependency setup utility",
                     "icon": "[Setup]",
                     "command": self.launch_setup_script,
                 },
                 {
-                    "name": "Quick Deploy",
-                    "file": "quick_deploy.py",
-                    "description": "Quick deployment tool",
-                    "icon": "[Quick]",
+                    "name": "Deployment Validator",
+                    "file": "apgi_framework/deployment/deployment_validator.py",
+                    "description": "System deployment and validation tool",
+                    "icon": "[Check]",
                     "command": self.launch_quick_deploy,
                 },
                 {
@@ -705,15 +719,10 @@ class ComprehensiveGUILauncher:
         """Launch Experiment Runner."""
         self.launch_python_script("apps/experiment_runner_gui.py", "Experiment Runner")
 
-    def launch_falsification_gui(self):
-        """Launch Falsification GUI."""
-        self.launch_python_script("apps/apgi_falsification_gui.py", "Falsification GUI")
-
-    def launch_falsification_gui_refactored(self):
-        """Launch Falsification GUI."""
+    def launch_simple_experiment_runner(self):
+        """Launch Simple Experiment Runner."""
         self.launch_python_script(
-            "apps/apgi_falsification_gui_refactored.py",
-            "Falsification GUI",
+            "utils/gui-simple-experiment-runner.py", "Simple Experiment Runner"
         )
 
     def launch_parameter_estimation(self):
@@ -732,6 +741,12 @@ class ComprehensiveGUILauncher:
         """Launch Monitoring Dashboard."""
         self.launch_python_script(
             "apgi_framework/gui/monitoring_dashboard.py", "Monitoring Dashboard"
+        )
+
+    def launch_web_monitoring_dashboard(self):
+        """Launch Web Monitoring Dashboard."""
+        self.launch_python_script(
+            "apgi_framework/gui/web_monitoring_dashboard.py", "Web Monitoring Dashboard"
         )
 
     def launch_reporting_visualization(self):
@@ -758,6 +773,10 @@ class ComprehensiveGUILauncher:
             "apgi_framework/gui/progress_monitoring.py", "Progress Monitoring"
         )
 
+    def launch_utils_gui(self):
+        """Launch Utils GUI."""
+        self.launch_python_script("Utils-GUI.py", "Utils GUI")
+
     def launch_gui_template(self):
         """Launch GUI Template."""
         self.launch_python_script("apps/gui_template_background.py", "GUI Template")
@@ -767,6 +786,10 @@ class ComprehensiveGUILauncher:
         self.launch_python_script(
             "apgi_framework/gui/error_handling.py", "Error Handling Demo"
         )
+
+    def launch_tests_gui(self):
+        """Launch Tests GUI."""
+        self.launch_python_script("Tests-GUI.py", "Tests GUI")
 
     # Additional GUI launch methods
     def launch_coverage_visualization(self):
@@ -799,7 +822,7 @@ class ComprehensiveGUILauncher:
 
     def launch_experiment_runner_cli(self):
         """Launch Experiment Runner (CLI)."""
-        self.launch_python_script("tools/run_experiments.py", "Experiment Runner (CLI)")
+        self.launch_python_script("run_experiments.py", "Experiment Runner (CLI)")
 
     def launch_framework_cli(self):
         """Launch Framework CLI."""
@@ -818,11 +841,13 @@ class ComprehensiveGUILauncher:
     # Setup & Deployment launch methods
     def launch_setup_script(self):
         """Launch Setup Script."""
-        self.launch_python_script("setup.py", "Setup Script")
+        self.launch_python_script("utils/install_dependencies.py", "Setup Script")
 
     def launch_quick_deploy(self):
         """Launch Quick Deploy."""
-        self.launch_python_script("quick_deploy.py", "Quick Deploy")
+        self.launch_python_script(
+            "apgi_framework/deployment/deployment_validator.py", "Quick Deploy"
+        )
 
     def launch_delete_cache(self):
         """Launch Delete Cache."""

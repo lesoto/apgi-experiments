@@ -17,6 +17,10 @@ import numpy as np
 import pandas as pd
 from typing import Dict, List, Optional, Tuple
 import warnings
+from apgi_framework.logging.standardized_logging import get_logger
+
+logger = get_logger(__name__)
+
 
 try:
     import plotly.graph_objects as go
@@ -541,7 +545,7 @@ def create_interactive_report(results: Dict, output_file: str = "apgi_report.htm
     with open(output_file, "w") as f:
         f.write(html_content)
 
-    print(f"Interactive report saved to {output_file}")
+    logger.info(f"Interactive report saved to {output_file}")
 
 
 if __name__ == "__main__":
@@ -560,7 +564,7 @@ if __name__ == "__main__":
 
     # Save as HTML
     fig.write_html("parameter_dashboard.html")
-    print("Parameter dashboard saved to parameter_dashboard.html")
+    logger.info("Parameter dashboard saved to parameter_dashboard.html")
 
     # Sample biomarkers
     biomarkers = {
@@ -576,4 +580,4 @@ if __name__ == "__main__":
     # Create biomarker dashboard
     biomarker_fig = visualizer.create_biomarker_dashboard(biomarkers)
     biomarker_fig.write_html("biomarker_dashboard.html")
-    print("Biomarker dashboard saved to biomarker_dashboard.html")
+    logger.info("Biomarker dashboard saved to biomarker_dashboard.html")

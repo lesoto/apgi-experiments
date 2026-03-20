@@ -15,6 +15,9 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+from apgi_framework.logging.standardized_logging import get_logger
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -41,8 +44,8 @@ class InstallationValidator:
         """Run all validation checks."""
         self.results.clear()
 
-        print("Starting APGI Framework installation validation...")
-        print("=" * 60)
+        logger.info("Starting APGI Framework installation validation...")
+        logger.info("=" * 60)
 
         # System requirements
         self._validate_python_version()
@@ -514,9 +517,9 @@ class InstallationValidator:
 
     def _print_validation_summary(self):
         """Print validation summary."""
-        print("\n" + "=" * 60)
-        print("VALIDATION SUMMARY")
-        print("=" * 60)
+        logger.info("\n" + "=" * 60)
+        logger.info("VALIDATION SUMMARY")
+        logger.info("=" * 60)
 
         passed_count = sum(1 for r in self.results if r.passed)
         total_count = len(self.results)
@@ -524,34 +527,36 @@ class InstallationValidator:
         errors = [r for r in self.results if not r.passed and r.severity == "error"]
         warnings = [r for r in self.results if not r.passed and r.severity == "warning"]
 
-        print(f"Total Checks: {total_count}")
-        print(f"Passed: {passed_count}")
-        print(f"Errors: {len(errors)}")
-        print(f"Warnings: {len(warnings)}")
+        logger.info(f"Total Checks: {total_count}")
+        logger.info(f"Passed: {passed_count}")
+        logger.info(f"Errors: {len(errors)}")
+        logger.info(f"Warnings: {len(warnings)}")
 
         if errors:
-            print(f"\nERRORS ({len(errors)}):")
+            logger.info(f"\nERRORS ({len(errors)}):")
             for error in errors:
-                print(f"  ✗ {error.name}: {error.message}")
+                logger.info(f"  ✗ {error.name}: {error.message}")
 
         if warnings:
-            print(f"\nWARNINGS ({len(warnings)}):")
+            logger.info(f"\nWARNINGS ({len(warnings)}):")
             for warning in warnings:
-                print(f"  ⚠ {warning.name}: {warning.message}")
+                logger.info(f"  ⚠ {warning.name}: {warning.message}")
 
         # Show successful checks
         successes = [r for r in self.results if r.passed]
         if successes:
-            print(f"\nSUCCESSFUL CHECKS ({len(successes)}):")
+            logger.info(f"\nSUCCESSFUL CHECKS ({len(successes)}):")
             for success in successes:
-                print(f"  ✓ {success.name}: {success.message}")
+                logger.info(f"  ✓ {success.name}: {success.message}")
 
-        print("=" * 60)
+        logger.info("=" * 60)
 
         if not errors:
-            print("🎉 Installation validation completed successfully!")
+            logger.info("🎉 Installation validation completed successfully!")
         else:
-            print("❌ Installation validation found errors that need to be addressed.")
+            logger.info(
+                "❌ Installation validation found errors that need to be addressed."
+            )
 
     def save_validation_report(self, output_file: str):
         """Save validation report to file."""
@@ -588,7 +593,7 @@ class InstallationValidator:
         with open(output_file, "w") as f:
             json.dump(report_data, f, indent=2)
 
-        print(f"Validation report saved to: {output_file}")
+        logger.info(f"Validation report saved to: {output_file}")
 
 
 def main():

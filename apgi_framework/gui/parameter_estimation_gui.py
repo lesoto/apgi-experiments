@@ -119,11 +119,9 @@ except ImportError:
 
             def update_session(self, session_data):
                 """No-op for fallback implementation"""
-                pass
 
             def save_session(self, session_data):
                 """No-op for fallback implementation"""
-                pass
 
 else:
     # Import successful, don't define fallback classes
@@ -1113,7 +1111,6 @@ through behavioral tasks and neural measurements.
         """Enable task control buttons when session is active."""
         # This would enable task buttons in the UI
         # Implementation depends on the specific UI structure
-        pass
 
     def _restore_task_data(self, session_data: SessionData) -> None:
         """Restore task-specific data from loaded session."""

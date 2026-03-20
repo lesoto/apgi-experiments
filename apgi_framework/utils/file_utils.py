@@ -22,8 +22,6 @@ from .path_utils import get_path_manager
 class FileOperationError(Exception):
     """Exception raised for file operation errors."""
 
-    pass
-
 
 class FileUtils:
     """

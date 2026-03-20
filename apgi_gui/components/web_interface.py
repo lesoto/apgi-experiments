@@ -388,6 +388,7 @@ class WebInterface:
                 return jsonify({"success": False, "error": str(e)}), 500
 
         @self.app.route("/api/config", methods=["PUT"])
+        @require_auth
         def update_config():
             """Update configuration."""
             try:

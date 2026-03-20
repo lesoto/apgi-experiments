@@ -42,7 +42,6 @@ class TreatmentPredictor:
 
     def __init__(self):
         """Initialize treatment predictor."""
-        pass
 
     def predict(self, params: BaselineParameters) -> TreatmentPrediction:
         """

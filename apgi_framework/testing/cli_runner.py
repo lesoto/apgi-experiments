@@ -23,6 +23,9 @@ from apgi_framework.testing.activity_logger import (
     ActivityType,
     get_activity_logger,
 )
+from apgi_framework.logging.standardized_logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class CLITestRunner:
@@ -252,32 +255,34 @@ class CLITestRunner:
         """Run interactive CLI mode."""
         self.logger.info("Starting interactive CLI mode...")
 
-        print("\n" + "=" * 60)
-        print("APGI Framework Test Enhancement - Interactive CLI")
-        print("=" * 60)
+        logger.info("\n" + "=" * 60)
+        logger.info("APGI Framework Test Enhancement - Interactive CLI")
+        logger.info("=" * 60)
 
         while True:
             try:
-                print("\nAvailable commands:")
-                print("1. Run all tests")
-                print("2. Run unit tests")
-                print("3. Run integration tests")
-                print("4. Run tests by pattern")
-                print("5. Generate coverage report")
-                print("6. View test history")
-                print("7. Exit")
+                logger.info("\nAvailable commands:")
+                logger.info("1. Run all tests")
+                logger.info("2. Run unit tests")
+                logger.info("3. Run integration tests")
+                logger.info("4. Run tests by pattern")
+                logger.info("5. Generate coverage report")
+                logger.info("6. View test history")
+                logger.info("7. Exit")
 
                 choice = input("\nEnter your choice (1-7): ").strip()
 
                 if choice == "1":
                     result = self.run_all_tests()
-                    print(f"\nTest execution completed with exit code: {result}")
+                    logger.info(f"\nTest execution completed with exit code: {result}")
                 elif choice == "2":
                     result = self.run_unit_tests()
-                    print(f"\nUnit test execution completed with exit code: {result}")
+                    logger.info(
+                        f"\nUnit test execution completed with exit code: {result}"
+                    )
                 elif choice == "3":
                     result = self.run_integration_tests()
-                    print(
+                    logger.info(
                         f"\nIntegration test execution completed with exit code: {result}"
                     )
                 elif choice == "4":
@@ -286,27 +291,27 @@ class CLITestRunner:
                     ).strip()
                     if pattern:
                         result = self.run_tests_by_pattern(pattern)
-                        print(
+                        logger.info(
                             f"\nPattern test execution completed with exit code: {result}"
                         )
                 elif choice == "5":
                     result = self.generate_coverage_report()
-                    print(
+                    logger.info(
                         f"\nCoverage report generation completed with exit code: {result}"
                     )
                 elif choice == "6":
                     self._show_test_history()
                 elif choice == "7":
-                    print("Exiting interactive mode...")
+                    logger.info("Exiting interactive mode...")
                     break
                 else:
-                    print("Invalid choice. Please enter a number between 1-7.")
+                    logger.info("Invalid choice. Please enter a number between 1-7.")
 
             except KeyboardInterrupt:
-                print("\n\nExiting interactive mode...")
+                logger.info("\n\nExiting interactive mode...")
                 break
             except Exception as e:
-                print(f"Error: {e}")
+                logger.info(f"Error: {e}")
 
         return 0
 
@@ -381,71 +386,71 @@ class CLITestRunner:
 
     def _print_test_summary(self, results: Dict[str, Any]):
         """Print test execution summary to console."""
-        print("\n" + "=" * 50)
-        print("TEST EXECUTION SUMMARY")
-        print("=" * 50)
+        logger.info("\n" + "=" * 50)
+        logger.info("TEST EXECUTION SUMMARY")
+        logger.info("=" * 50)
 
         total = results.get("total_tests", 0)
         passed = results.get("passed", 0)
         failed = results.get("failed", 0)
         skipped = results.get("skipped", 0)
 
-        print(f"Total Tests:  {total}")
-        print(f"Passed:       {passed}")
-        print(f"Failed:       {failed}")
-        print(f"Skipped:      {skipped}")
+        logger.info(f"Total Tests:  {total}")
+        logger.info(f"Passed:       {passed}")
+        logger.info(f"Failed:       {failed}")
+        logger.info(f"Skipped:      {skipped}")
 
         if total > 0:
             pass_rate = (passed / total) * 100
-            print(f"Pass Rate:    {pass_rate:.1f}%")
+            logger.info(f"Pass Rate:    {pass_rate:.1f}%")
 
         if self._start_time:
             duration = datetime.now() - self._start_time
-            print(f"Duration:     {duration}")
+            logger.info(f"Duration:     {duration}")
 
         # Show coverage if available
         coverage = results.get("coverage", {})
         if coverage:
             line_coverage = coverage.get("line_coverage", 0)
             branch_coverage = coverage.get("branch_coverage", 0)
-            print("\nCoverage:")
-            print(f"Lines:        {line_coverage:.1f}%")
-            print(f"Branches:     {branch_coverage:.1f}%")
+            logger.info("\nCoverage:")
+            logger.info(f"Lines:        {line_coverage:.1f}%")
+            logger.info(f"Branches:     {branch_coverage:.1f}%")
 
-        print("=" * 50)
+        logger.info("=" * 50)
 
         # Show failed tests if any
         failed_tests = results.get("failed_tests", [])
         if failed_tests:
-            print(f"\nFAILED TESTS ({len(failed_tests)}):")
+            logger.info(f"\nFAILED TESTS ({len(failed_tests)}):")
             for test in failed_tests[:10]:  # Show first 10 failures
-                print(
+                logger.info(
                     f"  - {test.get('name', 'Unknown')}: {test.get('error', 'No error message')}"
                 )
 
             if len(failed_tests) > 10:
-                print(f"  ... and {len(failed_tests) - 10} more failures")
+                logger.info(f"  ... and {len(failed_tests) - 10} more failures")
 
     def _print_coverage_summary(self, coverage_report: Dict[str, Any]):
         """Print coverage summary to console."""
-        print("\n" + "=" * 50)
-        print("COVERAGE REPORT SUMMARY")
-        print("=" * 50)
+        logger.info("\n" + "=" * 50)
+        logger.info("COVERAGE REPORT SUMMARY")
+        logger.info("=" * 50)
 
         overall = coverage_report.get("overall", {})
         line_coverage = overall.get("line_coverage", 0)
         branch_coverage = overall.get("branch_coverage", 0)
         function_coverage = overall.get("function_coverage", 0)
 
-        print("Overall Coverage:")
-        print(f"Lines:        {line_coverage:.1f}%")
-        print(f"Branches:     {branch_coverage:.1f}%")
-        print(f"Functions:    {function_coverage:.1f}%")
+        logger.info("Overall Coverage:")
+        logger.info(f"Lines:        {line_coverage:.1f}%")
+        logger.info(f"Branches:     {branch_coverage:.1f}%")
+        logger.info(f"Functions:    {function_coverage:.1f}%")
 
         # Show module breakdown
         modules = coverage_report.get("modules", {})
         if modules:
-            print("Module Coverage:")
+            logger.info("Module Coverage:")
             for module, data in sorted(modules.items()):
                 module_coverage = data.get("line_coverage", 0)
                 status = (
@@ -453,16 +458,16 @@ class CLITestRunner:
                     if module_coverage >= self.config.coverage_threshold * 100
                     else "✗"
                 )
-                print(f"  {status} {module:<30} {module_coverage:.1f}%")
+                logger.info(f"  {status} {module:<30} {module_coverage:.1f}%")
 
-        print("=" * 50)
+        logger.info("=" * 50)
 
     def _show_test_history(self):
         """Show recent test execution history."""
         try:
             reports_dir = Path(self.config.project_root) / "test_reports"
             if not reports_dir.exists():
-                print("No test history available.")
+                logger.info("No test history available.")
                 return
 
             # Get recent report files
@@ -473,12 +478,12 @@ class CLITestRunner:
             )
 
             if not report_files:
-                print("No test history available.")
+                logger.info("No test history available.")
                 return
 
-            print("\n" + "=" * 60)
-            print("RECENT TEST EXECUTIONS")
-            print("=" * 60)
+            logger.info("\n" + "=" * 60)
+            logger.info("RECENT TEST EXECUTIONS")
+            logger.info("=" * 60)
 
             for i, report_file in enumerate(
                 report_files[:10]
@@ -500,17 +505,19 @@ class CLITestRunner:
 
                     status = "PASS" if failed == 0 else "FAIL"
 
-                    print(
+                    logger.info(
                         f"{i + 1:2d}. {timestamp[:19]} | {report_name:<15} | {status:<4} | {passed}/{total} | {duration}"
                     )
 
                 except Exception as e:
-                    print(f"{i + 1:2d}. {report_file.name} - Error reading report: {e}")
+                    logger.info(
+                        f"{i + 1:2d}. {report_file.name} - Error reading report: {e}"
+                    )
 
-            print("=" * 60)
+            logger.info("=" * 60)
 
         except Exception as e:
-            print(f"Error showing test history: {e}")
+            logger.info(f"Error showing test history: {e}")
 
     def cleanup(self):
         """Cleanup CLI runner resources."""

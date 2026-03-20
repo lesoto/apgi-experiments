@@ -334,7 +334,6 @@ class MainGUIController:
     def _on_log_added(self, message: str):
         """Handle log added event."""
         # This is already handled by the logging panel itself
-        pass
 
     def _on_log_cleared(self):
         """Handle log cleared event."""

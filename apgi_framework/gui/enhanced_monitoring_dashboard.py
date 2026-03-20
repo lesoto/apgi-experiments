@@ -891,7 +891,7 @@ def main():
         dashboard.run()
     except Exception as e:
         logger.error(f"Failed to start dashboard: {e}")
-        print(f"Error: {e}")
+        logger.info(f"Error: {e}")
 
 
 if __name__ == "__main__":

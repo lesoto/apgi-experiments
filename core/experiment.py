@@ -19,17 +19,14 @@ class BaseExperiment(ABC):
     @abstractmethod
     def setup(self, **kwargs):
         """Set up the experimental parameters."""
-        pass
 
     @abstractmethod
     def run_trial(self, participant_id: int, trial_params: Dict):
         """Run a single trial of the experiment."""
-        pass
 
     @abstractmethod
     def run_block(self, participant_id: int, block_params: Dict):
         """Run a block of trials."""
-        pass
 
     def run_experiment(self, **kwargs):
         """Run the full experiment for all participants."""
@@ -43,7 +40,6 @@ class BaseExperiment(ABC):
     @abstractmethod
     def run_participant(self, participant_id: int):
         """Run the experiment for a single participant."""
-        pass
 
     def _compile_data(self) -> pd.DataFrame:
         """Compile all participant data into a single DataFrame."""

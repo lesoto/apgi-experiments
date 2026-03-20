@@ -98,11 +98,9 @@ except ImportError:
 
     def add_tooltip(widget: Any, param_name: str) -> None:
         """No-op fallback - tooltips not available."""
-        pass
 
     def add_parameter_tooltips(parameter_widgets: dict[str, Any]) -> None:
         """No-op fallback - tooltips not available."""
-        pass
 
 
 # Import keyboard manager
@@ -123,21 +121,17 @@ except ImportError:
     class _KeyboardManager:
         def __init__(self, root):
             """No-op fallback - keyboard shortcuts not available."""
-            pass
 
         def bind_shortcut(self, *args, **kwargs):
             """No-op fallback - keyboard shortcuts not available."""
-            pass
 
         def unbind_shortcut(self, *args, **kwargs):
             """No-op fallback - keyboard shortcuts not available."""
-            pass
 
     def _setup_standard_shortcuts(
         app_instance: Any, keyboard_manager: KeyboardManager
     ) -> None:
         """No-op fallback - keyboard shortcuts setup not available."""
-        pass
 
 
 # Import undo/redo manager
@@ -158,15 +152,12 @@ except ImportError:
     class _UndoRedoManager:
         def __init__(self, *args, **kwargs):
             """No-op fallback - undo/redo functionality not available."""
-            pass
 
         def undo(self):
             """No-op fallback - undo/redo functionality not available."""
-            pass
 
         def redo(self):
             """No-op fallback - undo/redo functionality not available."""
-            pass
 
         def can_undo(self):
             """No-op fallback - undo/redo functionality not available."""
@@ -179,15 +170,12 @@ except ImportError:
     class _WidgetTracker:
         def __init__(self, *args, **kwargs):
             """No-op fallback - widget tracking not available."""
-            pass
 
         def track_widget(self, *args, **kwargs):
             """No-op fallback - widget tracking not available."""
-            pass
 
     def _create_undo_redo_menu(menu_bar: Any, undo_manager: UndoRedoManager) -> None:
         """No-op fallback - undo/redo menu creation not available."""
-        pass
 
 
 # Import theme manager
@@ -205,15 +193,12 @@ except ImportError:
     class _ThemeManager:
         def __init__(self, *args, **kwargs):
             """No-op fallback - theme management not available."""
-            pass
 
         def set_theme(self, *args, **kwargs):
             """No-op fallback - theme management not available."""
-            pass
 
         def toggle_dark_mode(self):
             """No-op fallback - theme management not available."""
-            pass
 
     def _get_system_theme_preference() -> str:
         return "light"
@@ -614,19 +599,16 @@ class BaseTestRunner(ABC):
     @abstractmethod
     def get_test_name(self) -> str:
         """Return the display name of the test."""
-        pass
 
     @abstractmethod
     def get_test_instance(self) -> Optional[Any]:
         """Return the test instance or None if not available."""
-        pass
 
     @abstractmethod
     def run_test_implementation(
         self, test_instance: Any, params: Dict[str, Any]
     ) -> Any:
         """Run the actual test implementation."""
-        pass
 
     def get_parameters_from_gui(self) -> Dict[str, Any]:
         """Extract parameters from GUI inputs."""
@@ -652,6 +634,25 @@ class BaseTestRunner(ABC):
     def run_test(self) -> None:
         """Main test execution method with standardized error handling."""
         test_name = self.get_test_name()
+
+        # Check for concurrency control
+        with self.gui._test_lock:
+            if self.gui.test_running:
+                self.gui.log_to_console(
+                    f"Test already running ({self.gui.current_test_type}), skipping {test_name}"
+                )
+                return
+
+            self.gui.test_running = True
+            self.gui.current_test_type = test_name
+
+            # Disable all sidebar buttons during test
+            for btn in self.gui.sidebar_buttons:
+                try:
+                    btn.configure(state="disabled")
+                except Exception:
+                    pass  # Some may not be ctk buttons or already destroyed
+
         self.gui.log_to_console(f"Running {test_name}...")
         self.gui.update_status(f"Running {test_name}...")
 
@@ -659,6 +660,16 @@ class BaseTestRunner(ABC):
             # Get test instance
             test_instance = self.get_test_instance()
             if test_instance is None:
+                # Reset state if test instance is not available
+                with self.gui._test_lock:
+                    self.gui.test_running = False
+                    self.gui.current_test_type = None
+                    for btn in self.gui.sidebar_buttons:
+                        try:
+                            btn.configure(state="normal")
+                        except Exception:
+                            pass
+
                 error_handler = getattr(self.gui, "error_handler", None)
                 if error_handler:
                     error_handler.handle_error(
@@ -705,6 +716,16 @@ class BaseTestRunner(ABC):
             run_in_thread(run_thread)
 
         except Exception as e:
+            # Reset state if thread creation or param extraction fails
+            with self.gui._test_lock:
+                self.gui.test_running = False
+                self.gui.current_test_type = None
+                for btn in self.gui.sidebar_buttons:
+                    try:
+                        btn.configure(state="normal")
+                    except Exception:
+                        pass
+
             error_handler = getattr(self.gui, "error_handler", None)
             if error_handler:
                 error_handler.handle_error(
@@ -1230,20 +1251,47 @@ class APGIFrameworkGUI(ctk.CTk):
         self.visualizer = None
         self.report_generator = None
 
-        # Load theme preference from config file on startup
+        # Load preferences from config file on startup
+        self.autosave_enabled = False
+        self.autosave_id = None
+        self.autosave_interval = 300000  # 5 minutes by default
+
         config_file = Path("config/preferences.json")
         if config_file.exists():
             try:
                 with open(config_file, "r") as f:
                     config = json.load(f)
+
+                    # Theme preference
                     if "theme" in config:
                         selected_theme = config["theme"]
                         if selected_theme == "dark":
                             ctk.set_appearance_mode("dark")
                         else:
                             ctk.set_appearance_mode("light")
+
+                    # Auto-save preference
+                    if "autosave" in config:
+                        self.autosave_enabled = config["autosave"]
+
+                    # Thread pool size preference
+                    if "thread_pool_size" in config:
+                        try:
+                            new_size = int(config["thread_pool_size"])
+                            GUIConfig.THREAD_POOL_SIZE = new_size
+                            from apgi_framework.utils.thread_manager import (
+                                thread_manager,
+                            )
+
+                            thread_manager.reconfigure_pool(new_size)
+                        except (ValueError, ImportError):
+                            pass
             except Exception as e:
-                self.log_to_console(f"Warning: Could not load theme preference: {e}")
+                # Use print as fallback if logger/console not ready
+                print(f"Warning: Could not load preferences: {e}")
+
+        if self.autosave_enabled:
+            self._start_autosave_timer()
 
         # Falsification test instances
         self.primary_falsification_test = None
@@ -1309,6 +1357,65 @@ class APGIFrameworkGUI(ctk.CTk):
             self.widget_tracker = WidgetTracker(self.undo_manager)
         else:
             self.undo_manager = None
+
+    def _start_autosave_timer(self) -> None:
+        """Start or restart the auto-save timer."""
+        self._stop_autosave_timer()
+        if self.autosave_enabled:
+            self.autosave_id = self.after(self.autosave_interval, self._autosave_data)
+
+    def _stop_autosave_timer(self) -> None:
+        """Stop the currently running auto-save timer."""
+        if self.autosave_id:
+            self.after_cancel(self.autosave_id)
+            self.autosave_id = None
+
+    def _autosave_data(self) -> None:
+        """Periodically save current session data and results."""
+        if not self.autosave_enabled:
+            return
+
+        try:
+            # Create autosave directory if it doesn't exist
+            autosave_dir = Path("data/autosave")
+            autosave_dir.mkdir(parents=True, exist_ok=True)
+
+            # Generate filename with timestamp
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = autosave_dir / f"session_autosave_{timestamp}.json"
+
+            # Prepare data for saving
+            save_data = {
+                "timestamp": datetime.datetime.now().isoformat(),
+                "current_results": self.current_results,
+                "system_status": self.system_status,
+                "parameters": {
+                    name: entry.get() if hasattr(entry, "get") else entry
+                    for name, entry in getattr(self, "param_entries", {}).items()
+                },
+            }
+
+            # Save to file
+            with open(filename, "w") as f:
+                json.dump(save_data, f)
+
+            # Keep only the last 5 autosaves
+            autosaves = sorted(autosave_dir.glob("session_autosave_*.json"))
+            if len(autosaves) > 5:
+                for old_save in autosaves[:-5]:
+                    old_save.unlink()
+
+            self.log_to_console(f"Session auto-saved to {filename.name}")
+        except Exception as e:
+            # Use fallback logger or print if GUI not ready
+            if hasattr(self, "log_to_console"):
+                self.log_to_console(f"Warning: Auto-save failed: {e}")
+            else:
+                print(f"Warning: Auto-save failed: {e}")
+
+        # Schedule next auto-save
+        if self.autosave_enabled:
+            self.autosave_id = self.after(self.autosave_interval, self._autosave_data)
             self.widget_tracker = None
 
         # Initialize theme manager
@@ -1666,9 +1773,11 @@ class APGIFrameworkGUI(ctk.CTk):
 
     def show_system_status(self):
         """Display system status information in a dialog."""
+        self.log_to_console("Opening System Status dialog...")
         try:
             # Create status dialog
             status_dialog = tk.Toplevel(self)
+
             status_dialog.title("System Status")
             status_dialog.geometry("500x400")
             status_dialog.transient(self)
@@ -5009,7 +5118,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 theme_frame, text="Theme:", font=ctk.CTkFont(size=14, weight="bold")
             ).pack(anchor="w", padx=5, pady=5)
 
-            theme_var = tk.StringVar(value="light")
+            theme_var = tk.StringVar(value=ctk.get_appearance_mode().lower())
             light_radio = ctk.CTkRadioButton(
                 theme_frame, text="Light", variable=theme_var, value="light"
             )
@@ -5030,7 +5139,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 font=ctk.CTkFont(size=14, weight="bold"),
             ).pack(anchor="w", padx=5, pady=5)
 
-            autosave_var = tk.BooleanVar(value=True)
+            autosave_var = tk.BooleanVar(value=self.autosave_enabled)
             autosave_check = ctk.CTkCheckBox(
                 autosave_frame, text="Enable auto-save", variable=autosave_var
             )
@@ -5162,6 +5271,13 @@ class APGIFrameworkGUI(ctk.CTk):
                         if not os.path.exists(folder):
                             os.makedirs(folder)
 
+                    # Apply and save auto-save preference
+                    self.autosave_enabled = autosave_var.get()
+                    if self.autosave_enabled:
+                        self._start_autosave_timer()
+                    else:
+                        self._stop_autosave_timer()
+
                     # Apply theme and persist to config
                     selected_theme = theme_var.get()
                     if selected_theme == "dark":
@@ -5169,16 +5285,36 @@ class APGIFrameworkGUI(ctk.CTk):
                     else:
                         ctk.set_appearance_mode("light")
 
+                    # Apply thread poll size
+                    try:
+                        new_thread_size = int(thread_entry.get())
+                        if new_thread_size > 0:
+                            GUIConfig.THREAD_POOL_SIZE = new_thread_size
+                            from apgi_framework.utils.thread_manager import (
+                                thread_manager,
+                            )
+
+                            thread_manager.reconfigure_pool(new_thread_size)
+                    except (ValueError, ImportError) as e:
+                        self.log_to_console(
+                            f"Warning: Could not update thread pool: {e}"
+                        )
+
                     # Save theme preference to config file
                     config_file = Path("config/preferences.json")
                     config_file.parent.mkdir(parents=True, exist_ok=True)
                     try:
                         with open(config_file, "w") as f:
-                            json.dump({"theme": selected_theme}, f)
+                            json.dump(
+                                {
+                                    "theme": selected_theme,
+                                    "autosave": self.autosave_enabled,
+                                    "thread_pool_size": GUIConfig.THREAD_POOL_SIZE,
+                                },
+                                f,
+                            )
                     except Exception as e:
-                        self.log_to_console(
-                            f"Warning: Could not save theme preference: {e}"
-                        )
+                        self.log_to_console(f"Warning: Could not save preferences: {e}")
 
                     self.log_to_console("Preferences saved successfully")
                     messagebox.showinfo(

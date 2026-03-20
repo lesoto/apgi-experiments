@@ -12,8 +12,6 @@ from typing import Any, Callable, Optional
 class ThreadTimeoutError(Exception):
     """Exception raised when thread execution times out."""
 
-    pass
-
 
 class ThreadWithTimeout(threading.Thread):
     """

@@ -7,8 +7,6 @@ results, and metadata.
 """
 
 # Import example data loading functionality
-import sys
-from pathlib import Path
 
 from .dashboard import (
     DashboardServer,

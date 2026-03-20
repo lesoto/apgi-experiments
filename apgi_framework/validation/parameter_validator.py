@@ -123,6 +123,31 @@ class ParameterValidator:
         "pci_threshold": (0.1, 0.8, "PCI threshold (typical: 0.3-0.5)"),
     }
 
+    RETRY_PARAM_RANGES = {
+        "max_attempts": (1, 10, "Max attempts must be between 1 and 10"),
+        "initial_delay": (
+            0.1,
+            10.0,
+            "Initial delay must be between 0.1 and 10.0 seconds",
+        ),
+        "backoff_factor": (1.0, 5.0, "Backoff factor must be between 1.0 and 5.0"),
+        "max_delay": (1.0, 300.0, "Max delay must be between 1.0 and 300.0 seconds"),
+    }
+
+    PERFORMANCE_PARAM_RANGES = {
+        "min_rt": (0.05, 2.0, "Minimum RT (typical: 0.1-0.3s)"),
+        "max_rt": (0.5, 30.0, "Maximum RT (typical: 2.0-10.0s)"),
+        "min_accuracy": (0.0, 1.0, "Minimum accuracy (0.0-1.0)"),
+        "target_accuracy": (0.0, 1.0, "Target accuracy (0.0-1.0)"),
+    }
+
+    STIMULUS_PARAM_RANGES = {
+        "stimulus_min": (0.0, 1.0, "Min stimulus intensity"),
+        "stimulus_max": (0.0, 1.0, "Max stimulus intensity"),
+        "lapse_rate": (0.0, 0.5, "Lapse rate (typical: 0.01-0.05)"),
+        "guess_rate": (0.0, 1.0, "Guess rate (typical: 0.5 for 2AFC)"),
+    }
+
     def __init__(self) -> None:
         self.validation_history: List[ValidationResult] = []
 
@@ -585,6 +610,66 @@ class ParameterValidator:
             warnings=all_warnings,
             suggestions=all_suggestions,
         )
+
+    def validate_retry_config(self, **config) -> ValidationResult:
+        """Validate retry configuration parameters."""
+        errors = []
+        for param_name, value in config.items():
+            if param_name in self.RETRY_PARAM_RANGES:
+                min_val, max_val, desc = self.RETRY_PARAM_RANGES[param_name]
+                if not isinstance(value, (int, float, np.number)):
+                    errors.append(f"{param_name}: Must be numeric")
+                    continue
+                if not (min_val <= float(value) <= max_val):
+                    errors.append(
+                        f"{param_name}: Value {value} outside range [{min_val}, {max_val}]. {desc}"
+                    )
+
+        result = ValidationResult(
+            is_valid=len(errors) == 0, errors=errors, warnings=[], suggestions=[]
+        )
+        self.validation_history.append(result)
+        return result
+
+    def validate_performance_thresholds(self, **config) -> ValidationResult:
+        """Validate performance threshold parameters."""
+        errors = []
+        for param_name, value in config.items():
+            if param_name in self.PERFORMANCE_PARAM_RANGES:
+                min_val, max_val, desc = self.PERFORMANCE_PARAM_RANGES[param_name]
+                if not isinstance(value, (int, float, np.number)):
+                    errors.append(f"{param_name}: Must be numeric")
+                    continue
+                if not (min_val <= float(value) <= max_val):
+                    errors.append(
+                        f"{param_name}: Value {value} outside range [{min_val}, {max_val}]. {desc}"
+                    )
+
+        result = ValidationResult(
+            is_valid=len(errors) == 0, errors=errors, warnings=[], suggestions=[]
+        )
+        self.validation_history.append(result)
+        return result
+
+    def validate_stimulus_parameters(self, **config) -> ValidationResult:
+        """Validate stimulus generation parameters."""
+        errors = []
+        for param_name, value in config.items():
+            if param_name in self.STIMULUS_PARAM_RANGES:
+                min_val, max_val, desc = self.STIMULUS_PARAM_RANGES[param_name]
+                if not isinstance(value, (int, float, np.number)):
+                    errors.append(f"{param_name}: Must be numeric")
+                    continue
+                if not (min_val <= float(value) <= max_val):
+                    errors.append(
+                        f"{param_name}: Value {value} outside range [{min_val}, {max_val}]. {desc}"
+                    )
+
+        result = ValidationResult(
+            is_valid=len(errors) == 0, errors=errors, warnings=[], suggestions=[]
+        )
+        self.validation_history.append(result)
+        return result
 
     def get_parameter_info(self, param_name: str) -> str:
         """
