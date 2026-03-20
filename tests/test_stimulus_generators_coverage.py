@@ -28,6 +28,7 @@ from apgi_framework.adaptive.stimulus_generators import (
 
 # --- Enums & Dataclasses ---
 
+
 class TestStimulusType:
     def test_all_types(self):
         assert StimulusType.GABOR_PATCH.value == "gabor_patch"
@@ -43,7 +44,9 @@ class TestStimulusParameters:
         assert params.duration_ms == 500.0
 
     def test_validate_valid(self):
-        params = StimulusParameters(stimulus_type=StimulusType.TONE, intensity=0.5, duration_ms=100.0)
+        params = StimulusParameters(
+            stimulus_type=StimulusType.TONE, intensity=0.5, duration_ms=100.0
+        )
         assert params.validate() is True
 
     def test_validate_invalid_intensity(self):
@@ -137,6 +140,7 @@ class TestCO2PuffParameters:
 
 # --- GaborPatchGenerator ---
 
+
 class TestGaborPatchGenerator:
     def test_init(self):
         gen = GaborPatchGenerator()
@@ -199,6 +203,7 @@ class TestGaborPatchGenerator:
 
 # --- ToneGenerator ---
 
+
 class TestToneGenerator:
     def test_init(self):
         gen = ToneGenerator()
@@ -213,13 +218,17 @@ class TestToneGenerator:
 
     def test_create_tone_linear(self):
         gen = ToneGenerator(sample_rate=44100)
-        params = ToneParameters(frequency_hz=440.0, duration_ms=100.0, envelope="linear")
+        params = ToneParameters(
+            frequency_hz=440.0, duration_ms=100.0, envelope="linear"
+        )
         tone = gen._create_tone(params)
         assert len(tone) > 0
 
     def test_create_tone_gaussian(self):
         gen = ToneGenerator(sample_rate=44100)
-        params = ToneParameters(frequency_hz=440.0, duration_ms=100.0, envelope="gaussian")
+        params = ToneParameters(
+            frequency_hz=440.0, duration_ms=100.0, envelope="gaussian"
+        )
         tone = gen._create_tone(params)
         assert len(tone) > 0
 
@@ -263,6 +272,7 @@ class TestToneGenerator:
 
 
 # --- CO2PuffController ---
+
 
 class TestCO2PuffController:
     def test_init(self):
@@ -356,6 +366,7 @@ class TestCO2PuffController:
 
 
 # --- HeartbeatSynchronizer ---
+
 
 class TestHeartbeatSynchronizer:
     def test_init(self):

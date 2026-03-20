@@ -24,9 +24,9 @@ def setup_test_environment():
 
     # Set matplotlib to non-interactive backend for headless testing
     try:
-        import matplotlib
-
-        matplotlib.use("Agg")
+        # import matplotlib
+        # matplotlib.use("Agg")
+        pass
     except ImportError:
         pass
 

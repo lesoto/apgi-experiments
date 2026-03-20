@@ -25,19 +25,20 @@ def _generate_synthetic_ecg(duration=5, fs=1000, bpm=60):
     t = np.linspace(0, duration, int(duration * fs))
     beat_interval = 60.0 / bpm
     ecg = np.zeros_like(t)
-    
+
     for beat in range(int(duration / beat_interval) + 1):
         beat_time = beat * beat_interval
         # Create R-peak (gaussian peak)
         r_peak = np.exp(-((t - beat_time) ** 2) / (0.001))
         ecg += r_peak
-    
+
     # Add some noise
     ecg += np.random.randn(len(t)) * 0.05
     return ecg, t
 
 
 # --- Enums & Dataclasses ---
+
 
 class TestRPeakAlgorithm:
     def test_all_algorithms(self):
@@ -92,6 +93,7 @@ class TestCardiacQualityMetrics:
 
 # --- CardiacProcessor ---
 
+
 class TestCardiacProcessor:
     def setup_method(self):
         self.processor = CardiacProcessor(sampling_rate=1000.0)
@@ -139,9 +141,11 @@ class TestCardiacProcessor:
         assert isinstance(peaks, np.ndarray)
 
     def test_detect_r_peaks_simple_threshold_with_monitor(self):
-        mock_monitor = type('MockMonitor', (), {
-            'detect_r_peaks': lambda self, s, t: np.array([1.0, 2.0, 3.0])
-        })()
+        mock_monitor = type(
+            "MockMonitor",
+            (),
+            {"detect_r_peaks": lambda self, s, t: np.array([1.0, 2.0, 3.0])},
+        )()
         p = CardiacProcessor(
             algorithm=RPeakAlgorithm.SIMPLE_THRESHOLD,
             heart_rate_monitor=mock_monitor,
@@ -185,6 +189,7 @@ class TestCardiacProcessor:
 
 # --- HRVAnalyzer ---
 
+
 class TestHRVAnalyzer:
     def setup_method(self):
         self.analyzer = HRVAnalyzer()
@@ -218,7 +223,7 @@ class TestHRVAnalyzer:
         rr = 800.0 + np.random.randn(n_beats) * 20
         r_peaks = np.cumsum(rr / 1000.0)
         r_peaks = np.insert(r_peaks, 0, 0.0)
-        
+
         result = self.analyzer.compute_frequency_domain_metrics(rr, r_peaks)
         assert "lf_power" in result
         assert "hf_power" in result
@@ -231,7 +236,7 @@ class TestHRVAnalyzer:
         rr = 800.0 + np.random.randn(n_beats) * 20
         r_peaks = np.cumsum(rr / 1000.0)
         r_peaks = np.insert(r_peaks, 0, 0.0)
-        
+
         hrv = self.analyzer.compute_comprehensive_hrv(rr, r_peaks)
         assert isinstance(hrv, HRVMetrics)
         assert hrv.mean_hr > 0
@@ -240,6 +245,7 @@ class TestHRVAnalyzer:
 
 
 # --- HEPExtractor ---
+
 
 class TestHEPExtractor:
     def setup_method(self):
@@ -252,7 +258,7 @@ class TestHEPExtractor:
         eeg = np.random.randn(32, 5000)
         r_peaks = np.array([])
         timestamps = np.linspace(0, 5, 5000)
-        
+
         epochs = self.extractor.extract_hep_epochs(eeg, r_peaks, timestamps)
         assert epochs.size == 0
 
@@ -262,7 +268,7 @@ class TestHEPExtractor:
         eeg = np.random.randn(n_channels, n_samples)
         timestamps = np.linspace(0, 5, n_samples)
         r_peaks = np.array([1.0, 2.0, 3.0])  # 3 R-peaks
-        
+
         epochs = self.extractor.extract_hep_epochs(eeg, r_peaks, timestamps)
         assert len(epochs.shape) == 3
         assert epochs.shape[1] == n_channels
@@ -277,7 +283,7 @@ class TestHEPExtractor:
         n_channels = 4
         n_samples = 1000
         epochs = np.random.randn(n_epochs, n_channels, n_samples)
-        
+
         amplitudes = self.extractor.compute_hep_amplitude(epochs)
         assert amplitudes.shape == (n_epochs, n_channels)
 
@@ -290,7 +296,7 @@ class TestHEPExtractor:
         n_channels = 4
         n_samples = 1000
         epochs = np.random.randn(n_epochs, n_channels, n_samples) + 10.0
-        
+
         corrected = self.extractor.apply_baseline_correction(epochs)
         assert corrected.shape == epochs.shape
         # Baseline should be closer to zero after correction
@@ -299,6 +305,7 @@ class TestHEPExtractor:
 
 
 # --- CardiacQualityAssessor ---
+
 
 class TestCardiacQualityAssessor:
     def setup_method(self):

@@ -17,15 +17,17 @@ class TestMainControllerImport:
 
     def test_import_module(self):
         import apgi_framework.main_controller as mc
-        assert hasattr(mc, 'MainApplicationController')
+
+        assert hasattr(mc, "MainApplicationController")
 
     def test_module_attributes(self):
         import apgi_framework.main_controller as mc
+
         # Verify module loads without errors
         assert mc is not None
         # Check known imports
-        assert hasattr(mc, 'ConfigManager')
-        assert hasattr(mc, 'APGIEquation')
+        assert hasattr(mc, "ConfigManager")
+        assert hasattr(mc, "APGIEquation")
 
 
 class TestMainApplicationController:
@@ -52,7 +54,7 @@ class TestMainApplicationController:
         try:
             controller = MainApplicationController()
             # Check common attributes
-            assert hasattr(controller, '__class__')
+            assert hasattr(controller, "__class__")
         except Exception:
             pass
 

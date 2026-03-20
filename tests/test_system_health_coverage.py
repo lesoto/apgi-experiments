@@ -20,6 +20,7 @@ from apgi_framework.validation.system_health import (
 
 # --- HealthCheckResult ---
 
+
 class TestHealthCheckResult:
     def test_healthy_bool(self):
         result = HealthCheckResult(
@@ -101,6 +102,7 @@ class TestHealthCheckResult:
 
 # --- SystemHealthChecker ---
 
+
 class TestSystemHealthChecker:
     def setup_method(self):
         self.checker = SystemHealthChecker()
@@ -115,12 +117,22 @@ class TestSystemHealthChecker:
         assert len(issues) == 0  # No critical issues
 
     def test_check_python_environment_old_version(self):
-        mock_version = type('version_info', (), {
-            'major': 3, 'minor': 7, 'micro': 0,
-            '__lt__': lambda self, other: (self.major, self.minor) < other[:2] if isinstance(other, tuple) else NotImplemented,
-            '__ge__': lambda self, other: (self.major, self.minor) >= other[:2] if isinstance(other, tuple) else NotImplemented,
-        })()
-        with patch.object(sys, 'version_info', mock_version):
+        mock_version = type(
+            "version_info",
+            (),
+            {
+                "major": 3,
+                "minor": 7,
+                "micro": 0,
+                "__lt__": lambda self, other: (self.major, self.minor) < other[:2]
+                if isinstance(other, tuple)
+                else NotImplemented,
+                "__ge__": lambda self, other: (self.major, self.minor) >= other[:2]
+                if isinstance(other, tuple)
+                else NotImplemented,
+            },
+        )()
+        with patch.object(sys, "version_info", mock_version):
             status, issues, warnings = self.checker._check_python_environment()
             assert status == "critical"
 
@@ -130,7 +142,7 @@ class TestSystemHealthChecker:
         assert status in ("healthy", "warning")
 
     def test_check_dependencies_missing_required(self):
-        with patch('builtins.__import__', side_effect=ImportError("no module")):
+        with patch("builtins.__import__", side_effect=ImportError("no module")):
             status, issues, warnings = self.checker._check_dependencies()
             assert status == "critical"
 
@@ -198,10 +210,10 @@ class TestSystemHealthChecker:
         # Run a few checks
         self.checker.run_full_health_check()
         self.checker.run_full_health_check()
-        
+
         history = self.checker.get_health_history(n_recent=1)
         assert len(history) == 1
-        
+
         history = self.checker.get_health_history()
         assert len(history) == 2
 
@@ -261,14 +273,16 @@ class TestSystemHealthChecker:
 
 # --- get_health_checker ---
 
+
 class TestGetHealthChecker:
     def test_singleton(self):
         import apgi_framework.validation.system_health as mod
+
         mod._health_checker = None  # Reset
-        
+
         checker1 = get_health_checker()
         checker2 = get_health_checker()
         assert checker1 is checker2
-        
+
         # Cleanup
         mod._health_checker = None

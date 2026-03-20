@@ -100,52 +100,176 @@ except ImportError:
     PYSIDE6_AVAILABLE = False
 
     class FallbackQWidget:
-        pass
+        def __init__(self, *args, **kwargs):
+            pass
 
     class FallbackQVBoxLayout:
-        pass
+        def __init__(self, *args, **kwargs):
+            pass
 
     class FallbackQHBoxLayout:
-        pass
+        def __init__(self, *args, **kwargs):
+            pass
+
+    class FallbackSig:
+        def connect(self, f):
+            pass
 
     class FallbackQTreeWidget:
-        pass
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def setHeaderLabels(self, *args):
+            pass
+
+        def setAlternatingRowColors(self, *args):
+            pass
+
+        def setSortingEnabled(self, *args):
+            pass
+
+        def header(self):
+            return FallbackQHeaderView()
+
+        def clear(self):
+            pass
+
+        def expandAll(self):
+            pass
+
+        def currentItem(self):
+            return None
+
+        @property
+        def itemSelectionChanged(self):
+            return FallbackSig()
 
     class FallbackQTreeWidgetItem:
-        pass
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def setFont(self, *args):
+            pass
+
+        def setText(self, *args):
+            pass
+
+        def setForeground(self, *args):
+            pass
+
+        def setData(self, *args):
+            pass
+
+        def data(self, *args):
+            return None
+
+        def text(self, *args):
+            return ""
 
     class FallbackQTextEdit:
-        pass
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def setMaximumHeight(self, *args):
+            pass
+
+        def setReadOnly(self, *args):
+            pass
+
+        def setPlainText(self, *args):
+            pass
+
+        def clear(self):
+            pass
 
     class FallbackQSplitter:
-        pass
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def addWidget(self, *args):
+            pass
+
+        def setStretchFactor(self, *args):
+            pass
 
     class FallbackQTabWidget:
-        pass
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def addTab(self, *args):
+            pass
 
     class FallbackQLabel:
-        pass
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def setFont(self, *args):
+            pass
+
+        def setText(self, *args):
+            pass
+
+        def setStyleSheet(self, *args):
+            pass
 
     class FallbackQPushButton:
-        pass
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def setEnabled(self, *args):
+            pass
 
     class FallbackQGroupBox:
-        pass
+        def __init__(self, *args, **kwargs):
+            pass
 
     class FallbackQScrollArea:
-        pass
+        def __init__(self, *args, **kwargs):
+            pass
 
     class FallbackQFrame:
-        pass
+        def __init__(self, *args, **kwargs):
+            pass
 
     class FallbackQLineEdit:
-        pass
+        def __init__(self, *args, **kwargs):
+            pass
 
     class FallbackQComboBox:
-        pass
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def addItems(self, *args):
+            pass
+
+        def currentText(self):
+            return ""
+
+        @property
+        def currentTextChanged(self):
+            return FallbackSig()
 
     class FallbackQProgressBar:
-        pass
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def setTextVisible(self, *args):
+            pass
+
+        def setFormat(self, *args):
+            pass
+
+        def value(self):
+            return 0
+
+        def setValue(self, *args):
+            pass
+
+        def setStyleSheet(self, *args):
+            pass
+
+        def update(self):
+            pass
 
     class FallbackQTableWidget:
         pass
@@ -156,6 +280,12 @@ except ImportError:
     class FallbackQHeaderView:
         Stretch = 1
         ResizeToContents = 2
+
+        def setStretchLastSection(self, *args):
+            pass
+
+        def setSectionResizeMode(self, *args):
+            pass
 
     class FallbackQApplication:
         pass
@@ -193,6 +323,24 @@ except ImportError:
     class FallbackQRect:
         def __init__(self, *args):
             pass
+
+        def top(self):
+            return 0
+
+        def bottom(self):
+            return 0
+
+        def left(self):
+            return 0
+
+        def right(self):
+            return 0
+
+        def width(self):
+            return 0
+
+        def height(self):
+            return 0
 
     class FallbackQPainter:
         Antialiasing = 1
