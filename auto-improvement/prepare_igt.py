@@ -15,18 +15,18 @@ The IGT uses 4 decks with different reward/penalty schedules:
 import numpy as np
 import json
 from dataclasses import dataclass
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 
 # ---------------------------------------------------------------------------
 # Fixed Constants (DO NOT MODIFY)
 # ---------------------------------------------------------------------------
 
 TIME_BUDGET = 600  # 10 minutes per experiment (in seconds)
-NUM_TRIALS = 100   # Standard IGT trial count
-NUM_DECKS = 4      # Standard IGT: 4 decks (A, B, C, D)
+NUM_TRIALS = 100  # Standard IGT trial count
+NUM_DECKS = 4  # Standard IGT: 4 decks (A, B, C, D)
 
 # Deck labels for reference
-DECK_LABELS = ['A', 'B', 'C', 'D']
+DECK_LABELS = ["A", "B", "C", "D"]
 
 # ---------------------------------------------------------------------------
 # Standard IGT Deck Configurations (Fixed)
@@ -39,52 +39,53 @@ DECK_LABELS = ['A', 'B', 'C', 'D']
 # Win/loss schedules per 10-card blocks:
 
 DECK_CONFIGURATIONS = {
-    'A': {
-        'label': 'A (Disadvantageous)',
-        'win_amount': 100,
-        'win_frequency': 0.5,  # 5 wins per 10 cards
-        'penalty_frequency': 0.5,  # 5 penalties per 10 cards
-        'penalty_amounts': [150, 200, 250, 300, 350],  # Avg: 250 per penalty
-        'advantageous': False,
+    "A": {
+        "label": "A (Disadvantageous)",
+        "win_amount": 100,
+        "win_frequency": 0.5,  # 5 wins per 10 cards
+        "penalty_frequency": 0.5,  # 5 penalties per 10 cards
+        "penalty_amounts": [150, 200, 250, 300, 350],  # Avg: 250 per penalty
+        "advantageous": False,
     },
-    'B': {
-        'label': 'B (Disadvantageous)',
-        'win_amount': 100,
-        'win_frequency': 0.9,  # 9 wins per 10 cards
-        'penalty_frequency': 0.1,  # 1 penalty per 10 cards
-        'penalty_amounts': [1250],  # Single large penalty
-        'advantageous': False,
+    "B": {
+        "label": "B (Disadvantageous)",
+        "win_amount": 100,
+        "win_frequency": 0.9,  # 9 wins per 10 cards
+        "penalty_frequency": 0.1,  # 1 penalty per 10 cards
+        "penalty_amounts": [1250],  # Single large penalty
+        "advantageous": False,
     },
-    'C': {
-        'label': 'C (Advantageous)',
-        'win_amount': 50,
-        'win_frequency': 0.5,  # 5 wins per 10 cards
-        'penalty_frequency': 0.5,  # 5 penalties per 10 cards
-        'penalty_amounts': [25, 50, 75, 100, 125],  # Avg: 75 per penalty
-        'advantageous': True,
+    "C": {
+        "label": "C (Advantageous)",
+        "win_amount": 50,
+        "win_frequency": 0.5,  # 5 wins per 10 cards
+        "penalty_frequency": 0.5,  # 5 penalties per 10 cards
+        "penalty_amounts": [25, 50, 75, 100, 125],  # Avg: 75 per penalty
+        "advantageous": True,
     },
-    'D': {
-        'label': 'D (Advantageous)',
-        'win_amount': 50,
-        'win_frequency': 0.9,  # 9 wins per 10 cards
-        'penalty_frequency': 0.1,  # 1 penalty per 10 cards
-        'penalty_amounts': [250],  # Single moderate penalty
-        'advantageous': True,
+    "D": {
+        "label": "D (Advantageous)",
+        "win_amount": 50,
+        "win_frequency": 0.9,  # 9 wins per 10 cards
+        "penalty_frequency": 0.1,  # 1 penalty per 10 cards
+        "penalty_amounts": [250],  # Single moderate penalty
+        "advantageous": True,
     },
 }
 
 # Expected values per 10-card block
 EXPECTED_VALUES = {
-    'A': (10 * 100) - (5 * 250),      # 1000 - 1250 = -250 (loss)
-    'B': (9 * 100) - (1 * 1250),      # 900 - 1250 = -350 (loss)
-    'C': (10 * 50) - (5 * 75),        # 500 - 375 = +125 (gain)
-    'D': (9 * 50) - (1 * 250),        # 450 - 250 = +200 (gain)
+    "A": (10 * 100) - (5 * 250),  # 1000 - 1250 = -250 (loss)
+    "B": (9 * 100) - (1 * 1250),  # 900 - 1250 = -350 (loss)
+    "C": (10 * 50) - (5 * 75),  # 500 - 375 = +125 (gain)
+    "D": (9 * 50) - (1 * 250),  # 450 - 250 = +200 (gain)
 }
 
 
 @dataclass
 class IGTrial:
     """Single IGT trial data."""
+
     trial_number: int
     deck_choice: str  # 'A', 'B', 'C', or 'D'
     outcome: int  # Net outcome (win - penalty)
@@ -97,7 +98,7 @@ class IGTrial:
 class IGTDeck:
     """Represents a single IGT deck with its reward schedule."""
 
-    def __init__(self, deck_id: str, config: Dict = None):
+    def __init__(self, deck_id: str, config: Optional[Dict] = None):
         self.deck_id = deck_id
         self.config = config or DECK_CONFIGURATIONS[deck_id]
         self.reset()
@@ -111,8 +112,8 @@ class IGTDeck:
 
     def _generate_penalty_schedule(self):
         """Generate shuffled penalty schedule for card blocks."""
-        freq = self.config['penalty_frequency']
-        penalty_amounts = self.config['penalty_amounts']
+        freq = self.config["penalty_frequency"]
+        penalty_amounts = self.config["penalty_amounts"]
 
         # Create penalty sequence for many blocks
         blocks = 20  # Support up to 200 trials
@@ -143,15 +144,17 @@ class IGTDeck:
         Returns:
             (win_amount, penalty_amount)
         """
-        win = self.config['win_amount']
-        penalty = self.penalty_schedule[self.card_index % len(self.penalty_schedule)]
+        win = int(self.config["win_amount"])
+        penalty = int(
+            self.penalty_schedule[self.card_index % len(self.penalty_schedule)]
+        )
         self.card_index += 1
         self.trial_count += 1
         return win, penalty
 
     def is_advantageous(self) -> bool:
         """Return True if this is an advantageous deck (C or D)."""
-        return self.config['advantageous']
+        return bool(self.config["advantageous"])
 
 
 class IGTExperiment:
@@ -191,6 +194,7 @@ class IGTExperiment:
         self.total_money += net_outcome
 
         import time
+
         trial = IGTrial(
             trial_number=len(self.trials) + 1,
             deck_choice=deck_choice,
@@ -198,7 +202,7 @@ class IGTExperiment:
             win_amount=win,
             penalty_amount=penalty,
             reaction_time_ms=reaction_time_ms,
-            timestamp=time.time()
+            timestamp=time.time(),
         )
         self.trials.append(trial)
         return trial
@@ -214,7 +218,9 @@ class IGTExperiment:
             return 0.0
 
         recent_trials = self.trials[-last_n_trials:]
-        advantageous = sum(1 for t in recent_trials if self.decks[t.deck_choice].is_advantageous())
+        advantageous = sum(
+            1 for t in recent_trials if self.decks[t.deck_choice].is_advantageous()
+        )
         disadvantageous = len(recent_trials) - advantageous
         return float(advantageous - disadvantageous)
 
@@ -235,7 +241,9 @@ class IGTExperiment:
             start = i * block_size
             end = start + block_size
             block_trials = self.trials[start:end]
-            adv_choices = sum(1 for t in block_trials if self.decks[t.deck_choice].is_advantageous())
+            adv_choices = sum(
+                1 for t in block_trials if self.decks[t.deck_choice].is_advantageous()
+            )
             block_scores.append(adv_choices / len(block_trials))
 
         # Calculate trend (slope)
@@ -249,47 +257,55 @@ class IGTExperiment:
         if not self.trials:
             return {}
 
-        choices = {'A': 0, 'B': 0, 'C': 0, 'D': 0}
+        choices = {"A": 0, "B": 0, "C": 0, "D": 0}
         for t in self.trials:
             choices[t.deck_choice] += 1
 
-        advantageous = sum(1 for t in self.trials if self.decks[t.deck_choice].is_advantageous())
+        advantageous = sum(
+            1 for t in self.trials if self.decks[t.deck_choice].is_advantageous()
+        )
         disadvantageous = len(self.trials) - advantageous
 
         return {
-            'num_trials': len(self.trials),
-            'advantageous_choices': advantageous,
-            'disadvantageous_choices': disadvantageous,
-            'choices_by_deck': choices,
-            'final_money': self.total_money,
-            'net_score': self.get_net_score(),
-            'net_score_first_half': self.get_net_score(last_n_trials=self.num_trials // 2),
-            'learning_rate': self.get_learning_rate(),
-            'mean_reaction_time': np.mean([t.reaction_time_ms for t in self.trials]) if self.trials else 0.0,
+            "num_trials": len(self.trials),
+            "advantageous_choices": advantageous,
+            "disadvantageous_choices": disadvantageous,
+            "choices_by_deck": choices,
+            "final_money": self.total_money,
+            "net_score": self.get_net_score(),
+            "net_score_first_half": self.get_net_score(
+                last_n_trials=self.num_trials // 2
+            ),
+            "learning_rate": self.get_learning_rate(),
+            "mean_reaction_time": np.mean([t.reaction_time_ms for t in self.trials])
+            if self.trials
+            else 0.0,
         }
 
     def save_results(self, filepath: str):
         """Save trial data to JSON file."""
         data = {
-            'trials': [
+            "trials": [
                 {
-                    'trial_number': t.trial_number,
-                    'deck_choice': t.deck_choice,
-                    'outcome': t.outcome,
-                    'win_amount': t.win_amount,
-                    'penalty_amount': t.penalty_amount,
-                    'reaction_time_ms': t.reaction_time_ms,
-                    'timestamp': t.timestamp,
+                    "trial_number": t.trial_number,
+                    "deck_choice": t.deck_choice,
+                    "outcome": t.outcome,
+                    "win_amount": t.win_amount,
+                    "penalty_amount": t.penalty_amount,
+                    "reaction_time_ms": t.reaction_time_ms,
+                    "timestamp": t.timestamp,
                 }
                 for t in self.trials
             ],
-            'summary': self.get_summary(),
+            "summary": self.get_summary(),
         }
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(data, f, indent=2)
 
 
-def evaluate_net_score(trials: List[IGTrial], decks: Dict[str, IGTDeck], last_n: int = 20) -> float:
+def evaluate_net_score(
+    trials: List[IGTrial], decks: Dict[str, IGTDeck], last_n: int = 20
+) -> float:
     """
     Standalone evaluation function for net score calculation.
 

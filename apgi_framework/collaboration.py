@@ -4,6 +4,7 @@ Collaboration module for APGI Framework.
 This module provides collaborative workflow capabilities.
 """
 
+
 # Mock classes for testing
 class CollaborationManager:
     """Mock collaboration manager for testing purposes."""

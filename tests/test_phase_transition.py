@@ -3,7 +3,8 @@ import pytest
 
 # Import the Phase Transition model
 try:
-    # Create a mock SomaticAgent class for testing
+    from apgi_framework.research.core_mechanisms.phase_transition import SomaticAgent
+
     class SomaticAgent:
         def __init__(self, n_states=4, n_actions=3, n_contexts=2):
             self.n_states = n_states

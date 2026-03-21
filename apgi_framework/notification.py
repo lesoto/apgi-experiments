@@ -4,6 +4,7 @@ Notification module for APGI Framework.
 This module provides notification and alert capabilities.
 """
 
+
 # Mock classes for testing
 class NotificationManager:
     """Mock notification manager for testing purposes."""

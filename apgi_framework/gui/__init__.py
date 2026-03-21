@@ -35,6 +35,7 @@ from .error_handling import (
     UserGuidanceSystem,
 )
 
+
 # Mock classes for testing
 class InteractiveDesigner:
     """Mock interactive designer for testing purposes."""

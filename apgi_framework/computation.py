@@ -4,6 +4,7 @@ Computation module for APGI Framework.
 This module provides intensive computation capabilities.
 """
 
+
 # Mock classes for testing
 class IntensiveComputation:
     """Mock intensive computation for testing purposes."""

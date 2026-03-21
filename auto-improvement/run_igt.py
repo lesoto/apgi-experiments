@@ -21,7 +21,7 @@ Modification Guidelines:
 import numpy as np
 import time
 import sys
-from typing import List, Dict
+from typing import List, Dict, cast
 
 # Import fixed configurations from prepare_igt.py
 from prepare_igt import (
@@ -76,6 +76,7 @@ USE_ADAPTIVE_DIFFICULTY = False  # Adjust based on participant performance
 # Simulated Participant Model
 # ---------------------------------------------------------------------------
 
+
 class SimulatedParticipant:
     """
     Simulates human-like decision-making in the IGT.
@@ -117,7 +118,7 @@ class SimulatedParticipant:
 
         # Epsilon-greedy exploration
         if np.random.random() < self.exploration_rate:
-            return np.random.choice(available_decks)
+            return str(np.random.choice(available_decks))
 
         # Softmax over Q-values for available decks
         q_vals = np.array([self.q_values[d] for d in available_decks])
@@ -130,7 +131,7 @@ class SimulatedParticipant:
         # Softmax
         exp_q = np.exp(q_vals / self.temperature)
         probs = exp_q / exp_q.sum()
-        return np.random.choice(available_decks, p=probs)
+        return str(np.random.choice(available_decks, p=probs))
 
     def update(self, deck: str, outcome: float):
         """Update Q-values based on outcome."""
@@ -157,6 +158,7 @@ class SimulatedParticipant:
 # ---------------------------------------------------------------------------
 # Enhanced IGT Experiment Runner
 # ---------------------------------------------------------------------------
+
 
 class EnhancedIGTRunner:
     """
@@ -231,16 +233,16 @@ class EnhancedIGTRunner:
         if INTER_TRIAL_INTERVAL_MS > 0:
             time.sleep(INTER_TRIAL_INTERVAL_MS / 1000.0)
 
-        return trial
+        return cast(IGTrial, trial)
 
     def _get_available_decks(self, trial_num: int) -> List[str]:
         """Determine which decks are available based on settings."""
         if DECK_VISIBILITY == "sequential":
             # Gradually reveal decks over trials
             if trial_num < 25:
-                return ['A', 'B']
+                return ["A", "B"]
             elif trial_num < 50:
-                return ['A', 'B', 'C']
+                return ["A", "B", "C"]
             else:
                 return DECK_LABELS
         else:
@@ -255,17 +257,17 @@ class EnhancedIGTRunner:
         summary = self.experiment.get_summary()
 
         # Primary metric: net score (last 20 trials)
-        net_score = summary.get('net_score', 0.0)
+        net_score = summary.get("net_score", 0.0)
 
         # Learning curve analysis
-        learning_rate = summary.get('learning_rate', 0.0)
+        learning_rate = summary.get("learning_rate", 0.0)
 
         # Participant model statistics
         participant_stats = {
-            'final_q_values': self.participant.q_values.copy(),
-            'visit_counts': self.participant.visit_counts.copy(),
-            'exploration_rate': self.participant.exploration_rate,
-            'learning_rate': self.participant.learning_rate,
+            "final_q_values": self.participant.q_values.copy(),
+            "visit_counts": self.participant.visit_counts.copy(),
+            "exploration_rate": self.participant.exploration_rate,
+            "learning_rate": self.participant.learning_rate,
         }
 
         # Statistical tests if enabled
@@ -276,38 +278,33 @@ class EnhancedIGTRunner:
         # Compile results
         results = {
             # Primary output metric
-            'net_score': net_score,
-
+            "net_score": net_score,
             # Timing metrics
-            'completion_time_s': completion_time,
-            'time_min': completion_time / 60.0,
-
+            "completion_time_s": completion_time,
+            "time_min": completion_time / 60.0,
             # Task metrics
-            'num_trials': len(self.experiment.trials),
-            'advantageous_choices': summary.get('advantageous_choices', 0),
-            'disadvantageous_choices': summary.get('disadvantageous_choices', 0),
-            'choices_by_deck': summary.get('choices_by_deck', {}),
-            'final_money': summary.get('final_money', 0),
-            'learning_rate': learning_rate,
-            'net_score_first_half': summary.get('net_score_first_half', 0.0),
-            'mean_reaction_time': summary.get('mean_reaction_time', 0.0),
-
+            "num_trials": len(self.experiment.trials),
+            "advantageous_choices": summary.get("advantageous_choices", 0),
+            "disadvantageous_choices": summary.get("disadvantageous_choices", 0),
+            "choices_by_deck": summary.get("choices_by_deck", {}),
+            "final_money": summary.get("final_money", 0),
+            "learning_rate": learning_rate,
+            "net_score_first_half": summary.get("net_score_first_half", 0.0),
+            "mean_reaction_time": summary.get("mean_reaction_time", 0.0),
             # Participant model info
-            'participant_stats': participant_stats,
-
+            "participant_stats": participant_stats,
             # Statistical analysis
-            'statistical_results': statistical_results,
-
+            "statistical_results": statistical_results,
             # Configuration used
-            'config': {
-                'num_trials': NUM_TRIALS_CONFIG,
-                'learning_rate': LEARNING_RATE,
-                'exploration_rate': EXPLORATION_RATE,
-                'temperature': TEMPERATURE,
-                'win_multiplier': WIN_MULTIPLIER,
-                'penalty_multiplier': PENALTY_MULTIPLIER,
-                'inter_trial_interval_ms': INTER_TRIAL_INTERVAL_MS,
-                'feedback_delay_ms': FEEDBACK_DELAY_MS,
+            "config": {
+                "num_trials": NUM_TRIALS_CONFIG,
+                "learning_rate": LEARNING_RATE,
+                "exploration_rate": EXPLORATION_RATE,
+                "temperature": TEMPERATURE,
+                "win_multiplier": WIN_MULTIPLIER,
+                "penalty_multiplier": PENALTY_MULTIPLIER,
+                "inter_trial_interval_ms": INTER_TRIAL_INTERVAL_MS,
+                "feedback_delay_ms": FEEDBACK_DELAY_MS,
             },
         }
 
@@ -327,7 +324,11 @@ class EnhancedIGTRunner:
             block = trials[start:end]
 
             if block:
-                adv = sum(1 for t in block if self.experiment.decks[t.deck_choice].is_advantageous())
+                adv = sum(
+                    1
+                    for t in block
+                    if self.experiment.decks[t.deck_choice].is_advantageous()
+                )
                 block_advantageous.append(adv / len(block))
 
         # Linear trend
@@ -345,15 +346,16 @@ class EnhancedIGTRunner:
             slope, r_squared = 0.0, 0.0
 
         return {
-            'learning_trend_slope': float(slope),
-            'learning_trend_r2': float(r_squared),
-            'block_advantageous_pcts': [float(p) for p in block_advantageous],
+            "learning_trend_slope": float(slope),
+            "learning_trend_r2": float(r_squared),
+            "block_advantageous_pcts": [float(p) for p in block_advantageous],
         }
 
 
 # ---------------------------------------------------------------------------
 # Main Experiment Execution
 # ---------------------------------------------------------------------------
+
 
 def print_results(results: Dict):
     """Print formatted experiment results."""
@@ -366,7 +368,7 @@ def print_results(results: Dict):
     print("  (advantageous - disadvantageous choices in last 20 trials)")
 
     # Key metrics
-    print(f"\nKey Metrics:")
+    print("\nKey Metrics:")
     print(f"  completion_time_s: {results['completion_time_s']:.1f}")
     print(f"  num_trials:        {results['num_trials']}")
     print(f"  advantageous:      {results['advantageous_choices']}")
@@ -374,14 +376,14 @@ def print_results(results: Dict):
     print(f"  learning_rate:     {results['learning_rate']:.4f}")
 
     # Deck breakdown
-    print(f"\nChoices by Deck:")
-    for deck, count in results['choices_by_deck'].items():
+    print("\nChoices by Deck:")
+    for deck, count in results["choices_by_deck"].items():
         print(f"  Deck {deck}: {count}")
 
     # Statistical results
-    if results.get('statistical_results'):
-        stats = results['statistical_results']
-        print(f"\nStatistical Analysis:")
+    if results.get("statistical_results"):
+        stats = results["statistical_results"]
+        print("\nStatistical Analysis:")
         print(f"  Learning trend slope: {stats['learning_trend_slope']:.4f}")
         print(f"  Learning trend R²:    {stats['learning_trend_r2']:.4f}")
 
@@ -391,6 +393,7 @@ def print_results(results: Dict):
 def main():
     """Main entry point for IGT experiment."""
     import gc
+
     gc.collect()
 
     # Run experiment
@@ -423,5 +426,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"ERROR: Experiment failed with exception: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

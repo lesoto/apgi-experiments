@@ -18,6 +18,11 @@ from .task_control import (
     SessionManager,
     TaskStateMachine,
 )
+from ..research.core_mechanisms.phase_transition import (
+    SomaticAgent,
+    PhaseTransitionAnalyzer,
+    ConsciousnessDetector,
+)
 
 __all__ = [
     "QuestPlusStaircase",

@@ -12,7 +12,7 @@
 ## 📊 Coverage Status Dashboard
 
 | Category               | Total Tests | Passing | Failing | Skipped | Coverage % | Status            |
-| ---------------------- | ----------- | ------- | ------- | ------- | ---------- | ----------------- |
+|----------------------|------------|----------|---------|--------|------------|-----------------|
 | **Unit Tests**         | 1,300+      | 1,280+  | <50     | 8       | 17.55%     | 🟡 In Progress    |
 | **Integration Tests**  | 8+          | 8       | 0       | 0       | TBD        | 🟡 In Progress    |
 | **GUI Tests**          | 78          | 70+     | <8      | 0       | TBD        | 🟡 In Progress    |
@@ -22,10 +22,10 @@
 
 **Legend:**
 
-- 🟢 Complete (≥95% coverage, all tests passing)
-- 🟡 In Progress (active work underway)
-- 🔴 Blocked (dependencies/blockers identified)
-- ⚪ Not Started (planned but not yet begun)
+    - 🟢 Complete (≥95% coverage, all tests passing)
+    - 🟡 In Progress (active work underway)
+    - 🔴 Blocked (dependencies/blockers identified)
+    - ⚪ Not Started (planned but not yet begun)
 
 ---
 

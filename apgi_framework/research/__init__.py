@@ -9,6 +9,7 @@ This module provides tools for:
 """
 
 from .cross_species_validation import CrossSpeciesValidator
+from .core_mechanisms import experimental
 
 
 # Mock classes for testing
@@ -39,4 +40,5 @@ __all__ = [
     "CrossSpeciesValidator",
     "ThresholdDetectionParadigm",
     "HypothesisDesigner",
+    "experimental",
 ]

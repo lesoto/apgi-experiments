@@ -27,6 +27,7 @@ from .treatment_prediction import (
     TreatmentType,
 )
 
+
 # Mock classes for testing
 class PatientDataManager:
     """Mock patient data manager for testing purposes."""

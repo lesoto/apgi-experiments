@@ -239,15 +239,18 @@ class CrossModalIntegrationTest:
             # Framework predicts activation across multiple sensory regions
             # Use frontal connections as proxy for sensory activation
             visual_active = any(
-                plv > 0.3 for conn, plv in bold_sig.plv_values.items()
+                plv > 0.3
+                for conn, plv in bold_sig.plv_values.items()
                 if "frontal" in conn and ("parietal" in conn or "temporal" in conn)
             )
             auditory_active = any(
-                plv > 0.3 for conn, plv in bold_sig.plv_values.items()
+                plv > 0.3
+                for conn, plv in bold_sig.plv_values.items()
                 if "temporal" in conn
             )
             somatosensory_active = any(
-                plv > 0.3 for conn, plv in bold_sig.plv_values.items()
+                plv > 0.3
+                for conn, plv in bold_sig.plv_values.items()
                 if "parietal" in conn
             )
 

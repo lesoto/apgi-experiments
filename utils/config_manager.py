@@ -26,11 +26,11 @@ import yaml
 from dotenv import load_dotenv
 
 try:
-    from apgi_framework.logging.standardized_logging import get_logger
+    from apgi_framework.logging.standardized_logging import get_logger  # type: ignore
 
-    apgi_logger = get_logger(__name__)
+    apgi_logger = get_logger(__name__)  # type: ignore
 
-    def log_error(error: Exception, context: dict = None):
+    def log_error(error: Exception, context: Optional[Dict] = None):
         apgi_logger.error(f"Error: {error}")
         if context:
             apgi_logger.error(f"Context: {context}")
@@ -38,9 +38,29 @@ try:
 except ImportError:
     import logging
 
-    apgi_logger = logging.getLogger(__name__)
+    # Create a simple wrapper that mimics APGILogger interface
+    class FallbackLogger:
+        def __init__(self, name):
+            self.logger = logging.getLogger(name)
 
-    def log_error(error: Exception, context: dict = None):
+        def info(self, msg):
+            self.logger.info(msg)
+
+        def error(self, msg):
+            self.logger.error(msg)
+
+        def warning(self, msg):
+            self.logger.warning(msg)
+
+        def log_error_with_context(self, error, context):
+            """Log error with context - mimics APGILogger method."""
+            self.logger.error(f"Error: {error}")
+            if context:
+                self.logger.error(f"Context: {context}")
+
+    apgi_logger: Any = FallbackLogger(__name__)  # type: ignore
+
+    def log_error(error: Exception, context: Optional[Dict] = None):
         apgi_logger.error(f"Error: {error}")
         if context:
             apgi_logger.error(f"Context: {context}")
@@ -96,11 +116,7 @@ class ConfigVersion:
     config_hash: str
     description: str
     author: str = "system"
-    changes: List[str] = None
-
-    def __post_init__(self):
-        if self.changes is None:
-            self.changes = []
+    changes: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -160,14 +176,12 @@ class DataConfig:
     """Data processing configuration."""
 
     default_data_dir: str = "data"
-    supported_formats: list = None
+    supported_formats: List[str] = field(
+        default_factory=lambda: ["csv", "json", "xlsx"]
+    )
     max_file_size_mb: int = 100
     enable_caching: bool = True
     cache_dir: str = "cache"
-
-    def __post_init__(self):
-        if self.supported_formats is None:
-            self.supported_formats = ["csv", "json", "xlsx", "pkl"]
 
 
 @dataclass
@@ -186,23 +200,11 @@ class ValidationConfig:
 class APGIConfig:
     """Main configuration container."""
 
-    model: ModelParameters = None
-    simulation: SimulationConfig = None
-    logging: LoggingConfig = None
-    data: DataConfig = None
-    validation: ValidationConfig = None
-
-    def __post_init__(self):
-        if self.model is None:
-            self.model = ModelParameters()
-        if self.simulation is None:
-            self.simulation = SimulationConfig()
-        if self.logging is None:
-            self.logging = LoggingConfig()
-        if self.data is None:
-            self.data = DataConfig()
-        if self.validation is None:
-            self.validation = ValidationConfig()
+    model: ModelParameters = field(default_factory=ModelParameters)
+    simulation: SimulationConfig = field(default_factory=SimulationConfig)
+    logging: LoggingConfig = field(default_factory=LoggingConfig)
+    data: DataConfig = field(default_factory=DataConfig)
+    validation: ValidationConfig = field(default_factory=ValidationConfig)
 
 
 class ConfigManager:
@@ -549,7 +551,11 @@ class ConfigManager:
 
     # Configuration Profiles and Versioning
     def create_profile(
-        self, name: str, description: str, category: str, tags: List[str] = None
+        self,
+        name: str,
+        description: str,
+        category: str,
+        tags: Optional[List[str]] = None,
     ) -> str:
         """Create a new configuration profile from current settings."""
         profile = ConfigProfile(
@@ -598,7 +604,7 @@ class ConfigManager:
             apgi_logger.logger.error(f"Error loading profile {name}: {e}")
             return False
 
-    def list_profiles(self, category: str = None) -> List[Dict[str, Any]]:
+    def list_profiles(self, category: Optional[str] = None) -> List[Dict[str, Any]]:
         """List available configuration profiles."""
         profiles = []
 
@@ -1192,9 +1198,12 @@ class EnhancedConfigManager(ConfigManager):
             apgi_logger.logger.error(f"Error exporting profile {name}: {e}")
             return None
 
-    def import_profile(self, file_path: str, name: Optional[str] = None) -> bool:
+    def import_profile(
+        self, file_path: Union[str, Path], name: Optional[str] = None
+    ) -> bool:
         """Import profile from file."""
-        file_path = Path(file_path)
+        if isinstance(file_path, str):
+            file_path = Path(file_path)
 
         if not file_path.exists():
             apgi_logger.logger.error(f"File not found: {file_path}")

@@ -8,6 +8,7 @@ neural signature validation, and experimental control mechanisms.
 
 import logging
 from datetime import datetime
+from typing import Type, Union
 
 try:
     from .primary_falsification import (
@@ -16,8 +17,12 @@ try:
     )
 
     # Use imported classes
-    PrimaryFalsificationTest = ImportedPrimaryFalsificationTest
-    FalsificationResult = ImportedFalsificationResult
+    PrimaryFalsificationTest: Union[
+        _PrimaryFalsificationTest, ImportedPrimaryFalsificationTest
+    ] = ImportedPrimaryFalsificationTest
+    FalsificationResult: Union[
+        _FalsificationResult, ImportedFalsificationResult
+    ] = ImportedFalsificationResult
 except ImportError:
     # Fallback to a basic implementation if specialized test implementation is missing
     class _PrimaryFalsificationTest:
@@ -48,8 +53,6 @@ except ImportError:
                     setattr(self, key, value)
 
     # Use fallback classes
-    PrimaryFalsificationTest = _PrimaryFalsificationTest
-    FalsificationResult = _FalsificationResult
 
 
 # Consciousness assessment classes - implemented inline below

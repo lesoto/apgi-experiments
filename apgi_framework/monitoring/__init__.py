@@ -8,6 +8,7 @@ This module provides real-time monitoring capabilities for:
 - Experimental progress
 """
 
+
 # Mock classes for testing
 class RealTimeMonitor:
     """Mock real-time monitor for testing purposes."""

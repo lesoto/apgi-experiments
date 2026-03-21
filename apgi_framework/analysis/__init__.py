@@ -85,6 +85,7 @@ from .statistical_tester import (
     TestType,
 )
 
+
 # Mock classes for testing
 class StatisticalAnalyzer:
     """Mock statistical analyzer for testing purposes."""

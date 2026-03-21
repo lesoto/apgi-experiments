@@ -92,10 +92,12 @@ def validate_parameters(args: argparse.Namespace) -> None:
                 logger.info(f"Error: Invalid parameter format: {param_str}")
                 logger.info("Expected format: key=value")
                 sys.exit(1)
+                return  # This should never be reached due to sys.exit
 
     if not params:
-        logger.info("No parameters provided. Use --params key=value")
+        logger.info("No parameters provided")
         sys.exit(1)
+        return  # This should never be reached due to sys.exit
 
     # Validate
     result = validator.validate_apgi_parameters(**params)
@@ -104,6 +106,7 @@ def validate_parameters(args: argparse.Namespace) -> None:
 
     if not result.is_valid:
         sys.exit(1)
+        return  # This should never be reached due to sys.exit
 
 
 def get_parameter_info(args: argparse.Namespace) -> None:

@@ -4,6 +4,7 @@ Network module for APGI Framework.
 This module provides network-intensive operations.
 """
 
+
 # Mock classes for testing
 class NetworkManager:
     """Mock network manager for testing purposes."""

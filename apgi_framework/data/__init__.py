@@ -55,6 +55,7 @@ from .report_generator import FalsificationReport, ReportGenerator, ReportSectio
 from .storage_manager import StorageManager
 from .visualizer import APGIVisualizer, InteractiveVisualizer
 
+
 # Mock classes for testing
 class DataProcessor:
     """Mock data processor for testing purposes."""

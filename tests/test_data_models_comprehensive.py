@@ -335,7 +335,8 @@ class TestExperimentalDataset:
         dataset1 = ExperimentalDataset(metadata=metadata, storage_path="/tmp/test")
         assert dataset1.storage_path == "/tmp/test"
 
-        dataset2 = ExperimentalDataset(metadata=metadata, storage_path=Path("/tmp/test2"))
+        dataset2 = ExperimentalDataset(
+            metadata=metadata, storage_path=Path("/tmp/test2")
         )
         assert isinstance(dataset2.storage_path, Path)
         assert str(dataset2.storage_path) == "/tmp/test2"

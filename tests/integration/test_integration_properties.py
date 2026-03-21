@@ -864,8 +864,6 @@ class TestAPGIFrameworkCompatibilityProperties:
         # Create test project with APGI-style tests
         project_dir = (
             self.temp_dir / f"apgi_fixture_test_{hash(str(test_structure)) % 10000}"
-            self.temp_dir / f"apgi_fixture_test_{hash(str(test_structure)) % 10000}"
-            self.temp_dir / f"apgi_fixture_test_{hash(str(test_structure)) % 10000}"
         )
         # Create source files
         src_dir = project_dir / "src"
