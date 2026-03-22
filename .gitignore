@@ -66,4 +66,7 @@ cache/
 backups/
 .mypy_cache/
 .hypothesis/
+.coverage
+coverage.xml
+htmlcov/
 config/presets/
