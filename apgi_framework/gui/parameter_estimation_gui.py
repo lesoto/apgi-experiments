@@ -21,7 +21,7 @@ from apgi_framework.gui.progress_monitoring import RealTimeProgressMonitor
 
 # Import core modules with corrected paths
 try:
-    from research.core_mechanisms.experiments.experimental.behavioral_tasks import (
+    from apgi_framework.research.core_mechanisms.experiments.behavioral_tasks import (
         DetectionTask,
         DualModalityOddballTask,
         HeartbeatDetectionTask,

@@ -431,257 +431,274 @@ class ComprehensivePerformanceDashboard:
                 "timestamp": datetime.now(),
             }
 
-        def update_metrics(self):
-            """Update performance metrics."""
-            if not self.running:
-                return
+    def update_metrics(self):
+        """Update performance metrics."""
+        if not self.running:
+            return
 
-            try:
-                metrics = self._get_current_metrics()
+        try:
+            metrics = self._get_current_metrics()
 
-                # Store metrics
-                self.performance_data["timestamps"].append(metrics["timestamp"])
-                self.performance_data["cpu_usage"].append(metrics["cpu_percent"])
-                self.performance_data["memory_usage"].append(metrics["memory_percent"])
-                self.performance_data["disk_io"].append(
-                    {
-                        "read_mb": metrics["disk_read_mb"],
-                        "write_mb": metrics["disk_write_mb"],
-                    }
+            # Store metrics
+            self.performance_data["timestamps"].append(metrics["timestamp"])
+            self.performance_data["cpu_usage"].append(metrics["cpu_percent"])
+            self.performance_data["memory_usage"].append(metrics["memory_percent"])
+            self.performance_data["disk_io"].append(
+                {
+                    "read_mb": metrics["disk_read_mb"],
+                    "write_mb": metrics["disk_write_mb"],
+                }
+            )
+            self.performance_data["network_io"].append(
+                {
+                    "sent_mb": metrics["network_sent_mb"],
+                    "recv_mb": metrics["network_recv_mb"],
+                }
+            )
+            self.performance_data["system_metrics"].append(
+                {
+                    "processes": metrics["active_processes"],
+                    "memory_used": metrics["memory_used_gb"],
+                }
+            )
+
+            # Keep only recent data points
+            max_points = 1000
+            for key in self.performance_data:
+                if len(self.performance_data[key]) > max_points:
+                    self.performance_data[key] = self.performance_data[key][
+                        -max_points:
+                    ]
+
+            self.logger.debug(
+                f"Updated metrics: CPU {metrics['cpu_percent']:.1f}%, "
+                f"Memory {metrics['memory_percent']:.1f}%"
+            )
+        except Exception as e:
+            self.logger.error(f"Error updating metrics: {e}")
+
+    def create_charts(self) -> Dict[str, Any]:
+        """Create chart data from performance metrics."""
+        if not self.performance_data["timestamps"]:
+            return {}
+
+        # CPU Chart
+        cpu_chart = {
+            "data": [
+                {
+                    "x": self.performance_data["timestamps"][-100:],
+                    "y": self.performance_data["cpu_usage"][-100:],
+                    "type": "scatter",
+                    "mode": "lines",
+                    "name": "CPU Usage %",
+                    "line": {"color": "#FF6B6B", "width": 2},
+                }
+            ],
+            "layout": {
+                "title": "CPU Usage Over Time",
+                "xaxis": {"title": "Time"},
+                "yaxis": {"title": "CPU Usage (%)", "range": [0, 100]},
+            },
+        }
+
+        # Memory Chart
+        memory_chart = {
+            "data": [
+                {
+                    "x": self.performance_data["timestamps"][-100:],
+                    "y": self.performance_data["memory_usage"][-100:],
+                    "type": "scatter",
+                    "mode": "lines",
+                    "name": "Memory Usage %",
+                    "line": {"color": "#1f77b4", "width": 2},
+                }
+            ],
+            "layout": {
+                "title": "Memory Usage Over Time",
+                "xaxis": {"title": "Time"},
+                "yaxis": {"title": "Memory Usage (%)", "range": [0, 100]},
+            },
+        }
+
+        # Performance Timeline
+        timeline_chart = {
+            "data": [
+                {
+                    "x": self.performance_data["timestamps"][-50:],
+                    "y": self.performance_data["cpu_usage"][-50:],
+                    "type": "scatter",
+                    "mode": "lines",
+                    "name": "Performance Timeline",
+                    "line": {"color": "#0066CC", "width": 3},
+                }
+            ],
+            "layout": {
+                "title": "System Performance Timeline",
+                "xaxis": {"title": "Time"},
+                "yaxis": {"title": "Performance Metric"},
+            },
+        }
+
+        return {
+            "cpu-chart": cpu_chart,
+            "memory-chart": memory_chart,
+            "performance-timeline": timeline_chart,
+        }
+
+    def export_data(self, filename: Optional[str] = None) -> Optional[str]:
+        """Export performance data to file."""
+        if not filename:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"performance_data_{timestamp}.json"
+
+        try:
+            export_data = {
+                "export_timestamp": datetime.now().isoformat(),
+                "data_points": len(self.performance_data["timestamps"]),
+                "time_range": {
+                    "start": (
+                        self.performance_data["timestamps"][0].isoformat()
+                        if self.performance_data["timestamps"]
+                        else None
+                    ),
+                    "end": (
+                        self.performance_data["timestamps"][-1].isoformat()
+                        if self.performance_data["timestamps"]
+                        else None
+                    ),
+                },
+                "metrics": self.performance_data,
+            }
+
+            with open(filename, "w") as f:
+                json.dump(export_data, f, indent=2, default=str)
+
+            return filename
+        except Exception:
+            self.logger.error("Error exporting data")
+            return None
+
+    def clear_data(self):
+        """Clear all performance data."""
+        self.performance_data = {
+            "timestamps": [],
+            "cpu_usage": [],
+            "memory_usage": [],
+            "disk_io": [],
+            "network_io": [],
+            "validation_results": [],
+            "system_metrics": [],
+        }
+        self.logger.info("Performance data cleared")
+
+    def generate_report(self) -> Dict[str, Any]:
+        """Generate performance summary report."""
+        if not self.performance_data["timestamps"]:
+            return {"error": "No data available for report generation"}
+
+        try:
+            # Calculate statistics
+            cpu_avg = sum(self.performance_data["cpu_usage"]) / len(
+                self.performance_data["cpu_usage"]
+            )
+            memory_avg = sum(self.performance_data["memory_usage"]) / len(
+                self.performance_data["memory_usage"]
+            )
+
+            # Find peaks
+            cpu_peak = max(self.performance_data["cpu_usage"])
+            memory_peak = max(self.performance_data["memory_usage"])
+
+            # Time range
+            if len(self.performance_data["timestamps"]) > 1:
+                time_range = (
+                    self.performance_data["timestamps"][-1]
+                    - self.performance_data["timestamps"][0]
                 )
-                self.performance_data["network_io"].append(
-                    {
-                        "sent_mb": metrics["network_sent_mb"],
-                        "recv_mb": metrics["network_recv_mb"],
-                    }
-                )
-                self.performance_data["system_metrics"].append(
-                    {
-                        "processes": metrics["active_processes"],
-                        "memory_used": metrics["memory_used_gb"],
-                    }
-                )
+                time_range_seconds = time_range.total_seconds()
+            else:
+                time_range_seconds = 0
 
-                # Keep only recent data points
-                max_points = 1000
-                for key in self.performance_data:
-                    if len(self.performance_data[key]) > max_points:
-                        self.performance_data[key] = self.performance_data[key][
-                            -max_points:
-                        ]
+            report = {
+                "summary": {
+                    "monitoring_duration": str(time_range_seconds),
+                    "total_data_points": len(
+                        self.performance_data["timestamps"]
+                    ),
+                    "cpu_avg": cpu_avg,
+                    "cpu_peak": cpu_peak,
+                    "memory_avg": memory_avg,
+                    "memory_peak": memory_peak,
+                },
+                "recommendations": self._generate_recommendations(
+                    cpu_avg, memory_avg, cpu_peak, memory_peak
+                ),
+                "timestamp": datetime.now().isoformat(),
+            }
 
-                self.logger.debug(
-                    f"Updated metrics: CPU {metrics['cpu_percent']:.1f}%, "
-                    f"Memory {metrics['memory_percent']:.1f}%"
-                )
-            except Exception as e:
-                self.logger.error(f"Error updating metrics: {e}")
+            return report
+        except Exception as e:
+            self.logger.error(f"Error generating report: {e}")
+            return {"error": str(e)}
 
-                def create_charts(self) -> Dict[str, Any]:
-                    """Create chart data from performance metrics."""
-                    if not self.performance_data["timestamps"]:
-                        return {}
+    def _generate_recommendations(
+        self,
+        cpu_avg: float,
+        memory_avg: float,
+        cpu_peak: float,
+        memory_peak: float,
+    ) -> List[str]:
+        """Generate performance recommendations based on metrics."""
+        recommendations = []
 
-                    # CPU Chart
-                    cpu_chart = {
-                        "data": [
-                            {
-                                "x": self.performance_data["timestamps"][-100:],
-                                "y": self.performance_data["cpu_usage"][-100:],
-                                "type": "scatter",
-                                "mode": "lines",
-                                "name": "CPU Usage %",
-                                "line": {"color": "#FF6B6B", "width": 2},
-                            }
-                        ],
-                        "layout": {
-                            "title": "CPU Usage Over Time",
-                            "xaxis": {"title": "Time"},
-                            "yaxis": {"title": "CPU Usage (%)", "range": [0, 100]},
-                        },
-                    }
+        if cpu_avg > 80:
+            recommendations.append(
+                "High CPU usage detected. Consider optimizing algorithms or adding computational resources."
+            )
 
-                    # Memory Chart
-                    memory_chart = {
-                        "data": [
-                            {
-                                "x": self.performance_data["timestamps"][-100:],
-                                "y": self.performance_data["memory_usage"][-100:],
-                                "type": "scatter",
-                                "mode": "lines",
-                                "name": "Memory Usage %",
-                                "line": {"color": "#1f77b4", "width": 2},
-                            }
-                        ],
-                        "layout": {
-                            "title": "Memory Usage Over Time",
-                            "xaxis": {"title": "Time"},
-                            "yaxis": {"title": "Memory Usage (%)", "range": [0, 100]},
-                        },
-                    }
+        if memory_avg > 85:
+            recommendations.append(
+                "High memory usage detected. Consider memory optimization or increasing available RAM."
+            )
 
-                    # Performance Timeline
-                    timeline_chart = {
-                        "data": [
-                            {
-                                "x": self.performance_data["timestamps"][-50:],
-                                "y": self.performance_data["cpu_usage"][-50:],
-                                "type": "scatter",
-                                "mode": "lines",
-                                "name": "Performance Timeline",
-                                "line": {"color": "#0066CC", "width": 3},
-                            }
-                        ],
-                        "layout": {
-                            "title": "System Performance Timeline",
-                            "xaxis": {"title": "Time"},
-                            "yaxis": {"title": "Performance Metric"},
-                        },
-                    }
+        if cpu_peak > 95:
+            recommendations.append(
+                "CPU spikes detected. Investigate background processes or algorithm efficiency."
+            )
 
-                    return {
-                        "cpu-chart": cpu_chart,
-                        "memory-chart": memory_chart,
-                        "performance-timeline": timeline_chart,
-                    }
+        if memory_peak > 90:
+            recommendations.append(
+                "Memory spikes detected. Check for memory leaks or inefficient data structures."
+            )
 
-                def export_data(self, filename: Optional[str] = None) -> Optional[str]:
-                    """Export performance data to file."""
-                    if not filename:
-                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                        filename = f"performance_data_{timestamp}.json"
+        if not recommendations:
+            recommendations.append(
+                "System performance is within acceptable ranges."
+            )
 
-                    try:
-                        export_data = {
-                            "export_timestamp": datetime.now().isoformat(),
-                            "data_points": len(self.performance_data["timestamps"]),
-                            "time_range": {
-                                "start": (
-                                    self.performance_data["timestamps"][0].isoformat()
-                                    if self.performance_data["timestamps"]
-                                    else None
-                                ),
-                                "end": (
-                                    self.performance_data["timestamps"][-1].isoformat()
-                                    if self.performance_data["timestamps"]
-                                    else None
-                                ),
-                            },
-                            "metrics": self.performance_data,
-                        }
+        return recommendations
 
-                        with open(filename, "w") as f:
-                            json.dump(export_data, f, indent=2, default=str)
+    def setup_callbacks(self, app):
+        """Setup dashboard callbacks."""
+        from dash.dependencies import Input, Output
 
-                        return filename
-                    except Exception:
-                        self.logger.error("Error exporting data")
-                        return None
+        @app.callback(
+            Output("cpu-chart", "figure"),
+            [Input("interval-component", "n_intervals")]
+        )
+        def update_cpu_chart(n):
+            charts = self.create_charts()
+            return charts.get("cpu-chart", {})
 
-                def clear_data(self):
-                    """Clear all performance data."""
-                    self.performance_data = {
-                        "timestamps": [],
-                        "cpu_usage": [],
-                        "memory_usage": [],
-                        "disk_io": [],
-                        "network_io": [],
-                        "validation_results": [],
-                        "system_metrics": [],
-                    }
-                    self.logger.info("Performance data cleared")
+        @app.callback(
+            Output("memory-chart", "figure"),
+            [Input("interval-component", "n_intervals")]
+        )
+        def update_memory_chart(n):
+            charts = self.create_charts()
+            return charts.get("memory-chart", {})
 
-                def generate_report(self) -> Dict[str, Any]:
-                    """Generate performance summary report."""
-                    if not self.performance_data["timestamps"]:
-                        return {"error": "No data available for report generation"}
-
-                    try:
-                        # Calculate statistics
-                        cpu_avg = sum(self.performance_data["cpu_usage"]) / len(
-                            self.performance_data["cpu_usage"]
-                        )
-                        memory_avg = sum(self.performance_data["memory_usage"]) / len(
-                            self.performance_data["memory_usage"]
-                        )
-
-                        # Find peaks
-                        cpu_peak = max(self.performance_data["cpu_usage"])
-                        memory_peak = max(self.performance_data["memory_usage"])
-
-                        # Time range
-                        if len(self.performance_data["timestamps"]) > 1:
-                            time_range = (
-                                self.performance_data["timestamps"][-1]
-                                - self.performance_data["timestamps"][0]
-                            )
-                            time_range_seconds = time_range.total_seconds()
-                        else:
-                            time_range_seconds = 0
-
-                        report = {
-                            "summary": {
-                                "monitoring_duration": str(time_range_seconds),
-                                "total_data_points": len(
-                                    self.performance_data["timestamps"]
-                                ),
-                                "cpu_avg": cpu_avg,
-                                "cpu_peak": cpu_peak,
-                                "memory_avg": memory_avg,
-                                "memory_peak": memory_peak,
-                            },
-                            "recommendations": self._generate_recommendations(
-                                cpu_avg, memory_avg, cpu_peak, memory_peak
-                            ),
-                            "timestamp": datetime.now().isoformat(),
-                        }
-
-                        return report
-                    except Exception as e:
-                        self.logger.error(f"Error generating report: {e}")
-                        return {"error": str(e)}
-
-                def _generate_recommendations(
-                    self,
-                    cpu_avg: float,
-                    memory_avg: float,
-                    cpu_peak: float,
-                    memory_peak: float,
-                ) -> List[str]:
-                    """Generate performance recommendations based on metrics."""
-                    recommendations = []
-
-                    if cpu_avg > 80:
-                        recommendations.append(
-                            "High CPU usage detected. Consider optimizing algorithms or adding computational resources."
-                        )
-
-                    if memory_avg > 85:
-                        recommendations.append(
-                            "High memory usage detected. Consider memory optimization or increasing available RAM."
-                        )
-
-                    if cpu_peak > 95:
-                        recommendations.append(
-                            "CPU spikes detected. Investigate background processes or algorithm efficiency."
-                        )
-
-                    if memory_peak > 90:
-                        recommendations.append(
-                            "Memory spikes detected. Check for memory leaks or inefficient data structures."
-                        )
-
-                    if not recommendations:
-                        recommendations.append(
-                            "System performance is within acceptable ranges."
-                        )
-
-                    return recommendations
-
-    # Temporarily commented out nested methods to fix structure
-    # def setup_callbacks(self, app):
-    #     """Setup dashboard callbacks."""
-    #     # ... callbacks would go here ...
+        self.logger.info("Dashboard callbacks configured")
 
     def run(self, host: str = "127.0.0.1", debug: bool = False, test_mode: bool = True):
         """Run the comprehensive performance dashboard."""

@@ -13,7 +13,7 @@ import tkinter as tk
 import zipfile
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
-from typing import Any, Callable, Dict, List, Optional
+from typing import Optional, Callable, List, Dict, Any, Union
 
 
 class BackupManager:
@@ -59,6 +59,26 @@ class BackupManager:
         }
 
         self._update_sizes()
+
+    def scan_backup_items(self):
+        """Scan backup items and update their sizes."""
+        self._update_sizes()
+
+    def create_backup_archive(self, backup_name: str) -> Path:
+        """Create a backup archive with all enabled items."""
+        enabled_items = [
+            name for name, info in self.backup_items.items() if info["enabled"]
+        ]
+
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_filename = f"{backup_name}_{timestamp}.zip"
+        backup_path = self.backup_dir / backup_filename
+
+        success = self.create_backup(backup_name, enabled_items)
+        if success:
+            return backup_path
+        else:
+            raise RuntimeError(f"Failed to create backup: {backup_name}")
 
     def _update_sizes(self):
         """Update size information for backup items."""
@@ -177,12 +197,26 @@ class BackupManager:
         backups.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
         return backups
 
+    def list_backups(self) -> List[Dict[str, Any]]:
+        """Get list of available backups (alias for get_backups)."""
+        return self.get_backups()
+
     def restore_backup(
         self,
-        backup_path: Path,
+        backup_path: Union[Path, str],
         progress_callback: Optional[Callable[[int, str], None]] = None,
     ) -> bool:
         """Restore from a backup file."""
+        # Convert string to Path if needed
+        if isinstance(backup_path, str):
+            backup_path = self.backup_dir / backup_path
+        elif isinstance(backup_path, Path):
+            # If it's a Path but not absolute, assume it's relative to backup_dir
+            if not backup_path.is_absolute():
+                backup_path = self.backup_dir / backup_path
+        else:
+            raise TypeError("backup_path must be a Path or string")
+
         try:
             with zipfile.ZipFile(backup_path, "r") as zipf:
                 # Read metadata

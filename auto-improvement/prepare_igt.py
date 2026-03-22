@@ -370,3 +370,14 @@ if __name__ == "__main__":
     print(f"  Net score (last 20): {summary['net_score']:.1f}")
     print(f"  Learning rate: {summary['learning_rate']:.3f}")
     print(f"  Final money: ${summary['final_money']}")
+
+# Standardized APGI Parameters Export (READ-ONLY)
+# These parameters are used by the AGENT-EDITABLE run file for APGI integration
+APGI_PARAMS = {
+    "experiment_name": "igt",
+    "enabled": True,
+    "tau_s": 0.35,  # Surprise decay time constant (s)
+    "beta": 1.5,  # Somatic influence gain
+    "theta_0": 0.5,  # Baseline ignition threshold
+    "alpha": 5.5,  # Sigmoid steepness
+}

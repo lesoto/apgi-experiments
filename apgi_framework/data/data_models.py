@@ -146,3 +146,113 @@ class StorageStats:
     corrupted_datasets: int = 0
     missing_backups: int = 0
     validation_failures: int = 0
+
+
+@dataclass
+class ParticipantData:
+    """Data structure for participant information."""
+
+    participant_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    session_id: str = ""
+    experiment_id: str = ""
+
+    # Demographics
+    age: Optional[int] = None
+    gender: Optional[str] = None
+    handedness: Optional[str] = None  # left, right, ambidextrous
+
+    # Session information
+    start_time: datetime = field(default_factory=datetime.now)
+    end_time: Optional[datetime] = None
+    completion_status: str = "incomplete"  # incomplete, complete, aborted
+
+    # Performance metrics
+    accuracy: float = 0.0
+    reaction_time_ms: float = 0.0
+    num_trials: int = 0
+    num_correct: int = 0
+
+    # Physiological data references
+    eeg_file: Optional[str] = None
+    pupillometry_file: Optional[str] = None
+    physiological_file: Optional[str] = None
+
+    # Metadata
+    metadata: Dict[str, Any] = field(default_factory=dict)
+    conditions: List[str] = field(default_factory=list)
+
+    def complete_session(self, end_time: Optional[datetime] = None):
+        """Mark session as complete."""
+        self.end_time = end_time or datetime.now()
+        self.completion_status = "complete"
+
+
+@dataclass
+class ExperimentData:
+    """Data structure for complete experiment information."""
+
+    experiment_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    experiment_name: str = ""
+    description: str = ""
+
+    # Study information
+    researcher: str = ""
+    institution: str = ""
+    study_phase: str = ""  # pilot, main, replication
+
+    # Experimental parameters
+    n_participants: int = 0
+    n_trials_per_participant: int = 0
+    conditions: List[str] = field(default_factory=list)
+    parameters: Dict[str, Any] = field(default_factory=dict)
+
+    # Timing
+    created_at: datetime = field(default_factory=datetime.now)
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+
+    # Participants
+    participants: List[ParticipantData] = field(default_factory=list)
+
+    # Data files
+    data_files: Dict[str, str] = field(
+        default_factory=dict
+    )  # participant_id -> file_path
+
+    # Status
+    status: str = "created"  # created, running, paused, completed, archived
+
+    # Quality metrics
+    overall_accuracy: float = 0.0
+    mean_reaction_time_ms: float = 0.0
+    data_quality_score: float = 1.0
+
+    def add_participant(self, participant: ParticipantData) -> None:
+        """Add a participant to the experiment."""
+        participant.experiment_id = self.experiment_id
+        self.participants.append(participant)
+        self.n_participants = len(self.participants)
+
+    def start_experiment(self):
+        """Mark experiment as started."""
+        self.status = "running"
+        self.started_at = datetime.now()
+
+    def complete_experiment(self):
+        """Mark experiment as completed."""
+        self.status = "completed"
+        self.completed_at = datetime.now()
+        self._calculate_aggregate_metrics()
+
+    def _calculate_aggregate_metrics(self):
+        """Calculate overall metrics from participant data."""
+        if not self.participants:
+            return
+
+        total_accuracy = sum(p.accuracy for p in self.participants)
+        total_rt = sum(p.reaction_time_ms for p in self.participants)
+        total_trials = sum(p.num_trials for p in self.participants)
+
+        self.overall_accuracy = total_accuracy / len(self.participants)
+        self.mean_reaction_time_ms = total_rt / len(self.participants)
+        self.n_trials_per_participant = total_trials // len(self.participants)

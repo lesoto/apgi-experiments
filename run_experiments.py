@@ -62,7 +62,6 @@ EXPERIMENTS = {
     "somatic_marker_priming": "examples.02_batch_processing_configurations",
     "metabolic_cost": "examples.03_custom_analysis_saved_results",
     "ai_benchmarking": "examples.04_extending_falsification_criteria",
-    # Fallback to examples for other experiments
     "iowa_gambling_task": "examples.01_run_primary_falsification_test",
     "probabilistic_category_learning": "examples.02_batch_processing_configurations",
     "attentional_blink": "examples.03_custom_analysis_saved_results",

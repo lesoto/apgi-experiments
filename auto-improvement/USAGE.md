@@ -323,3 +323,234 @@ experiment_config = {
 - **Validation Phase**: Run final optimized configuration with multiple participants
 
 This system transforms psychological task optimization from manual trial-and-error to autonomous, systematic exploration, potentially discovering novel parameter combinations that maximize task sensitivity for detecting decision-making differences.
+
+## APGI Experiments - Auto-Improvement System
+
+## System Overview
+
+This directory contains experiment protocols for the APGI (Autonomous Psychological General Intelligence) auto-improvement system. Each experiment follows a two-file structure:
+
+- **`prepare_<experiment>.py`** - Fixed configurations and data preparation (READ-ONLY)
+- **`run_<experiment>.py`** - Agent-editable task parameters and simulation logic
+
+## Core Principles
+
+- **Time Budget**: All experiments have a 10-minute (600 second) time budget
+- **Goal**: Maximize the primary metric defined in each experiment
+- **Git-based Learning**: The system is designed for an AI agent to autonomously modify `run_*.py` files, execute experiments, and track results via Git commits
+
+## Available Experiments
+
+### Primary IGT Experiments
+
+#### **Iowa Gambling Task (IGT)**
+
+- **Files**: `prepare_iowa_gambling_task.py`, `run_iowa_gambling_task.py`
+- **Primary Metric**: `net_score` (advantageous - disadvantageous choices)
+- **Description**: Decision-making under uncertainty with four decks, win/loss probabilities, and learning
+
+#### **Attentional Blink**
+
+- **Files**: `prepare_attentional_blink.py`, `run_attentional_blink.py`
+- **Primary Metric**: `blink_magnitude` (attentional blink effect at optimal lags)
+- **Description**: Rapid serial visual presentation with attentional bottlenecks
+
+#### **Visual Search**
+
+- **Files**: `prepare_visual_search.py`, `run_visual_search.py`
+- **Primary Metric**: `conjunction_present_slope` (ms/item search efficiency)
+- **Description**: Visual search for targets among distractors with varying display sizes
+
+#### **Posner Cueing**
+
+- **Files**: `prepare_posner_cueing.py`, `run_posner_cueing.py`
+- **Primary Metric**: `validity_effect_ms` (cue validity effect on reaction times)
+- **Description**: Spatial cueing with valid/invalid trial types and SOA manipulation
+
+#### **Stroop Effect**
+
+- **Files**: `prepare_stroop_effect.py`, `run_stroop_effect.py`
+- **Primary Metric**: `interference_effect_ms` (congruent vs incongruent RT difference)
+- **Description**: Cognitive interference with color-word compatibility tasks
+
+#### **Go/No-Go**
+
+- **Files**: `prepare_go_no_go.py`, `run_go_no_go.py`
+- **Primary Metric**: `d_prime` (response inhibition)
+- **Description**: Response inhibition with frequent go stimuli and rare no-go trials
+
+#### **Dual N-Back**
+
+- **Files**: `prepare_dual_n_back.py`, `run_dual_n_back.py`
+- **Primary Metric**: `d_prime` (working memory performance)
+- **Description**: Working memory task with n-back levels and target matching
+
+#### **Stop Signal**
+
+- **Files**: `prepare_stop_signal.py`, `run_stop_signal.py`
+- **Primary Metric**: `ssrt_ms` (stop-signal reaction time)
+- **Description**: Inhibitory control with varying stop-signal delays
+
+#### **Change Blindness**
+
+- **Files**: `prepare_change_blindness.py`, `run_change_blindness.py`
+- **Primary Metric**: `detection_rate` (ability to detect changes)
+- **Description**: Change detection with masked stimuli and varying mask durations
+
+#### **Eriksen Flanker**
+
+- **Files**: `prepare_eriksen_flanker.py`, `run_eriksen_flanker.py`
+- **Primary Metric**: `flanker_effect_ms` (incongruent vs congruent RT difference)
+- **Description**: Executive function with arrow stimulus interference
+
+#### **Masking**
+
+- **Files**: `prepare_masking.py`, `run_masking.py`
+- **Primary Metric**: `masking_effect_ms` (backward masking interference)
+- **Description**: Visual masking with various mask types and SOA conditions
+
+#### **Binocular Rivalry**
+
+- **Files**: `prepare_binocular_rivalry.py`, `run_binocular_rivalry.py`
+- **Primary Metric**: `masking_effect_ms` (binocular rivalry alternation rate)
+- **Description**: Binocular rivalry with dichoptic presentation and perceptual switching
+
+#### **Inattentional Blindness**
+
+- **Files**: `prepare_inattentional_blindness.py`, `run_inattentional_blindness.py`
+- **Primary Metric**: `accuracy` (global vs local stimulus detection)
+- **Description**: Sustained attention to global vs local stimulus features
+
+#### **Sternberg Memory**
+
+- **Files**: `prepare_sternberg_memory.py`, `run_sternberg_memory.py`
+- **Primary Metric**: `search_slope_ms_per_item` (memory scanning efficiency)
+- **Description**: Working memory with set sizes and memory scanning performance
+
+#### **Working Memory Span**
+
+- **Files**: `prepare_working_memory_span.py`, `run_working_memory_span.py`
+- **Primary Metric**: `d_prime` (working memory capacity)
+- **Description**: Complex working memory task with letter sequences and distractions
+
+#### **DRM False Memory**
+
+- **Files**: `prepare_drm_false_memory.py`, `run_drm_false_memory.py`
+- **Primary Metric**: `accuracy` (recognition memory performance)
+- **Description**: Recognition memory with lists, sentences, and recognition accuracy
+
+#### **Navon Task (Global-Local)**
+
+- **Files**: `prepare_navon_task.py`, `run_navon_task.py`
+- **Primary Metric**: `global_advantage_ms` (global vs local processing advantage)
+- **Description**: Attentional processing with global vs local stimulus features
+
+#### **Multisensory Integration**
+
+- **Files**: `prepare_multisensory_integration.py`, `run_multisensory_integration.py`
+- **Primary Metric**: `multisensory_gain_ms` (cross-modal integration benefit)
+- **Description**: Multisensory processing with visual, auditory, and bimodal stimuli
+
+#### **Serial Reaction Time**
+
+- **Files**: `prepare_serial_reaction_time.py`, `run_serial_reaction_time.py`
+- **Primary Metric**: `learning_effect_ms` (procedural learning improvement)
+- **Description**: Simple and choice reaction time with learning components
+
+#### **Time Estimation**
+
+- **Files**: `prepare_time_estimation.py`, `run_time_estimation.py`
+- **Primary Metric**: `mean_error_percent` (temporal estimation accuracy)
+- **Description**: Time perception and estimation with varying intervals
+
+#### **Artificial Grammar Learning**
+
+- **Files**: `prepare_artificial_grammar_learning.py`, `run_artificial_grammar_learning.py`
+- **Primary Metric**: `grammar_accuracy` (rule learning performance)
+- **Description**: Learning artificial grammar rules with feedback and complexity levels
+
+#### **Virtual Navigation**
+
+- **Files**: `prepare_virtual_navigation.py`, `run_virtual_navigation.py`
+- **Primary Metric**: `path_efficiency` (navigation planning and execution efficiency)
+- **Description**: Spatial navigation and planning in virtual environments
+
+#### **Probabilistic Category Learning**
+
+- **Files**: `prepare_probabilistic_category_learning.py`, `run_probabilistic_category_learning.py`
+- **Primary Metric**: `learning_rate` (category learning and adaptation)
+- **Description**: Probabilistic learning of categories with feedback and strategy switching
+
+#### **Interoceptive Gating**
+
+- **Files**: `prepare_interoceptive_gating.py`, `run_interoceptive_gating.py`
+- **Primary Metric**: `gating_threshold` (interoceptive signal detection)
+- **Description**: Interoceptive signal detection with varying stimulus intensities
+
+#### **Somatic Marker Priming**
+
+- **Files**: `prepare_somatic_marker_priming.py`, `run_somatic_marker_priming.py`
+- **Primary Metric**: `priming_effect_ms` (somatic influence on perception)
+- **Description**: Somatic marker priming with same/different markers and response effects
+
+#### **Metabolic Cost**
+
+- **Files**: `prepare_metabolic_cost.py`, `run_metabolic_cost.py`
+- **Primary Metric**: `metabolic_cost_ratio` (energetic efficiency)
+- **Description**: Resource allocation and decision-making with metabolic costs
+
+## Usage Instructions
+
+### For Each Experiment
+
+#### Running Individual Experiments
+
+```bash
+# Run a specific experiment
+uv run run_<experiment>.py
+
+# Example: Run the Iowa Gambling Task
+uv run run_iowa_gambling_task.py
+```
+
+#### Auto-Improvement Workflow
+
+1. **Modify Parameters**: Edit `run_<experiment>.py` to optimize task parameters
+2. **Execute Experiment**: Run the experiment to collect performance data
+3. **Analyze Results**: Review primary metric and adjust parameters accordingly
+4. **Commit Changes**: Use Git to track parameter modifications and performance improvements
+
+### Key Metrics for Auto-Improvement
+
+Each experiment outputs its primary metric as the final line, formatted for easy parsing by the auto-improvement system:
+
+```text
+primary_metric: <value>
+completion_time_s: <seconds>
+```
+
+## File Structure
+
+```text
+auto-improvement/
+├── prepare_<experiment>.py     # Fixed configurations (READ-ONLY)
+├── run_<experiment>.py         # Modifiable parameters and simulation
+└── USAGE.md                  # This documentation
+```
+
+## Development Guidelines
+
+- **Time Budget**: All experiments respect the 600-second time limit
+- **Reproducibility**: Fixed configurations ensure consistent experimental conditions
+- **Modifiability**: Agent parameters allow for systematic optimization
+- **Performance Tracking**: Primary metrics enable automated performance comparison
+- **Git Integration**: Version control tracks the evolution of optimal strategies
+
+## Implementation Notes
+
+- All `prepare_*.py` files import from their corresponding modules
+- All `run_*.py` files follow the IGT template pattern
+- Simulated participants model human-like performance characteristics
+- Each experiment includes comprehensive result calculation and display
+
+This system enables systematic exploration and optimization of cognitive task performance through automated experimentation.

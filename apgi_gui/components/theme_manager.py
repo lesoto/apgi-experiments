@@ -351,6 +351,36 @@ class AdvancedThemeManager:
         logger.info(f"Theme changed from {old_theme} to {theme_name}")
         return True
 
+    def apply_theme(self, theme_name: str) -> bool:
+        """Apply a theme by name (alias for set_theme)."""
+        return self.set_theme(theme_name)
+
+    def apply_theme_to_widget(self, widget: tk.Widget, property_name: str = None):
+        """Apply current theme to a specific widget."""
+        if property_name:
+            # Apply specific property
+            colors = self.themes[self.current_theme]
+            if hasattr(colors, property_name):
+                widget.configure({property_name: getattr(colors, property_name)})
+        else:
+            # Apply full theme
+            self._apply_theme_to_widget(widget)
+
+    def switch_theme(self, theme_name: str) -> bool:
+        """Switch to a different theme (alias for set_theme)."""
+        return self.set_theme(theme_name)
+
+    @property
+    def available_themes(self):
+        """Get available themes."""
+        return self.themes
+
+    @property
+    def current_theme_info(self):
+        """Get current theme as a dict with name and colors."""
+        theme_colors = self.themes[self.current_theme]
+        return {"name": self.current_theme, "colors": theme_colors.to_dict()}
+
     def _apply_theme_to_all_widgets(self):
         """Apply current theme to all registered widgets."""
         colors = self.themes[self.current_theme]

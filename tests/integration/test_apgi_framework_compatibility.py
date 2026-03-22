@@ -615,15 +615,51 @@ class TestAPGIFrameworkIntegration:
 
     def test_apgi_data_models_compatibility(self):
         """Test compatibility with APGI data models."""
-        # Create experiment fixture
-        # experiment_fixture = self.fixture_manager.create_experiment_fixture(
-        #     "test_data_models"
-        # )
+        from apgi_framework.data.data_models import ExperimentData, ParticipantData
 
-        # Skip test if APGI data models are not available
-        pytest.skip(
-            "APGI data models (ExperimentData, ParticipantData) not implemented in current codebase"
+        # Create experiment with participants
+        experiment = ExperimentData(
+            experiment_name="Test Experiment",
+            description="Testing data model compatibility",
+            researcher="Test Researcher",
+            institution="Test Institution",
+            conditions=["condition_a", "condition_b"],
+            parameters={"stimulus_duration": 1.0, "isi": 0.5},
         )
+
+        # Add participants
+        for i in range(3):
+            participant = ParticipantData(
+                session_id=f"session_{i+1}",
+                age=25 + i,
+                gender="neutral",
+                accuracy=0.8 + (i * 0.05),
+                reaction_time_ms=500 + (i * 50),
+                num_trials=100,
+                num_correct=80 + (i * 5),
+                conditions=["condition_a"] if i % 2 == 0 else ["condition_b"],
+            )
+            experiment.add_participant(participant)
+
+        # Start and complete experiment
+        experiment.start_experiment()
+        experiment.complete_experiment()
+
+        # Verify experiment properties
+        assert experiment.experiment_id is not None
+        assert experiment.status == "completed"
+        assert experiment.n_participants == 3
+        assert experiment.started_at is not None
+        assert experiment.completed_at is not None
+        assert experiment.overall_accuracy > 0
+        assert experiment.mean_reaction_time_ms > 0
+
+        # Verify participants are linked
+        for p in experiment.participants:
+            assert p.experiment_id == experiment.experiment_id
+            assert (
+                p.completion_status == "incomplete"
+            )  # Participants not marked complete automatically
 
     def test_neural_processor_integration(self):
         """Test integration with neural signal processors."""

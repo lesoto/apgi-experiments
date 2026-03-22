@@ -634,6 +634,10 @@ Examples:
 
     def initialize_controller(self, config_path: Optional[str] = None) -> None:
         """Initialize the main application controller."""
+        # Ensure logger is available
+        if self.logger is None:
+            self.setup_logging()
+
         try:
             self.controller = MainApplicationController(config_path)
             self.controller.initialize_system()
@@ -1011,9 +1015,6 @@ Examples:
             test_utils = TestUtilities(
                 args.root_path if hasattr(args, "root_path") else None
             )
-        except ImportError as e:
-            self.logger.error(f"Failed to import test utilities: {e}")
-            sys.exit(1)
 
             # Discover tests based on criteria
             test_suites = []
@@ -1124,9 +1125,6 @@ Examples:
             from .utils.framework_test_utils import TestUtilities
 
             test_utils = TestUtilities(args.root_path)
-        except ImportError as e:
-            self.logger.error(f"Failed to import test utilities: {e}")
-            sys.exit(1)
 
             if args.discover:
                 self.logger.info("Discovering all tests...")
