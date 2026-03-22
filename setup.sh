@@ -173,7 +173,6 @@ verify_installation() {
 import sys
 try:
     import apgi_framework
-    import apgi_gui
     print('Core imports successful')
 except ImportError as e:
     print(f'Import error: {e}')
@@ -184,33 +183,14 @@ except Exception as e:
 "
     
     if [[ $? -eq 0 ]]; then
+        # APGIGui import removed
+        pass
         print_status "Import verification passed"
     else
         print_error "Import verification failed"
         exit 1
     fi
-    
-    # Test GUI launch
-    print_status "Testing GUI launch..."
-    $PYTHON_CMD -c "
-import sys
-try:
-    from apgi_gui.app import APGIFrameworkApp
-    print('GUI import successful')
-except ImportError as e:
-    print(f'GUI import error: {e}')
-    sys.exit(1)
-except Exception as e:
-    print(f'Unexpected error: {e}')
-    sys.exit(1)
-"
-    
-    if [[ $? -eq 0 ]]; then
-        print_status "GUI verification passed"
-    else
-        print_error "GUI verification failed"
-        exit 1
-    fi
+
 }
 
 # Function to create desktop shortcut
@@ -239,7 +219,8 @@ if [[ -d "apgi_venv" ]]; then
 fi
 
 # Launch the GUI
-python -m apgi_gui
+python GUI.py
+
 EOF
     
     chmod +x "$LAUNCH_SCRIPT"
@@ -276,8 +257,9 @@ EOF
 @echo off
 cd /d "$SCRIPT_DIR"
 call "apgi_venv\\Scripts\\activate.bat"
-python -m apgi_gui
+python GUI.py
 EOF
+
         
         print_status "Created desktop shortcut: $SHORTCUT"
     fi
@@ -341,7 +323,7 @@ case "${1:-}" in
         echo "  --help, -h     Show this help message"
         echo "  --clean        Clean up virtual environment before setup"
         echo "  --dev          Install in development mode (default)"
-        echo "  --no-gui        Skip GUI verification"
+        echo "  --no-gui       Skip GUI verification"
         echo
         exit 0
         ;;

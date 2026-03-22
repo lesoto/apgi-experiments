@@ -85,7 +85,7 @@ The APGI Framework Testing System GUI provides a comprehensive graphical interfa
 #### Option 1: Direct Launch
 
 ```bash
-python apgi_gui.py
+python GUI.py
 ```
 
 #### Option 2: Using Launcher (Recommended)
@@ -194,7 +194,7 @@ Configuration files are saved in JSON format with the following structure:
 
 ### Architecture
 
-- **Main Application**: `APIFalsificationGUI` class manages the overall application
+- **Main Application**: `APGIFrameworkGUI` class manages the overall application
 - **Configuration Panel**: `ParameterConfigPanel` handles parameter management
 - **Test Panels**: `FalsificationTestPanel` instances for each test type
 - **Visualization**: `ResultsVisualizationPanel` with matplotlib integration

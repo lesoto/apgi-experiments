@@ -200,7 +200,6 @@ https://github.com/apgi-research/apgi-framework
 - GUI.py - Main comprehensive GUI application (244KB)
 - GUI-Experiment-Registry.py - Experiment registry GUI for running 24 experiments
 - GUI-Launcher.py - Centralized GUI launcher for all applications
-- apgi_gui/app.py - Modern GUI application using customtkinter
 
 #### Apps Directory GUIs
 
@@ -293,7 +292,6 @@ https://github.com/apgi-research/apgi-framework
 #### Package Entry Points
 
 - `apgi_framework/__init__.py` - Package initialization
-- `apgi_gui/__init__.py` - GUI package initialization
 
 ## Quick Start (5 minutes)
 

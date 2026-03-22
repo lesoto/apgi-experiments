@@ -175,7 +175,7 @@ apgi-deploy = "apgi_framework.deployment.automation:main"
 apgi-dashboard = "apgi_framework.gui.interactive_dashboard:main"
 
 [tool.setuptools]
-packages = ["apgi_framework", "apgi_gui", "tests"]
+packages = ["apgi_framework", "tests"]
 include-package-data = true
 
 [tool.setuptools.package-data]
@@ -419,15 +419,6 @@ module = [
     "winreg.*",
 ]
 ignore_missing_imports = true
-
-# More permissive settings for GUI modules
-[[tool.mypy.overrides]]
-module = [
-    "apgi_gui.*",
-]
-ignore_missing_imports = true
-disallow_untyped_defs = false
-check_untyped_defs = false
 
 # Slightly stricter for framework core modules
 [[tool.mypy.overrides]]

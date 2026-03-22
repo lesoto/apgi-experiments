@@ -18,14 +18,24 @@ from pathlib import Path
 from tkinter import scrolledtext, ttk
 from typing import Any, Dict, List, Optional, Tuple
 
-# Import theme manager
-try:
-    from apgi_gui.theme_manager import ThemeManager
+# Theme manager not available after apgi_gui removal
+THEME_MANAGER_AVAILABLE = False
 
-    THEME_MANAGER_AVAILABLE = True
-except ImportError:
-    THEME_MANAGER_AVAILABLE = False
-    print("Warning: Theme manager not available. Theme support disabled.")
+
+class ThemeManager:
+    """Dummy ThemeManager for when the real one is not available."""
+
+    def __init__(self, initial_theme: str = "normal"):
+        pass
+
+    def get_available_themes(self):
+        return []
+
+    def set_theme(self, theme_name: str):
+        return False
+
+    def get_theme_color(self, color_name: str):
+        return None
 
 
 class ToolTip:

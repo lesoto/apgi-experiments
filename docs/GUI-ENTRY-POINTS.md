@@ -41,23 +41,10 @@ This document describes the different GUI entry points and their intended use ca
 
 **Use Case:** Entry point for users who need access to multiple GUI types
 
-### 5. `apgi_gui/app.py` (1,187 lines)
-
-**Purpose:** Modular GUI application using component architecture
-**Features:**
-
-- Component-based design (sidebar, main area, status bar)
-- Modern UI with CustomTkinter
-- Plugin-friendly architecture
-
-**Use Case:** Development and customization of GUI components
-
-## Recommended Usage
-
 - **New Users:** Start with `GUI-Launcher.py` for easy interface selection
 - **Researchers:** Use `GUI.py` for full-featured experiment management
-- **Developers:** Use `apgi_gui/app.py` for component-based development
 - **System Administrators:** Use `GUI-Launcher.py` to provide access to all interfaces
+
 
 ## File Organization
 

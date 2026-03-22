@@ -823,14 +823,20 @@ class APGIFrameworkGUI(ctk.CTk):
         try:
             from apgi_framework.logging.standardized_logging import get_logger
 
-            self.logger = get_logger("apgi_gui_template", log_file="apgi_gui.log")
+            self.logger = get_logger(
+                "apgi_framework_gui_template", log_file="apgi_framework_gui.log"
+            )
         except ImportError:
             # Fallback to basic logging
             logging.basicConfig(
                 level=logging.INFO,
                 format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-                handlers=[logging.FileHandler("apgi_gui.log"), logging.StreamHandler()],
+                handlers=[
+                    logging.FileHandler("apgi_framework_gui.log"),
+                    logging.StreamHandler(),
+                ],
             )
+
             self.logger = logging.getLogger(__name__)
 
     def _update_system_status(self):

@@ -219,13 +219,6 @@ class ComprehensiveGUILauncher:
                     "command": self.launch_full_gui,
                 },
                 {
-                    "name": "APGI Framework App",
-                    "file": "apgi_gui/app.py",
-                    "description": "Modern CustomTkinter-based framework application",
-                    "icon": "[Rocket]",
-                    "command": self.launch_apgi_gui_app,
-                },
-                {
                     "name": "Experiment Registry GUI",
                     "file": "GUI-Experiment-Registry.py",
                     "description": "Experiment registry and management interface",
@@ -704,10 +697,6 @@ class ComprehensiveGUILauncher:
     def launch_full_gui(self):
         """Launch the full-featured GUI."""
         self.launch_python_script("GUI.py", "Full-Featured GUI")
-
-    def launch_apgi_gui_app(self):
-        """Launch APGI Framework App."""
-        self.launch_python_script("apgi_gui/app.py", "APGI Framework App")
 
     def launch_experiment_registry(self):
         """Launch Experiment Registry GUI."""

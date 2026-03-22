@@ -182,14 +182,6 @@
 | `path_utils.py`         | 179   | 54      | 125     | 30.17%     | Medium   | 🟡     | Path utilities            |
 | `progress_monitor.py`   | 110   | 29      | 81      | 26.36%     | Medium   | 🟡     | Progress monitoring       |
 
-### GUI Components (`apgi_gui/`)
-
-| Module       | Lines | Covered | Missing | Coverage % | Priority | Status | Notes                     |
-| ------------ | ----- | ------- | ------- | ---------- | -------- | ------ | ------------------------- |
-| `app.py`      | 245   | 0       | 245     | 0.00%      | Critical | ⚪     | Main GUI application      |
-| `config/`     | 89    | 0       | 89      | 0.00%      | Medium   | ⚪     | Configuration module      |
-| `components/`| 892   | 0       | 892     | 0.00%      | High     | ⚪     | GUI components            |
-| `utils/`      | 267   | 77      | 190     | 28.84%     | Medium   | 🟡     | GUI utilities            |
 
 ---
 
@@ -241,7 +233,6 @@
 - [ ] **T-202**: Test `storage_manager.py` - Storage abstraction
 - [ ] **T-203**: Test `data_manager.py` - Data management workflows
 - [ ] **T-204**: Test `export_manager.py` - Export functionality
-- [ ] **T-301**: Test `app.py` - Main application
 - [ ] **T-302**: Test `experiment_runner_gui.py` - Runner GUI
 - [ ] **T-303**: Test `task_control_gui.py` - Task control
 - [ ] **T-304**: Test component event handling
@@ -297,13 +288,13 @@
 
 ```bash
 # Generate coverage report
-python -m pytest --cov=apgi_framework --cov=apgi_gui --cov-report=term-missing
+python -m pytest --cov=apgi_framework --cov-report=term-missing
 
 # Generate HTML report
-python -m pytest --cov=apgi_framework --cov=apgi_gui --cov-report=html
+python -m pytest --cov=apgi_framework --cov-report=html
 
 # Generate XML report for CI
-python -m pytest --cov=apgi_framework --cov=apgi_gui --cov-report=xml
+python -m pytest --cov=apgi_framework --cov-report=xml
 
 # Run specific module coverage
 python -m pytest tests/test_analysis.py --cov=apgi_framework.analysis

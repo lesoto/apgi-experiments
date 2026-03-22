@@ -164,25 +164,18 @@ def test_gui_launch():
     """Test that GUI can be launched."""
     print("\nTesting GUI launch...")
     try:
-        import tkinter as tk
+        from GUI import APGIFrameworkGUI
 
-        from apgi_gui import APGIGui
+        # Create GUI instance (it inherits from ctk.CTk)
+        app = APGIFrameworkGUI()
 
-        # Create root window
-        root = tk.Tk()
+        print("✓ GUI instance created successfully!")
 
-        # Create GUI instance
-        APGIGui(root)
+        # Close after a short delay
+        app.after(100, app.quit)
 
-        print("✓ GUI window opened successfully!")
-        print(f"  - Window title: {root.title()}")
-        print(f"  - Window size: {root.geometry()}")
-
-        # Close immediately
-        root.after(100, root.quit)
-
-        # Run main loop
-        root.mainloop()
+        # Run main loop briefly
+        app.mainloop()
 
         print("✓ GUI closed successfully!")
         return True
@@ -229,10 +222,9 @@ def main():
     if passed == total:
         print("\n✓ ALL TESTS PASSED - Application is ready to use!")
         print("\nTo launch the GUI, run:")
-        print("  python run_gui.py")
-        print("  or")
-        print("  python apgi_gui.py")
+        print("  python GUI.py")
         return 0
+
     else:
         print("\n✗ SOME TESTS FAILED - Please review errors above")
         return 1

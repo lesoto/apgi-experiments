@@ -84,126 +84,113 @@ from apgi_framework.utils.font_utils import get_font
 # Import managed thread pool
 from apgi_framework.utils.thread_manager import run_in_thread
 
-# Import tooltip manager
-try:
-    from apgi_gui.utils.tooltip_manager import add_parameter_tooltips, add_tooltip
-
-    TOOLTIPS_AVAILABLE = True
-except ImportError:
-    # Fallback tooltip functions - no-op behavior
-    TOOLTIPS_AVAILABLE = False
-    logger.warning(
-        "Tooltip manager not available. Install apgi_gui package for tooltip support."
-    )
-
-    def add_tooltip(widget: Any, param_name: str) -> None:
-        """No-op fallback - tooltips not available."""
-
-    def add_parameter_tooltips(parameter_widgets: dict[str, Any]) -> None:
-        """No-op fallback - tooltips not available."""
+# Default tooltip functions - no-op behavior
+TOOLTIPS_AVAILABLE = False
 
 
-# Import keyboard manager
-try:
-    from apgi_gui.utils.keyboard_manager import (
-        KeyboardManager,
-        setup_standard_shortcuts,
-    )
-
-    KEYBOARD_SHORTCUTS_AVAILABLE = True
-except ImportError:
-    # Fallback keyboard implementation - no-op behavior
-    KEYBOARD_SHORTCUTS_AVAILABLE = False
-    logger.warning(
-        "Keyboard manager not available. Install apgi_gui package for keyboard shortcuts."
-    )
-
-    class _KeyboardManager:
-        def __init__(self, root):
-            """No-op fallback - keyboard shortcuts not available."""
-
-        def bind_shortcut(self, *args, **kwargs):
-            """No-op fallback - keyboard shortcuts not available."""
-
-        def unbind_shortcut(self, *args, **kwargs):
-            """No-op fallback - keyboard shortcuts not available."""
-
-    def _setup_standard_shortcuts(
-        app_instance: Any, keyboard_manager: KeyboardManager
-    ) -> None:
-        """No-op fallback - keyboard shortcuts setup not available."""
+def add_tooltip(widget: Any, param_name: str) -> None:
+    """No-op fallback - tooltips not available."""
+    pass
 
 
-# Import undo/redo manager
-try:
-    from apgi_gui.utils.undo_redo_manager import (
-        UndoRedoManager,
-        WidgetTracker,
-    )
-
-    UNDO_REDO_AVAILABLE = True
-except ImportError:
-    # Fallback undo/redo implementation - no-op behavior
-    UNDO_REDO_AVAILABLE = False
-    logger.warning(
-        "Undo/redo manager not available. Install apgi_gui package for undo/redo support."
-    )
-
-    class _UndoRedoManager:
-        def __init__(self, *args, **kwargs):
-            """No-op fallback - undo/redo functionality not available."""
-
-        def undo(self):
-            """No-op fallback - undo/redo functionality not available."""
-
-        def redo(self):
-            """No-op fallback - undo/redo functionality not available."""
-
-        def can_undo(self):
-            """No-op fallback - undo/redo functionality not available."""
-            return False
-
-        def can_redo(self):
-            """No-op fallback - undo/redo functionality not available."""
-            return False
-
-    class _WidgetTracker:
-        def __init__(self, *args, **kwargs):
-            """No-op fallback - widget tracking not available."""
-
-        def track_widget(self, *args, **kwargs):
-            """No-op fallback - widget tracking not available."""
-
-    def _create_undo_redo_menu(menu_bar: Any, undo_manager: UndoRedoManager) -> None:
-        """No-op fallback - undo/redo menu creation not available."""
+def add_parameter_tooltips(parameter_widgets: dict[str, Any]) -> None:
+    """No-op fallback - tooltips not available."""
+    pass
 
 
-# Import theme manager
-try:
-    from apgi_gui.utils.theme_manager import ThemeManager, get_system_theme_preference
+# Default keyboard implementation - no-op behavior
+KEYBOARD_SHORTCUTS_AVAILABLE = False
 
-    THEME_AVAILABLE = True
-except ImportError:
-    # Fallback theme implementation - no-op behavior
-    THEME_AVAILABLE = False
-    logger.warning(
-        "Theme manager not available. Install apgi_gui package for theme switching."
-    )
 
-    class _ThemeManager:
-        def __init__(self, *args, **kwargs):
-            """No-op fallback - theme management not available."""
+class _KeyboardManager:
+    def __init__(self, root):
+        """No-op fallback - keyboard shortcuts not available."""
+        pass
 
-        def set_theme(self, *args, **kwargs):
-            """No-op fallback - theme management not available."""
+    def bind_shortcut(self, *args, **kwargs):
+        """No-op fallback - keyboard shortcuts not available."""
+        pass
 
-        def toggle_dark_mode(self):
-            """No-op fallback - theme management not available."""
+    def unbind_shortcut(self, *args, **kwargs):
+        """No-op fallback - keyboard shortcuts not available."""
+        pass
 
-    def _get_system_theme_preference() -> str:
-        return "light"
 
-    get_system_theme_preference = _get_system_theme_preference
+def _setup_standard_shortcuts(app_instance: Any, keyboard_manager: Any) -> None:
+    """No-op fallback - keyboard shortcuts setup not available."""
+    pass
+
+
+# Default undo/redo implementation - no-op behavior
+UNDO_REDO_AVAILABLE = False
+
+
+class _UndoRedoManager:
+    def __init__(self, *args, **kwargs):
+        """No-op fallback - undo/redo functionality not available."""
+        pass
+
+    def undo(self):
+        """No-op fallback - undo/redo functionality not available."""
+        pass
+
+    def redo(self):
+        """No-op fallback - undo/redo functionality not available."""
+        pass
+
+    def can_undo(self):
+        """No-op fallback - undo/redo functionality not available."""
+        return False
+
+    def can_redo(self):
+        """No-op fallback - undo/redo functionality not available."""
+        return False
+
+
+class _WidgetTracker:
+    def __init__(self, *args, **kwargs):
+        """No-op fallback - widget tracking not available."""
+        pass
+
+    def track_widget(self, *args, **kwargs):
+        """No-op fallback - widget tracking not available."""
+        pass
+
+
+def _create_undo_redo_menu(menu_bar: Any, undo_manager: Any) -> None:
+    """No-op fallback - undo/redo menu creation not available."""
+    pass
+
+
+# Default theme implementation - no-op behavior
+THEME_AVAILABLE = False
+
+
+class _ThemeManager:
+    def __init__(self, *args, **kwargs):
+        """No-op fallback - theme management not available."""
+        pass
+
+    def set_theme(self, *args, **kwargs):
+        """No-op fallback - theme management not available."""
+        pass
+
+    def toggle_dark_mode(self):
+        """No-op fallback - theme management not available."""
+        pass
+
+
+def _get_system_theme_preference() -> str:
+    return "light"
+
+
+get_system_theme_preference = _get_system_theme_preference
+KeyboardManager = _KeyboardManager
+setup_standard_shortcuts = _setup_standard_shortcuts
+UndoRedoManager = _UndoRedoManager
+WidgetTracker = _WidgetTracker
+ThemeManager = _ThemeManager
+create_undo_redo_menu = _create_undo_redo_menu
 
 
 try:
@@ -1444,13 +1431,18 @@ class APGIFrameworkGUI(ctk.CTk):
         try:
             from apgi_framework.logging.standardized_logging import get_logger
 
-            self.logger = get_logger("apgi_gui", log_file="apgi_gui.log")
+            self.logger = get_logger(
+                "apgi_framework_gui", log_file="apgi_framework_gui.log"
+            )
         except ImportError:
             # Fallback to basic logging
             logging.basicConfig(
                 level=logging.INFO,
                 format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-                handlers=[logging.FileHandler("apgi_gui.log"), logging.StreamHandler()],
+                handlers=[
+                    logging.FileHandler("apgi_framework_gui.log"),
+                    logging.StreamHandler(),
+                ],
             )
             self.logger = logging.getLogger(__name__)
 

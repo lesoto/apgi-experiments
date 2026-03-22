@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # Main APGI Framework application
   apgi-framework:
     build:
       context: .
@@ -10,9 +9,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      # Mount only necessary source directories for development
       - ./apgi_framework:/app/apgi_framework:cached
-      - ./apgi_gui:/app/apgi_gui:cached
       - ./utils:/app/utils:cached
       - ./examples:/app/examples:cached
       - ./research:/app/research:cached
@@ -20,7 +17,6 @@ services:
       - ./core:/app/core:cached
       - ./docs:/app/docs:cached
       - ./tests:/app/tests:cached
-      # Mount data directories
       - ./data:/app/data
       - ./results:/app/results
       - ./logs:/app/logs
@@ -38,7 +34,6 @@ services:
       - apgi-network
     restart: unless-stopped
 
-  # Redis for caching and session management
   redis:
     image: redis:7-alpine
     container_name: apgi-redis
@@ -51,7 +46,6 @@ services:
     restart: unless-stopped
     command: redis-server --appendonly yes
 
-  # PostgreSQL for data persistence
   postgres:
     image: postgres:15-alpine
     container_name: apgi-postgres
@@ -68,7 +62,6 @@ services:
       - apgi-network
     restart: unless-stopped
 
-  # Jupyter Notebook for development and analysis
   jupyter:
     build:
       context: .
@@ -77,9 +70,7 @@ services:
     ports:
       - "127.0.0.1:8888:8888"
     volumes:
-      # Mount only necessary directories for jupyter development
       - ./apgi_framework:/app/apgi_framework:cached
-      - ./apgi_gui:/app/apgi_gui:cached
       - ./utils:/app/utils:cached
       - ./examples:/app/examples:cached
       - ./research:/app/research:cached
@@ -95,7 +86,6 @@ services:
       - apgi-network
     restart: unless-stopped
 
-  # Nginx reverse proxy (optional)
   nginx:
     image: nginx:alpine
     container_name: apgi-nginx
@@ -111,7 +101,6 @@ services:
       - apgi-network
     restart: unless-stopped
 
-  # Monitoring with Prometheus (optional)
   prometheus:
     image: prom/prometheus:latest
     container_name: apgi-prometheus
@@ -129,7 +118,6 @@ services:
       - apgi-network
     restart: unless-stopped
 
-  # Grafana for visualization (optional)
   grafana:
     image: grafana/grafana:latest
     container_name: apgi-grafana

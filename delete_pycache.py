@@ -87,7 +87,7 @@ DEFAULT_FILE_PATTERNS = [
     "*.csv.bak",
     "*.txt.bak",
     "apgi_demo_visualization.png",
-    "apgi_gui.log",
+    "apgi_framework_gui.log",
     "test_physio_data.npz",
     "test_pupil_data.npz",
 ]
@@ -212,11 +212,12 @@ def delete_temporary_items(
     for dirpath, dirnames, filenames in os.walk(
         root_dir, topdown=True, followlinks=follow_links
     ):
-        if max_depth is not None:
+        _max_depth = max_depth
+        if _max_depth is not None:
             rel = os.path.relpath(dirpath, root_dir)
             depth = 0 if rel == "." else rel.count(os.sep) + 1
-            if depth > max_depth:
-                dirnames[:] = []
+            if depth > _max_depth:
+                dirnames.clear()
                 continue
 
         # copy list because we may modify dirnames
