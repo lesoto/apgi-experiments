@@ -230,12 +230,13 @@ class ConsciousnessWithoutIgnitionTest:
         # Statistical test
         from scipy import stats
 
+        # Ensure non-negative values for contingency table
         contingency_table = [
             [
-                consciousness_without_ignition,
-                both_present - consciousness_without_ignition,
+                max(0, consciousness_without_ignition),
+                max(0, both_present - consciousness_without_ignition),
             ],
-            [both_absent, ignition_without_consciousness],
+            [max(0, both_absent), max(0, ignition_without_consciousness)],
         ]
 
         chi2_stat = None

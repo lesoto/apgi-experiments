@@ -33,7 +33,7 @@ from prepare_igt import (
 )
 
 # APGI Integration - 100/100 compliance
-from apgi_integration import APGIIntegration, APGIParameters, format_apgi_output
+from apgi_integration import APGIIntegration, APGIParameters
 from ultimate_apgi_template import (
     HierarchicalProcessor,
     PrecisionExpectationState,
@@ -44,6 +44,8 @@ from ultimate_apgi_template import (
 # ---------------------------------------------------------------------------
 # MODIFIABLE PARAMETERS - Edit these to experiment with task optimization
 # ---------------------------------------------------------------------------
+
+TIME_BUDGET = 600
 # Task structure parameters
 NUM_TRIALS_CONFIG = 100  # Can adjust: 50-200 trials typical for IGT
 INTER_TRIAL_INTERVAL_MS = 1000  # Delay between trials (ms)

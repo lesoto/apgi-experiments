@@ -538,21 +538,31 @@ class DisorderClassification:
             else {},
         }
 
-    def classify(self, profile: NeuralSignatureProfile) -> ClassificationResult:
+    def classify(
+        self,
+        profile: Optional[NeuralSignatureProfile] = None,
+        neural_profile: Optional[NeuralSignatureProfile] = None,
+    ) -> ClassificationResult:
         """
         Classify disorder from neural signature profile.
 
         Args:
-            profile: Neural signature profile
+            profile: Neural signature profile (primary parameter)
+            neural_profile: Alternative parameter name for backward compatibility
 
         Returns:
             ClassificationResult with prediction and confidence
         """
+        # Use whichever parameter was provided
+        effective_profile = profile if profile is not None else neural_profile
+        if effective_profile is None:
+            raise ValueError("Either profile or neural_profile must be provided")
+
         if not self.is_trained:
             raise ValueError("Classifier must be trained before classification")
 
         # Convert to feature vector
-        X = profile.to_feature_vector().reshape(1, -1)
+        X = effective_profile.to_feature_vector().reshape(1, -1)
         X_scaled = self.scaler.transform(X)
 
         # Predict
@@ -583,7 +593,7 @@ class DisorderClassification:
             confidence=confidence,
             probabilities=prob_dict,
             feature_importance=feature_importance,
-            neural_profile=profile,
+            neural_profile=effective_profile,
         )
 
     def evaluate(

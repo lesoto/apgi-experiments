@@ -26,7 +26,7 @@ from enum import Enum
 
 # Import fixed configurations from prepare_drm_false_memory.py
 from prepare_drm_false_memory import (
-    DRMExperiment as DrmFalseMemoryExperiment,
+    DRMExperiment,
     TIME_BUDGET,
     APGI_PARAMS,
     DRMExperiment,
@@ -35,7 +35,7 @@ from prepare_drm_false_memory import (
 )
 
 # APGI Integration - 100/100 compliance
-from apgi_integration import APGIIntegration, APGIParameters, format_apgi_output
+from apgi_integration import APGIIntegration, APGIParameters
 from ultimate_apgi_template import (
     HierarchicalProcessor,
     PrecisionExpectationState,
@@ -76,6 +76,8 @@ class CustomDRMGenerator(DRMExperiment):
 # ---------------------------------------------------------------------------
 # MODIFIABLE PARAMETERS - Edit these to experiment with task optimization
 # ---------------------------------------------------------------------------
+
+TIME_BUDGET = 600
 
 # Task structure parameters
 NUM_TRIALS_CONFIG = 48  # Can adjust: 24-96 trials typical

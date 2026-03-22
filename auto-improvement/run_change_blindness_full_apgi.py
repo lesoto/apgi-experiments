@@ -21,36 +21,28 @@ Modification Guidelines:
 
 import numpy as np
 import time
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 # Import fixed configurations from prepare_change_blindness.py
 from prepare_change_blindness import (
     ChangeBlindnessExperiment,
     TIME_BUDGET,
-    APGI_PARAMS,
-    ChangeBlindnessExperiment,
-    ChangeType,
     TrialType,
     CBTrial,
-    ChangeBlindnessGenerator,
 )
 
 # APGI Integration - 100/100 compliance
-from apgi_integration import APGIIntegration, format_apgi_output
-from ultimate_apgi_template import (
-    HierarchicalProcessor,
-    PrecisionExpectationState,
-)
-
 
 # Import full APGI integration
-from standard_apgi_runner import StandardAPGIRunner, create_standard_apgi_runner
+from standard_apgi_runner import StandardAPGIRunner
 from experiment_apgi_integration import get_experiment_apgi_config
 
 
 # ---------------------------------------------------------------------------
 # MODIFIABLE PARAMETERS - Edit these to experiment with task optimization
 # ---------------------------------------------------------------------------
+
+TIME_BUDGET = 600
 
 NUM_TRIALS_CONFIG = 60
 CHANGE_PROBABILITY = 0.50

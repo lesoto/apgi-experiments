@@ -25,13 +25,9 @@ from prepare_probabilistic_category_learning import (
     ProbabilisticCategoryLearningExperiment,
     TIME_BUDGET,
     APGI_PARAMS,
-    ProbabilisticCategoryLearningTrial,
-    ProbabilisticCategoryLearningGenerator,
 )
-from experiment_apgi_integration import (
-    ExperimentAPGIRunner,
-    APGIParameters,
-)
+
+from apgi_integration import APGIIntegration, APGIParameters
 from ultimate_apgi_template import (
     UltimateAPGIParameters,
     HierarchicalProcessor,
@@ -42,6 +38,8 @@ from ultimate_apgi_template import (
 # ---------------------------------------------------------------------------
 # MODIFIABLE PARAMETERS
 # ---------------------------------------------------------------------------
+
+TIME_BUDGET = 600
 
 NUM_TRIALS_CONFIG = 100
 
@@ -101,7 +99,9 @@ class SimulatedParticipant:
 
 class EnhancedProbabilisticRunner:
     def __init__(self, enable_apgi: bool = True):
-        self.experiment = PCLExperiment(num_trials=NUM_TRIALS_CONFIG)
+        self.experiment = ProbabilisticCategoryLearningExperiment(
+            num_trials=NUM_TRIALS_CONFIG
+        )
         self.participant = SimulatedParticipant()
         self.start_time = None
 
@@ -109,18 +109,18 @@ class EnhancedProbabilisticRunner:
         self.enable_apgi = enable_apgi and APGI_PARAMS.get("enabled", True)
         if self.enable_apgi:
             params = APGIParameters(
-                tau_S=float(APGI_PARAMS.get("tau_s", 0.35)),
-                beta=float(APGI_PARAMS.get("beta", 1.5)),
-                theta_0=float(APGI_PARAMS.get("theta_0", 0.5)),
-                alpha=float(APGI_PARAMS.get("alpha", 5.5)),
-                gamma_M=float(APGI_PARAMS.get("gamma_M", -0.3)),
-                lambda_S=float(APGI_PARAMS.get("lambda_S", 0.1)),
-                sigma_S=float(APGI_PARAMS.get("sigma_S", 0.05)),
-                sigma_theta=float(APGI_PARAMS.get("sigma_theta", 0.02)),
-                sigma_M=float(APGI_PARAMS.get("sigma_M", 0.03)),
-                rho=float(APGI_PARAMS.get("rho", 0.7)),
-                theta_survival=float(APGI_PARAMS.get("theta_survival", 0.3)),
-                theta_neutral=float(APGI_PARAMS.get("theta_neutral", 0.7)),
+                tau_S=float(APGI_PARAMS.get("tau_s", 0.35) or 0.35),
+                beta=float(APGI_PARAMS.get("beta", 1.5) or 1.5),
+                theta_0=float(APGI_PARAMS.get("theta_0", 0.5) or 0.5),
+                alpha=float(APGI_PARAMS.get("alpha", 5.5) or 5.5),
+                gamma_M=float(APGI_PARAMS.get("gamma_M", -0.3) or -0.3),
+                lambda_S=float(APGI_PARAMS.get("lambda_S", 0.1) or 0.1),
+                sigma_S=float(APGI_PARAMS.get("sigma_S", 0.05) or 0.05),
+                sigma_theta=float(APGI_PARAMS.get("sigma_theta", 0.02) or 0.02),
+                sigma_M=float(APGI_PARAMS.get("sigma_M", 0.03) or 0.03),
+                rho=float(APGI_PARAMS.get("rho", 0.7) or 0.7),
+                theta_survival=float(APGI_PARAMS.get("theta_survival", 0.3) or 0.3),
+                theta_neutral=float(APGI_PARAMS.get("theta_neutral", 0.7) or 0.7),
             )
             self.apgi = APGIIntegration(params)
 
@@ -139,8 +139,11 @@ class EnhancedProbabilisticRunner:
                     rho=params.rho,
                     theta_survival=params.theta_survival,
                     theta_neutral=params.theta_neutral,
-                    beta_cross=float(APGI_PARAMS.get("beta_cross", 0.2)),
-                    tau_levels=APGI_PARAMS.get("tau_levels", [0.1, 0.2, 0.4, 1.0, 5.0]),
+                    beta_cross=float(APGI_PARAMS.get("beta_cross", 0.2) or 0.2),
+                    tau_levels=list(
+                        APGI_PARAMS.get("tau_levels", [0.1, 0.2, 0.4, 1.0, 5.0])
+                        or [0.1, 0.2, 0.4, 1.0, 5.0]
+                    ),
                 )
                 self.hierarchical = HierarchicalProcessor(ultimate_params)
             else:
@@ -154,10 +157,10 @@ class EnhancedProbabilisticRunner:
 
             # 100/100: Neuromodulator tracking
             self.neuromodulators = {
-                "ACh": float(APGI_PARAMS.get("ACh", 1.0)),
-                "NE": float(APGI_PARAMS.get("NE", 1.0)),
-                "DA": float(APGI_PARAMS.get("DA", 1.0)),
-                "HT5": float(APGI_PARAMS.get("HT5", 1.0)),
+                "ACh": float(APGI_PARAMS.get("ACh", 1.0) or 1.0),
+                "NE": float(APGI_PARAMS.get("NE", 1.0) or 1.0),
+                "DA": float(APGI_PARAMS.get("DA", 1.0) or 1.0),
+                "HT5": float(APGI_PARAMS.get("HT5", 1.0) or 1.0),
             }
 
             # 100/100: Running statistics for z-score normalization
@@ -291,6 +294,8 @@ class EnhancedProbabilisticRunner:
             print(f"Metabolic Cost: {results['apgi_metabolic_cost']:.3f}")
             print(f"Mean Somatic Marker: {results['apgi_mean_somatic_marker']:.3f}")
             print(f"Mean Threshold: {results['apgi_mean_threshold']:.3f}")
+
+
 def print_results(results: Dict):
     print("\n" + "=" * 60)
     print("PROBABILISTIC CATEGORY LEARNING EXPERIMENT RESULTS")

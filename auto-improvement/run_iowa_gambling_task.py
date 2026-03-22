@@ -22,8 +22,6 @@ from typing import Dict
 # APGI Integration - 100/100 compliance with hierarchical processing and precision gap
 from apgi_integration import (
     APGIIntegration,
-    format_apgi_output,
-    compute_apgi_enhanced_metric,
 )
 from ultimate_apgi_template import (
     UltimateAPGIParameters,
@@ -38,13 +36,14 @@ from prepare_iowa_gambling_task import (
     DECK_LABELS,
 )
 from experiment_apgi_integration import (
-    ExperimentAPGIRunner,
     APGIParameters,
 )
 
 # ---------------------------------------------------------------------------
 # MODIFIABLE PARAMETERS
 # ---------------------------------------------------------------------------
+
+TIME_BUDGET = 600
 
 NUM_TRIALS_CONFIG = 100
 
@@ -241,14 +240,11 @@ class EnhancedIGTRunner:
             # Compute prediction error from expected outcome
             deck_idx = DECK_LABELS.index(deck_choice)
             expected_outcome = self.participant.deck_values[deck_idx]
-            observed_outcome = trial.outcome / 100.0  # Normalize
-            prediction_error = observed_outcome - (
-                expected_outcome / 100.0 if expected_outcome != 0 else 0
-            )
 
-            # 100/100: Update running statistics for z-score normalization
+            # Update running statistics for z-score normalization
             alpha_mu = 0.01
             alpha_sigma = 0.005
+            observed_outcome = trial.outcome / 100.0  # Normalize
             self.running_stats["outcome_mean"] += alpha_mu * (
                 observed_outcome - self.running_stats["outcome_mean"]
             )
@@ -259,11 +255,6 @@ class EnhancedIGTRunner:
             self.running_stats["outcome_var"] = max(
                 0.01, self.running_stats["outcome_var"]
             )
-
-            # 100/100: Compute z-scores
-            z_outcome = (
-                observed_outcome - self.running_stats["outcome_mean"]
-            ) / np.sqrt(self.running_stats["outcome_var"])
 
             # 100/100: Determine precision based on trial type and neuromodulators
             # DA (dopamine) increases reward sensitivity
@@ -353,7 +344,7 @@ class EnhancedIGTRunner:
                 results["apgi_acetylcholine"] = self.neuromodulators.get("ACh", 1.0)
                 results["apgi_norepinephrine"] = self.neuromodulators.get("NE", 1.0)
 
-            results["apgi_formatted"] = format_apgi_output(apgi_summary)
+            results["apgi_formatted"] = apgi_summary
         else:
             results["apgi_enabled"] = False
 

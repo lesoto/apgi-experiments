@@ -163,8 +163,6 @@ class ExperimentRunnerGUI:
 
     def _execute_script(self, name, script):
         """Execute the experiment script and capture output."""
-        script_path = os.path.join(self.auto_improvement_dir, script)
-
         try:
             result = subprocess.run(
                 ["uv", "run", script],
@@ -247,11 +245,8 @@ class ExperimentRunnerGUI:
     def _run_all_sequential(self):
         """Run all experiments one by one in background thread."""
         for name, script in EXPERIMENTS:
-            script_path = os.path.join(self.auto_improvement_dir, script)
             self.root.after(0, lambda n=name: self._update_button_state(n, "disabled"))
             self.root.after(0, lambda n=name: self.status_var.set(f"Running: {n}..."))
-
-            script_path = os.path.join(self.auto_improvement_dir, script)
 
             try:
                 self.root.after(

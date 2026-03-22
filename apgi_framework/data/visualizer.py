@@ -292,6 +292,23 @@ class APGIVisualizer:
                 f"Failed to create neural signatures plot: {str(e)}"
             )
 
+    def create_neural_signature_plot(
+        self,
+        trials: List[ExperimentalTrial],
+        save_path: Optional[Union[str, Path]] = None,
+    ) -> str:
+        """
+        Create neural signature visualization (alias for plot_neural_signatures).
+
+        Args:
+            trials: List of experimental trials
+            save_path: Optional custom save path
+
+        Returns:
+            Path to saved figure
+        """
+        return self.plot_neural_signatures(trials, save_path)
+
     def plot_apgi_parameter_space(
         self,
         trials: List[ExperimentalTrial],

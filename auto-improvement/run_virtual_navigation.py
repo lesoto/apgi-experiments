@@ -21,19 +21,11 @@ Modification Guidelines:
 import time
 from typing import Dict, List, Tuple
 
-import numpy as np
-
 from prepare_virtual_navigation import (
     VirtualNavigationExperiment,
     TIME_BUDGET,
     APGI_PARAMS,
 )
-from experiment_apgi_integration import (
-    ExperimentAPGIRunner,
-    APGIParameters,
-)
-
-# APGI Integration - 100/100 compliance
 from apgi_integration import APGIIntegration, APGIParameters
 from ultimate_apgi_template import (
     HierarchicalProcessor,
@@ -45,6 +37,8 @@ from ultimate_apgi_template import (
 # ---------------------------------------------------------------------------
 # MODIFIABLE PARAMETERS
 # ---------------------------------------------------------------------------
+
+TIME_BUDGET = 600
 
 NUM_TRIALS_CONFIG = 20
 

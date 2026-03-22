@@ -78,9 +78,11 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional
 import numpy as np
 
+from apgi_integration import APGIParameters
+
 
 @dataclass
-class UltimateAPGIParameters:
+class UltimateAPGIParameters(APGIParameters):
     """Complete APGI parameters for 100/100 compliance."""
 
     # ========== TIMESCALES ==========
@@ -222,7 +224,12 @@ class HierarchicalProcessor:
         params = self.params
 
         # Accumulate signal at this level
-        dS = -level.S / params.tau_levels[level_idx] + input_signal
+        tau_levels = (
+            self.params.tau_levels
+            if self.params.tau_levels is not None
+            else [0.1, 0.2, 0.4, 1.0, 5.0]
+        )
+        dS = -level.S / tau_levels[level_idx] + input_signal
         level.S = max(0.0, level.S + dS * dt)
 
         # Cross-level modulation from above
@@ -239,10 +246,12 @@ class HierarchicalProcessor:
 
         return level
 
-    def get_hierarchical_summary(self) -> Dict[str, float]:
+    def get_hierarchical_summary(self) -> dict[str, float]:
         """Summary across all levels."""
-        return {f"L{i+1}_surprise": level.S for i, level in enumerate(self.levels)} | {
-            f"L{i+1}_ignition": float(level.broadcast)
+        return {
+            f"L{i + 1}_surprise": level.S for i, level in enumerate(self.levels)
+        } | {
+            f"L{i + 1}_ignition": float(level.broadcast)
             for i, level in enumerate(self.levels)
         }
 
@@ -278,7 +287,7 @@ class PrecisionExpectationState:
         Pi_i_actual: float,
         neuromodulators: Dict[str, float],
         trial_type: str = "neutral",
-    ):
+    ) -> None:
         """Update precision expectations."""
         self.Pi_e_actual = Pi_e_actual
         self.Pi_i_actual = Pi_i_actual
@@ -378,7 +387,7 @@ class UltimateAPGIRunner:
         Pi_i = 1.5 if trial_type in ["survival", "incongruent"] else 1.0
 
         # 4. Update Π vs Π̂ if enabled
-        if self.precision_gap:
+        if self.precision_gap and self.neuromodulators:
             self.precision_gap.update(Pi_e, Pi_i, self.neuromodulators, trial_type)
             Pi_e_eff = self.precision_gap.Pi_e_actual
             Pi_i_eff = self.precision_gap.Pi_i_actual

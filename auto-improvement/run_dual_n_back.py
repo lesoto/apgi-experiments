@@ -42,6 +42,8 @@ from prepare_dual_n_back import (
 # MODIFIABLE PARAMETERS
 # ---------------------------------------------------------------------------
 
+TIME_BUDGET = 600
+
 NUM_TRIALS_CONFIG = 80
 N_LEVEL_CONFIG = 2  # Can adjust: 1, 2, 3, 4
 
@@ -233,11 +235,6 @@ class EnhancedDualNBackRunner:
             self.running_stats["outcome_var"] = max(
                 0.01, self.running_stats["outcome_var"]
             )
-
-            # 100/100: Compute z-scores (for running statistics tracking)
-            _z_outcome = (
-                observed_accuracy - self.running_stats["outcome_mean"]
-            ) / np.sqrt(self.running_stats["outcome_var"])
 
             # 100/100: Update precision expectation gap (Π vs Π̂)
             if self.precision_gap:

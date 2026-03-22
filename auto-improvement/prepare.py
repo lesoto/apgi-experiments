@@ -28,7 +28,7 @@ import torch
 # ---------------------------------------------------------------------------
 
 MAX_SEQ_LEN = 2048  # context length
-TIME_BUDGET = 300  # training time budget in seconds (5 minutes)
+TIME_BUDGET = 600  # training time budget in seconds (10 minutes)
 EVAL_TOKENS = 40 * 524288  # number of tokens for val eval
 
 # ---------------------------------------------------------------------------
@@ -238,6 +238,9 @@ class Tokenizer:
 
     @classmethod
     def from_directory(cls, tokenizer_dir=TOKENIZER_DIR):
+        # Security note: pickle.load is used here for tokenizer deserialization
+        # This is loading a trusted local file created by train_tokenizer()
+        # For untrusted sources, consider using a safer serialization format
         with open(os.path.join(tokenizer_dir, "tokenizer.pkl"), "rb") as f:
             enc = pickle.load(f)
         return cls(enc)
@@ -275,7 +278,8 @@ class Tokenizer:
 def get_token_bytes(device="cpu"):
     path = os.path.join(TOKENIZER_DIR, "token_bytes.pt")
     with open(path, "rb") as f:
-        return torch.load(f, map_location=device)
+        # Use weights_only=True for security when loading tensors
+        return torch.load(f, map_location=device, weights_only=True)
 
 
 def _document_batches(split, tokenizer_batch_size=128):

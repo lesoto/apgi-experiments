@@ -30,7 +30,7 @@ from prepare_sternberg_memory import (
 )
 
 # APGI Integration - 100/100 compliance
-from apgi_integration import APGIIntegration, APGIParameters, format_apgi_output
+from apgi_integration import APGIIntegration, APGIParameters
 from ultimate_apgi_template import (
     UltimateAPGIParameters,
     HierarchicalProcessor,
@@ -41,6 +41,8 @@ from ultimate_apgi_template import (
 # ---------------------------------------------------------------------------
 # MODIFIABLE PARAMETERS
 # ---------------------------------------------------------------------------
+
+TIME_BUDGET = 600
 
 NUM_TRIALS_CONFIG = 100
 SET_SIZES_CONFIG = [1, 2, 4, 6, 8]

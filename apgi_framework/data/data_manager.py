@@ -425,6 +425,127 @@ class IntegratedDataManager:
             return f"http://localhost:{self.dashboard.port}"
         return None
 
+    def validate_data(self, data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """
+        Validate data integrity and structure.
+
+        Args:
+            data: Data dictionary to validate (if None, validates all active experiments)
+
+        Returns:
+            Validation results with status and any warnings
+        """
+        try:
+            if data is not None:
+                # Validate provided data
+                validation_results = {
+                    "status": "valid",
+                    "warnings": [],
+                    "errors": [],
+                    "data_keys": list(data.keys()),
+                }
+
+                # Check for empty/null values
+                for key, value in data.items():
+                    if value is None or (
+                        isinstance(value, (list, dict)) and len(value) == 0
+                    ):
+                        validation_results["warnings"].append(
+                            f"Empty/null value for key: {key}"
+                        )
+
+                return validation_results
+
+            # Validate all active experiments
+            validation_results = {
+                "status": "valid",
+                "warnings": [],
+                "errors": [],
+                "experiments_validated": 0,
+            }
+
+            for experiment_id in self.active_experiments:
+                exp_data = self.active_experiments.get(experiment_id, {})
+                if not exp_data.get("results") and not exp_data.get("trials"):
+                    validation_results["warnings"].append(
+                        f"Experiment {experiment_id} has no results or trials"
+                    )
+                validation_results["experiments_validated"] += 1
+
+            return validation_results
+
+        except Exception as e:
+            self.logger.error(f"Error validating data: {str(e)}")
+            return {"status": "error", "errors": [str(e)]}
+
+    def clean_data(self, data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """
+        Clean data by removing empty/null values and fixing issues.
+
+        Args:
+            data: Data dictionary to clean (if None, cleans active experiment results)
+
+        Returns:
+            Cleaning results with operations performed
+        """
+        try:
+            cleaning_results = {
+                "operations": [],
+                "warnings": [],
+                "fixed_issues": 0,
+            }
+
+            if data is not None:
+                # Clean provided data dictionary
+                keys_to_remove = []
+                for key, value in list(data.items()):
+                    if value is None:
+                        keys_to_remove.append(key)
+                    elif isinstance(value, dict):
+                        # Recursively clean nested dicts
+                        nested_clean = self.clean_data(value)
+                        cleaning_results["operations"].extend(
+                            nested_clean.get("operations", [])
+                        )
+
+                for key in keys_to_remove:
+                    del data[key]
+                    cleaning_results["operations"].append(
+                        f"Removed null value for key: {key}"
+                    )
+                    cleaning_results["fixed_issues"] += 1
+
+                return cleaning_results
+
+            # Clean active experiment results
+            for experiment_id in list(self.active_experiments.keys()):
+                exp_data = self.active_experiments[experiment_id]
+
+                # Remove empty results
+                if "results" in exp_data and not exp_data["results"]:
+                    cleaning_results["warnings"].append(
+                        f"Experiment {experiment_id} has empty results"
+                    )
+
+                # Clean up any None values in results
+                if isinstance(exp_data.get("results"), list):
+                    original_count = len(exp_data["results"])
+                    exp_data["results"] = [
+                        r for r in exp_data["results"] if r is not None
+                    ]
+                    removed_count = original_count - len(exp_data["results"])
+                    if removed_count > 0:
+                        cleaning_results["operations"].append(
+                            f"Removed {removed_count} null results from {experiment_id}"
+                        )
+                        cleaning_results["fixed_issues"] += removed_count
+
+            return cleaning_results
+
+        except Exception as e:
+            self.logger.error(f"Error cleaning data: {str(e)}")
+            return {"operations": [], "warnings": [str(e)], "fixed_issues": 0}
+
 
 # Convenience function for easy setup
 def create_data_manager(

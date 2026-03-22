@@ -51,6 +51,8 @@ class CostType(Enum):
 # MODIFIABLE PARAMETERS
 # ---------------------------------------------------------------------------
 
+TIME_BUDGET = 600
+
 NUM_TRIALS_CONFIG = 80
 
 # Cost parameters

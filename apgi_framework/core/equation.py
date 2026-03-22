@@ -183,6 +183,11 @@ class APGIEquation:
                 surprise = np.clip(surprise, 0, 10)
 
             sigmoid_input = steepness * (surprise - threshold)
+        else:
+            raise TypeError(
+                "surprise must be float, int, or np.ndarray, "
+                f"got {type(surprise).__name__}"
+            )
 
         # Apply numerical stability if enabled
         if self.numerical_stability:

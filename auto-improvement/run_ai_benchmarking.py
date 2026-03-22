@@ -25,7 +25,6 @@ from typing import Dict
 
 # Import fixed configurations from prepare_ai_benchmarking.py
 from prepare_ai_benchmarking import (
-    AIBenchmarkExperiment,
     TIME_BUDGET,
     APGI_PARAMS,
     AIBenchmarkTrial,
@@ -35,7 +34,7 @@ from prepare_ai_benchmarking import (
 )
 
 # APGI Integration - 100/100 compliance
-from apgi_integration import APGIIntegration, APGIParameters, format_apgi_output
+from apgi_integration import APGIIntegration, APGIParameters
 from ultimate_apgi_template import (
     HierarchicalProcessor,
     PrecisionExpectationState,
@@ -46,6 +45,8 @@ from ultimate_apgi_template import (
 # ---------------------------------------------------------------------------
 # MODIFIABLE PARAMETERS - Edit these to experiment with task optimization
 # ---------------------------------------------------------------------------
+
+TIME_BUDGET = 600
 
 # Task structure parameters
 NUM_TRIALS_CONFIG = 50  # Can adjust: 25-100 trials typical
@@ -84,7 +85,7 @@ BENCHMARK_BONUSES = {
 }
 
 # Response time simulation (ms)
-BASE_RESPONSE_TIME = 2000
+BASE_RESPONSE_TIME = 2000.0
 RESPONSE_TIME_VARIABILITY = 500
 
 # Token usage simulation
@@ -137,9 +138,9 @@ class SimulatedAIModel:
         # Calculate response time
         base_rt = BASE_RESPONSE_TIME
         if trial.difficulty == Difficulty.HARD:
-            base_rt *= 1.5
+            base_rt = base_rt * 1.5
         elif trial.difficulty == Difficulty.EASY:
-            base_rt *= 0.8
+            base_rt = base_rt * 0.8
 
         rt = max(500, base_rt + np.random.normal(0, RESPONSE_TIME_VARIABILITY))
 
@@ -194,7 +195,7 @@ class SimulatedAIModel:
         }
 
         possible_responses = responses.get(trial.benchmark_type, ["Response"])
-        return np.random.choice(possible_responses)
+        return str(np.random.choice(possible_responses))
 
 
 # ---------------------------------------------------------------------------
@@ -222,18 +223,18 @@ class EnhancedAIBenchmarkingRunner:
         self.enable_apgi = enable_apgi and APGI_PARAMS.get("enabled", True)
         if self.enable_apgi:
             params = APGIParameters(
-                tau_S=float(APGI_PARAMS.get("tau_s", 0.35)),
-                beta=float(APGI_PARAMS.get("beta", 1.5)),
-                theta_0=float(APGI_PARAMS.get("theta_0", 0.5)),
-                alpha=float(APGI_PARAMS.get("alpha", 5.5)),
-                gamma_M=float(APGI_PARAMS.get("gamma_M", -0.3)),
-                lambda_S=float(APGI_PARAMS.get("lambda_S", 0.1)),
-                sigma_S=float(APGI_PARAMS.get("sigma_S", 0.05)),
-                sigma_theta=float(APGI_PARAMS.get("sigma_theta", 0.02)),
-                sigma_M=float(APGI_PARAMS.get("sigma_M", 0.03)),
-                rho=float(APGI_PARAMS.get("rho", 0.7)),
-                theta_survival=float(APGI_PARAMS.get("theta_survival", 0.3)),
-                theta_neutral=float(APGI_PARAMS.get("theta_neutral", 0.7)),
+                tau_S=float(APGI_PARAMS.get("tau_s", 0.35) or 0.35),
+                beta=float(APGI_PARAMS.get("beta", 1.5) or 1.5),
+                theta_0=float(APGI_PARAMS.get("theta_0", 0.5) or 0.5),
+                alpha=float(APGI_PARAMS.get("alpha", 5.5) or 5.5),
+                gamma_M=float(APGI_PARAMS.get("gamma_M", -0.3) or -0.3),
+                lambda_S=float(APGI_PARAMS.get("lambda_S", 0.1) or 0.1),
+                sigma_S=float(APGI_PARAMS.get("sigma_S", 0.05) or 0.05),
+                sigma_theta=float(APGI_PARAMS.get("sigma_theta", 0.02) or 0.02),
+                sigma_M=float(APGI_PARAMS.get("sigma_M", 0.03) or 0.03),
+                rho=float(APGI_PARAMS.get("rho", 0.7) or 0.7),
+                theta_survival=float(APGI_PARAMS.get("theta_survival", 0.3) or 0.3),
+                theta_neutral=float(APGI_PARAMS.get("theta_neutral", 0.7) or 0.7),
             )
             self.apgi = APGIIntegration(params)
 

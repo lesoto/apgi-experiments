@@ -25,7 +25,6 @@ from typing import Dict, List
 
 # Import fixed configurations from prepare_binocular_rivalry.py
 from prepare_binocular_rivalry import (
-    BinocularRivalryExperiment,
     TIME_BUDGET,
     APGI_PARAMS,
     BinocularRivalryGenerator,
@@ -33,7 +32,7 @@ from prepare_binocular_rivalry import (
 )
 
 # APGI Integration - 100/100 compliance
-from apgi_integration import APGIIntegration, APGIParameters, format_apgi_output
+from apgi_integration import APGIIntegration, APGIParameters
 from ultimate_apgi_template import (
     HierarchicalProcessor,
     PrecisionExpectationState,
@@ -44,6 +43,8 @@ from ultimate_apgi_template import (
 # ---------------------------------------------------------------------------
 # MODIFIABLE PARAMETERS - Edit these to experiment with task optimization
 # ---------------------------------------------------------------------------
+
+TIME_BUDGET = 600
 
 # Task structure parameters
 NUM_TRIALS_CONFIG = 60  # Can adjust: 30-120 trials typical
@@ -208,18 +209,18 @@ class EnhancedBinocularRivalryRunner:
         self.enable_apgi = enable_apgi and APGI_PARAMS.get("enabled", True)
         if self.enable_apgi:
             params = APGIParameters(
-                tau_S=float(APGI_PARAMS.get("tau_s", 0.35)),
-                beta=float(APGI_PARAMS.get("beta", 1.5)),
-                theta_0=float(APGI_PARAMS.get("theta_0", 0.5)),
-                alpha=float(APGI_PARAMS.get("alpha", 5.5)),
-                gamma_M=float(APGI_PARAMS.get("gamma_M", -0.3)),
-                lambda_S=float(APGI_PARAMS.get("lambda_S", 0.1)),
-                sigma_S=float(APGI_PARAMS.get("sigma_S", 0.05)),
-                sigma_theta=float(APGI_PARAMS.get("sigma_theta", 0.02)),
-                sigma_M=float(APGI_PARAMS.get("sigma_M", 0.03)),
-                rho=float(APGI_PARAMS.get("rho", 0.7)),
-                theta_survival=float(APGI_PARAMS.get("theta_survival", 0.3)),
-                theta_neutral=float(APGI_PARAMS.get("theta_neutral", 0.7)),
+                tau_S=float(APGI_PARAMS.get("tau_s", 0.35) or 0.35),
+                beta=float(APGI_PARAMS.get("beta", 1.5) or 1.5),
+                theta_0=float(APGI_PARAMS.get("theta_0", 0.5) or 0.5),
+                alpha=float(APGI_PARAMS.get("alpha", 5.5) or 5.5),
+                gamma_M=float(APGI_PARAMS.get("gamma_M", -0.3) or -0.3),
+                lambda_S=float(APGI_PARAMS.get("lambda_S", 0.1) or 0.1),
+                sigma_S=float(APGI_PARAMS.get("sigma_S", 0.05) or 0.05),
+                sigma_theta=float(APGI_PARAMS.get("sigma_theta", 0.02) or 0.02),
+                sigma_M=float(APGI_PARAMS.get("sigma_M", 0.03) or 0.03),
+                rho=float(APGI_PARAMS.get("rho", 0.7) or 0.7),
+                theta_survival=float(APGI_PARAMS.get("theta_survival", 0.3) or 0.3),
+                theta_neutral=float(APGI_PARAMS.get("theta_neutral", 0.7) or 0.7),
             )
             self.apgi = APGIIntegration(params)
 
@@ -238,7 +239,7 @@ class EnhancedBinocularRivalryRunner:
                     rho=params.rho,
                     theta_survival=params.theta_survival,
                     theta_neutral=params.theta_neutral,
-                    beta_cross=float(APGI_PARAMS.get("beta_cross", 0.2)),
+                    beta_cross=float(APGI_PARAMS.get("beta_cross", 0.2) or 0.2),
                     tau_levels=APGI_PARAMS.get("tau_levels", [0.1, 0.2, 0.4, 1.0, 5.0]),
                 )
                 self.hierarchical = HierarchicalProcessor(ultimate_params)

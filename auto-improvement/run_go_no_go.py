@@ -43,6 +43,8 @@ from prepare_go_no_go import (
 # MODIFIABLE PARAMETERS
 # ---------------------------------------------------------------------------
 
+TIME_BUDGET = 600
+
 NUM_TRIALS_CONFIG = 100
 GO_PROBABILITY_CONFIG = 0.75
 

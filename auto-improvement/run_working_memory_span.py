@@ -25,7 +25,6 @@ from typing import Dict
 
 # Import fixed configurations from prepare_working_memory_span.py
 from prepare_working_memory_span import (
-    WorkingMemorySpanExperiment,
     TIME_BUDGET,
     APGI_PARAMS,
     SpanType,
@@ -34,7 +33,7 @@ from prepare_working_memory_span import (
 )
 
 # APGI Integration - 100/100 compliance
-from apgi_integration import APGIIntegration, APGIParameters, format_apgi_output
+from apgi_integration import APGIIntegration, APGIParameters
 from ultimate_apgi_template import (
     HierarchicalProcessor,
     PrecisionExpectationState,
@@ -45,6 +44,8 @@ from ultimate_apgi_template import (
 # ---------------------------------------------------------------------------
 # MODIFIABLE PARAMETERS - Edit these to experiment with task optimization
 # ---------------------------------------------------------------------------
+
+TIME_BUDGET = 600
 
 # Task structure parameters
 NUM_TRIALS_CONFIG = 60  # Can adjust: 30-120 trials typical

@@ -25,10 +25,9 @@ from typing import Dict
 
 # Import fixed configurations from prepare_inattentional_blindness.py
 from prepare_inattentional_blindness import (
-    InattentionalBlindnessExperiment,
+    InattentionalBlindnessGenerator,
     TIME_BUDGET,
     APGI_PARAMS,
-    InattentionalBlindnessGenerator,
     TrialType,
     IBTrial,
     TASK_TYPES,
@@ -36,7 +35,7 @@ from prepare_inattentional_blindness import (
 )
 
 # APGI Integration - 100/100 compliance
-from apgi_integration import APGIIntegration, APGIParameters, format_apgi_output
+from apgi_integration import APGIIntegration, APGIParameters
 from ultimate_apgi_template import (
     HierarchicalProcessor,
     PrecisionExpectationState,
@@ -53,6 +52,8 @@ TaskType = str  # TaskType is a string in this implementation
 # ---------------------------------------------------------------------------
 # MODIFIABLE PARAMETERS - Edit these to experiment with task optimization
 # ---------------------------------------------------------------------------
+
+TIME_BUDGET = 600
 
 # Task structure parameters
 NUM_TRIALS_CONFIG = 40  # Can adjust: 20-80 trials typical

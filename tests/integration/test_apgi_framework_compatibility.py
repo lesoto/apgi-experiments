@@ -630,7 +630,7 @@ class TestAPGIFrameworkIntegration:
         # Add participants
         for i in range(3):
             participant = ParticipantData(
-                session_id=f"session_{i+1}",
+                session_id=f"session_{i + 1}",
                 age=25 + i,
                 gender="neutral",
                 accuracy=0.8 + (i * 0.05),

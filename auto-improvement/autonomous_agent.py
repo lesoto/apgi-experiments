@@ -61,7 +61,7 @@ class OptimizationStrategy:
 
     name: str
     description: str
-    parameter_ranges: Dict[str, Tuple[float, float]]
+    parameter_ranges: Dict[str, Tuple[Any, ...]]
     mutation_strength: float
     exploration_rate: float
     learning_rate: float
@@ -201,7 +201,10 @@ class ParameterOptimizer:
 
     def get_strategy(self, experiment_name: str) -> OptimizationStrategy:
         """Get optimization strategy for experiment."""
-        return self.strategies.get(experiment_name, self.strategies["default"])
+        strategy = self.strategies.get(experiment_name)
+        if strategy is None:
+            return self.strategies["default"]
+        return strategy
 
     def suggest_modifications(
         self,
@@ -212,7 +215,7 @@ class ParameterOptimizer:
         """Suggest parameter modifications based on performance history."""
         strategy = self.get_strategy(experiment_name)
 
-        modifications = {}
+        modifications: Dict[str, Any] = {}
 
         # Analyze performance trend
         if len(performance_history) >= 3:
@@ -468,7 +471,7 @@ class AutonomousAgent:
         )
 
         results = []
-        performance_history = []
+        performance_history: List[float] = []
 
         for iteration in range(iterations):
             logger.info(f"Iteration {iteration + 1}/{iterations}")
@@ -561,8 +564,24 @@ def main():
     parser.add_argument(
         "--hours", type=float, default=8.0, help="Hours for overnight mode"
     )
+    parser.add_argument(
+        "--auto",
+        action="store_true",
+        help="Non-interactive mode for CI/CD (uses defaults)",
+    )
 
     args = parser.parse_args()
+
+    # In auto mode, default to all-experiments if nothing else specified
+    if args.auto and not (args.experiment or args.all_experiments or args.overnight):
+        args.all_experiments = True
+        logger.info("Auto mode: defaulting to --all-experiments")
+
+    # Validate arguments
+    if not (args.experiment or args.all_experiments or args.overnight):
+        parser.error(
+            "Must specify --experiment, --all-experiments, --overnight, or --auto"
+        )
 
     agent = AutonomousAgent()
 
@@ -576,8 +595,6 @@ def main():
                 logger.error(f"Failed to optimize {experiment_name}: {e}")
     elif args.experiment:
         agent.optimize_experiment(args.experiment, args.iterations)
-    else:
-        logger.error("Must specify --experiment, --all-experiments, or --overnight")
 
 
 if __name__ == "__main__":

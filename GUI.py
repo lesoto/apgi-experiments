@@ -3688,7 +3688,7 @@ class APGIFrameworkGUI(ctk.CTk):
                         try:
                             ignition_results = (
                                 self.apgi_equation.calculate_ignition_probability(
-                                    surprise_values=(
+                                    surprise=(
                                         getattr(
                                             surprise_results,
                                             "surprise_values",
@@ -3704,9 +3704,6 @@ class APGIFrameworkGUI(ctk.CTk):
                                         )
                                     ),
                                     threshold=parameters.get("threshold", 0.1),
-                                    precision_weight=parameters.get(
-                                        "precision_weight", 0.3
-                                    ),
                                 )
                             )
                         except Exception as e:
@@ -3881,9 +3878,37 @@ class APGIFrameworkGUI(ctk.CTk):
                         "pupil_latency": signatures.get("pci", {}).get("latency", 280),
                     }
 
+                    # Train the classifier if not already trained
+                    if (
+                        hasattr(self.disorder_classifier, "is_trained")
+                        and not self.disorder_classifier.is_trained
+                    ):
+                        try:
+                            from apgi_framework.clinical.disorder_classification import (
+                                DisorderType,
+                                NeuralSignatureProfile,
+                            )
+
+                            # Generate sample training data
+                            sample_profiles = [
+                                NeuralSignatureProfile(),
+                                NeuralSignatureProfile(),
+                            ]
+                            sample_labels = [DisorderType.CONTROL, DisorderType.CONTROL]
+                            self.disorder_classifier.train(
+                                sample_profiles, sample_labels
+                            )
+                            self.log_to_console(
+                                "✓ Disorder classifier trained on sample data"
+                            )
+                        except Exception as e:
+                            self.log_to_console(
+                                f"⚠ Could not train disorder classifier: {e}"
+                            )
+
                     # Run disorder classification
                     classification_results = self.disorder_classifier.classify(
-                        neural_profile=profile_data, classification_type="multiclass"
+                        neural_profile=profile_data
                     )
 
                     # Store classification results
@@ -5713,8 +5738,7 @@ class APGIFrameworkGUI(ctk.CTk):
                     if self.visualizer:
                         try:
                             self.visualizer.create_neural_signature_plot(
-                                neural_data=neural_data,
-                                figure=fig,
+                                trials=[],  # Pass empty trials list as required
                                 save_path=os.path.join(
                                     self.results_folder,
                                     f'neural_signatures_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.png',
@@ -5826,9 +5850,13 @@ class APGIFrameworkGUI(ctk.CTk):
                         ):
                             # Create a normal distribution centered at the parameter value
                             y = np.exp(-((x - value) ** 2) / (2 * 0.05**2))
-                            y = (
-                                y / y.max() * 0.8 + i * 0.2
-                            )  # Normalize and offset for visibility
+                            y_max = y.max()
+                            if y_max > 0:
+                                y = (
+                                    y / y_max * 0.8 + i * 0.2
+                                )  # Normalize and offset for visibility
+                            else:
+                                y = np.full_like(y, i * 0.2)  # Flat line if max is zero
                             ax2.plot(x, y, label=name, linewidth=2)
 
                         ax2.set_title("Parameter Distributions")

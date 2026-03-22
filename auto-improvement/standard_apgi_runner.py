@@ -24,16 +24,11 @@ from dataclasses import dataclass
 # Import APGI components
 from apgi_integration import (
     APGIIntegration,
-    APGIParameters,
-    format_apgi_output,
-    compute_apgi_enhanced_metric,
-    get_apgi_config_for_experiment,
 )
 from experiment_apgi_integration import (
     ExportedAPGIParams,
-    ExperimentAPGIRunner,
-    export_apgi_params,
     get_experiment_apgi_config,
+    compute_apgi_enhanced_metric,
 )
 
 
@@ -245,7 +240,6 @@ class StandardAPGIRunner:
         current_level["M"] = basic_metrics.get("M", 0.0) + 0.1 * higher_level_broadcast
 
         # Compute ignition probability for this level
-        alpha = 5.5 + level * 0.5  # Higher levels have steeper sigmoid
         current_level["ignition_prob"] = self.apgi.dynamics.params.alpha * (
             current_level["S"] - current_level["theta"]
         )
@@ -418,7 +412,7 @@ class StandardAPGIRunner:
 
         for level in range(1, 6):
             level_name = f"level_{level}"
-            level_state = getattr(self.hierarchical_state, level_name)
+            getattr(self.hierarchical_state, level_name)
 
             summary[f"{level_name}_mean_S"] = (
                 np.mean(

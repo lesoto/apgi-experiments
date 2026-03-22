@@ -107,8 +107,8 @@ class MainGUIController:
         self.event_handlers = {}
 
         # Initialize components
-        self._initialize_components()
         self._setup_event_handlers()
+        self._initialize_components()
 
         # Check framework availability
         if not FRAMEWORK_COMPONENTS_AVAILABLE:

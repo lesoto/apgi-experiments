@@ -41,6 +41,8 @@ from ultimate_apgi_template import (
 # MODIFIABLE PARAMETERS
 # ---------------------------------------------------------------------------
 
+TIME_BUDGET = 600
+
 NUM_TRIALS_CONFIG = 60
 CHANGE_PROBABILITY = 0.50
 

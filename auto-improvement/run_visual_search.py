@@ -41,6 +41,8 @@ from prepare_visual_search import (
 # MODIFIABLE PARAMETERS
 # ---------------------------------------------------------------------------
 
+TIME_BUDGET = 600
+
 NUM_TRIALS_CONFIG = 80
 DISPLAY_SIZES_CONFIG = [8, 16, 24, 32]
 TARGET_PRESENT_PROB = 0.5

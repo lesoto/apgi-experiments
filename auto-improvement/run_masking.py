@@ -35,17 +35,12 @@ from ultimate_apgi_template import (
 
 # Import fixed configurations from prepare_masking.py
 from prepare_masking import (
-    MaskingExperiment,
     TIME_BUDGET,
     APGI_PARAMS,
     MaskingTrial,
     TrialType,
     MaskType,
     MaskingGenerator,
-)
-from experiment_apgi_integration import (
-    ExperimentAPGIRunner,
-    APGIParameters,
 )
 
 # Local TIME_BUDGET for reference (must match prepare file)
@@ -54,6 +49,8 @@ TIME_BUDGET = APGI_PARAMS.get("time_budget", 600)  # 10 minutes per experiment
 # ---------------------------------------------------------------------------
 # MODIFIABLE PARAMETERS - Edit these to experiment with task optimization
 # ---------------------------------------------------------------------------
+
+TIME_BUDGET = 600
 
 # Task structure parameters
 NUM_TRIALS_CONFIG = 100  # Can adjust: 50-200 trials typical
@@ -341,10 +338,9 @@ class EnhancedMaskingRunner:
 
         # 100/100: Process with APGI if enabled
         if self.apgi:
-            # Compute prediction error from detection
+            # Compute observed and expected values
             observed = 1.0 if trial.correct else 0.0
             expected = results["detection_probability"]
-            prediction_error = observed - expected
 
             # Trial type based on masking condition
             trial_type = (
@@ -378,11 +374,6 @@ class EnhancedMaskingRunner:
             )
             self.running_stats["outcome_var"] = max(
                 0.01, self.running_stats["outcome_var"]
-            )
-
-            # 100/100: Compute z-scores
-            z_outcome = (observed - self.running_stats["outcome_mean"]) / np.sqrt(
-                self.running_stats["outcome_var"]
             )
 
             # 100/100: Update precision expectation gap (Π vs Π̂)

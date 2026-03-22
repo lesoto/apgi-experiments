@@ -65,7 +65,7 @@ class FalsificationResult:
         # Handle common attribute access patterns
         if name in ["falsified", "framework_falsified"]:
             return self.framework_falsified
-        return getattr(self, name, None)
+        return None
 
 
 class PrimaryFalsificationTest:
@@ -175,6 +175,14 @@ class PrimaryFalsificationTest:
             f"Primary falsification test completed. Falsified: {falsified}"
         )
         return result
+
+    def run_test(
+        self, n_trials: int = 1000, n_participants: int = 20
+    ) -> FalsificationResult:
+        """Alias for run_falsification_test to support batch test runner interface."""
+        return self.run_falsification_test(
+            n_trials=n_trials, n_participants=n_participants
+        )
 
     def _simulate_participant_trials(self, n_trials: int, participant_id: int) -> list:
         """Simulate trial data for a single participant."""

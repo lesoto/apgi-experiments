@@ -68,6 +68,7 @@ def check_read_only_marker(filepath: Path) -> Tuple[bool, str]:
         content = filepath.read_text()
 
         # Check for READ-ONLY in docstring
+        docstring = ""
         if '"""' in content:
             docstring_match = re.search(r'"""(.*?)"""', content, re.DOTALL)
             if docstring_match:
@@ -88,6 +89,7 @@ def check_agent_editable_marker(filepath: Path) -> Tuple[bool, str]:
         content = filepath.read_text()
 
         # Check for AGENT-EDITABLE in docstring
+        docstring = ""
         if '"""' in content:
             docstring_match = re.search(r'"""(.*?)"""', content, re.DOTALL)
             if docstring_match:

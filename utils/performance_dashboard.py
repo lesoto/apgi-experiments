@@ -622,9 +622,7 @@ class ComprehensivePerformanceDashboard:
             report = {
                 "summary": {
                     "monitoring_duration": str(time_range_seconds),
-                    "total_data_points": len(
-                        self.performance_data["timestamps"]
-                    ),
+                    "total_data_points": len(self.performance_data["timestamps"]),
                     "cpu_avg": cpu_avg,
                     "cpu_peak": cpu_peak,
                     "memory_avg": memory_avg,
@@ -672,9 +670,7 @@ class ComprehensivePerformanceDashboard:
             )
 
         if not recommendations:
-            recommendations.append(
-                "System performance is within acceptable ranges."
-            )
+            recommendations.append("System performance is within acceptable ranges.")
 
         return recommendations
 
@@ -683,8 +679,7 @@ class ComprehensivePerformanceDashboard:
         from dash.dependencies import Input, Output
 
         @app.callback(
-            Output("cpu-chart", "figure"),
-            [Input("interval-component", "n_intervals")]
+            Output("cpu-chart", "figure"), [Input("interval-component", "n_intervals")]
         )
         def update_cpu_chart(n):
             charts = self.create_charts()
@@ -692,7 +687,7 @@ class ComprehensivePerformanceDashboard:
 
         @app.callback(
             Output("memory-chart", "figure"),
-            [Input("interval-component", "n_intervals")]
+            [Input("interval-component", "n_intervals")],
         )
         def update_memory_chart(n):
             charts = self.create_charts()

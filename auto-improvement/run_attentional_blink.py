@@ -42,6 +42,8 @@ from prepare_attentional_blink import (
 # MODIFIABLE PARAMETERS - Edit these to experiment with task optimization
 # ---------------------------------------------------------------------------
 
+TIME_BUDGET = 600
+
 # Task structure parameters
 NUM_TRIALS_CONFIG = 100  # Can adjust: 50-200 trials typical
 RSVP_RATE_CONFIG = 10  # Items per second (Hz)
@@ -186,7 +188,7 @@ class EnhancedAttentionalBlinkRunner:
                     rho=params.rho,
                     theta_survival=params.theta_survival,
                     theta_neutral=params.theta_neutral,
-                    beta_cross=float(APGI_PARAMS.get("beta_cross", 0.2)),
+                    beta_cross=float(APGI_PARAMS.get("beta_cross", 0.2) or 0.2),
                     tau_levels=APGI_PARAMS.get("tau_levels", [0.1, 0.2, 0.4, 1.0, 5.0]),
                 )
                 self.hierarchical = HierarchicalProcessor(ultimate_params)
@@ -264,7 +266,6 @@ class EnhancedAttentionalBlinkRunner:
                 expected_accuracy = 0.7  # Recovery
 
             observed_accuracy = 1.0 if t2_correct else 0.0
-            prediction_error = observed_accuracy - expected_accuracy
 
             # Trial type affects precision - attentional blink is high-demand
             trial_type = "survival" if config.lag in [2, 3] else "neutral"
@@ -311,11 +312,6 @@ class EnhancedAttentionalBlinkRunner:
             self.running_stats["outcome_var"] = max(
                 0.01, self.running_stats["outcome_var"]
             )
-
-            # 100/100: Compute z-scores
-            z_outcome = (
-                observed_accuracy - self.running_stats["outcome_mean"]
-            ) / np.sqrt(self.running_stats["outcome_var"])
 
             # 100/100: Update precision expectation gap (Π vs Π̂)
             if self.precision_gap:

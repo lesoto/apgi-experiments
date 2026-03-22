@@ -43,6 +43,8 @@ from ultimate_apgi_template import (
 # MODIFIABLE PARAMETERS
 # ---------------------------------------------------------------------------
 
+TIME_BUDGET = 600
+
 NUM_TRIALS_CONFIG = 100
 
 # Learning parameters

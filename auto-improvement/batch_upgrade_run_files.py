@@ -16,7 +16,6 @@ Usage:
     python batch_upgrade_run_files.py
 """
 
-import os
 import re
 import sys
 from pathlib import Path
@@ -247,7 +246,7 @@ def analyze_compliance(file_path: Path) -> Tuple[int, List[str], List[str]]:
     content = file_path.read_text()
     score = 0
     missing = []
-    issues = []
+    issues: list[str] = []
 
     # Check for APGI imports
     has_apgi_import = "from apgi_integration import" in content

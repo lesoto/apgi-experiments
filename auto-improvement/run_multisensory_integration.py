@@ -28,13 +28,9 @@ from prepare_multisensory_integration import (
     APGI_PARAMS,
     Modality,
 )
-from experiment_apgi_integration import (
-    ExperimentAPGIRunner,
-    APGIParameters,
-)
 
 # APGI Integration - 100/100 compliance
-from apgi_integration import APGIIntegration, APGIParameters, format_apgi_output
+from apgi_integration import APGIIntegration, APGIParameters
 from ultimate_apgi_template import (
     UltimateAPGIParameters,
     HierarchicalProcessor,
@@ -45,6 +41,8 @@ from ultimate_apgi_template import (
 # ---------------------------------------------------------------------------
 # MODIFIABLE PARAMETERS
 # ---------------------------------------------------------------------------
+
+TIME_BUDGET = 600
 
 NUM_TRIALS_CONFIG = 100
 
@@ -96,18 +94,18 @@ class EnhancedMultisensoryRunner:
         self.enable_apgi = enable_apgi and APGI_PARAMS.get("enabled", True)
         if self.enable_apgi:
             params = APGIParameters(
-                tau_S=float(APGI_PARAMS.get("tau_s", 0.35)),
-                beta=float(APGI_PARAMS.get("beta", 1.5)),
-                theta_0=float(APGI_PARAMS.get("theta_0", 0.5)),
-                alpha=float(APGI_PARAMS.get("alpha", 5.5)),
-                gamma_M=float(APGI_PARAMS.get("gamma_M", -0.3)),
-                lambda_S=float(APGI_PARAMS.get("lambda_S", 0.1)),
-                sigma_S=float(APGI_PARAMS.get("sigma_S", 0.05)),
-                sigma_theta=float(APGI_PARAMS.get("sigma_theta", 0.02)),
-                sigma_M=float(APGI_PARAMS.get("sigma_M", 0.03)),
-                rho=float(APGI_PARAMS.get("rho", 0.7)),
-                theta_survival=float(APGI_PARAMS.get("theta_survival", 0.3)),
-                theta_neutral=float(APGI_PARAMS.get("theta_neutral", 0.7)),
+                tau_S=float(APGI_PARAMS.get("tau_s", 0.35) or 0.35),
+                beta=float(APGI_PARAMS.get("beta", 1.5) or 1.5),
+                theta_0=float(APGI_PARAMS.get("theta_0", 0.5) or 0.5),
+                alpha=float(APGI_PARAMS.get("alpha", 5.5) or 5.5),
+                gamma_M=float(APGI_PARAMS.get("gamma_M", -0.3) or -0.3),
+                lambda_S=float(APGI_PARAMS.get("lambda_S", 0.1) or 0.1),
+                sigma_S=float(APGI_PARAMS.get("sigma_S", 0.05) or 0.05),
+                sigma_theta=float(APGI_PARAMS.get("sigma_theta", 0.02) or 0.02),
+                sigma_M=float(APGI_PARAMS.get("sigma_M", 0.03) or 0.03),
+                rho=float(APGI_PARAMS.get("rho", 0.7) or 0.7),
+                theta_survival=float(APGI_PARAMS.get("theta_survival", 0.3) or 0.3),
+                theta_neutral=float(APGI_PARAMS.get("theta_neutral", 0.7) or 0.7),
             )
             self.apgi = APGIIntegration(params)
 
@@ -126,7 +124,7 @@ class EnhancedMultisensoryRunner:
                     rho=params.rho,
                     theta_survival=params.theta_survival,
                     theta_neutral=params.theta_neutral,
-                    beta_cross=float(APGI_PARAMS.get("beta_cross", 0.2)),
+                    beta_cross=float(APGI_PARAMS.get("beta_cross", 0.2) or 0.2),
                     tau_levels=APGI_PARAMS.get("tau_levels", [0.1, 0.2, 0.4, 1.0, 5.0]),
                 )
                 self.hierarchical = HierarchicalProcessor(ultimate_params)
@@ -141,10 +139,10 @@ class EnhancedMultisensoryRunner:
 
             # 100/100: Neuromodulator tracking
             self.neuromodulators = {
-                "ACh": float(APGI_PARAMS.get("ACh", 1.0)),
-                "NE": float(APGI_PARAMS.get("NE", 1.0)),
-                "DA": float(APGI_PARAMS.get("DA", 1.0)),
-                "HT5": float(APGI_PARAMS.get("HT5", 1.0)),
+                "ACh": float(APGI_PARAMS.get("ACh", 1.0) or 1.0),
+                "NE": float(APGI_PARAMS.get("NE", 1.0) or 1.0),
+                "DA": float(APGI_PARAMS.get("DA", 1.0) or 1.0),
+                "HT5": float(APGI_PARAMS.get("HT5", 1.0) or 1.0),
             }
 
             # 100/100: Running statistics for z-score normalization
@@ -246,16 +244,42 @@ class EnhancedMultisensoryRunner:
         summary = self.experiment.get_summary()
         completion_time = time.time() - self.start_time
 
-        return {
-            {
-                **{
-                    "num_trials": len(self.experiment.trials),
-                    "completion_time_s": completion_time,
-                    "d_prime": summary.get("d_prime", 0.0),
-                },
-                **apgi_metrics,
-            }
+        results = {
+            "num_trials": len(self.experiment.trials),
+            "completion_time_s": completion_time,
+            "d_prime": summary.get("d_prime", 0.0),
+            "accuracy": summary.get("accuracy", 0.0),
+            "multisensory_gain_ms": summary.get("multisensory_gain_ms", 0.0),
+            "visual_rt_ms": summary.get("visual_rt_ms", 0.0),
+            "auditory_rt_ms": summary.get("auditory_rt_ms", 0.0),
+            "bimodal_rt_ms": summary.get("bimodal_rt_ms", 0.0),
         }
+
+        # Add APGI metrics if enabled
+        if self.apgi:
+            apgi_summary = self.apgi.finalize()
+            results["apgi_enabled"] = True
+            results["apgi_ignition_rate"] = apgi_summary.get("ignition_rate", 0.0)
+            results["apgi_mean_surprise"] = apgi_summary.get("mean_surprise", 0.0)
+            results["apgi_metabolic_cost"] = apgi_summary.get("metabolic_cost", 0.0)
+            results["apgi_mean_somatic_marker"] = apgi_summary.get(
+                "mean_somatic_marker", 0.0
+            )
+            results["apgi_mean_threshold"] = apgi_summary.get("mean_threshold", 0.0)
+            if self.precision_gap:
+                results[
+                    "apgi_precision_mismatch"
+                ] = self.precision_gap.precision_mismatch
+                results["apgi_anxiety_level"] = self.precision_gap.anxiety_level
+            if self.neuromodulators:
+                results["apgi_acetylcholine"] = self.neuromodulators.get("ACh", 1.0)
+                results["apgi_norepinephrine"] = self.neuromodulators.get("NE", 1.0)
+                results["apgi_dopamine"] = self.neuromodulators.get("DA", 1.0)
+                results["apgi_serotonin"] = self.neuromodulators.get("HT5", 1.0)
+        else:
+            results["apgi_enabled"] = False
+
+        return results
 
 
 def print_results(results: Dict):

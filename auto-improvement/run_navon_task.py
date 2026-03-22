@@ -41,6 +41,8 @@ TIME_BUDGET = APGI_PARAMS.get("time_budget", 600)  # 10 minutes per experiment
 # MODIFIABLE PARAMETERS
 # ---------------------------------------------------------------------------
 
+TIME_BUDGET = 600
+
 NUM_TRIALS_CONFIG = 100
 
 # RT parameters (ms)
@@ -193,10 +195,6 @@ class EnhancedNavonRunner:
                 GLOBAL_RT if trial.target_level == TargetLevel.GLOBAL else LOCAL_RT
             )
             observed_rt = rt
-            prediction_error = (
-                observed_rt - expected_rt
-            ) / 1000.0  # Convert to seconds
-
             # Trial type based on global vs local processing
             trial_type = (
                 "survival" if trial.target_level == TargetLevel.LOCAL else "neutral"

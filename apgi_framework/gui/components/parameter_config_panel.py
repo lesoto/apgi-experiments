@@ -415,12 +415,26 @@ class ParameterConfigPanel(ctk.CTkFrame):
         """Setup real-time validation for parameters."""
         # Setup validation for APGI parameters
         for param_name, var in self.param_vars.items():
-            var.trace("w", lambda *args, p=param_name: self._validate_parameter(p))
+            if hasattr(var, "trace_add"):
+                # Newer tkinter syntax (Python 3.6+)
+                var.trace_add(
+                    "write", lambda *args, p=param_name: self._validate_parameter(p)
+                )
+            else:
+                # Legacy syntax
+                var.trace("w", lambda *args, p=param_name: self._validate_parameter(p))
 
         # Setup validation for experimental parameters (except random_seed)
         for param_name, var in self.exp_vars.items():
             if param_name != "random_seed":
-                var.trace("w", lambda *args, p=param_name: self._validate_parameter(p))
+                if hasattr(var, "trace_add"):
+                    var.trace_add(
+                        "write", lambda *args, p=param_name: self._validate_parameter(p)
+                    )
+                else:
+                    var.trace(
+                        "w", lambda *args, p=param_name: self._validate_parameter(p)
+                    )
 
     def _validate_parameter(self, param_name: str):
         """Validate a single parameter and update indicator."""

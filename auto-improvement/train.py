@@ -417,8 +417,8 @@ class GPT(nn.Module):
         x0 = x
         for i, block in enumerate(self.transformer.h):
             x = self.resid_lambdas[i] * x + self.x0_lambdas[i] * x0
-        ve = self.value_embeds[str(i)](idx) if str(i) in self.value_embeds else None
-        x = block(x, ve, cos_sin, self.window_sizes[i])
+            ve = self.value_embeds[str(i)](idx) if str(i) in self.value_embeds else None
+            x = block(x, ve, cos_sin, self.window_sizes[i])
         x = norm(x)
 
         softcap = 15
@@ -627,7 +627,6 @@ ASPECT_RATIO = 64  # model_dim = depth * ASPECT_RATIO
 HEAD_DIM = 128  # target head dimension for attention
 WINDOW_PATTERN = "SSSL"  # sliding window pattern: L=full, S=half context
 # DEVICE_BATCH_SIZE is set above based on device type
-HDEVICE_BATCH_SIZE = 16  # Further reduced for MPS/CPU memory constraints
 
 # Optimization
 TOTAL_BATCH_SIZE = 2**17  # ~131K tokens per optimizer step
@@ -714,7 +713,10 @@ optimizer = model.setup_optimizer(
     weight_decay=WEIGHT_DECAY,
 )
 
-# model = torch.compile(model, dynamic=False)  # Disabled for MPS/CPU
+# Enable torch.compile for CUDA (20-40% speedup), disable for MPS/CPU
+if device.type == "cuda":
+    model = torch.compile(model, dynamic=False)
+    print("Enabled torch.compile for CUDA")
 
 train_loader = make_dataloader(tokenizer, DEVICE_BATCH_SIZE, MAX_SEQ_LEN, "train")
 x, y, epoch = next(train_loader)  # prefetch first batch

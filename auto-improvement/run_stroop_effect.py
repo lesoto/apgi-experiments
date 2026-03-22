@@ -41,6 +41,8 @@ from prepare_stroop_effect import (
 # MODIFIABLE PARAMETERS
 # ---------------------------------------------------------------------------
 
+TIME_BUDGET = 600
+
 NUM_TRIALS_CONFIG = 80
 INTER_TRIAL_INTERVAL_MS = 1000
 FEEDBACK_DELAY_MS = 500
