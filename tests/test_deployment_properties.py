@@ -231,7 +231,7 @@ def test_configuration_validation_property(
             try:
                 app_config = ApplicationConfig(
                     mode=mode,
-                    project_root=temp_dir,
+                    project_root=str(temp_dir),
                     parallel_execution=parallel_execution,
                     max_workers=max_workers,
                     coverage_threshold=coverage_threshold,

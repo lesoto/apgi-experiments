@@ -164,7 +164,11 @@ class ExperimentGUI(tk.Tk):
         return kwargs
 
     def _on_run(self) -> None:
-        if self._worker is not None and hasattr(self._worker, "is_alive") and self._worker.is_alive():
+        if (
+            self._worker is not None
+            and hasattr(self._worker, "is_alive")
+            and self._worker.is_alive()
+        ):
             messagebox.showinfo("Busy", "An experiment is already running.")
             return
         name = self.exp_var.get()
