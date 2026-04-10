@@ -481,7 +481,9 @@ class PipelineVisualizer:
 
         # Calculate layout
         if diagram.layout == "hierarchical":
-            pos = nx.spring_layout(G, k=3, iterations=50)
+            pos: Dict[str, Tuple[float, float]] = nx.spring_layout(
+                G, k=3, iterations=50
+            )
         elif diagram.layout == "circular":
             pos = nx.circular_layout(G)
         elif diagram.layout == "random":

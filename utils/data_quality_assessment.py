@@ -330,9 +330,9 @@ class DataQualityAssessment:
                     invalid_percentages = ((col_data < 0) | (col_data > 100)).sum()
                     if invalid_percentages > 0:
                         accuracy_score -= (invalid_percentages / len(col_data)) * 0.1
-                        accuracy_details[
-                            f"{col}_invalid_percentage"
-                        ] = invalid_percentages
+                        accuracy_details[f"{col}_invalid_percentage"] = (
+                            invalid_percentages
+                        )
 
                 # Check for statistical outliers
                 if len(col_data) > 10 and col_data.std() > 0:
@@ -712,9 +712,7 @@ class DataQualityAssessment:
             (
                 "green"
                 if m.status == "good"
-                else "orange"
-                if m.status == "warning"
-                else "red"
+                else "orange" if m.status == "warning" else "red"
             )
             for m in report.metrics
         ]

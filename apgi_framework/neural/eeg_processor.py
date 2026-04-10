@@ -117,7 +117,7 @@ class EEGProcessor:
         # Apply bandpass filter
         filtered = signal.filtfilt(self.bp_b, self.bp_a, data, axis=axis)
 
-        return filtered
+        return np.asarray(filtered)
 
     def apply_notch_filter(self, data: np.ndarray, axis: int = -1) -> np.ndarray:
         """
@@ -135,7 +135,7 @@ class EEGProcessor:
 
         filtered = signal.filtfilt(self.notch_b, self.notch_a, data, axis=axis)
 
-        return filtered
+        return np.asarray(filtered)
 
     def process_realtime(
         self, raw_data: np.ndarray, timestamps: np.ndarray, channels: List[str]
@@ -183,12 +183,12 @@ class EEGProcessor:
         if reference_type == "average":
             # Average reference
             reference = np.mean(data, axis=0, keepdims=True)
-            return data - reference
+            return np.asarray(data - reference)
 
         elif reference_type == "custom" and reference_channels:
             # Custom reference from specified channels
             reference = np.mean(data[reference_channels, :], axis=0, keepdims=True)
-            return data - reference
+            return np.asarray(data - reference)
 
         else:
             return data
@@ -257,7 +257,7 @@ class FASTERArtifactDetector:
             "indices": np.where(bad_channels)[0].tolist(),
         }
 
-        return bad_channels
+        return np.asarray(bad_channels)
 
     def detect_bad_epochs(self, epochs: np.ndarray) -> np.ndarray:
         """
@@ -293,7 +293,7 @@ class FASTERArtifactDetector:
             "rejection_rate": np.sum(bad_epochs) / n_epochs,
         }
 
-        return bad_epochs
+        return np.asarray(bad_epochs)
 
     def detect_bad_samples(
         self, data: np.ndarray, window_size: int = 100
@@ -514,7 +514,7 @@ class BaselineCorrector:
         # Subtract baseline
         corrected = epochs - baseline_value
 
-        return corrected
+        return np.asarray(corrected)
 
 
 class ERPExtractor:

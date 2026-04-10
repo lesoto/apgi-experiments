@@ -7,7 +7,7 @@ import sys
 import traceback
 
 
-def test_imports():
+def test_imports() -> bool:
     """Test all required imports."""
     print("Testing imports...")
     try:
@@ -25,7 +25,7 @@ def test_imports():
         return False
 
 
-def test_apgi_system():
+def test_apgi_system() -> bool:
     """Test APGI system initialization."""
     print("\nTesting APGI System...")
     try:
@@ -41,7 +41,7 @@ def test_apgi_system():
         return False
 
 
-def test_system_step():
+def test_system_step() -> bool:
     """Test system step function."""
     print("\nTesting system step...")
     try:
@@ -83,7 +83,7 @@ def test_system_step():
         return False
 
 
-def test_gui_imports():
+def test_gui_imports() -> bool:
     """Test GUI-specific imports."""
     print("\nTesting GUI imports...")
     try:
@@ -100,7 +100,7 @@ def test_gui_imports():
         return False
 
 
-def test_config_file():
+def test_config_file() -> bool:
     """Test configuration file."""
     print("\nTesting configuration file...")
     try:
@@ -140,7 +140,7 @@ def test_config_file():
         return False
 
 
-def test_experimental_tasks():
+def test_experimental_tasks() -> bool:
     """Test experimental task imports."""
     print("\nTesting experimental tasks...")
     try:
@@ -160,7 +160,7 @@ def test_experimental_tasks():
         return False
 
 
-def test_gui_launch():
+def test_gui_launch() -> bool:
     """Test that GUI can be launched."""
     print("\nTesting GUI launch...")
     try:
@@ -186,7 +186,7 @@ def test_gui_launch():
         return False
 
 
-def main():
+def main() -> int:
     """Run all validation tests."""
     print("=" * 60)
     print("APGI System Validation")

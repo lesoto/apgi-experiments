@@ -182,7 +182,7 @@ class CardiacProcessor:
         b_hp, a_hp = signal.butter(2, 0.5 / nyquist, btype="highpass")
         filtered = signal.filtfilt(b_hp, a_hp, filtered)
 
-        return filtered
+        return np.asarray(filtered)
 
     def detect_r_peaks_pan_tompkins(
         self, ecg_signal: np.ndarray, timestamps: np.ndarray
@@ -256,7 +256,7 @@ class CardiacProcessor:
                         filtered_peaks.append(peak)
                 peaks = np.array(filtered_peaks)
 
-        return peaks
+        return np.asarray(peaks)
 
     def detect_r_peaks_adaptive(
         self, ecg_signal: np.ndarray, timestamps: np.ndarray
@@ -621,7 +621,7 @@ class HEPExtractor:
         hep_window = hep_epochs[:, :, window_start_sample:window_end_sample]
         hep_amplitudes = np.mean(hep_window, axis=2)
 
-        return hep_amplitudes
+        return np.asarray(hep_amplitudes)
 
     def apply_baseline_correction(
         self,
@@ -661,7 +661,7 @@ class HEPExtractor:
         # Subtract baseline
         corrected = hep_epochs - baseline
 
-        return corrected
+        return np.asarray(corrected)
 
 
 class CardiacQualityAssessor:
@@ -700,7 +700,7 @@ class CardiacQualityAssessor:
         b_hp, a_hp = signal.butter(2, 0.5 / nyquist, btype="highpass")
         filtered = signal.filtfilt(b_hp, a_hp, filtered)
 
-        return filtered
+        return np.asarray(filtered)
 
     def detect_r_peaks_pan_tompkins(
         self, ecg_signal: np.ndarray, timestamps: np.ndarray
@@ -774,7 +774,7 @@ class CardiacQualityAssessor:
                         filtered_peaks.append(peak)
                 peaks = np.array(filtered_peaks)
 
-        return peaks
+        return np.asarray(peaks)
 
     def detect_r_peaks_adaptive(
         self, ecg_signal: np.ndarray, timestamps: np.ndarray

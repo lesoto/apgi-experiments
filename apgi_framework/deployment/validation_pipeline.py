@@ -204,21 +204,31 @@ class ParameterRecoveryValidator:
     ) -> ParameterEstimates:
         """Recover parameters from synthetic data."""
         # Simplified parameter recovery (would use actual Bayesian fitting)
+        from ..analysis.bayesian_models import (
+            ParameterDistribution as BayesianParameterDistribution,
+        )
+
         return ParameterEstimates(
             participant_id="synthetic",
             session_id="recovery_test",
-            theta0_mean=data["theta0"],  # type: ignore
-            theta0_std=0.1,  # type: ignore
-            theta0_ci_lower=data["theta0"] - 0.2,  # type: ignore
-            theta0_ci_upper=data["theta0"] + 0.2,  # type: ignore
-            pi_i_mean=data["pi_i"],  # type: ignore
-            pi_i_std=0.15,  # type: ignore
-            pi_i_ci_lower=data["pi_i"] - 0.3,  # type: ignore
-            pi_i_ci_upper=data["pi_i"] + 0.3,  # type: ignore
-            beta_mean=data["beta"],  # type: ignore
-            beta_std=0.1,  # type: ignore
-            beta_ci_lower=data["beta"] - 0.2,  # type: ignore
-            beta_ci_upper=data["beta"] + 0.2,  # type: ignore
+            theta0=BayesianParameterDistribution(
+                mean=data["theta0"],
+                std=0.1,
+                credible_interval_95=(data["theta0"] - 0.2, data["theta0"] + 0.2),
+                posterior_samples=np.array([data["theta0"]]),
+            ),
+            pi_i=BayesianParameterDistribution(
+                mean=data["pi_i"],
+                std=0.15,
+                credible_interval_95=(data["pi_i"] - 0.3, data["pi_i"] + 0.3),
+                posterior_samples=np.array([data["pi_i"]]),
+            ),
+            beta=BayesianParameterDistribution(
+                mean=data["beta"],
+                std=0.1,
+                credible_interval_95=(data["beta"] - 0.2, data["beta"] + 0.2),
+                posterior_samples=np.array([data["beta"]]),
+            ),
         )
 
     def _calculate_recovery_metrics(
@@ -361,21 +371,23 @@ class ReliabilityTester:
         """Calculate intraclass correlation coefficient."""
         # ICC(2,1) - two-way random effects, single measures
         n = len(test)
-        mean_test = np.mean(test)
-        mean_retest = np.mean(retest)
-        grand_mean = (mean_test + mean_retest) / 2
+        mean_test = float(np.mean(test))
+        mean_retest = float(np.mean(retest))
+        grand_mean = (mean_test + mean_retest) / 2.0
 
         # Between-subjects variance
         subject_means = (test + retest) / 2
-        bms = np.sum((subject_means - grand_mean) ** 2) * 2 / (n - 1)
+        bms = float(np.sum((subject_means - grand_mean) ** 2) * 2 / (n - 1))
 
         # Within-subjects variance
-        wms = np.sum((test - subject_means) ** 2 + (retest - subject_means) ** 2) / n
+        wms = float(
+            np.sum((test - subject_means) ** 2 + (retest - subject_means) ** 2) / n
+        )
 
         # ICC calculation
         icc = (bms - wms) / (bms + wms)
 
-        return max(0, min(1, icc))  # Bound between 0 and 1
+        return float(max(0.0, min(1.0, icc)))  # Bound between 0 and 1
 
 
 class PredictiveValidityPipeline:

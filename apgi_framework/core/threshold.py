@@ -5,7 +5,6 @@ This module implements the threshold manager that handles dynamic adjustment
 of the ignition threshold (θₜ) based on context, adaptation, and task demands.
 """
 
-import warnings
 from enum import Enum
 from typing import Dict, List, Optional
 
@@ -150,14 +149,9 @@ class ThresholdManager:
             # Context-dependent adaptation
             new_threshold = self._contextual_adaptation(context)
 
-        elif self.adaptation_type == ThresholdAdaptationType.ADAPTIVE:
-            # Full adaptive mechanism
-            new_threshold = self._adaptive_threshold_update(context)
-
         else:
-            # Defensive fallback for unexpected enum values
-            warnings.warn(f"Unknown adaptation type: {self.adaptation_type}")
-            new_threshold = self.baseline_threshold
+            # ADAPTIVE: Full adaptive mechanism
+            new_threshold = self._adaptive_threshold_update(context)
 
         # Apply bounds and update
         self._current_threshold = np.clip(
@@ -433,3 +427,7 @@ class ThresholdManager:
             "history_length": len(self._ignition_history),
             "threshold_history_length": len(self._threshold_history),
         }
+
+
+# Aliases for backward compatibility with tests
+ThresholdDetector = ThresholdManager

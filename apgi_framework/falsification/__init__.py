@@ -17,11 +17,11 @@ try:
     )
 
     # Use imported classes
-    PrimaryFalsificationTest: Union[
-        "_PrimaryFalsificationTest", ImportedPrimaryFalsificationTest
+    PrimaryFalsificationTest: Type[
+        Union["_PrimaryFalsificationTest", ImportedPrimaryFalsificationTest]
     ] = ImportedPrimaryFalsificationTest
-    FalsificationResult: Union[
-        "_FalsificationResult", ImportedFalsificationResult
+    FalsificationResult: Type[
+        Union["_FalsificationResult", ImportedFalsificationResult]
     ] = ImportedFalsificationResult
 except ImportError:
     # Fallback to a basic implementation if specialized test implementation is missing

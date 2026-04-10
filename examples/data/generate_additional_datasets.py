@@ -32,7 +32,7 @@ class DatasetGenerator:
 
         # Create subdirectories
         for subdir in ["eeg", "pupillometry", "cardiac", "behavioral", "multimodal"]:
-            (self.output_dir / subdir).mkdir(parents=True, exist_ok=True)  # type: ignore
+            (self.output_dir / subdir).mkdir(parents=True, exist_ok=True)
 
     def generate_multimodal_dataset(
         self, subject_id: str = "multimodal_001"

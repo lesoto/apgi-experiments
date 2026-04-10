@@ -299,7 +299,7 @@ class AccessibilityManager:
                 child.focus_set()
                 break
 
-    def _is_focusable(self, widget: tk.Widget) -> bool:
+    def _is_focusable(self, widget: tk.Widget | tk.Toplevel) -> bool:
         """Check if a widget is focusable for keyboard navigation."""
         return (
             widget.winfo_class()

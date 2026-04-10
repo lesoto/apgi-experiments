@@ -120,7 +120,7 @@ class SampleDataGenerator:
         # Ensure positive values
         pupil_signal = np.maximum(pupil_signal, 1.0)
 
-        return pupil_signal
+        return np.asarray(pupil_signal)
 
     def generate_eda_data(self, responsive: bool = True) -> np.ndarray:
         """Generate realistic electrodermal activity data."""
@@ -152,7 +152,7 @@ class SampleDataGenerator:
         # Ensure positive values
         eda_signal = np.maximum(eda_signal, 0.1)
 
-        return eda_signal
+        return np.asarray(eda_signal)
 
     def generate_heart_rate_data(self) -> np.ndarray:
         """Generate realistic heart rate data."""
@@ -182,7 +182,7 @@ class SampleDataGenerator:
         hr_signal += noise
 
         # Ensure reasonable range
-        hr_signal = np.clip(hr_signal, 40, 120)  # type: ignore[assignment]
+        hr_signal = np.clip(hr_signal, 40, 120)
 
         return hr_signal
 
@@ -268,9 +268,7 @@ class SampleDataGenerator:
         sigma = 800
         amplitude = 15.0  # 15 BPM typical increase
 
-        hr_increase = amplitude * np.exp(
-            -((time_ms - peak_time) ** 2) / (2 * sigma**2)
-        )
+        hr_increase = amplitude * np.exp(-((time_ms - peak_time) ** 2) / (2 * sigma**2))
 
         return hr_increase
 

@@ -7,7 +7,7 @@ import tkinter as tk
 from dataclasses import dataclass, field
 from enum import Enum
 from tkinter import messagebox
-from typing import Optional
+from typing import Optional, cast
 
 from ..logging.standardized_logging import get_logger
 
@@ -170,7 +170,7 @@ class ErrorDialogManager:
                     f"Aggregated error: {error_key} "
                     f"(count: {recent_error.similar_errors})"
                 )
-                return recent_error
+                return cast(QueuedError, recent_error)
 
         # No aggregation, store as new error
         self._recent_errors[error_key] = new_error
@@ -256,7 +256,7 @@ class ErrorDialogManager:
 
     def get_queue_size(self) -> int:
         """Get the current size of the error queue."""
-        return self._error_queue.qsize()
+        return cast(int, self._error_queue.qsize())
 
     def shutdown(self):
         """Shutdown the error dialog manager."""

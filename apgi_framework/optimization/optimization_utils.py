@@ -233,14 +233,14 @@ class VectorizedOperations:
         prediction_errors: np.ndarray, precisions: np.ndarray
     ) -> np.ndarray:
         """Vectorized surprise computation."""
-        return precisions * np.abs(prediction_errors)
+        return precisions * np.abs(prediction_errors)  # type: ignore
 
     @staticmethod
     def sigmoid_vectorized(x: np.ndarray) -> np.ndarray:
         """Vectorized sigmoid function with overflow protection."""
         # Clip to prevent overflow
         x_clipped = np.clip(x, -500, 500)
-        return 1.0 / (1.0 + np.exp(-x_clipped))
+        return 1.0 / (1.0 + np.exp(-x_clipped))  # type: ignore
 
     @staticmethod
     def compute_ignition_probability_vectorized(
@@ -474,7 +474,7 @@ class BatchProcessor:
             batch_result = func(batch, **kwargs)
             results.append(batch_result)
 
-        return pd.concat(results, ignore_index=True)
+        return pd.concat(results, ignore_index=True)  # type: ignore
 
 
 # Optimization decorators and utilities

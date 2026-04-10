@@ -693,9 +693,11 @@ if __name__ == "__main__":
 
         def _confirm_quit(self) -> bool:
             """Confirm before quitting with unsaved changes."""
-            return ask_yes_no_dialog(
-                "Quit",
-                "Are you sure you want to quit? Any unsaved session data will be lost.",
+            return bool(
+                ask_yes_no_dialog(
+                    "Quit",
+                    "Are you sure you want to quit? Any unsaved session data will be lost.",
+                )
             )
 
     # Launch GUI

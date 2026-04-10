@@ -12,7 +12,7 @@ import pickletools
 from dataclasses import is_dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Union, cast, TypedDict
+from typing import Any, Dict, List, Optional, Set, Union, TypedDict
 
 logger = logging.getLogger(__name__)
 
@@ -495,9 +495,7 @@ def validate_pickle_security(file_path: Union[str, Path]) -> ValidationResult:
             with io.BytesIO(data) as data_stream:
                 unpickler = RestrictedUnpickler(
                     data_stream,
-                    allowed_types=cast(
-                        Set[Union[type, str]], _default_validator.ALLOWED_TYPES
-                    ),
+                    allowed_types=_default_validator.ALLOWED_TYPES,
                 )
                 obj = unpickler.load()
             result["is_safe"] = True

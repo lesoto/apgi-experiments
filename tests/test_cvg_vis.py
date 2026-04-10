@@ -1,6 +1,7 @@
 """
 Tests for Coverage Visualization using naturally updated Fallback classes.
 """
+
 from apgi_framework.gui.coverage_visualization import CoverageData
 
 

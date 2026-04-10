@@ -501,8 +501,10 @@ class LoggingPanel(ctk.CTkFrame):
         """Change logging level."""
         try:
             self.current_log_level = getattr(logging, level)
-            if self.log_handler is not None:
-                self.log_handler.setLevel(self.current_log_level)
+            from typing import cast
+
+            log_handler = cast(logging.Handler, self.log_handler)
+            log_handler.setLevel(self.current_log_level)
 
             # Update root logger level
             root_logger = logging.getLogger()
@@ -676,7 +678,7 @@ class LoggingPanel(ctk.CTkFrame):
         """Get the most recent log entries."""
         try:
             all_content = self.log_text.get("1.0", "end").strip()
-            lines = all_content.split("\n")
+            lines: List[str] = all_content.split("\n")
             return lines[-count:] if len(lines) > count else lines
         except Exception:
             return []

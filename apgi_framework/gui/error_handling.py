@@ -34,17 +34,8 @@ try:
     )
 except ImportError:
     # Create fallback classes that raise informative errors
-    SessionData: Optional[type] = None
-    ParameterEstimationDAO: Optional[type] = None
-
-    class SecurePickleError(Exception):
-        """Raised when secure pickle operations are not available."""
-
-        def __init__(
-            self,
-            message="Secure pickle functionality not available - framework not properly installed",
-        ):
-            super().__init__(message)
+    _SessionData: Optional[type] = None
+    _ParameterEstimationDAO: Optional[type] = None
 
     def safe_pickle_load(
         file_path: str | Path,
@@ -74,7 +65,7 @@ try:
     from .error_logging_utils import get_error_log_dir
 except ImportError:
     # Fallback if utility not available
-    def get_error_log_dir(gui_config_path: Path | None = None) -> Path:  # type: ignore[no-redef]
+    def get_error_log_dir(gui_config_path: Path | None = None) -> Path:
         return Path.home() / ".apgi" / "error_logs"
 
 else:
@@ -447,6 +438,13 @@ class SessionStateManager:
         try:
             state_data = safe_pickle_load(state_file)
 
+            # Ensure state_data is a dict
+            if not isinstance(state_data, dict):
+                logger.error(
+                    f"Invalid state data type: expected dict, got {type(state_data)}"
+                )
+                return None
+
             self.current_state = state_data
             logger.info(f"Loaded session state from {state_file}")
             return state_data
@@ -686,9 +684,9 @@ class AutomaticBackupSystem:
             session_data = SessionData(
                 session_id=session_dict.get("session_id", ""),
                 participant_id=session_dict.get("participant_id", ""),
-                session_date=session_date
-                if session_date is not None
-                else datetime.now(),
+                session_date=(
+                    session_date if session_date is not None else datetime.now()
+                ),
                 protocol_version=session_dict.get("protocol_version", "1.0.0"),
                 completion_status=session_dict.get("completion_status", "in_progress"),
                 total_duration_minutes=session_dict.get("total_duration_minutes"),

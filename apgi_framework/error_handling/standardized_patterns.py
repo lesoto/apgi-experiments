@@ -14,7 +14,7 @@ Features:
 - Decorators for common error handling patterns
 """
 
-from typing import Any, Callable, Dict, List, Optional, Tuple, Type
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, cast
 from datetime import datetime
 
 from ..exceptions import APGIFrameworkError
@@ -25,8 +25,6 @@ from .error_handler import (
     ErrorHandler,
     format_user_message,
     handle_error,
-    safe_execute,
-    retry_on_error,
     error_boundary,
 )
 
@@ -640,73 +638,91 @@ def retry_on_error(
 # Convenience functions for common error types
 def config_error(message: str, **context) -> APGIFrameworkError:
     """Create a configuration error."""
-    return handle_error(
-        ErrorCategory.CONFIGURATION,
-        ErrorSeverity.HIGH,
-        "CONFIG_ERROR",
-        False,
-        "error",
-        context=context,
+    return cast(
+        APGIFrameworkError,
+        handle_error(
+            ErrorCategory.CONFIGURATION,
+            ErrorSeverity.HIGH,
+            "CONFIG_ERROR",
+            False,
+            "error",
+            context=context,
+        ),
     )
 
 
 def validation_error(message: str, **context) -> APGIFrameworkError:
     """Create a validation error."""
-    return handle_error(
-        ErrorCategory.VALIDATION,
-        ErrorSeverity.HIGH,
-        "VALIDATION_ERROR",
-        False,
-        "error",
-        context=context,
+    return cast(
+        APGIFrameworkError,
+        handle_error(
+            ErrorCategory.VALIDATION,
+            ErrorSeverity.HIGH,
+            "VALIDATION_ERROR",
+            False,
+            "error",
+            context=context,
+        ),
     )
 
 
 def data_error(message: str, **context) -> APGIFrameworkError:
     """Create a data error."""
-    return handle_error(
-        ErrorCategory.DATA,
-        ErrorSeverity.HIGH,
-        "DATA_ERROR",
-        False,
-        "error",
-        context=context,
+    return cast(
+        APGIFrameworkError,
+        handle_error(
+            ErrorCategory.DATA,
+            ErrorSeverity.HIGH,
+            "DATA_ERROR",
+            False,
+            "error",
+            context=context,
+        ),
     )
 
 
 def io_error(message: str, **context) -> APGIFrameworkError:
     """Create an I/O error."""
-    return handle_error(
-        ErrorCategory.IO,
-        ErrorSeverity.HIGH,
-        "IO_ERROR",
-        False,
-        "error",
-        context=context,
+    return cast(
+        APGIFrameworkError,
+        handle_error(
+            ErrorCategory.IO,
+            ErrorSeverity.HIGH,
+            "IO_ERROR",
+            False,
+            "error",
+            context=context,
+        ),
     )
 
 
 def critical_error(message: str, **context) -> APGIFrameworkError:
     """Create a critical error."""
-    return handle_error(
-        ErrorCategory.RUNTIME,
-        ErrorSeverity.CRITICAL,
-        "CRITICAL_ERROR",
-        False,
-        "error",
-        context=context,
+    return cast(
+        APGIFrameworkError,
+        handle_error(
+            ErrorCategory.RUNTIME,
+            ErrorSeverity.CRITICAL,
+            "CRITICAL_ERROR",
+            False,
+            "error",
+            context=context,
+        ),
     )
 
 
 def user_error(message: str, **context) -> APGIFrameworkError:
     """Create a user input error."""
-    return handle_error(
-        ErrorCategory.USER_INPUT,
-        ErrorSeverity.LOW,
-        "USER_ERROR",
-        False,
-        "error",
-        context=context,
+    return cast(
+        APGIFrameworkError,
+        handle_error(
+            ErrorCategory.USER_INPUT,
+            ErrorSeverity.LOW,
+            "USER_ERROR",
+            False,
+            "error",
+            context=context,
+        ),
     )
 
 

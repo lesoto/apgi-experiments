@@ -8,6 +8,8 @@ This module provides comprehensive reporting capabilities including:
 - Statistical report formatting
 """
 
+from typing import Any, Dict, List, Optional
+
 # Import components with graceful fallback for missing dependencies
 try:
     pass
@@ -25,9 +27,9 @@ except ImportError:
 
 
 # Convenience functions
-def get_available_features():
+def get_available_features() -> List[str]:
     """Get list of available reporting features."""
-    features = []
+    features: List[str] = []
 
     if PDF_GENERATOR_AVAILABLE:
         features.append("pdf_generation")
@@ -48,9 +50,9 @@ def is_feature_available(feature_name: str) -> bool:
     return availability_map.get(feature_name, False)
 
 
-def get_missing_dependencies():
+def get_missing_dependencies() -> List[str]:
     """Get list of missing dependencies for reporting features."""
-    missing = []
+    missing: List[str] = []
 
     if not PDF_GENERATOR_AVAILABLE:
         missing.append("reportlab>=3.6.0 (for PDF generation)")
@@ -65,14 +67,14 @@ def get_missing_dependencies():
 class ProgressReporter:
     """Mock progress reporter for testing purposes."""
 
-    def __init__(self):
-        self.progress_reports = {}
-        self.current_progress = 0.0
+    def __init__(self) -> None:
+        self.progress_reports: Dict[str, Dict[str, Any]] = {}
+        self.current_progress: float = 0.0
 
-    def start_progress_tracking(self, task_name, total_steps):
+    def start_progress_tracking(self, task_name: str, total_steps: int) -> str:
         """Start tracking progress for a task."""
         tracking_id = f"progress_{hash(task_name + str(total_steps)) % 10000:04d}"
-        report = {
+        report: Dict[str, Any] = {
             "tracking_id": tracking_id,
             "task_name": task_name,
             "total_steps": total_steps,
@@ -84,7 +86,7 @@ class ProgressReporter:
         self.progress_reports[tracking_id] = report
         return tracking_id
 
-    def update_progress(self, tracking_id, current_step):
+    def update_progress(self, tracking_id: str, current_step: int) -> None:
         """Update progress for a tracking ID."""
         if tracking_id in self.progress_reports:
             report = self.progress_reports[tracking_id]
@@ -94,7 +96,7 @@ class ProgressReporter:
                 report["status"] = "completed"
                 report["completed_at"] = "2024-01-01T01:00:00Z"
 
-    def get_progress_report(self, tracking_id):
+    def get_progress_report(self, tracking_id: str) -> Optional[Dict[str, Any]]:
         """Get progress report by ID."""
         return self.progress_reports.get(tracking_id)
 
@@ -102,11 +104,13 @@ class ProgressReporter:
 class ReportGenerator:
     """Mock report generator for testing purposes."""
 
-    def __init__(self):
-        self.reports = {}
-        self.report_templates = {}
+    def __init__(self) -> None:
+        self.reports: Dict[str, Dict[str, Any]] = {}
+        self.report_templates: Dict[str, Any] = {}
 
-    def generate_falsification_report(self, falsification_data, output_path=None):
+    def generate_falsification_report(
+        self, falsification_data: Dict[str, Any], output_path: Optional[str] = None
+    ) -> Dict[str, Any]:
         """Generate a falsification testing report."""
         report_id = f"falsification_report_{hash(str(falsification_data)) % 10000:04d}"
 
@@ -140,7 +144,9 @@ class ReportGenerator:
             "report_id": report_id,
         }
 
-    def generate_analysis_report(self, analysis_data, output_path=None):
+    def generate_analysis_report(
+        self, analysis_data: Dict[str, Any], output_path: Optional[str] = None
+    ) -> Dict[str, Any]:
         """Generate an analysis report."""
         report_id = f"analysis_report_{hash(str(analysis_data)) % 10000:04d}"
 
@@ -172,7 +178,9 @@ class ReportGenerator:
             "report_id": report_id,
         }
 
-    def generate_progress_report(self, progress_data, output_path=None):
+    def generate_progress_report(
+        self, progress_data: Dict[str, Any], output_path: Optional[str] = None
+    ) -> Dict[str, Any]:
         """Generate a progress report."""
         report_id = f"progress_report_{hash(str(progress_data)) % 10000:04d}"
 

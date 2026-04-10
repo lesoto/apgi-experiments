@@ -15,11 +15,11 @@ import time
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
-from tqdm import tqdm  # type: ignore
+from tqdm import tqdm
 
 # Add project root to Python path
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -29,7 +29,15 @@ try:
     from apgi_framework.security.secure_pickle import safe_pickle_dump
 except ImportError:
     # Fallback to regular pickle if secure_pickle not available
-    safe_pickle_dump = pickle.dump
+    def safe_pickle_dump(
+        obj: Any,
+        file_path: Union[str, Path],
+        create_checksum: bool = True,
+        protocol: int = 4,
+    ) -> None:
+        with open(file_path, "wb") as f:
+            pickle.dump(obj, f, protocol=protocol)
+
 
 # Load modules with hyphens using importlib with fallback
 try:
@@ -66,13 +74,17 @@ except (FileNotFoundError, ImportError, AttributeError) as e:
 
 
 try:
-    from apgi_framework.logging.standardized_logging import get_logger
+    from apgi_framework.logging.standardized_logging import get_logger, APGILogger
 
-    apgi_logger = get_logger(__name__)  # type: ignore
+    apgi_logger: APGILogger = get_logger(__name__)
 except ImportError:
     import logging
+    from typing import TYPE_CHECKING
 
-    apgi_logger = logging.getLogger(__name__)  # type: ignore
+    if TYPE_CHECKING:
+        apgi_logger: APGILogger = logging.getLogger(__name__)  # type: ignore
+    else:
+        apgi_logger = logging.getLogger(__name__)
 
 
 def load_validation_module(protocol):
@@ -352,8 +364,7 @@ class BatchProcessor:
             with open(output_path, "w") as f:
                 json.dump(job.result, f, indent=2, default=str)
         elif job.output_file and job.output_file.endswith(".pkl"):
-            with open(output_path, "wb") as f:
-                safe_pickle_dump(job.result, f)
+            safe_pickle_dump(job.result, output_path)
         elif job.output_file and job.output_file.endswith(".csv"):
             if isinstance(job.result, dict) and "results" in job.result:
                 # Save simulation results as CSV

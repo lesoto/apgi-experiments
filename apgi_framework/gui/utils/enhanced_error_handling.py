@@ -229,18 +229,18 @@ class EnhancedErrorHandler:
         self.recovery_strategies[ErrorCategory.IMPORT_ERROR] = self._handle_import_error
         self.recovery_strategies[ErrorCategory.FILE_ERROR] = self._handle_file_error
         self.recovery_strategies[ErrorCategory.DATA_ERROR] = self._handle_data_error
-        self.recovery_strategies[
-            ErrorCategory.NETWORK_ERROR
-        ] = self._handle_network_error
-        self.recovery_strategies[
-            ErrorCategory.HARDWARE_ERROR
-        ] = self._handle_hardware_error
-        self.recovery_strategies[
-            ErrorCategory.VALIDATION_ERROR
-        ] = self._handle_validation_error
-        self.recovery_strategies[
-            ErrorCategory.CONFIGURATION_ERROR
-        ] = self._handle_configuration_error
+        self.recovery_strategies[ErrorCategory.NETWORK_ERROR] = (
+            self._handle_network_error
+        )
+        self.recovery_strategies[ErrorCategory.HARDWARE_ERROR] = (
+            self._handle_hardware_error
+        )
+        self.recovery_strategies[ErrorCategory.VALIDATION_ERROR] = (
+            self._handle_validation_error
+        )
+        self.recovery_strategies[ErrorCategory.CONFIGURATION_ERROR] = (
+            self._handle_configuration_error
+        )
 
     def handle_error(
         self,
@@ -307,7 +307,8 @@ class EnhancedErrorHandler:
         """Apply appropriate recovery strategy."""
         if error.category in self.recovery_strategies:
             try:
-                return self.recovery_strategies[error.category](error)
+                result: bool = self.recovery_strategies[error.category](error)
+                return result
             except Exception as recovery_error:
                 logger.error(f"Recovery strategy failed: {recovery_error}")
                 return False

@@ -12,7 +12,7 @@ from typing import Dict, List, Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy import stats  # type: ignore
+from scipy import stats
 
 from ..logging.standardized_logging import get_logger
 from ..utils.progress_monitor import ProgressMonitor

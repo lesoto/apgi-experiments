@@ -405,7 +405,9 @@ class PCICalculator:
 
         # Normalize by theoretical maximum
         normalized_complexity = complexity / (n / 2)  # Rough normalization
-        return np.clip(normalized_complexity, self.min_complexity, self.max_complexity)
+        return float(
+            np.clip(normalized_complexity, self.min_complexity, self.max_complexity)
+        )
 
     def _perturbational_complexity(self, response: np.ndarray) -> float:
         """Calculate complexity of perturbation response patterns."""
@@ -419,7 +421,7 @@ class PCICalculator:
 
         # Normalize and combine
         complexity = (spatial_complexity + temporal_complexity) / 2
-        return np.clip(complexity, self.min_complexity, self.max_complexity)
+        return float(np.clip(complexity, self.min_complexity, self.max_complexity))
 
     def _integration_measure(self, connectivity_matrix: np.ndarray) -> float:
         """Calculate integration measure from connectivity."""
@@ -454,9 +456,9 @@ class PCICalculator:
             logger.warning(
                 f"Integration calculation failed: {e}. Using mean connectivity fallback."
             )
-            integration = np.mean(connectivity_matrix)
+            integration = float(np.mean(connectivity_matrix))
 
-        return np.clip(integration, self.min_complexity, self.max_complexity)
+        return float(np.clip(integration, self.min_complexity, self.max_complexity))
 
     def _differentiation_measure(self, response: np.ndarray) -> float:
         """Calculate differentiation measure from response patterns."""
@@ -482,7 +484,7 @@ class PCICalculator:
         else:
             differentiation = 0.5
 
-        return np.clip(differentiation, self.min_complexity, self.max_complexity)
+        return float(np.clip(differentiation, self.min_complexity, self.max_complexity))
 
     def _information_integration(
         self, connectivity_matrix: np.ndarray, response: np.ndarray
@@ -493,7 +495,7 @@ class PCICalculator:
         n_regions = connectivity_matrix.shape[0]
 
         if n_regions < 4:
-            return np.mean(np.abs(connectivity_matrix))
+            return float(np.mean(np.abs(connectivity_matrix)))
 
         # Split network into two parts
         mid = n_regions // 2
@@ -525,7 +527,7 @@ class PCICalculator:
 
         # Convert correlation to integration measure
         integration = abs(cross_corr)
-        return np.clip(integration, self.min_complexity, self.max_complexity)
+        return float(np.clip(integration, self.min_complexity, self.max_complexity))
 
     def _compute_pci_from_components(self, components: Dict[str, float]) -> float:
         """Compute overall PCI from complexity components."""
@@ -552,13 +554,13 @@ class PCICalculator:
         if total_weight > 0:
             pci /= total_weight
 
-        return np.clip(pci, self.min_complexity, self.max_complexity)
+        return float(np.clip(pci, self.min_complexity, self.max_complexity))
 
     def _calculate_connectivity_strength(
         self, connectivity_matrix: np.ndarray
     ) -> float:
         """Calculate overall connectivity strength."""
-        return np.mean(np.abs(connectivity_matrix))
+        return float(np.mean(np.abs(connectivity_matrix)))
 
     def validate_signature(self, signature: PCISignature) -> bool:
         """

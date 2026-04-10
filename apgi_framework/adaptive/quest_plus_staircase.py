@@ -224,7 +224,7 @@ class QuestPlusStaircase:
             1 - self.parameters.guess_rate - self.parameters.lapse_rate
         ) * norm.cdf(z)
 
-        return np.clip(p_detect, 1e-10, 1 - 1e-10)  # Avoid numerical issues
+        return float(np.clip(p_detect, 1e-10, 1 - 1e-10))  # Avoid numerical issues
 
     def _likelihood(
         self, intensity: float, response: bool, threshold: float, slope: float

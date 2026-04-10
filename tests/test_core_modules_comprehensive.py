@@ -14,56 +14,72 @@ class TestCoreEquation:
         """Test that equation module can be imported."""
         from apgi_framework.core import equation
 
-        assert hasattr(equation, "APGICalculator")
+        assert hasattr(equation, "APGIEquation")
 
-    def test_apgi_calculator_initialization(self):
-        """Test APGICalculator initialization."""
-        from apgi_framework.core.equation import APGICalculator
+    def test_apgi_equation_initialization(self):
+        """Test APGIEquation initialization."""
+        from apgi_framework.core.equation import APGIEquation
 
-        calc = APGICalculator()
-        assert calc is not None
+        eq = APGIEquation()
+        assert eq is not None
+        assert eq.numerical_stability is True
 
-    def test_calculate_apgi(self):
-        """Test APGI calculation."""
-        from apgi_framework.core.equation import APGICalculator
+    def test_calculate_surprise(self):
+        """Test surprise calculation."""
+        from apgi_framework.core.equation import APGIEquation
 
-        calc = APGICalculator()
-        result = calc.calculate(r_e=0.5, sigma_e=0.1, alpha_base=0.3)
+        eq = APGIEquation()
+        result = eq.calculate_surprise(
+            extero_error=0.5,
+            intero_error=0.3,
+            extero_precision=2.0,
+            intero_precision=1.5,
+        )
 
         assert isinstance(result, (int, float, np.number))
+        assert result >= 0
 
     def test_calculate_with_different_parameters(self):
         """Test calculation with different parameter sets."""
-        from apgi_framework.core.equation import APGICalculator
+        from apgi_framework.core.equation import APGIEquation
 
-        calc = APGICalculator()
+        eq = APGIEquation()
 
         # Test with various parameter values
-        params = [(0.3, 0.05, 0.2), (0.7, 0.15, 0.4), (0.5, 0.1, 0.3)]
+        params = [
+            (0.3, 0.2, 2.0, 1.5),
+            (0.7, 0.4, 2.5, 1.8),
+            (0.5, 0.3, 2.0, 1.5),
+        ]
 
-        for r_e, sigma_e, alpha in params:
-            result = calc.calculate(r_e=r_e, sigma_e=sigma_e, alpha_base=alpha)
+        for extero_e, intero_e, extero_p, intero_p in params:
+            result = eq.calculate_surprise(extero_e, intero_e, extero_p, intero_p)
             assert isinstance(result, (int, float, np.number))
+            assert result >= 0
 
-    def test_calculator_validate_inputs(self):
-        """Test input validation."""
-        from apgi_framework.core.equation import APGICalculator
+    def test_calculate_ignition_probability(self):
+        """Test ignition probability calculation."""
+        from apgi_framework.core.equation import APGIEquation
 
-        calc = APGICalculator()
+        eq = APGIEquation()
 
-        # Valid inputs should work
-        result = calc.calculate(r_e=0.5, sigma_e=0.1, alpha_base=0.3)
-        assert result is not None
+        # Test with valid inputs
+        prob = eq.calculate_ignition_probability(
+            surprise=2.0, threshold=3.5, steepness=2.0
+        )
+        assert prob is not None
+        assert isinstance(prob, (float, np.ndarray))
+        assert 0 <= prob <= 1
 
-    def test_calculator_edge_cases(self):
-        """Test calculator with edge case values."""
-        from apgi_framework.core.equation import APGICalculator
+    def test_equation_edge_cases(self):
+        """Test equation with edge case values."""
+        from apgi_framework.core.equation import APGIEquation
 
-        calc = APGICalculator()
+        eq = APGIEquation()
 
-        # Test with zero values
-        result = calc.calculate(r_e=0.0, sigma_e=0.0, alpha_base=0.0)
-        assert isinstance(result, (int, float, np.number))
+        # Test with zero prediction errors
+        result = eq.calculate_surprise(0.0, 0.0, 2.0, 1.5)
+        assert result == 0.0
 
 
 class TestCoreModels:
@@ -73,68 +89,55 @@ class TestCoreModels:
         """Test that models module can be imported."""
         from apgi_framework.core import models
 
-        assert hasattr(models, "AgentModel")
+        assert hasattr(models, "SomaticAgent")
+        assert hasattr(models, "PredictiveIgnitionNetwork")
 
-    def test_agent_model_initialization(self):
-        """Test AgentModel initialization."""
-        from apgi_framework.core.models import AgentModel
+    def test_somatic_agent_initialization(self):
+        """Test SomaticAgent initialization."""
+        from apgi_framework.core.models import SomaticAgent
 
-        model = AgentModel()
-        assert model is not None
+        agent = SomaticAgent()
+        assert agent is not None
 
-    def test_agent_model_with_params(self):
-        """Test AgentModel with parameters."""
-        from apgi_framework.core.models import AgentModel
+    def test_predictive_ignition_network_initialization(self):
+        """Test PredictiveIgnitionNetwork initialization."""
+        from apgi_framework.core.models import PredictiveIgnitionNetwork
 
-        params = {"alpha": 0.3, "beta": 0.5, "gamma": 0.2}
+        network = PredictiveIgnitionNetwork()
+        assert network is not None
 
-        model = AgentModel(parameters=params)
-        assert model.parameters == params
+    def test_somatic_agent_decision_making(self):
+        """Test SomaticAgent decision making."""
+        from apgi_framework.core.models import SomaticAgent
 
-    def test_model_update_parameters(self):
-        """Test updating model parameters."""
-        from apgi_framework.core.models import AgentModel
+        agent = SomaticAgent(n_states=4, n_actions=3, n_contexts=2)
 
-        model = AgentModel()
-        model.update_parameters({"alpha": 0.4})
+        # Test decision making with sample inputs
+        beliefs = np.array([0.5, 0.3, 0.2, 0.0])  # Beliefs over 4 states
+        action, conscious, energy = agent.decide(beliefs, context=0, surprise=1.0)
 
-        assert model.parameters.get("alpha") == 0.4
+        assert isinstance(action, (int, np.integer))
+        assert isinstance(conscious, bool)
+        assert isinstance(energy, np.ndarray)
 
-    def test_model_reset(self):
-        """Test resetting model state."""
-        from apgi_framework.core.models import AgentModel
+    def test_predictive_ignition_network_forward_pass(self):
+        """Test PredictiveIgnitionNetwork forward pass."""
+        from apgi_framework.core.models import PredictiveIgnitionNetwork
 
-        model = AgentModel()
-        model.update_parameters({"alpha": 0.5})
-        model.reset()
+        network = PredictiveIgnitionNetwork(n_features=5, n_global_units=3)
 
-        # After reset, should be back to default state
-        assert model is not None
+        # Create sample sensory input
+        sensory_input = np.array([0.1, 0.2, 0.3, 0.4, 0.5])
 
-    def test_model_predict(self):
-        """Test model prediction."""
-        from apgi_framework.core.models import AgentModel
+        predictions, errors, weighted_errors, ignited, ignition_prob = (
+            network.forward_pass(sensory_input, somatic_gain=1.0)
+        )
 
-        model = AgentModel()
-
-        # Test prediction with sample input
-        input_data = np.array([0.1, 0.2, 0.3])
-        prediction = model.predict(input_data)
-
-        assert prediction is not None
-
-    def test_model_fit(self):
-        """Test model fitting."""
-        from apgi_framework.core.models import AgentModel
-
-        model = AgentModel()
-
-        # Create sample training data
-        X = np.random.randn(10, 3)
-        y = np.random.randint(0, 2, 10)
-
-        model.fit(X, y)
-        assert model.is_fitted is True or hasattr(model, "parameters")
+        assert isinstance(predictions, np.ndarray)
+        assert isinstance(errors, np.ndarray)
+        assert isinstance(ignition_prob, (float, np.floating))
+        assert 0 <= ignition_prob <= 1
+        assert isinstance(ignited, bool)
 
 
 class TestCoreThreshold:
@@ -144,78 +147,92 @@ class TestCoreThreshold:
         """Test that threshold module can be imported."""
         from apgi_framework.core import threshold
 
-        assert hasattr(threshold, "ThresholdDetector")
+        assert hasattr(threshold, "ThresholdManager")
+        assert hasattr(threshold, "ThresholdDetector")  # Backward compat alias
 
-    def test_threshold_detector_initialization(self):
-        """Test ThresholdDetector initialization."""
-        from apgi_framework.core.threshold import ThresholdDetector
+    def test_threshold_manager_initialization(self):
+        """Test ThresholdManager initialization."""
+        from apgi_framework.core.threshold import ThresholdManager
 
-        detector = ThresholdDetector()
-        assert detector is not None
+        manager = ThresholdManager()
+        assert manager is not None
+        assert manager.baseline_threshold == 3.5
 
-    def test_threshold_detector_with_threshold(self):
-        """Test detector with specific threshold."""
-        from apgi_framework.core.threshold import ThresholdDetector
+    def test_threshold_manager_with_threshold(self):
+        """Test manager with specific threshold."""
+        from apgi_framework.core.threshold import ThresholdManager
 
-        detector = ThresholdDetector(threshold=0.5)
-        assert detector.threshold == 0.5
+        manager = ThresholdManager(baseline_threshold=2.5)
+        assert manager.baseline_threshold == 2.5
 
-    def test_detect_threshold_crossing(self):
-        """Test detecting threshold crossing."""
-        from apgi_framework.core.threshold import ThresholdDetector
+    def test_get_current_threshold(self):
+        """Test getting current threshold."""
+        from apgi_framework.core.threshold import ThresholdManager
 
-        detector = ThresholdDetector(threshold=0.5)
+        manager = ThresholdManager(baseline_threshold=3.0)
+        threshold = manager.get_current_threshold()
 
-        # Data that crosses threshold
-        data = np.array([0.3, 0.4, 0.6, 0.7, 0.4])
-        crossings = detector.detect(data)
+        assert isinstance(threshold, (float, np.floating))
+        assert threshold > 0
 
-        assert isinstance(crossings, (list, np.ndarray))
+    def test_update_threshold(self):
+        """Test updating threshold based on ignition."""
+        from apgi_framework.core.threshold import ThresholdManager
 
-    def test_detect_no_crossing(self):
-        """Test detecting when no threshold crossing occurs."""
-        from apgi_framework.core.threshold import ThresholdDetector
+        manager = ThresholdManager(baseline_threshold=3.0)
 
-        detector = ThresholdDetector(threshold=0.9)
+        # Update with ignition occurred
+        new_threshold = manager.update_threshold(ignition_occurred=True)
 
-        # Data that never crosses high threshold
-        data = np.array([0.1, 0.2, 0.3, 0.4])
-        crossings = detector.detect(data)
-
-        # Should return empty or no crossings
-        assert len(crossings) == 0 or crossings.size == 0
+        assert isinstance(new_threshold, (float, np.floating))
 
     def test_threshold_adaptive(self):
         """Test adaptive threshold functionality."""
-        from apgi_framework.core.threshold import ThresholdDetector
+        from apgi_framework.core.threshold import (
+            ThresholdManager,
+            ThresholdAdaptationType,
+        )
 
-        detector = ThresholdDetector(threshold=0.5, adaptive=True)
+        manager = ThresholdManager(
+            baseline_threshold=3.0, adaptation_type=ThresholdAdaptationType.ADAPTIVE
+        )
 
-        data = np.random.randn(100)
-        crossings = detector.detect(data)
+        # Simulate several ignition updates
+        for _ in range(20):
+            manager.update_threshold(ignition_occurred=np.random.random() > 0.5)
 
-        assert isinstance(crossings, (list, np.ndarray))
+        threshold = manager.get_current_threshold()
+        assert isinstance(threshold, (float, np.floating))
 
-    def test_get_threshold_statistics(self):
-        """Test getting threshold statistics."""
-        from apgi_framework.core.threshold import ThresholdDetector
+    def test_get_ignition_statistics(self):
+        """Test getting ignition statistics."""
+        from apgi_framework.core.threshold import ThresholdManager
 
-        detector = ThresholdDetector(threshold=0.5)
+        manager = ThresholdManager(baseline_threshold=3.0)
 
-        data = np.random.randn(50)
-        detector.detect(data)
+        # Simulate some ignitions
+        for _ in range(10):
+            manager.update_threshold(ignition_occurred=np.random.random() > 0.5)
 
-        stats = detector.get_statistics()
+        stats = manager.get_ignition_statistics()
         assert isinstance(stats, dict)
+        assert "ignition_rate" in stats
+        assert "n_trials" in stats
 
-    def test_set_threshold(self):
-        """Test dynamically setting threshold."""
-        from apgi_framework.core.threshold import ThresholdDetector
+    def test_reset_threshold(self):
+        """Test resetting threshold."""
+        from apgi_framework.core.threshold import ThresholdManager
 
-        detector = ThresholdDetector(threshold=0.5)
-        detector.set_threshold(0.7)
+        manager = ThresholdManager(baseline_threshold=3.0)
 
-        assert detector.threshold == 0.7
+        # Update threshold
+        manager.update_threshold(ignition_occurred=True)
+        manager.update_threshold(ignition_occurred=True)
+
+        # Reset
+        manager.reset_threshold()
+
+        assert manager.get_current_threshold() == 3.0
 
 
 class TestCoreDataModels:
@@ -225,48 +242,56 @@ class TestCoreDataModels:
         """Test that data_models module can be imported."""
         from apgi_framework.core import data_models
 
-        assert hasattr(data_models, "ExperimentData")
+        assert hasattr(data_models, "APGIParameters")
+        assert hasattr(data_models, "ExperimentalTrial")
 
-    def test_experiment_data_creation(self):
-        """Test creating ExperimentData object."""
-        from apgi_framework.core.data_models import ExperimentData
+    def test_apgi_parameters_creation(self):
+        """Test creating APGIParameters object."""
+        from apgi_framework.core.data_models import APGIParameters
 
-        data = ExperimentData(
-            experiment_id="exp_001",
-            participant_id="sub_001",
-            trial_number=1,
-            data={"response_time": 0.5},
+        params = APGIParameters(
+            extero_precision=2.5,
+            intero_precision=1.8,
+            extero_error=0.5,
+            intero_error=0.3,
+            somatic_gain=1.5,
+            threshold=3.0,
+            steepness=2.5,
         )
 
-        assert data.experiment_id == "exp_001"
-        assert data.participant_id == "sub_001"
+        assert params.extero_precision == 2.5
+        assert params.intero_precision == 1.8
+        assert params.extero_error == 0.5
+        assert params.intero_error == 0.3
+        assert params.somatic_gain == 1.5
+        assert params.threshold == 3.0
+        assert params.steepness == 2.5
 
-    def test_experiment_data_to_dict(self):
-        """Test converting ExperimentData to dictionary."""
-        from apgi_framework.core.data_models import ExperimentData
+    def test_experimental_trial_creation(self):
+        """Test creating ExperimentalTrial object."""
+        from apgi_framework.core.data_models import ExperimentalTrial
 
-        data = ExperimentData(
-            experiment_id="exp_001", participant_id="sub_001", data={"key": "value"}
+        trial = ExperimentalTrial(
+            trial_id="trial_001",
+            condition="test",
         )
 
-        data_dict = data.to_dict()
-        assert isinstance(data_dict, dict)
-        assert data_dict["experiment_id"] == "exp_001"
+        assert trial.trial_id == "trial_001"
+        assert trial.condition == "test"
 
-    def test_experiment_data_from_dict(self):
-        """Test creating ExperimentData from dictionary."""
-        from apgi_framework.core.data_models import ExperimentData
+    def test_apgi_parameters_defaults(self):
+        """Test APGIParameters default values."""
+        from apgi_framework.core.data_models import APGIParameters
 
-        data_dict = {
-            "experiment_id": "exp_002",
-            "participant_id": "sub_002",
-            "trial_number": 2,
-            "data": {"accuracy": 0.95},
-        }
+        params = APGIParameters()
 
-        data = ExperimentData.from_dict(data_dict)
-        assert data.experiment_id == "exp_002"
-        assert data.data["accuracy"] == 0.95
+        assert params.extero_precision == 2.0
+        assert params.intero_precision == 1.5
+        assert params.extero_error == 1.0
+        assert params.intero_error == 0.8
+        assert params.somatic_gain == 1.2
+        assert params.threshold == 3.5
+        assert params.steepness == 2.0
 
 
 class TestCorePrecision:
@@ -286,17 +311,53 @@ class TestCorePrecision:
         assert calc is not None
 
     def test_calculate_precision(self):
-        """Test precision calculation."""
+        """Test precision calculation from samples."""
         from apgi_framework.core.precision import PrecisionCalculator
 
         calc = PrecisionCalculator()
 
         # Test with sample data
-        true_values = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
-        predicted_values = np.array([1.1, 1.9, 3.2, 3.9, 5.1])
+        samples = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
 
-        precision = calc.calculate(true_values, predicted_values)
+        precision = calc.calculate_precision(samples)
         assert isinstance(precision, (int, float, np.number))
+        assert precision > 0
+
+    def test_calculate_exteroceptive_precision(self):
+        """Test exteroceptive precision calculation."""
+        from apgi_framework.core.precision import PrecisionCalculator
+
+        calc = PrecisionCalculator()
+        precision = calc.calculate_exteroceptive_precision(variance=0.5, confidence=1.0)
+
+        assert isinstance(precision, (float, np.floating))
+        assert precision > 0
+
+    def test_calculate_interoceptive_precision(self):
+        """Test interoceptive precision calculation."""
+        from apgi_framework.core.precision import PrecisionCalculator
+
+        calc = PrecisionCalculator()
+        precision = calc.calculate_interoceptive_precision(
+            variance=0.3, attention=1.0, arousal=1.0
+        )
+
+        assert isinstance(precision, (float, np.floating))
+        assert precision > 0
+
+    def test_precision_metrics(self):
+        """Test comprehensive precision metrics."""
+        from apgi_framework.core.precision import PrecisionCalculator
+
+        calc = PrecisionCalculator()
+        data = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0])
+
+        metrics = calc.precision_metrics(data)
+
+        assert isinstance(metrics, dict)
+        assert "precision" in metrics
+        assert "confidence_interval_95" in metrics
+        assert "coefficient_of_variation" in metrics
 
 
 class TestCorePredictionError:
@@ -306,26 +367,46 @@ class TestCorePredictionError:
         """Test that prediction_error module can be imported."""
         from apgi_framework.core import prediction_error
 
-        assert hasattr(prediction_error, "PredictionErrorCalculator")
+        assert hasattr(prediction_error, "PredictionErrorProcessor")
 
-    def test_prediction_error_calculator(self):
-        """Test PredictionErrorCalculator initialization."""
-        from apgi_framework.core.prediction_error import PredictionErrorCalculator
+    def test_prediction_error_processor_initialization(self):
+        """Test PredictionErrorProcessor initialization."""
+        from apgi_framework.core.prediction_error import PredictionErrorProcessor
 
-        calc = PredictionErrorCalculator()
-        assert calc is not None
+        processor = PredictionErrorProcessor()
+        assert processor is not None
 
-    def test_calculate_prediction_error(self):
-        """Test prediction error calculation."""
-        from apgi_framework.core.prediction_error import PredictionErrorCalculator
+    def test_process_exteroceptive_error(self):
+        """Test exteroceptive prediction error processing."""
+        from apgi_framework.core.prediction_error import PredictionErrorProcessor
 
-        calc = PredictionErrorCalculator()
+        processor = PredictionErrorProcessor(standardize=False)
 
-        predictions = np.array([0.5, 0.6, 0.7])
-        outcomes = np.array([0.6, 0.5, 0.8])
+        error = np.array([0.5, 0.6, 0.7])
+        processed = processor.process_exteroceptive_error(error)
 
-        errors = calc.calculate(predictions, outcomes)
-        assert isinstance(errors, np.ndarray)
+        assert isinstance(processed, np.ndarray)
+
+    def test_process_interoceptive_error(self):
+        """Test interoceptive prediction error processing."""
+        from apgi_framework.core.prediction_error import PredictionErrorProcessor
+
+        processor = PredictionErrorProcessor(standardize=False)
+
+        error = np.array([0.3, 0.4, 0.5])
+        processed = processor.process_interoceptive_error(error)
+
+        assert isinstance(processed, np.ndarray)
+
+    def test_validate_error_pair(self):
+        """Test error pair validation."""
+        from apgi_framework.core.prediction_error import PredictionErrorProcessor
+
+        processor = PredictionErrorProcessor()
+
+        valid, message = processor.validate_error_pair(0.5, 0.3)
+        assert isinstance(valid, bool)
+        assert isinstance(message, str)
 
 
 class TestCoreSomaticMarker:
@@ -335,23 +416,32 @@ class TestCoreSomaticMarker:
         """Test that somatic_marker module can be imported."""
         from apgi_framework.core import somatic_marker
 
-        assert hasattr(somatic_marker, "SomaticMarker")
+        assert hasattr(somatic_marker, "SomaticMarkerEngine")
+        assert hasattr(somatic_marker, "ContextType")
 
-    def test_somatic_marker_initialization(self):
-        """Test SomaticMarker initialization."""
-        from apgi_framework.core.somatic_marker import SomaticMarker
+    def test_somatic_marker_engine_initialization(self):
+        """Test SomaticMarkerEngine initialization."""
+        from apgi_framework.core.somatic_marker import SomaticMarkerEngine
 
-        marker = SomaticMarker()
-        assert marker is not None
+        engine = SomaticMarkerEngine()
+        assert engine is not None
 
-    def test_somatic_marker_process_signal(self):
-        """Test processing somatic marker signal."""
-        from apgi_framework.core.somatic_marker import SomaticMarker
+    def test_somatic_marker_gain_calculation(self):
+        """Test somatic marker gain calculation."""
+        from apgi_framework.core.somatic_marker import SomaticMarkerEngine, ContextType
 
-        marker = SomaticMarker()
+        engine = SomaticMarkerEngine()
 
-        # Test with sample signal
-        signal = np.random.randn(100)
-        processed = marker.process(signal)
+        # Test gain calculation for different contexts
+        gain = engine.calculate_somatic_gain(ContextType.NEUTRAL)
+        assert isinstance(gain, (float, np.floating))
+        assert gain > 0
 
-        assert processed is not None
+    def test_context_type_values(self):
+        """Test ContextType enum values."""
+        from apgi_framework.core.somatic_marker import ContextType
+
+        assert ContextType.ROUTINE.value == "routine"
+        assert ContextType.HIGH_STAKES.value == "high_stakes"
+        assert ContextType.EMOTIONAL.value == "emotional"
+        assert ContextType.NEUTRAL.value == "neutral"

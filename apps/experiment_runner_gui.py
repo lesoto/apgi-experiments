@@ -24,21 +24,21 @@ from run_experiments import get_available_experiments, run_experiment
 
 
 class StreamRedirector:
-    def __init__(self, stream, q: queue.Queue):
+    def __init__(self, stream: Any, q: "queue.Queue[str]") -> None:
         self._stream = stream
         self._q = q
 
-    def write(self, data):
+    def write(self, data: str) -> int:
         if data:
             self._q.put(data)
         return self._stream.write(data)
 
-    def flush(self):
+    def flush(self) -> None:
         return self._stream.flush()
 
 
 class ExperimentGUI(tk.Tk):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.title("APGI Experiments Runner")
         self.geometry("900x600")
@@ -55,7 +55,7 @@ class ExperimentGUI(tk.Tk):
         self._build_ui()
         self.after(100, self._poll_log_queue)
 
-    def _build_ui(self):
+    def _build_ui(self) -> None:
         top = ttk.Frame(self)
         top.pack(fill=tk.X, padx=10, pady=10)
 
@@ -85,12 +85,12 @@ class ExperimentGUI(tk.Tk):
 
         self._rebuild_params()
 
-    def _clear_params(self):
+    def _clear_params(self) -> None:
         for child in self.params_frame.winfo_children():
             child.destroy()
         self.param_widgets.clear()
 
-    def _rebuild_params(self):
+    def _rebuild_params(self) -> None:
         self._clear_params()
         name = self.exp_var.get() or (
             self.exp_combo["values"][0] if self.exp_combo["values"] else ""
@@ -122,18 +122,20 @@ class ExperimentGUI(tk.Tk):
             default = None if param.default is inspect._empty else param.default
             widget: Any
             if isinstance(default, bool):
-                var = tk.BooleanVar(value=default)
+                var = tk.BooleanVar()
+                var.set(default)
                 widget = ttk.Checkbutton(self.params_frame, variable=var)
                 widget.var = var
             else:
-                var = tk.StringVar(value="" if default is None else str(default))
+                var = tk.StringVar()
+                var.set("" if default is None else str(default))
                 widget = ttk.Entry(self.params_frame, textvariable=var, width=20)
                 widget.var = var
             widget.grid(row=row, column=1, sticky=tk.W, padx=6, pady=4)
             self.param_widgets[pname] = widget
             row += 1
 
-    def _parse_value(self, text: str):
+    def _parse_value(self, text: str) -> Any:
         s = text.strip()
         if s == "":
             return None
@@ -161,8 +163,8 @@ class ExperimentGUI(tk.Tk):
                     kwargs[name] = parsed
         return kwargs
 
-    def _on_run(self):
-        if hasattr(self, "_worker") and self._worker.is_alive():
+    def _on_run(self) -> None:
+        if self._worker is not None and hasattr(self._worker, "is_alive") and self._worker.is_alive():
             messagebox.showinfo("Busy", "An experiment is already running.")
             return
         name = self.exp_var.get()
@@ -178,7 +180,7 @@ class ExperimentGUI(tk.Tk):
         )
         self._worker.start()
 
-    def _run_worker(self, name: str, kwargs: Dict[str, Any]):
+    def _run_worker(self, name: str, kwargs: Dict[str, Any]) -> None:
         try:
             run_experiment(name, **kwargs)
             self.log_queue.put("\n=== Completed ===\n")
@@ -187,11 +189,11 @@ class ExperimentGUI(tk.Tk):
         finally:
             self.after(0, self._on_complete)
 
-    def _on_complete(self):
+    def _on_complete(self) -> None:
         self.status_var.set("Idle")
         self.run_btn.config(state=tk.NORMAL)
 
-    def _append_log(self, text: str):
+    def _append_log(self, text: str) -> None:
         self.log_text.insert(tk.END, text)
         self.log_text.see(tk.END)
 
@@ -203,7 +205,7 @@ class ExperimentGUI(tk.Tk):
             excess_lines = line_count - MAX_LOG_LINES
             self.log_text.delete("1.0", f"{excess_lines + 1}.0")
 
-    def _poll_log_queue(self):
+    def _poll_log_queue(self) -> None:
         try:
             while True:
                 msg = self.log_queue.get_nowait()
@@ -212,7 +214,7 @@ class ExperimentGUI(tk.Tk):
             pass
         self.after(100, self._poll_log_queue)
 
-    def destroy(self):
+    def destroy(self) -> None:
         sys.stdout = self._orig_stdout
         sys.stderr = self._orig_stderr
         super().destroy()

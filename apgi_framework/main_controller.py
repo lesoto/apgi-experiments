@@ -103,6 +103,16 @@ class MainApplicationController:
             self.logger.error(f"System initialization failed: {e}")
             raise APGIFrameworkError(f"Failed to initialize system: {e}")
 
+    @property
+    def is_initialized(self) -> bool:
+        """Check if the system has been initialized."""
+        return self._initialized
+
+    @property
+    def is_components_registered(self) -> bool:
+        """Check if components have been registered."""
+        return self._components_registered
+
     def _initialize_mathematical_engine(self) -> None:
         """Initialize the core mathematical framework components."""
         self.logger.debug("Initializing mathematical engine...")
@@ -204,12 +214,12 @@ class MainApplicationController:
 
         try:
             # Initialize primary falsification test
-            primary_test = PrimaryFalsificationTest()
+            primary_test = PrimaryFalsificationTest
 
             # Initialize all falsification tests
-            consciousness_test = ConsciousnessWithoutIgnitionTest()
-            threshold_test = ThresholdInsensitivityTest()
-            soma_bias_test = SomaBiasTest()
+            consciousness_test = ConsciousnessWithoutIgnitionTest
+            threshold_test = ThresholdInsensitivityTest
+            soma_bias_test = SomaBiasTest
 
             self._falsification_tests = {
                 "primary": primary_test,
@@ -343,17 +353,17 @@ class MainApplicationController:
 
         try:
             # Validate mathematical engine
-            validation_results[
-                "mathematical_engine"
-            ] = self._validate_mathematical_engine()
+            validation_results["mathematical_engine"] = (
+                self._validate_mathematical_engine()
+            )
 
             # Validate neural simulators
             validation_results["neural_simulators"] = self._validate_neural_simulators()
 
             # Validate falsification tests
-            validation_results[
-                "falsification_tests"
-            ] = self._validate_falsification_tests()
+            validation_results["falsification_tests"] = (
+                self._validate_falsification_tests()
+            )
 
             # Validate data manager
             validation_results["data_manager"] = self._validate_data_manager()
@@ -699,9 +709,9 @@ class MainApplicationController:
             result = {
                 "success": True,
                 "design": design,
-                "final_parameters": design.get("parameters", {})
-                if isinstance(design, dict)
-                else {},
+                "final_parameters": (
+                    design.get("parameters", {}) if isinstance(design, dict) else {}
+                ),
                 "design_validated": True,
                 "status": "completed",
                 "timestamp": datetime.now().isoformat(),

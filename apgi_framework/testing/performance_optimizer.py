@@ -85,8 +85,7 @@ class ResultCache:
     def _init_database(self):
         """Initialize cache database."""
         with sqlite3.connect(self.db_path) as conn:
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS cache_entries (
                     test_file TEXT PRIMARY KEY,
                     test_hash TEXT NOT NULL,
@@ -95,20 +94,15 @@ class ResultCache:
                     cached_at TIMESTAMP NOT NULL,
                     cache_hits INTEGER DEFAULT 0
                 )
-            """
-            )
+            """)
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE INDEX IF NOT EXISTS idx_cached_at ON cache_entries(cached_at)
-            """
-            )
+            """)
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE INDEX IF NOT EXISTS idx_test_hash ON cache_entries(test_hash)
-            """
-            )
+            """)
 
     def _calculate_file_hash(self, file_path: str) -> str:
         """Calculate hash of a file."""
@@ -369,12 +363,10 @@ class ResultCache:
             cursor = conn.execute("SELECT COUNT(*), SUM(cache_hits) FROM cache_entries")
             total_entries, total_hits = cursor.fetchone()
 
-            cursor = conn.execute(
-                """
+            cursor = conn.execute("""
                 SELECT COUNT(*) FROM cache_entries 
                 WHERE cached_at > datetime('now', '-24 hours')
-            """
-            )
+            """)
             recent_entries = cursor.fetchone()[0]
 
         return {
@@ -823,9 +815,9 @@ class PerformanceOptimizedTestRunner(BatchTestRunner):
             report["cache_stats"] = self.cache.get_cache_stats()
 
         if self.optimizer:
-            report[
-                "regression_report"
-            ] = self.optimizer.get_performance_regression_report()
+            report["regression_report"] = (
+                self.optimizer.get_performance_regression_report()
+            )
             execution_profiles = [
                 {
                     "test_file": test_file,

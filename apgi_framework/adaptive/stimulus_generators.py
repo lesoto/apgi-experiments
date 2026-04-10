@@ -227,13 +227,11 @@ class GaborPatchGenerator(StimulusGenerator[GaborParameters]):
     def _create_gabor_patch(self, parameters: GaborParameters) -> np.ndarray:
         """Create Gabor patch stimulus array."""
         # Convert size from degrees to pixels
-        if parameters.size_degrees is not None and self.pixels_per_degree is not None:
-            size_pixels = int(parameters.size_degrees * self.pixels_per_degree)
-        else:
-            size_pixels = 100  # Default size
+        size_degrees = parameters.size_degrees or 2.0  # Default size if None
+        ppd: Optional[float] = self.pixels_per_degree
+        size_pixels = 100 if ppd is None else int(size_degrees * ppd)
 
         # Create coordinate grids
-        size_degrees = parameters.size_degrees or 2.0  # Default size if None
         x = np.linspace(-size_degrees / 2, size_degrees / 2, size_pixels)
         y = np.linspace(-size_degrees / 2, size_degrees / 2, size_pixels)
         X, Y = np.meshgrid(x, y)
@@ -259,9 +257,8 @@ class GaborPatchGenerator(StimulusGenerator[GaborParameters]):
         gabor = parameters.background_luminance + gabor
 
         # Clip to valid range
-        gabor = np.clip(gabor, 0.0, 1.0)
-
-        return gabor
+        gabor_clipped: np.ndarray = np.clip(gabor, 0.0, 1.0)
+        return gabor_clipped
 
     def generate_stimulus(self, parameters: GaborParameters) -> bool:
         """

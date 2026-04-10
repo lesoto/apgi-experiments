@@ -18,6 +18,7 @@ import os
 from datetime import datetime, timedelta
 from typing import Any, Dict, Generator, List, Optional, Union
 import warnings
+import logging
 
 try:
     from psycopg2.extras import Json
@@ -56,6 +57,7 @@ class LargeDatasetHandler:
         """
         self.storage_manager = storage_manager
         self.config = get_config_manager()
+        self.logger = logging.getLogger(__name__)
 
         # Database configuration
         self.db_config = self.config.get_database_config()
@@ -111,8 +113,7 @@ class LargeDatasetHandler:
         with self._pool.getconn() as conn:
             with conn.cursor() as cursor:
                 # Create experiments table if not exists
-                cursor.execute(
-                    """
+                cursor.execute("""
                     CREATE TABLE IF NOT EXISTS experiments (
                         experiment_id VARCHAR(255) PRIMARY KEY,
                         experiment_name TEXT NOT NULL,
@@ -130,12 +131,10 @@ class LargeDatasetHandler:
                         status TEXT DEFAULT 'active',
                         metadata JSONB
                     )
-                """
-                )
+                """)
 
                 # Create large datasets table for chunked data
-                cursor.execute(
-                    """
+                cursor.execute("""
                     CREATE TABLE IF NOT EXISTS large_datasets (
                         id SERIAL PRIMARY KEY,
                         experiment_id VARCHAR(255) REFERENCES experiments(experiment_id),
@@ -149,34 +148,26 @@ class LargeDatasetHandler:
                         compressed BOOLEAN DEFAULT FALSE,
                         UNIQUE(experiment_id, chunk_number, data_type)
                     )
-                """
-                )
+                """)
 
                 # Create indexes for performance
-                cursor.execute(
-                    """
+                cursor.execute("""
                     CREATE INDEX IF NOT EXISTS idx_large_datasets_experiment 
                     ON large_datasets(experiment_id)
-                """
-                )
+                """)
 
-                cursor.execute(
-                    """
+                cursor.execute("""
                     CREATE INDEX IF NOT EXISTS idx_large_datasets_created_at 
                     ON large_datasets(created_at)
-                """
-                )
+                """)
 
-                cursor.execute(
-                    """
+                cursor.execute("""
                     CREATE INDEX IF NOT EXISTS idx_experiments_created_at 
                     ON experiments(created_at)
-                """
-                )
+                """)
 
                 # Create data processing queue
-                cursor.execute(
-                    """
+                cursor.execute("""
                     CREATE TABLE IF NOT EXISTS data_processing_queue (
                         id SERIAL PRIMARY KEY,
                         experiment_id VARCHAR(255),
@@ -189,8 +180,7 @@ class LargeDatasetHandler:
                         error_message TEXT,
                         parameters JSONB
                     )
-                """
-                )
+                """)
 
                 conn.commit()
 
@@ -223,13 +213,9 @@ class LargeDatasetHandler:
                 return self._store_dataframe(experiment_id, data, data_type, compress)
             elif isinstance(data, np.ndarray):
                 return self._store_numpy_array(experiment_id, data, data_type, compress)
-            elif isinstance(data, (list, dict)):
-                return self._store_json_data(experiment_id, data, data_type, compress)
             else:
-                self.logger.error(
-                    f"Unsupported data type for large dataset: {type(data)}"
-                )
-                return False
+                # isinstance(data, (list, dict)) - all other Union types
+                return self._store_json_data(experiment_id, data, data_type, compress)
 
         except Exception as e:
             self.logger.error(f"Failed to store large dataset: {e}")
@@ -242,6 +228,8 @@ class LargeDatasetHandler:
         try:
             total_chunks = (len(df) + self.chunk_size - 1) // self.chunk_size
 
+            if self._pool is None:
+                raise DatabaseIntegrationError("Database pool not initialized")
             with self._pool.getconn() as conn:
                 with conn.cursor() as cursor:
                     for chunk_idx, chunk_start in enumerate(
@@ -293,6 +281,8 @@ class LargeDatasetHandler:
             flattened = array.flatten()
             total_chunks = (len(flattened) + self.chunk_size - 1) // self.chunk_size
 
+            if self._pool is None:
+                raise DatabaseIntegrationError("Database pool not initialized")
             with self._pool.getconn() as conn:
                 with conn.cursor() as cursor:
                     for chunk_idx in range(total_chunks):
@@ -346,6 +336,8 @@ class LargeDatasetHandler:
 
             total_chunks = (len(data) + self.chunk_size - 1) // self.chunk_size
 
+            if self._pool is None:
+                raise DatabaseIntegrationError("Database pool not initialized")
             with self._pool.getconn() as conn:
                 with conn.cursor() as cursor:
                     for chunk_idx in range(total_chunks):
@@ -407,6 +399,8 @@ class LargeDatasetHandler:
         try:
             chunk_size = chunk_size or self.chunk_size
 
+            if self._pool is None:
+                raise DatabaseIntegrationError("Database pool not initialized")
             with self._pool.getconn() as conn:
                 with conn.cursor() as cursor:
                     # Get all chunks for this experiment and data type
@@ -480,6 +474,8 @@ class LargeDatasetHandler:
             return []
 
         try:
+            if self._pool is None:
+                raise DatabaseIntegrationError("Database pool not initialized")
             with self._pool.getconn() as conn:
                 with conn.cursor() as cursor:
                     query = """
@@ -519,7 +515,7 @@ class LargeDatasetHandler:
 
                     if limit:
                         query += " LIMIT %s"
-                        params.append(limit)
+                        params.append(str(limit))
 
                     cursor.execute(query, params)
 
@@ -569,6 +565,8 @@ class LargeDatasetHandler:
         try:
             cutoff_date = datetime.now() - timedelta(days=retention_days)
 
+            if self._pool is None:
+                raise DatabaseIntegrationError("Database pool not initialized")
             with self._pool.getconn() as conn:
                 with conn.cursor() as cursor:
                     # Delete old large dataset chunks
@@ -597,7 +595,7 @@ class LargeDatasetHandler:
 
                     conn.commit()
 
-            total_cleaned = chunk_count + exp_count
+            total_cleaned: int = chunk_count + exp_count
             self.logger.info(f"Cleaned up {total_cleaned} old database records")
             return total_cleaned
 
@@ -616,19 +614,19 @@ class LargeDatasetHandler:
             return {"status": "not_available"}
 
         try:
+            if self._pool is None:
+                raise DatabaseIntegrationError("Database pool not initialized")
             with self._pool.getconn() as conn:
                 with conn.cursor() as cursor:
                     # Get table statistics
-                    cursor.execute(
-                        """
+                    cursor.execute("""
                         SELECT 
                             (SELECT COUNT(*) FROM experiments) as experiments_count,
                             (SELECT COUNT(*) FROM large_datasets) as chunks_count,
                             (SELECT SUM(size_bytes) FROM large_datasets) as total_bytes,
                             (SELECT AVG(size_bytes) FROM large_datasets) as avg_chunk_size,
                             (SELECT COUNT(DISTINCT experiment_id) FROM large_datasets) as datasets_with_chunks
-                    """
-                    )
+                    """)
 
                     stats = cursor.fetchone()
 
@@ -636,7 +634,11 @@ class LargeDatasetHandler:
                     pool_stats = {
                         "min_connections": self._pool.minconn,
                         "max_connections": self._pool.maxconn,
-                        "current_connections": len(self._pool._pool.queue.queue),
+                        "current_connections": (
+                            self._pool._used.maxlen
+                            if hasattr(self._pool, "_used")
+                            else 0
+                        ),
                     }
 
                     return {
@@ -674,7 +676,7 @@ def enable_database_integration(storage_manager: StorageManager) -> LargeDataset
     """
     # Enable feature flag
     config = get_config_manager()
-    config.features["database_integration"] = True
+    config.enable_feature("database_integration")
 
     # Create and return handler
     return LargeDatasetHandler(storage_manager)

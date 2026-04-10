@@ -14,7 +14,7 @@ import tempfile
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
-from typing import Any, BinaryIO, Dict, Iterator, List, Optional, TextIO, Union
+from typing import Any, BinaryIO, Dict, Iterator, List, Optional, TextIO, Union, cast
 
 from .path_utils import get_path_manager
 
@@ -520,7 +520,7 @@ class FileUtils:
         """
         try:
             content = self.safe_read_text(file_path)
-            return json.loads(content)
+            return cast(Dict[str, Any], json.loads(content))
         except json.JSONDecodeError as e:
             raise FileOperationError(f"Invalid JSON in {file_path}: {e}")
         except Exception as e:

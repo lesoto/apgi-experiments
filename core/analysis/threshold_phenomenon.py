@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.special import expit  # type: ignore
+from scipy.special import expit
 
 
 def ignition_probability(S_t, theta_t, alpha):

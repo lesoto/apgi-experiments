@@ -85,9 +85,9 @@ class TaskParameterConfigurator:
 
     def __init__(self):
         """Initialize task parameter configurator."""
-        self.detection_config = DetectionTaskConfig()
-        self.heartbeat_config = HeartbeatTaskConfig()
-        self.oddball_config = OddballTaskConfig()
+        self.detection_config: DetectionTaskConfig = DetectionTaskConfig()
+        self.heartbeat_config: HeartbeatTaskConfig = HeartbeatTaskConfig()
+        self.oddball_config: OddballTaskConfig = OddballTaskConfig()
 
         logger.info("TaskParameterConfigurator initialized")
 
@@ -177,23 +177,27 @@ class TaskParameterConfigurator:
             True if configuration is valid
         """
         if task_type == "detection":
-            config = self.detection_config
-            return (
-                config.n_trials > 0
-                and config.stimulus_min < config.stimulus_max
-                and config.stimulus_steps > 0
+            detection_config = self.detection_config
+            return bool(
+                detection_config.n_trials > 0
+                and detection_config.stimulus_min < detection_config.stimulus_max
+                and detection_config.stimulus_steps > 0
             )
 
         elif task_type == "heartbeat":
-            config = self.heartbeat_config
-            return (
-                config.n_trials > 0
-                and config.min_asynchrony_ms < config.max_asynchrony_ms
+            heartbeat_config = self.heartbeat_config
+            return bool(
+                heartbeat_config.n_trials > 0
+                and heartbeat_config.min_asynchrony_ms
+                < heartbeat_config.max_asynchrony_ms
             )
 
         elif task_type == "oddball":
-            config = self.oddball_config
-            return config.n_trials > 0 and 0 < config.deviant_probability < 1
+            oddball_config = self.oddball_config
+            return bool(
+                oddball_config.n_trials > 0
+                and 0 < oddball_config.deviant_probability < 1
+            )
 
         return False
 

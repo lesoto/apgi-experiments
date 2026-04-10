@@ -9,6 +9,17 @@ user preferences, session handling, and real-time monitoring features.
 import os
 import sys
 
+# Detect headless environment early
+IS_HEADLESS = os.environ.get("CI") == "true" or os.environ.get("DISPLAY") is None
+
+# Skip GUI tests entirely in headless environments
+if IS_HEADLESS:
+    import pytest
+
+    pytest.skip(
+        "Headless environment - skipping all GUI tests", allow_module_level=True
+    )
+
 # Must set this before importing matplotlib.pyplot or any tkagg backends
 os.environ["MPLBACKEND"] = "Agg"
 
@@ -23,11 +34,17 @@ except ImportError:
 # Now safe to import other modules
 import unittest
 
-
 try:
     import tkinter as tk
 
-    TKINTER_AVAILABLE = True
+    # Test if tkinter can actually create windows (not just import)
+    try:
+        test_root = tk.Tk()
+        test_root.withdraw()
+        test_root.destroy()
+        TKINTER_AVAILABLE = True
+    except tk.TclError:
+        TKINTER_AVAILABLE = False
 except ImportError:
     TKINTER_AVAILABLE = False
 

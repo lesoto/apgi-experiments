@@ -11,7 +11,7 @@ import sys
 import time
 import unittest
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, cast
 
 try:
     import tkinter as tk
@@ -183,7 +183,7 @@ class TkinterTester(BaseGUITester):
             app = app_class(self.root, *args, **kwargs)
             # Run the app briefly to initialize
             self.root.update()
-            return app
+            return cast(tk.Tk, app)
         except Exception as e:
             if self.root:
                 self.root.quit()
@@ -208,19 +208,19 @@ class TkinterTester(BaseGUITester):
         if not self.root:
             return None
 
-        def search_widgets(widget):
+        def search_widgets(widget) -> Optional[tk.Widget]:
             # Check current widget
             if widget.winfo_class() == widget_type:
                 if text and hasattr(widget, "cget"):
                     try:
                         if widget.cget("text") == text:
-                            return widget
+                            return cast(tk.Widget, widget)
                     except Exception:
                         pass
                 elif name and widget.winfo_name() == name:
-                    return widget
+                    return cast(tk.Widget, widget)
                 elif not text and not name:
-                    return widget
+                    return cast(tk.Widget, widget)
 
             # Search children
             if hasattr(widget, "winfo_children"):
@@ -248,12 +248,12 @@ class TkinterTester(BaseGUITester):
         """Get text from a widget."""
         if widget and hasattr(widget, "get"):
             try:
-                return widget.get()
+                return str(widget.get())
             except Exception:
                 pass
         if widget and hasattr(widget, "cget"):
             try:
-                return widget.cget("text")
+                return str(widget.cget("text"))
             except Exception:
                 pass
         return ""
@@ -342,7 +342,7 @@ class DashTester(BaseGUITester):
         """Get text from an element."""
         element = self.find_element(selector, by)
         if element:
-            return element.text
+            return str(element.text)
         return ""
 
     def wait_for_element(

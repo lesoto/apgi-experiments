@@ -359,18 +359,18 @@ class MemoryMonitor:
 
     def __init__(self):
         self.process = psutil.Process()
-        self.peak_usage = 0
+        self.peak_usage: float = 0.0
         self.baseline_usage = self.get_current_usage()
 
     def get_current_usage(self) -> float:
         """Get current memory usage in MB."""
-        return self.process.memory_info().rss / 1024 / 1024
+        return float(self.process.memory_info().rss / 1024 / 1024)
 
     def get_peak_usage(self) -> float:
         """Get peak memory usage since last reset."""
         current = self.get_current_usage()
         self.peak_usage = max(self.peak_usage, current)
-        return self.peak_usage
+        return float(self.peak_usage)
 
     def reset_peak(self):
         """Reset peak memory tracking."""
@@ -403,7 +403,7 @@ class CPUMonitor:
             self.monitor_thread.join(timeout=1.0)
 
         if self.cpu_samples:
-            return sum(self.cpu_samples) / len(self.cpu_samples)
+            return float(sum(self.cpu_samples) / len(self.cpu_samples))
         return 0.0
 
     def _monitor_loop(self):

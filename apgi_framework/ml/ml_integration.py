@@ -16,7 +16,7 @@ Features:
 
 import warnings
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 from pathlib import Path
 
 try:
@@ -37,7 +37,7 @@ from ..analysis.ml_classification import (
     feature_selection,
 )
 from ..clinical.disorder_classification import (
-    DisorderClassifier,
+    DisorderClassification,
     DisorderType,
     NeuralSignatureProfile,
 )
@@ -74,9 +74,9 @@ class UnifiedMLClassifier:
         self.logger = get_logger(__name__)
 
         # Initialize classifiers
-        self.consciousness_classifier = None
-        self.disorder_classifier = None
-        self.ensemble_classifier = None
+        self.consciousness_classifier: ConsciousnessClassifier | None = None
+        self.disorder_classifier: DisorderClassification | None = None
+        self.ensemble_classifier: BiomarkerClassifierEnsemble | None = None
 
         # Model storage
         self.model_dir = Path("models")
@@ -181,10 +181,12 @@ class UnifiedMLClassifier:
         """
         try:
             # Initialize disorder classifier
-            self.disorder_classifier = DisorderClassifier(algorithm=algorithm)
+            self.disorder_classifier = DisorderClassification(classifier_type=algorithm)
 
             # Train classifier
-            results = self.disorder_classifier.train(profiles, disorders, cv_folds)
+            results: Dict[str, Any] = self.disorder_classifier.train(
+                profiles, disorders, cv_folds
+            )
 
             self.logger.info(f"Trained {algorithm} disorder classifier")
             return results
@@ -300,7 +302,17 @@ class UnifiedMLClassifier:
                 "Disorder classifier not trained. Call train_disorder_classifier() first."
             )
 
-        return self.disorder_classifier.predict(profile)
+        result = self.disorder_classifier.classify(profile=profile)
+        return {
+            "predicted_disorder": (
+                result.predicted_disorder.value
+                if hasattr(result.predicted_disorder, "value")
+                else str(result.predicted_disorder)
+            ),
+            "confidence": result.confidence,
+            "probabilities": result.probabilities,
+            "feature_importance": getattr(result, "feature_importance", None),
+        }
 
     def extract_biomarker_features(
         self,
@@ -344,10 +356,10 @@ class UnifiedMLClassifier:
         """
         if param_grid is None:
             # Default parameter grids
-            param_grids = {
+            param_grids: Dict[str, Dict[str, List[Any]]] = {
                 "random_forest": {
                     "n_estimators": [50, 100, 200],
-                    "max_depth": [10, 20, None],
+                    "max_depth": [10, 20, 30],
                     "min_samples_split": [2, 5, 10],
                 },
                 "svm": {
@@ -376,7 +388,11 @@ class UnifiedMLClassifier:
         classifier_class = classifier_classes.get(algorithm, RandomForestClassifier)
 
         return hyperparameter_tuning(
-            classifier_class, data, labels, param_grid, cv_folds
+            classifier_class,
+            data,
+            labels,
+            cast(Dict[str, List[Any]], param_grid),
+            cv_folds,
         )
 
     def select_features(
@@ -407,19 +423,14 @@ class UnifiedMLClassifier:
         rf.fit(data, labels)
 
         if hasattr(rf, "feature_importances_"):
-            importance_scores = dict(zip(selected_names, rf.feature_importances_))
-            sorted_features = sorted(
-                importance_scores.items(), key=lambda x: x[1], reverse=True
-            )
+            importance_dict = dict(zip(selected_names, rf.feature_importances_))
         else:
-            sorted_features = []
+            importance_dict = {}
 
         return {
-            "selected_features": selected_names,
-            "selected_data": X_selected,
-            "importance_scores": sorted_features,
-            "method": method,
-            "k": k,
+            "selected_features": X_selected,
+            "feature_names": selected_names,
+            "importance_scores": importance_dict,
         }
 
     def save_model(
@@ -477,7 +488,7 @@ class UnifiedMLClassifier:
         # Define expected model types for validation
         expected_types = {
             ConsciousnessClassifier,
-            DisorderClassifier,
+            DisorderClassification,
             BiomarkerClassifierEnsemble,
         }
 
@@ -542,9 +553,11 @@ def create_consciousness_classifier(
     return ConsciousnessClassifier(algorithm=algorithm)
 
 
-def create_disorder_classifier(algorithm: str = "random_forest") -> DisorderClassifier:
+def create_disorder_classifier(
+    algorithm: str = "random_forest",
+) -> DisorderClassification:
     """Create a disorder classifier with default settings."""
-    return DisorderClassifier(algorithm=algorithm)
+    return DisorderClassification(classifier_type=algorithm)
 
 
 def create_ensemble_classifier(

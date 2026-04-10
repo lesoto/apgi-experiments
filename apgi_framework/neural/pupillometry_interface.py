@@ -6,14 +6,13 @@ artifact interpolation, and luminance-independent dilation measurement
 for APGI experiments.
 """
 
+from typing import Any, Callable, Dict, List, Optional, Tuple, cast
+import numpy as np
+from dataclasses import dataclass
+from enum import Enum
 import threading
 import time
 from collections import deque
-from dataclasses import dataclass
-from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Tuple
-
-import numpy as np
 
 
 class EyeType(Enum):
@@ -167,7 +166,7 @@ class BlinkDetector:
             else:
                 count = 0
 
-        return consecutive_missing
+        return cast(np.ndarray, consecutive_missing)
 
     def detect_blinks(
         self, diameters: np.ndarray, timestamps: np.ndarray, confidence: np.ndarray
@@ -392,7 +391,7 @@ class BaselineCorrector:
             raise ValueError(f"Unknown baseline method: {method}")
 
         self.baseline_value = baseline
-        return baseline
+        return float(baseline)
 
     def apply_baseline_correction(
         self, data: np.ndarray, baseline: Optional[float] = None
@@ -530,10 +529,11 @@ class LuminanceCorrector:
             )
 
         # Remove predicted luminance effect
+        corrected = diameters - predicted
         if self.luminance_model_params is not None:
             corrected = diameters - predicted + self.luminance_model_params["intercept"]
 
-        return corrected
+        return cast(np.ndarray, corrected)
 
 
 class PupillometryInterface:

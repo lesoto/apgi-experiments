@@ -269,14 +269,12 @@ class PrimaryFalsificationTest:
             "ignition_without_consciousness_count": ignition_without_consciousness,
             "both_present_count": both_present,
             "both_absent_count": both_absent,
-            "consciousness_without_ignition_rate": consciousness_without_ignition
-            / total_trials
-            if total_trials > 0
-            else 0,
-            "ignition_without_consciousness_rate": ignition_without_consciousness
-            / total_trials
-            if total_trials > 0
-            else 0,
+            "consciousness_without_ignition_rate": (
+                consciousness_without_ignition / total_trials if total_trials > 0 else 0
+            ),
+            "ignition_without_consciousness_rate": (
+                ignition_without_consciousness / total_trials if total_trials > 0 else 0
+            ),
             "both_present_rate": both_present / total_trials if total_trials > 0 else 0,
             "both_absent_rate": both_absent / total_trials if total_trials > 0 else 0,
         }

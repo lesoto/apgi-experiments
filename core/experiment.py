@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict
+from typing import Any, Dict
 
 import pandas as pd
 
@@ -14,7 +14,7 @@ class BaseExperiment(ABC):
     def __init__(self, n_participants: int = 20):
         self.n_participants = n_participants
         self.data = pd.DataFrame()
-        self.participant_data: Dict[int, Dict] = {}
+        self.participant_data: Dict[int, Any] = {}
 
     @abstractmethod
     def setup(self, **kwargs):

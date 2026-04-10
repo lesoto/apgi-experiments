@@ -1590,7 +1590,7 @@ class APGIFrameworkGUI(ctk.CTk):
             messagebox.showerror("Error", f"Failed to run soma-bias test: {e}")
             self.update_status("Ready")
 
-    def run_batch_tests(self):
+    def run_batch_tests(self) -> None:
         """Run batch falsification tests using APGI framework."""
         self.log_to_console("Running Batch Falsification Tests...")
         self.update_status("Running Batch Tests...")
@@ -1621,7 +1621,7 @@ class APGIFrameworkGUI(ctk.CTk):
             ]
 
             # Run tests in sequence
-            def run_batch():
+            def run_batch() -> None:
                 batch_results = {}
 
                 for test_name, test_instance in tests:
@@ -1677,7 +1677,7 @@ class APGIFrameworkGUI(ctk.CTk):
     # ------------------------------------------------------------------
     # RESEARCH EXPERIMENT METHODS
     # ------------------------------------------------------------------
-    def run_ai_benchmarking_experiment(self):
+    def run_ai_benchmarking_experiment(self) -> None:
         """Run AI benchmarking experiment from research module."""
         self.log_to_console("Running AI Benchmarking Experiment...")
         self.update_status("Running AI Benchmarking...")
@@ -1693,7 +1693,7 @@ class APGIFrameworkGUI(ctk.CTk):
             n_participants = int(self.exp_setup_params["n_participants"].get())
 
             # Run in separate thread
-            def run_experiment():
+            def run_experiment() -> None:
                 try:
                     self.log_to_console(
                         "Starting AI benchmarking with agent comparison..."
@@ -4546,6 +4546,7 @@ class APGIFrameworkGUI(ctk.CTk):
                     show_user=True,
                 )
                 return
+                return
 
             # Validate configuration structure
             if not isinstance(config, dict):
@@ -4555,6 +4556,7 @@ class APGIFrameworkGUI(ctk.CTk):
                     ErrorSeverity.HIGH,
                     show_user=True,
                 )
+                return
                 return
 
             # Load APGI parameters with validation
@@ -4579,7 +4581,7 @@ class APGIFrameworkGUI(ctk.CTk):
                             entry.insert(0, str_value)
                         else:
                             validation_errors.append(
-                                f"{param_name}: {validation_error.message}"
+                                f"{param_name}: {validation_error.message if validation_error else 'Unknown error'}"
                             )
                             # Still load the value but mark as invalid
                             entry.delete(0, tk.END)
@@ -4596,7 +4598,12 @@ class APGIFrameworkGUI(ctk.CTk):
 
             # Handle validation errors
             if validation_errors:
-                self.error_handler.handle_validation_errors(validation_errors)
+                # Convert string errors to ValidationError objects
+                validation_error_objects = [
+                    ValidationError(error, severity=ErrorSeverity.LOW)
+                    for error in validation_errors
+                ]
+                self.error_handler.handle_validation_errors(validation_error_objects)
                 messagebox.showwarning(
                     "Configuration Loaded with Warnings",
                     f"Configuration loaded but {len(validation_errors)} parameters have validation issues.",
@@ -4610,7 +4617,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 e, "Configuration Load", ErrorSeverity.CRITICAL, show_user=True
             )
 
-    def save_config(self):
+    def save_config(self) -> None:
         """Save current configuration with validation"""
         try:
             file_path = filedialog.asksaveasfilename(
@@ -4636,7 +4643,12 @@ class APGIFrameworkGUI(ctk.CTk):
 
             if validation_errors:
                 # Show validation errors but allow user to continue
-                self.error_handler.handle_validation_errors(validation_errors)
+                # Convert string errors to ValidationError objects
+                validation_error_objects = [
+                    ValidationError(error, severity=ErrorSeverity.LOW)
+                    for error in validation_errors
+                ]
+                self.error_handler.handle_validation_errors(validation_error_objects)
 
                 response = messagebox.askyesno(
                     "Configuration Validation",
@@ -4725,7 +4737,7 @@ class APGIFrameworkGUI(ctk.CTk):
             "Evaluation", "Consciousness evaluation completed successfully."
         )
 
-    def short_term_apgi_model(self):
+    def short_term_apgi_model(self) -> None:
         """Run short-term APGI model analysis."""
         self.log_to_console("Running Short-Term APGI Model...")
         self.log_to_console("Model parameters: time_window=2s, overlap=50%")
@@ -4733,7 +4745,7 @@ class APGIFrameworkGUI(ctk.CTk):
         self.log_to_console("Short-term APGI analysis completed")
         messagebox.showinfo("APGI Model", "Short-term APGI model analysis completed.")
 
-    def combined_apgi_analysis(self):
+    def combined_apgi_analysis(self) -> None:
         """Run combined APGI analysis."""
         self.log_to_console("Running Combined APGI Analysis...")
         self.log_to_console("Integrating multiple consciousness models")
@@ -4742,7 +4754,7 @@ class APGIFrameworkGUI(ctk.CTk):
         self.log_to_console("Combined APGI analysis completed")
         messagebox.showinfo("APGI Analysis", "Combined APGI analysis completed.")
 
-    def load_test_data_v2(self):
+    def load_test_data_v2(self) -> None:
         """Load test data for experiments."""
         self.log_to_console("Loading test data...")
         try:

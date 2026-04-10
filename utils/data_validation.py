@@ -233,16 +233,18 @@ class DataValidator:
 
     def _validate_json_structure(self, data: Dict, results: Dict[str, Any]) -> bool:
         """Validate JSON data structure."""
+        is_valid = True
+
         if not isinstance(data, dict):
-            results["errors"].append("JSON root must be an object")
+            results["errors"].append("JSON root must be an object")  # type: ignore[unreachable]
             return False
 
         # Check for required sections
-        if "metadata" not in data:
+        if is_valid and "metadata" not in data:
             results["errors"].append("Missing 'metadata' section")
-            return False
+            is_valid = False
 
-        if "data" not in data:
+        if is_valid and "data" not in data:
             results["errors"].append("Missing 'data' section")
             return False
 
@@ -376,9 +378,9 @@ class DataValidator:
             )
 
         if "pupil_diameter" in df.columns:
-            quality_metrics["signal_quality"][
-                "pupil_diameter"
-            ] = self._assess_signal_quality(df["pupil_diameter"])
+            quality_metrics["signal_quality"]["pupil_diameter"] = (
+                self._assess_signal_quality(df["pupil_diameter"])
+            )
 
         if "eda" in df.columns:
             quality_metrics["signal_quality"]["eda"] = self._assess_signal_quality(
@@ -545,7 +547,7 @@ class DataValidator:
 
         report: Dict[str, Any] = {
             "file_info": self.validate_file_format(file_path),
-            "data_quality": {},  # type: ignore
+            "data_quality": {},
             "recommendations": [],
             "validation_timestamp": datetime.now().isoformat(),
             "validator_version": "1.0.0",
@@ -575,7 +577,7 @@ class DataValidator:
                 TypeError,
                 MemoryError,
             ) as e:
-                report["data_quality"]["error"] = f"{type(e).__name__}: {e}"  # type: ignore
+                report["data_quality"]["error"] = f"{type(e).__name__}: {e}"
 
         return report
 
@@ -913,12 +915,12 @@ class DataPreprocessor:
                 if method == "zscore":
                     col_std = data.std()
                     if col_std > 0:
-                        df_normalized.loc[:, col] = (data - data.mean()) / col_std  # type: ignore
+                        df_normalized.loc[:, col] = (data - data.mean()) / col_std
                 elif method == "minmax":
                     col_min = data.min()
                     col_max = data.max()
                     if col_max > col_min:
-                        df_normalized[col] = (data - col_min) / (col_max - col_min)  # type: ignore
+                        df_normalized[col] = (data - col_min) / (col_max - col_min)
                 elif method == "robust":
                     median = data.median()
                     mad = np.median(np.abs(data - median))

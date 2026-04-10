@@ -14,7 +14,7 @@ import logging
 from typing import Any, Dict, List, Optional
 
 try:
-    from RestrictedPython import compile_restricted, safe_globals  # type: ignore
+    from RestrictedPython import compile_restricted, safe_globals
 
     HAS_RESTRICTED_PYTHON = True
 except ImportError:
@@ -293,6 +293,7 @@ print(json.dumps(result))
                 capture_output=True,
                 text=True,
                 timeout=self.max_execution_time,
+                check=False,  # Don't raise exception on timeout
             )
 
             if result.returncode != 0:
@@ -304,7 +305,7 @@ print(json.dumps(result))
 
             # Parse result
             try:
-                exec_result = json.loads(result.stdout.strip())
+                exec_result: dict[str, Any] = json.loads(result.stdout.strip())
                 return exec_result
             except json.JSONDecodeError:
                 return {

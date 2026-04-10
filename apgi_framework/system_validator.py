@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 
@@ -147,7 +147,10 @@ class SystemValidator:
     data integrity, performance, and integration testing.
     """
 
-    def __init__(self, config_or_controller):
+    controller: Optional[Any]
+    current_report: Optional[SystemValidationReport]
+
+    def __init__(self, config_or_controller: Union[Dict[str, Any], Any]) -> None:
         """
         Initialize the system validator.
 
@@ -162,7 +165,7 @@ class SystemValidator:
             self.controller = config_or_controller
             self._init_from_controller()
 
-    def _init_from_config(self, config):
+    def _init_from_config(self, config: Dict[str, Any]) -> None:
         """Initialize from configuration dictionary."""
         self.logger = logging.getLogger(__name__)
 
@@ -201,13 +204,13 @@ class SystemValidator:
         self.health_check_interval = config.get("health_check_interval", 60)
 
         # Validation state
-        self.current_report = None
+        self.current_report: Optional[SystemValidationReport] = None
 
         # Test tolerance values
         self.numerical_tolerance = 1e-10
         self.statistical_tolerance = 0.05
 
-    def _init_from_controller(self):
+    def _init_from_controller(self) -> None:
         """Initialize from controller (legacy compatibility)."""
         self.logger = logging.getLogger(__name__)
 
@@ -235,6 +238,14 @@ class SystemValidator:
             "test_execution_time": 1.0,  # seconds
             "memory_usage_mb": 100.0,  # MB
         }
+
+    def _ensure_controller(self) -> Any:
+        """Ensure controller is available, raising error if not."""
+        if self.controller is None:
+            raise RuntimeError(
+                "Controller not initialized. Validator requires a controller instance."
+            )
+        return self.controller
 
     def run_validation(
         self, level: ValidationLevel = ValidationLevel.STANDARD
@@ -296,25 +307,36 @@ class SystemValidator:
 
         except Exception as e:
             self.logger.error(f"Validation {validation_id} failed: {e}")
-            self.current_report.end_time = datetime.now()
+            if self.current_report:
+                self.current_report.end_time = datetime.now()
             raise ValidationError(f"System validation failed: {e}")
 
+        if self.current_report is None:
+            raise ValidationError("Validation report was not initialized")
         return self.current_report
 
     def _collect_system_info(self) -> None:
         """Collect system information for the report."""
         if self.current_report is None:
             raise RuntimeError("Current report is not initialized")
+        controller = self._ensure_controller()
         self.current_report.system_info = {
-            "controller_initialized": self.controller._initialized,
-            "mathematical_engine_available": self.controller._mathematical_engine
+            "controller_initialized": getattr(controller, "_initialized", False),
+            "mathematical_engine_available": getattr(
+                controller, "_mathematical_engine", None
+            )
             is not None,
-            "neural_simulators_available": self.controller._neural_simulators
+            "neural_simulators_available": getattr(
+                controller, "_neural_simulators", None
+            )
             is not None,
-            "falsification_tests_available": self.controller._falsification_tests
+            "falsification_tests_available": getattr(
+                controller, "_falsification_tests", None
+            )
             is not None,
-            "data_manager_available": self.controller._data_manager is not None,
-            "config_loaded": self.controller.config_manager is not None,
+            "data_manager_available": getattr(controller, "_data_manager", None)
+            is not None,
+            "config_loaded": getattr(controller, "config_manager", None) is not None,
         }
 
     def _run_mathematical_validation(self) -> None:
@@ -453,7 +475,8 @@ class SystemValidator:
         start_time = time.time()
 
         try:
-            equation = self.controller.get_mathematical_engine()["equation"]
+            controller = self._ensure_controller()
+            equation = controller.get_mathematical_engine()["equation"]
 
             # Test with known values
             surprise = equation.calculate_surprise(
@@ -503,7 +526,8 @@ class SystemValidator:
         start_time = time.time()
 
         try:
-            precision_calc = self.controller.get_mathematical_engine()[
+            controller = self._ensure_controller()
+            precision_calc = controller.get_mathematical_engine()[
                 "precision_calculator"
             ]
 
@@ -546,7 +570,8 @@ class SystemValidator:
         start_time = time.time()
 
         try:
-            error_processor = self.controller.get_mathematical_engine()[
+            controller = self._ensure_controller()
+            error_processor = controller.get_mathematical_engine()[
                 "prediction_error_processor"
             ]
 
@@ -588,7 +613,8 @@ class SystemValidator:
         start_time = time.time()
 
         try:
-            somatic_engine = self.controller.get_mathematical_engine()[
+            controller = self._ensure_controller()
+            somatic_engine = controller.get_mathematical_engine()[
                 "somatic_marker_engine"
             ]
 
@@ -622,7 +648,8 @@ class SystemValidator:
         start_time = time.time()
 
         try:
-            threshold_manager = self.controller.get_mathematical_engine()[
+            controller = self._ensure_controller()
+            threshold_manager = controller.get_mathematical_engine()[
                 "threshold_manager"
             ]
 
@@ -662,7 +689,8 @@ class SystemValidator:
         start_time = time.time()
 
         try:
-            equation = self.controller.get_mathematical_engine()["equation"]
+            controller = self._ensure_controller()
+            equation = controller.get_mathematical_engine()["equation"]
 
             # Test sigmoid at key points
             prob_zero = equation.calculate_ignition_probability(
@@ -710,7 +738,8 @@ class SystemValidator:
         start_time = time.time()
 
         try:
-            equation = self.controller.get_mathematical_engine()["equation"]
+            controller = self._ensure_controller()
+            equation = controller.get_mathematical_engine()["equation"]
 
             # Test with extreme values
             extreme_tests = [
@@ -768,18 +797,20 @@ class SystemValidator:
         start_time = time.time()
 
         try:
-            simulators = self.controller.get_neural_simulators()
+            controller = self._ensure_controller()
+            simulators = controller.get_neural_simulators()
             p3b_sim = simulators["p3b"]
 
             # Generate conscious and unconscious signatures
-            conscious_sig = p3b_sim.generate_signature(conscious=True)
-            unconscious_sig = p3b_sim.generate_signature(conscious=False)
+            conscious_signature = p3b_sim.generate(awareness_level=0.8, n_trials=100)
+            unconscious_signature = p3b_sim.generate(awareness_level=0.2, n_trials=100)
 
             # Validate signatures
             conscious_valid = (
-                conscious_sig.amplitude > 5.0 and 250 <= conscious_sig.latency <= 500
+                conscious_signature.amplitude > 5.0
+                and 250 <= conscious_signature.latency <= 500
             )
-            unconscious_valid = unconscious_sig.amplitude < 2.0
+            unconscious_valid = unconscious_signature.amplitude < 2.0
 
             passed = conscious_valid and unconscious_valid
 
@@ -790,12 +821,12 @@ class SystemValidator:
                 execution_time=time.time() - start_time,
                 actual_result={
                     "conscious": {
-                        "amp": conscious_sig.amplitude,
-                        "lat": conscious_sig.latency,
+                        "amp": conscious_signature.amplitude,
+                        "lat": conscious_signature.latency,
                     },
                     "unconscious": {
-                        "amp": unconscious_sig.amplitude,
-                        "lat": unconscious_sig.latency,
+                        "amp": unconscious_signature.amplitude,
+                        "lat": unconscious_signature.latency,
                     },
                 },
             )
@@ -918,7 +949,8 @@ class SystemValidator:
         """Test primary falsification test logic."""
         start_time = time.time()
         try:
-            tests = self.controller.get_falsification_tests()
+            controller = self._ensure_controller()
+            tests = controller.get_falsification_tests()
             primary_test = tests["primary"]
             has_run_method = hasattr(primary_test, "run_test")
             passed = has_run_method
@@ -1024,7 +1056,8 @@ class SystemValidator:
         """Test data storage functionality."""
         start_time = time.time()
         try:
-            data_manager = self.controller.get_data_manager()
+            controller = self._ensure_controller()
+            data_manager = controller.get_data_manager()
             storage = data_manager["storage"]
             has_save_method = hasattr(storage, "save_dataset")
             has_load_method = hasattr(storage, "load_dataset")
@@ -1049,7 +1082,8 @@ class SystemValidator:
         """Test data validation functionality."""
         start_time = time.time()
         try:
-            data_manager = self.controller.get_data_manager()
+            controller = self._ensure_controller()
+            data_manager = controller.get_data_manager()
             validator = data_manager["validator"]
             has_validate_method = hasattr(validator, "validate_dataset")
             passed = has_validate_method
@@ -1073,7 +1107,8 @@ class SystemValidator:
         """Test configuration management."""
         start_time = time.time()
         try:
-            config_manager = self.controller.config_manager
+            controller = self._ensure_controller()
+            config_manager = controller.config_manager
             apgi_params = config_manager.get_apgi_parameters()
             exp_config = config_manager.get_experimental_config()
 
@@ -1102,9 +1137,10 @@ class SystemValidator:
         """Test end-to-end workflow execution."""
         start_time = time.time()
         try:
-            math_engine = self.controller.get_mathematical_engine()
-            simulators = self.controller.get_neural_simulators()
-            tests = self.controller.get_falsification_tests()
+            controller = self._ensure_controller()
+            math_engine = controller.get_mathematical_engine()
+            simulators = controller.get_neural_simulators()
+            tests = controller.get_falsification_tests()
 
             components_available = (
                 math_engine is not None and simulators is not None and tests is not None
@@ -1172,7 +1208,8 @@ class SystemValidator:
         """Test handling of invalid parameters."""
         start_time = time.time()
         try:
-            equation = self.controller.get_mathematical_engine()["equation"]
+            controller = self._ensure_controller()
+            equation = controller.get_mathematical_engine()["equation"]
             error_caught = False
             try:
                 equation.calculate_surprise(-1, 0, -1, 1, 1)  # Negative precision
@@ -1261,7 +1298,8 @@ class SystemValidator:
         """Test equation calculation performance."""
         start_time = time.time()
         try:
-            equation = self.controller.get_mathematical_engine()["equation"]
+            controller = self._ensure_controller()
+            equation = controller.get_mathematical_engine()["equation"]
 
             # Benchmark equation calculation
             n_iterations = 1000
@@ -1298,7 +1336,8 @@ class SystemValidator:
         """Test neural simulation performance."""
         start_time = time.time()
         try:
-            simulators = self.controller.get_neural_simulators()
+            controller = self._ensure_controller()
+            simulators = controller.get_neural_simulators()
             p3b_sim = simulators["p3b"]
 
             # Benchmark signature generation
@@ -1674,9 +1713,9 @@ class SystemValidator:
         return {
             "status": status,
             "warnings": warnings,
-            "response_time_status": "optimal"
-            if response_time <= response_threshold
-            else "degraded",
+            "response_time_status": (
+                "optimal" if response_time <= response_threshold else "degraded"
+            ),
         }
 
     def check_resource_availability(self, resources):

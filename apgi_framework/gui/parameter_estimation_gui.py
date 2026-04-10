@@ -726,15 +726,7 @@ class ParameterEstimationGUI:
                 task_id=f"detection_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
                 modality=self.detection_modality_var.get(),
                 n_trials=self.detection_trials_var.get(),
-                participant_id=self.current_session.participant_id,
-                session_id=self.current_session.session_id,
-                dao=self.dao,
             )
-
-            # Initialize task
-            if not self.detection_task.initialize():
-                messagebox.showerror("Error", "Failed to initialize detection task")
-                return
 
             # Run task in separate thread
             self.task_running = True
@@ -790,15 +782,7 @@ class ParameterEstimationGUI:
             self.heartbeat_task = HeartbeatDetectionTask(
                 task_id=f"heartbeat_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
                 n_trials=self.heartbeat_trials_var.get(),
-                participant_id=self.current_session.participant_id,
-                session_id=self.current_session.session_id,
-                dao=self.dao,
             )
-
-            # Initialize task
-            if not self.heartbeat_task.initialize():
-                messagebox.showerror("Error", "Failed to initialize heartbeat task")
-                return
 
             # Run task in separate thread
             self.task_running = True
@@ -854,16 +838,8 @@ class ParameterEstimationGUI:
             self.oddball_task = DualModalityOddballTask(
                 task_id=f"oddball_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
                 n_trials=self.oddball_trials_var.get(),
-                deviant_probability=self.oddball_deviant_prob_var.get(),
-                participant_id=self.current_session.participant_id,
-                session_id=self.current_session.session_id,
-                dao=self.dao,
+                oddball_probability=self.oddball_deviant_prob_var.get(),
             )
-
-            # Initialize task
-            if not self.oddball_task.initialize():
-                messagebox.showerror("Error", "Failed to initialize oddball task")
-                return
 
             # Run task in separate thread
             self.task_running = True
@@ -994,20 +970,18 @@ class ParameterEstimationGUI:
             try:
                 logger.info(f"Starting {task_name}")
                 self.root.after(
-                    0, lambda: self.status_var.set(f"Running {task_name}...")  # type: ignore
+                    0, lambda: self.status_var.set(f"Running {task_name}...")
                 )
 
                 # Run the task
                 task_method()
 
-                # Check if stop was requested during task
-                if self.task_stop_requested:
-                    break
-
                 logger.info(f"Completed {task_name}")
-                self.root.after(
-                    0, lambda tn=task_name: self.status_var.set(f"Completed {tn}")  # type: ignore
-                )
+
+                def set_status(tn: str = task_name) -> None:
+                    self.status_var.set(f"Completed {tn}")
+
+                self.root.after(0, set_status)
 
                 # Brief pause between tasks
                 import time
@@ -1016,12 +990,11 @@ class ParameterEstimationGUI:
 
             except Exception as e:
                 logger.error(f"Error in {task_name}: {e}")
-                self.root.after(
-                    0,
-                    lambda tn=task_name, err=str(e): messagebox.showerror(
-                        f"{tn} Error", f"Error in {tn}: {err}"
-                    ),
-                )
+
+                def show_error(tn: str = task_name, err: str = str(e)) -> None:
+                    messagebox.showerror(f"{tn} Error", f"Error in {tn}: {err}")
+
+                self.root.after(0, show_error)
                 break
 
         # Reset sequential execution state

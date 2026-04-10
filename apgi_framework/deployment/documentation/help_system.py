@@ -68,8 +68,8 @@ class InSystemHelpSystem:
         """Initialize in-system help system."""
         self.logger = logging.getLogger(__name__)
 
-        self.help_content = self._define_help_content()
-        self.tooltips = self._define_tooltips()
+        self.help_content: Dict[HelpContext, HelpContent] = self._define_help_content()
+        self.tooltips: Dict[str, Tooltip] = self._define_tooltips()
 
         # Callback for showing help
         self.show_help_callback: Optional[Callable] = None
@@ -453,25 +453,25 @@ class InSystemHelpSystem:
             logger.info("Steps:")
             for i, step in enumerate(content.steps, 1):
                 logger.info(f"  {i}. {step}")
-            logger.info()
+            logger.info("")
 
         if content.tips:
             logger.info("Tips:")
             for tip in content.tips:
                 logger.info(f"  💡 {tip}")
-            logger.info()
+            logger.info("")
 
         if content.warnings:
             logger.info("Warnings:")
             for warning in content.warnings:
                 logger.info(f"  ⚠️  {warning}")
-            logger.info()
+            logger.info("")
 
         if content.related_topics:
             logger.info("Related Topics:")
             for topic in content.related_topics:
                 logger.info(f"  → {topic}")
-            logger.info()
+            logger.info("")
 
         logger.info(f"{'=' * 60}\n")
 

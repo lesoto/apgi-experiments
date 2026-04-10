@@ -52,9 +52,9 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
         super().__init__(parent)
 
         self.results_data: List[Dict[str, Any]] = []
-        self.test_run_history: List[
-            Dict[str, Any]
-        ] = []  # Track multiple runs for comparison
+        self.test_run_history: List[Dict[str, Any]] = (
+            []
+        )  # Track multiple runs for comparison
         self.results_callback = results_callback
 
         # Visualization settings
@@ -1296,12 +1296,16 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
             for r in self.results_data:
                 sig = {
                     "conscious": r.get("is_falsified", False),
-                    "p3b": np.mean(r.get("p3b_amplitude", [0]))
-                    if r.get("p3b_amplitude")
-                    else 0,
-                    "gamma": np.mean(r.get("gamma_power", [0]))
-                    if r.get("gamma_power")
-                    else 0,
+                    "p3b": (
+                        np.mean(r.get("p3b_amplitude", [0]))
+                        if r.get("p3b_amplitude")
+                        else 0
+                    ),
+                    "gamma": (
+                        np.mean(r.get("gamma_power", [0]))
+                        if r.get("gamma_power")
+                        else 0
+                    ),
                 }
                 signatures.append(sig)
 

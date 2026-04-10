@@ -26,7 +26,6 @@ logger = logging.getLogger(__name__)
 import pandas as pd
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-
 # Import constants
 from apgi_framework.config.constants import GUIConstants
 
@@ -224,14 +223,12 @@ try:
     try:
         from apgi_framework.falsification import SomaBiasTest
     except ImportError:
-        SomaBiasTest = None  # type: ignore
+        SomaBiasTest = None  # type: ignore[assignment,misc]
 
     try:
         from apgi_framework.analysis.bayesian_models import HierarchicalBayesianModel
 
-        BayesianParameterEstimator = (
-            HierarchicalBayesianModel  # Alias for compatibility
-        )
+        BayesianParameterEstimator = HierarchicalBayesianModel
     except ImportError:
         BayesianParameterEstimator = None  # type: ignore
 
@@ -253,14 +250,14 @@ try:
             DisorderClassification as DisorderClassifier,
         )
     except ImportError:
-        DisorderClassifier = None  # type: ignore
+        pass  # DisorderClassifier already set to None in except block above
 
     try:
         from apgi_framework.clinical.parameter_extraction import (
             ClinicalParameterExtractor,
         )
     except ImportError:
-        ClinicalParameterExtractor = None  # type: ignore
+        pass  # ClinicalParameterExtractor already set to None in except block above
 
     # Neural simulators
     from apgi_framework.simulators.bold_simulator import BOLDSimulator
@@ -272,12 +269,9 @@ try:
     try:
         from apgi_framework.adaptive.quest_plus_staircase import QuestPlusStaircase
     except ImportError:
-        QuestPlusStaircase = None  # type: ignore
+        pass  # QuestPlusStaircase already set to None in except block above
 
-    try:
-        from apgi_framework.adaptive.stimulus_generators import StimulusGenerator
-    except ImportError:
-        StimulusGenerator = None  # type: ignore
+    # StimulusGenerator already handled in the try-except block above
 
 except ImportError as e:
     try:
@@ -1353,8 +1347,8 @@ class APGIFrameworkGUI(ctk.CTk):
 
     def _stop_autosave_timer(self) -> None:
         """Stop the currently running auto-save timer."""
-        if self.autosave_id:
-            self.after_cancel(self.autosave_id)
+        if self.autosave_id is not None:
+            self.after_cancel(self.autosave_id)  # type: ignore[unreachable]
             self.autosave_id = None
 
     def _autosave_data(self) -> None:

@@ -175,9 +175,9 @@ class ParameterExtractor:
             "sigma_beta",
         ]:
             samples = fit_result.extract(param_name)[param_name]
-            population_params[
-                param_name
-            ] = ParameterExtractor.extract_parameter_distribution(samples, param_name)
+            population_params[param_name] = (
+                ParameterExtractor.extract_parameter_distribution(samples, param_name)
+            )
 
         return population_params
 

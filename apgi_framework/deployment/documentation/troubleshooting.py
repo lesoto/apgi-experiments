@@ -8,7 +8,7 @@ encountered during APGI Framework parameter estimation.
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 
 @dataclass
@@ -389,7 +389,7 @@ class TroubleshootingGuide:
             f.write(self._generate_toc())
 
             # Group entries by category
-            categories = {}
+            categories: Dict[str, List[Any]] = {}
             for entry in self.entries:
                 if entry.category not in categories:
                     categories[entry.category] = []
@@ -557,8 +557,7 @@ For critical issues during data collection, call: +1-555-0123-4567
         ref_path = self.output_dir / "Quick_Reference.md"
 
         with open(ref_path, "w", encoding="utf-8") as f:
-            f.write(
-                """# Quick Reference Card
+            f.write("""# Quick Reference Card
 
 ## Common Issues & Quick Fixes
 
@@ -598,8 +597,7 @@ tail -f ~/.apgi_framework/logs/apgi_framework.log
 - Technical: support@apgi-framework.org
 - Emergency: +1-555-0123-4567
 - Documentation: https://apgi-framework.org/docs
-"""
-            )
+""")
 
         self.logger.info(f"Quick reference generated: {ref_path}")
         return ref_path

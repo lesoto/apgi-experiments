@@ -83,7 +83,7 @@ class ProductionValidator:
         # Check for database configuration
         if os.getenv("DATABASE_URL"):
             db_url = os.getenv("DATABASE_URL")
-            if "localhost" in db_url or "127.0.0.1" in db_url:
+            if db_url and ("localhost" in db_url or "127.0.0.1" in db_url):
                 self.warnings.append("Using localhost database in production")
 
         # Check for logging configuration

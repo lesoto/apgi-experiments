@@ -315,20 +315,20 @@ def check_dependencies(install_missing=False, core_only=False) -> Dict[str, Any]
 
         # Type ignore for dynamic dictionary access
         print(
-            f"Core dependencies: {summary['core_dependencies']['available']}/{summary['core_dependencies']['total']} ({summary['core_dependencies']['percentage']:.1f}%)"  # type: ignore[index]
+            f"Core dependencies: {summary['core_dependencies']['available']}/{summary['core_dependencies']['total']} ({summary['core_dependencies']['percentage']:.1f}%)"
         )
         print(
-            f"Optional dependencies: {summary['optional_dependencies']['available']}/{summary['optional_dependencies']['total']} ({summary['optional_dependencies']['percentage']:.1f}%)"  # type: ignore[index]
+            f"Optional dependencies: {summary['optional_dependencies']['available']}/{summary['optional_dependencies']['total']} ({summary['optional_dependencies']['percentage']:.1f}%)"
         )
-        print(f"Overall status: {summary['overall_status']}")  # type: ignore[index]
+        print(f"Overall status: {summary['overall_status']}")
 
-        if summary["version_issues"]:  # type: ignore[index]
+        if summary["version_issues"]:
             print("\n⚠️  Version Issues Found:")
-            for issue in summary["version_issues"]:  # type: ignore[index]
-                print(f"  • {issue['package']}: {issue['error']}")  # type: ignore[index]
-                print(f"    Current: {issue['current_version']}, Update required")  # type: ignore[index]
+            for issue in summary["version_issues"]:
+                print(f"  • {issue['package']}: {issue['error']}")
+                print(f"    Current: {issue['current_version']}, Update required")
 
-        if summary["overall_status"] == "ready":  # type: ignore[index]
+        if summary["overall_status"] == "ready":
             print("\n🎉 All dependencies are satisfied!")
         else:
             print("\n⚠️  Some dependencies need attention.")

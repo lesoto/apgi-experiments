@@ -13,13 +13,26 @@ from apgi_framework.core.equation import APGIEquation
 # Mock APGIAgent class for testing since core.models doesn't exist
 class APGIAgent:
     def __init__(self, **kwargs):
-        self.T = kwargs.get("T", 1000)
+        # Parameter validation
+        T = kwargs.get("T", 1000)
+        if T < 0:
+            raise ValueError("T must be non-negative")
+        self.T = T
+
+        Pi_e = kwargs.get("Pi_e", 1.0)
+        if Pi_e <= 0:
+            raise ValueError("Pi_e must be positive")
+        self.Pi_e = Pi_e
+
+        Pi_i_base = kwargs.get("Pi_i_base", 0.8)
+        if Pi_i_base <= 0:
+            raise ValueError("Pi_i_base must be positive")
+        self.Pi_i_base = Pi_i_base
+
         self.dt = kwargs.get("dt", 1.0)
         self.theta_base = kwargs.get("theta_base", 3.0)
         self.theta_mod = kwargs.get("theta_mod", 0.5)
         self.alpha = kwargs.get("alpha", 2.0)
-        self.Pi_e = kwargs.get("Pi_e", 1.0)
-        self.Pi_i_base = kwargs.get("Pi_i_base", 0.8)
         self.M = kwargs.get("M", 1.5)
         self.body_noise_sd = kwargs.get("body_noise_sd", 0.1)
         self.context_onset = None

@@ -74,9 +74,9 @@ class ParameterConfigPanel(ctk.CTkFrame):
         self.config_manager = config_manager or ConfigManager()
         self.param_vars: Dict[str, tk.Variable] = {}
         self.exp_vars: Dict[str, tk.Variable] = {}
-        self.param_entries: Dict[
-            str, ctk.CTkBaseClass
-        ] = {}  # Store entry widgets for validation feedback
+        self.param_entries: Dict[str, ctk.CTkBaseClass] = (
+            {}
+        )  # Store entry widgets for validation feedback
         self.exp_entries: Dict[str, ctk.CTkBaseClass] = {}
 
         # Initialize validator
@@ -321,11 +321,11 @@ class ParameterConfigPanel(ctk.CTkFrame):
         # Create variable
         var: tk.Variable
         if param_type == int:
-            var = tk.IntVar(value=default_value)  # type: ignore[assignment]
+            var = tk.IntVar(value=default_value)
         elif param_type == float:
             var = tk.DoubleVar(value=default_value)
         else:  # str
-            var = tk.StringVar(value=default_value)  # type: ignore[assignment]
+            var = tk.StringVar(value=default_value)
 
         # Create entry widget
         entry = ctk.CTkEntry(param_row, textvariable=var, width=120)
@@ -343,19 +343,19 @@ class ParameterConfigPanel(ctk.CTkFrame):
             self.exp_entries[param_name] = entry
 
         # Validation indicator (skip for random_seed)
-        if param_name != "random_seed":  # type: ignore
+        if param_name != "random_seed":
             indicator = ctk.CTkLabel(param_row, text="✓", text_color="#00FF00", width=2)
             indicator.pack(side="left", padx=5)
 
             entry_key = f"{param_name}_indicator"
-            if section == "apgi":  # type: ignore
-                self.param_entries[entry_key] = indicator  # type: ignore
+            if section == "apgi":
+                self.param_entries[entry_key] = indicator
             else:
-                self.exp_entries[entry_key] = indicator  # type: ignore
+                self.exp_entries[entry_key] = indicator
 
         # Range label if specified
-        if valid_range:  # type: ignore
-            range_text = f"[{valid_range[0]}, {valid_range[1]}]"  # type: ignore
+        if valid_range:
+            range_text = f"[{valid_range[0]}, {valid_range[1]}]"
             range_label = ctk.CTkLabel(param_row, text=range_text, text_color="gray")
             range_label.pack(side="left", padx=(5, 10))
 
@@ -734,7 +734,7 @@ class ParameterConfigPanel(ctk.CTkFrame):
         return {
             "apgi_parameters": self._get_current_apgi_params(),
             "experimental_config": self._get_current_exp_params(),
-            "timestamp": datetime.now().isoformat(),  # type: ignore
+            "timestamp": datetime.now().isoformat(),
             "version": "1.0",
         }
 

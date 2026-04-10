@@ -552,33 +552,36 @@ def create_interactive_dashboard(
     Create and configure an interactive dashboard.
 
     Args:
-        port: Web server port
-        host: Server host
+        port: Port number for the dashboard
+        host: Host address for the dashboard
 
     Returns:
-        Configured interactive dashboard
+        Configured dashboard instance or None if Flask not available
     """
     if Flask is None:
-        logger.info(
-            "Error: Flask and flask_socketio are required for the interactive dashboard."
+        logger.error(
+            "Flask and flask-socketio are required for the interactive dashboard."
         )
         logger.info("Please install them with: pip install flask flask-socketio")
         return None
 
-    return InteractiveWebDashboard(port=port, host=host)
+    dashboard = InteractiveWebDashboard(port=port, host=host)  # type: ignore
+    return dashboard
 
 
 if __name__ == "__main__":
     if Flask is None:
-        logger.info(
-            "Error: Flask and flask_socketio are required for the interactive dashboard."
+        logger.error(
+            "Flask and flask-socketio are required for the interactive dashboard."
         )
         logger.info("Please install them with: pip install flask flask-socketio")
-        exit(1)
+        sys.exit(1)
 
-    dashboard = create_interactive_dashboard()
-    if dashboard:
+    dashboard = create_interactive_dashboard()  # type: ignore
+    if dashboard is not None:
         logger.info(
             f"Starting interactive dashboard at {dashboard.get_dashboard_url()}"
         )
-        dashboard.start_dashboard()
+        dashboard.run()
+    else:
+        sys.exit(1)

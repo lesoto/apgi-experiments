@@ -391,9 +391,8 @@ strict = false  # Keep false for now, enable incrementally
 # Enable some basic strict options
 warn_return_any = true
 warn_unused_configs = true
-disallow_untyped_defs = false  # Will enable in phase 2
-disallow_incomplete_defs = false  # Will enable in phase 2
-check_untyped_defs = false  # Will enable in phase 2
+disallow_untyped_defs = true  # Now enabled for better type safety
+check_untyped_defs = true  # Now enabled for better type safety
 
 # Phase 2: Enable stricter type checking
 warn_redundant_casts = true
@@ -407,6 +406,9 @@ strict_optional = true
 
 # Ignore missing imports for modules without type stubs
 ignore_missing_imports = true
+
+# Suppress notes about untyped function bodies (these are just informational)
+disable_error_code = ["annotation-unchecked"]
 
 # Ignore specific modules that don't have type stubs
 [[tool.mypy.overrides]]

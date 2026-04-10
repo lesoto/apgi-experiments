@@ -126,9 +126,9 @@ class SurpriseAccumulator:
         Returns:
             Weighted prediction error
         """
-        extero_term = pi_e * np.abs(epsilon_e)
-        intero_term = beta * pi_i * np.abs(epsilon_i)
-        return extero_term + intero_term
+        extero_term = pi_e * float(np.abs(epsilon_e))
+        intero_term = beta * pi_i * float(np.abs(epsilon_i))
+        return float(extero_term + intero_term)
 
     def step(
         self, pi_e: float, epsilon_e: float, pi_i: float, epsilon_i: float, beta: float
@@ -278,7 +278,7 @@ class IgnitionProbabilityCalculator:
         ignition_indices = np.where(prob_trace >= probability_threshold)[0]
 
         if len(ignition_indices) > 0:
-            return ignition_indices[0] * dt
+            return float(ignition_indices[0] * dt)
         return None
 
 
@@ -337,7 +337,7 @@ class StanModelCompiler:
 
         # Compile new model
         try:
-            import pystan  # type: ignore
+            import pystan
 
             model = pystan.StanModel(model_code=model_code)
 
@@ -607,7 +607,7 @@ class HierarchicalBayesianModel:
         if self.model is None:
             raise RuntimeError("Model compilation failed")
 
-        if warmup is None:
+        if warmup is None:  # type: ignore[unreachable]
             warmup = iter // 2
 
         self.fit_result = self.model.sampling(
@@ -634,7 +634,7 @@ class HierarchicalBayesianModel:
             raise ValueError("Model must be fit before extracting parameters")
 
         # Extract posterior samples
-        theta0_samples = self.fit_result.extract("theta0")["theta0"][:, subject_id]
+        theta0_samples = self.fit_result.extract("theta0")["theta0"][:, subject_id]  # type: ignore[unreachable]
         pi_i_samples = self.fit_result.extract("pi_i")["pi_i"][:, subject_id]
         beta_samples = self.fit_result.extract("beta")["beta"][:, subject_id]
 

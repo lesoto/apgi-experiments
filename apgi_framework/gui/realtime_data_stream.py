@@ -504,7 +504,8 @@ def get_streamer() -> RealTimeDataStreamer:
 def start_realtime_streaming() -> bool:
     """Start real-time streaming server."""
     streamer = get_streamer()
-    return streamer.start_server()
+    result = streamer.start_server()
+    return bool(result)
 
 
 def stop_realtime_streaming():

@@ -632,10 +632,10 @@ class EnhancedMonitoringDashboard:
         # Initialize alert system
         self.alert_system = QualityAlertSystem(self.alerts_frame)
 
-    def _start_gui_update_loop(self):
+    def _start_gui_update_loop(self) -> None:
         """Start GUI update loop."""
 
-        def update_loop():
+        def update_loop() -> None:
             while True:
                 try:
                     # Process incoming data
@@ -655,7 +655,7 @@ class EnhancedMonitoringDashboard:
         update_thread = threading.Thread(target=update_loop, daemon=True)
         update_thread.start()
 
-    def _process_data(self, data: Dict[str, Any]):
+    def _process_data(self, data: Dict[str, Any]) -> None:
         """Process incoming data from WebSocket."""
         try:
             data_type = data.get("data_type")
@@ -673,7 +673,7 @@ class EnhancedMonitoringDashboard:
         except Exception as e:
             logger.error(f"Error processing data: {e}")
 
-    def _process_eeg_data(self, data: Dict[str, Any]):
+    def _process_eeg_data(self, data: Dict[str, Any]) -> None:
         """Process EEG data."""
         timestamp = data.get("timestamp", time.time())
         quality_score = data.get("quality_score", 0.0)

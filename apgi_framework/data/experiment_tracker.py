@@ -560,7 +560,10 @@ class ExperimentTracker:
         try:
             from ..security.secure_pickle import safe_pickle_load
 
-            return safe_pickle_load(session_file, expected_types={ExperimentSession})
+            session: ExperimentSession = safe_pickle_load(
+                session_file, expected_types={ExperimentSession}
+            )
+            return session
         except Exception as e:
             self.logger.error(f"Failed to load session {session_id}: {e}")
             return None

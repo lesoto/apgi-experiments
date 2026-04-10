@@ -3,7 +3,7 @@ Comprehensive tests for apgi_framework/data/data_models.py module.
 
 This test module provides thorough coverage of the data models including:
 - DataVersion dataclass
-- ExperimentMetadata dataclass  
+- ExperimentMetadata dataclass
 - BackupInfo dataclass
 - ExperimentalDataset dataclass
 

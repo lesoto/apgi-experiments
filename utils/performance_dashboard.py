@@ -19,7 +19,7 @@ Features:
 import json
 import time
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, List, Optional, Type, cast
 import socket
 
 try:
@@ -109,7 +109,7 @@ class ComprehensivePerformanceDashboard:
         # Initialize components
         self.static_generator = DashboardClass()
 
-        self.logger.info(
+        cast(Any, self.logger).info(
             f"Comprehensive Performance Dashboard initialized on port {port}"
         )
 
@@ -417,7 +417,7 @@ class ComprehensivePerformanceDashboard:
                 "timestamp": datetime.now(),
             }
         except Exception as e:
-            self.logger.error(f"Error getting system metrics: {e}")
+            cast(Any, self.logger).error(f"Error getting system metrics: {e}")
             return {
                 "cpu_percent": 0,
                 "memory_percent": 0,
@@ -470,12 +470,12 @@ class ComprehensivePerformanceDashboard:
                         -max_points:
                     ]
 
-            self.logger.debug(
+            logging.debug(
                 f"Updated metrics: CPU {metrics['cpu_percent']:.1f}%, "
                 f"Memory {metrics['memory_percent']:.1f}%"
             )
         except Exception as e:
-            self.logger.error(f"Error updating metrics: {e}")
+            logging.error(f"Failed to update metrics: {e}")
 
     def create_charts(self) -> Dict[str, Any]:
         """Create chart data from performance metrics."""
@@ -574,8 +574,8 @@ class ComprehensivePerformanceDashboard:
                 json.dump(export_data, f, indent=2, default=str)
 
             return filename
-        except Exception:
-            self.logger.error("Error exporting data")
+        except Exception as e:
+            logging.error(f"Failed to export data: {e}")
             return None
 
     def clear_data(self):
@@ -589,7 +589,7 @@ class ComprehensivePerformanceDashboard:
             "validation_results": [],
             "system_metrics": [],
         }
-        self.logger.info("Performance data cleared")
+        logging.info("Performance data cleared")
 
     def generate_report(self) -> Dict[str, Any]:
         """Generate performance summary report."""
@@ -636,7 +636,7 @@ class ComprehensivePerformanceDashboard:
 
             return report
         except Exception as e:
-            self.logger.error(f"Error generating report: {e}")
+            logging.error(f"Failed to generate report: {e}")
             return {"error": str(e)}
 
     def _generate_recommendations(
@@ -693,7 +693,7 @@ class ComprehensivePerformanceDashboard:
             charts = self.create_charts()
             return charts.get("memory-chart", {})
 
-        self.logger.info("Dashboard callbacks configured")
+        logging.info("Dashboard callbacks configured")
 
     def run(self, host: str = "127.0.0.1", debug: bool = False, test_mode: bool = True):
         """Run the comprehensive performance dashboard."""
@@ -714,9 +714,9 @@ class ComprehensivePerformanceDashboard:
 
             if self._is_port_in_use(host, self.port):
                 self.port = self._find_available_port(host)
-                self.logger.info(f"Port {self.port} found available")
+                logging.info(f"Port {self.port} found available")
 
-            self.logger.info(
+            logging.info(
                 f"Starting Comprehensive Performance Dashboard on http://{host}:{self.port}"
             )
 
@@ -733,14 +733,14 @@ class ComprehensivePerformanceDashboard:
                         "threaded": True,
                     },
                 ).start()
-                self.logger.info("Dashboard started in test mode")
+                logging.info("Dashboard started in test mode")
                 return
 
             # Run the app
             self.app.run_server(debug=debug, host=host, port=self.port)
 
         except Exception as e:
-            self.logger.error(f"Error running dashboard: {e}")
+            logging.error(f"Error running dashboard: {e}")
             raise
 
     def _is_port_in_use(self, host: str, port: int) -> bool:

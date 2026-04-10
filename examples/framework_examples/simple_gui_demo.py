@@ -14,7 +14,7 @@ from tkinter import messagebox, ttk
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 
-def launch_simple_gui():
+def launch_simple_gui() -> None:
     """Launch a simple demonstration GUI."""
 
     # Create main window
@@ -72,7 +72,7 @@ def launch_simple_gui():
     button_frame = ttk.Frame(main_frame)
     button_frame.pack(fill=tk.X, pady=(0, 20))
 
-    def show_info():
+    def show_info() -> None:
         messagebox.showinfo(
             "APGI Framework",
             "Framework successfully installed and configured!\n\n"
@@ -83,7 +83,7 @@ def launch_simple_gui():
             "• Access all framework modules",
         )
 
-    def show_examples():
+    def show_examples() -> None:
         examples_path = Path(__file__).parent
         messagebox.showinfo(
             "Examples Location", f"Framework examples are located at:\n{examples_path}"
@@ -103,7 +103,7 @@ def launch_simple_gui():
     root.mainloop()
 
 
-def main():
+def main() -> None:
     """Main function for GUI example."""
     print("Starting APGI Framework GUI Demo...")
     print("This demonstrates that the framework is properly installed.")
@@ -113,11 +113,8 @@ def main():
         launch_simple_gui()
     except Exception as e:
         print(f"Error launching GUI: {e}")
-        return 1
-
-    return 0
+        print("GUI demo failed to start.")
 
 
 if __name__ == "__main__":
-    exit_code = main()
-    sys.exit(exit_code)
+    main()

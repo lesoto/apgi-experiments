@@ -915,6 +915,16 @@ def run_experiment(experiment_name: str, **kwargs):
         raise
 
 
+def get_available_experiments() -> Dict[str, str]:
+    """Get available experiments as a standalone function.
+
+    Returns:
+        Dict mapping experiment names to their descriptions.
+    """
+    runner = ComprehensiveExperimentRunner()
+    return runner.get_available_experiments()
+
+
 def create_parser() -> argparse.ArgumentParser:
     """Create the main argument parser."""
     parser = argparse.ArgumentParser(

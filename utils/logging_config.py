@@ -75,9 +75,9 @@ class SearchQuery:
 class LogStreamer:
     """Real-time log streaming functionality."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.subscribers = {}
-        self.queue = queue.Queue()
+        self.queue: queue.Queue = queue.Queue()
         self.running = False
         self.thread = None
 
@@ -96,12 +96,12 @@ class LogStreamer:
         }
         return subscriber_id
 
-    def unsubscribe(self, subscriber_id: str):
+    def unsubscribe(self, subscriber_id: str) -> None:
         """Unsubscribe from log stream."""
         if subscriber_id in self.subscribers:
             del self.subscribers[subscriber_id]
 
-    def publish(self, entry: LogEntry):
+    def publish(self, entry: LogEntry) -> None:
         """Publish log entry to subscribers."""
         for subscriber_id, subscriber in self.subscribers.items():
             # Apply filters
@@ -118,20 +118,20 @@ class LogStreamer:
             except (ValueError, TypeError, AttributeError, RuntimeError) as e:
                 logger.error(f"Error in log subscriber {subscriber_id}: {e}")
 
-    def start_streaming(self):
+    def start_streaming(self) -> None:
         """Start the streaming thread."""
         if not self.running:
             self.running = True
             self.thread = threading.Thread(target=self._stream_worker, daemon=True)
             self.thread.start()
 
-    def stop_streaming(self):
+    def stop_streaming(self) -> None:
         """Stop the streaming thread."""
         self.running = False
         if self.thread:
             self.thread.join()
 
-    def _stream_worker(self):
+    def _stream_worker(self) -> None:
         """Background worker for streaming."""
         while self.running:
             try:
@@ -168,7 +168,7 @@ class APGILogger:
 
     def _validate_logging_config(
         self, log_level: str, enable_console: bool, queue_size: int
-    ):
+    ) -> None:
         """Validate logging configuration parameters with default fallbacks."""
         # Validate and fallback log level
         valid_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
@@ -181,7 +181,8 @@ class APGILogger:
             log_level = log_level.upper()
 
         # Validate and fallback enable_console
-        if not isinstance(enable_console, bool):
+        is_console_bool = isinstance(enable_console, bool)
+        if not is_console_bool:
             logger.warning(
                 f"enable_console must be a boolean, got {type(enable_console)}. Using default True"
             )
@@ -209,7 +210,7 @@ class APGILogger:
         log_level: Optional[str] = None,
         enable_console: Optional[bool] = None,
         queue_size: Optional[int] = None,
-    ):
+    ) -> None:
         """Update logging configuration with validation and fallbacks."""
         config_changed = False
 
@@ -228,7 +229,8 @@ class APGILogger:
 
         # Validate and update enable_console
         if enable_console is not None:
-            if not isinstance(enable_console, bool):
+            is_console_bool = isinstance(enable_console, bool)
+            if not is_console_bool:
                 logger.warning(
                     f"enable_console must be a boolean, got {type(enable_console)}. Keeping current {self.enable_console}"
                 )
@@ -262,7 +264,7 @@ class APGILogger:
         else:
             logger.debug("No configuration changes applied")
 
-    def _setup_logging(self):
+    def _setup_logging(self) -> None:
         """Configure loguru logger with custom settings."""
         # Remove default logger
         logger.remove()
@@ -288,7 +290,7 @@ class APGILogger:
             rotation="10 MB",
             retention="30 days",
             compression="zip",
-            enqueue={"queue_size": self.queue_size},
+            enqueue=True,
         )
 
         # Error-specific log file with queue limit
@@ -300,7 +302,7 @@ class APGILogger:
             rotation="5 MB",
             retention="60 days",
             compression="zip",
-            enqueue={"queue_size": self.queue_size},
+            enqueue=True,
             backtrace=True,
             diagnose=True,
         )
@@ -314,7 +316,7 @@ class APGILogger:
             rotation="5 MB",
             retention="7 days",
             filter=lambda record: "metric" in record["extra"],
-            enqueue={"queue_size": self.queue_size},
+            enqueue=True,
         )
 
         # Structured JSON log for machine processing with queue limit
@@ -326,7 +328,7 @@ class APGILogger:
             rotation="20 MB",
             retention="30 days",
             serialize=True,
-            enqueue={"queue_size": self.queue_size},
+            enqueue=True,
         )
 
         self.log_files = {
@@ -336,7 +338,9 @@ class APGILogger:
             "structured": json_log_file,
         }
 
-    def log_simulation_start(self, simulation_type: str, parameters: Dict[str, Any]):
+    def log_simulation_start(
+        self, simulation_type: str, parameters: Dict[str, Any]
+    ) -> None:
         """Log the start of a simulation with parameters."""
         logger.info(f"Starting {simulation_type} simulation")
         logger.bind(simulation_type=simulation_type, parameters=parameters).debug(
@@ -345,7 +349,7 @@ class APGILogger:
 
     def log_simulation_end(
         self, simulation_type: str, duration: float, results_summary: Dict[str, Any]
-    ):
+    ) -> None:
         """Log the end of a simulation with results summary."""
         logger.info(f"Completed {simulation_type} simulation in {duration:.2f} seconds")
         logger.bind(
@@ -354,7 +358,7 @@ class APGILogger:
 
     def log_parameter_estimation(
         self, method: str, parameters: Dict[str, Any], log_likelihood: float
-    ):
+    ) -> None:
         """Log parameter estimation results."""
         logger.info(f"Parameter estimation using {method} method")
         logger.bind(
@@ -363,7 +367,7 @@ class APGILogger:
 
     def log_validation_result(
         self, protocol: str, passed: bool, metrics: Dict[str, float]
-    ):
+    ) -> None:
         """Log validation protocol results."""
         status = "PASSED" if passed else "FAILED"
         logger.info(f"Validation protocol {protocol}: {status}")
@@ -373,7 +377,7 @@ class APGILogger:
 
     def log_performance_metric(
         self, metric_name: str, value: float, unit: str = "seconds"
-    ):
+    ) -> None:
         """Log performance metrics."""
         logger.info(f"Performance: {metric_name} = {value:.3f} {unit}")
         logger.bind(metric=metric_name, value=value, unit=unit).debug(
@@ -404,7 +408,7 @@ class APGILogger:
                 }
         return summary
 
-    def log_error_with_context(self, error: Exception, context: Dict[str, Any]):
+    def log_error_with_context(self, error: Exception, context: Dict[str, Any]) -> None:
         """Log errors with additional context information."""
         error_type = type(error).__name__
         error_message = str(error)
@@ -426,7 +430,7 @@ class APGILogger:
 
     def log_data_processing(
         self, data_type: str, file_path: str, records_processed: int, duration: float
-    ):
+    ) -> None:
         """Log data processing operations."""
         logger.info(
             f"Processed {records_processed} {data_type} records from {file_path} in {duration:.2f}s"
@@ -439,14 +443,14 @@ class APGILogger:
             throughput=records_processed / duration,
         ).debug("Data processing details")
 
-    def log_model_configuration(self, model_name: str, config: Dict[str, Any]):
+    def log_model_configuration(self, model_name: str, config: Dict[str, Any]) -> None:
         """Log model configuration details."""
         logger.info(f"Configuring {model_name} model")
         logger.bind(model_name=model_name, configuration=config).debug(
             "Model configuration"
         )
 
-    def log_system_info(self):
+    def log_system_info(self) -> None:
         """Log system information for debugging."""
         import platform
 
@@ -713,7 +717,7 @@ class APGILogger:
         end_time: Optional[datetime] = None,
         format_type: str = "json",
         log_level: Optional[str] = None,
-    ):
+    ) -> bool:
         """Export logs to a file for analysis.
 
         Args:
@@ -768,7 +772,7 @@ class APGILogger:
             logger.error(f"Error exporting logs: {e}")
             return False
 
-    def cleanup_old_logs(self, days_to_keep: int = 30):
+    def cleanup_old_logs(self, days_to_keep: int = 30) -> None:
         """Clean up old log files."""
         from datetime import datetime, timedelta
 
@@ -903,7 +907,7 @@ class APGILogger:
         """Subscribe to real-time log streaming."""
         return self.streamer.subscribe(callback, level_filter, module_filter)
 
-    def stop_streaming(self, subscriber_id: str):
+    def stop_streaming(self, subscriber_id: str) -> None:
         """Unsubscribe from log streaming."""
         self.streamer.unsubscribe(subscriber_id)
 
@@ -972,7 +976,7 @@ class APGILogger:
 
         return stats
 
-    def set_up_alerts(self, error_threshold: int = 10, time_window: int = 300):
+    def set_up_alerts(self, error_threshold: int = 10, time_window: int = 300) -> None:
         """Set up log alerts for error monitoring."""
         # This would implement alerting logic
         # For now, just log that alerts are configured
@@ -980,7 +984,7 @@ class APGILogger:
             f"Log alerts configured: {error_threshold} errors in {time_window}s"
         )
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Cleanup when logger is destroyed."""
         if hasattr(self, "streamer"):
             self.streamer.stop_streaming()
@@ -996,29 +1000,29 @@ def log_simulation(
     parameters: Dict[str, Any],
     duration: float,
     results: Dict[str, Any],
-):
+) -> None:
     """Convenience function for logging complete simulation."""
     apgi_logger.log_simulation_start(simulation_type, parameters)
     apgi_logger.log_simulation_end(simulation_type, duration, results)
 
 
-def log_performance(metric_name: str, value: float, unit: str = "seconds"):
+def log_performance(metric_name: str, value: float, unit: str = "seconds") -> None:
     """Convenience function for performance logging."""
     apgi_logger.log_performance_metric(metric_name, value, unit)
 
 
-def log_error(error: Exception, operation: str, **context):
+def log_error(error: Exception, operation: str, **context: Any) -> None:
     """Convenience function for error logging."""
     context["operation"] = operation
     apgi_logger.log_error_with_context(error, context)
 
 
 # Decorators for automatic logging
-def log_execution_time(metric_name: str = "execution_time"):
+def log_execution_time(metric_name: str = "execution_time") -> Callable[[Any], Any]:
     """Decorator to automatically log function execution time."""
 
-    def decorator(func):
-        def wrapper(*args, **kwargs):
+    def decorator(func: Any) -> Any:
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             start_time = datetime.now()
             try:
                 result = func(*args, **kwargs)
@@ -1036,11 +1040,11 @@ def log_execution_time(metric_name: str = "execution_time"):
     return decorator
 
 
-def log_function_call(level: str = "DEBUG"):
+def log_function_call(level: str = "DEBUG") -> Callable[[Any], Any]:
     """Decorator to log function calls."""
 
-    def decorator(func):
-        def wrapper(*args, **kwargs):
+    def decorator(func: Any) -> Any:
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             logger.bind(function=func.__name__, args=args, kwargs=kwargs).log(
                 level, f"Calling {func.__name__}"
             )

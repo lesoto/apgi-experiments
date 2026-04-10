@@ -104,7 +104,16 @@ class IntegratedDataManager:
 
         Returns:
             Experiment ID
+
+        Raises:
+            DataManagementError: If experiment is already registered
         """
+        # Check for duplicate experiment
+        if experiment_id in self.active_experiments:
+            raise DataManagementError(
+                f"Experiment {experiment_id} is already registered"
+            )
+
         try:
             # Register with monitor
             self.experiment_monitor.register_experiment(experiment_id, metadata)
@@ -351,13 +360,13 @@ class IntegratedDataManager:
                 "experiment_id": experiment_id,
                 "metadata": exp_data["metadata"],
                 "start_time": exp_data["start_time"].isoformat(),
-                "status": monitor_data.get("status", "unknown")
-                if monitor_data
-                else "unknown",
+                "status": (
+                    monitor_data.get("status", "unknown") if monitor_data else "unknown"
+                ),
                 "progress": monitor_data.get("progress", 0.0) if monitor_data else 0.0,
-                "statistics": monitor_data.get("statistics", {})
-                if monitor_data
-                else {},
+                "statistics": (
+                    monitor_data.get("statistics", {}) if monitor_data else {}
+                ),
                 "data_counts": {
                     "results": len(exp_data["results"]),
                     "trials": len(exp_data["trials"]),
@@ -438,7 +447,7 @@ class IntegratedDataManager:
         try:
             if data is not None:
                 # Validate provided data
-                validation_results = {
+                validation_results: Dict[str, Any] = {
                     "status": "valid",
                     "warnings": [],
                     "errors": [],
@@ -489,7 +498,7 @@ class IntegratedDataManager:
             Cleaning results with operations performed
         """
         try:
-            cleaning_results = {
+            cleaning_results: Dict[str, Any] = {
                 "operations": [],
                 "warnings": [],
                 "fixed_issues": 0,

@@ -4,19 +4,21 @@ Network module for APGI Framework.
 This module provides network-intensive operations.
 """
 
+from typing import Any, Dict, List
+
 
 # Mock classes for testing
 class NetworkManager:
     """Mock network manager for testing purposes."""
 
-    def __init__(self):
-        self.connections = []
-        self.data_transferred = 0
+    def __init__(self) -> None:
+        self.connections: List[Dict[str, Any]] = []
+        self.data_transferred: int = 0
 
-    def create_connection(self, target, port):
+    def create_connection(self, target: str, port: int) -> Dict[str, Any]:
         """Create a network connection."""
         connection_id = f"conn_{hash(target + str(port)) % 10000:04d}"
-        connection = {
+        connection: Dict[str, Any] = {
             "connection_id": connection_id,
             "target": target,
             "port": port,
@@ -26,7 +28,7 @@ class NetworkManager:
         self.connections.append(connection)
         return connection
 
-    def transfer_data(self, connection_id, data):
+    def transfer_data(self, connection_id: str, data: Any) -> Dict[str, Any]:
         """Transfer data over a connection."""
         data_size = len(str(data))
         self.data_transferred += data_size
@@ -36,7 +38,7 @@ class NetworkManager:
             "total_transferred": self.data_transferred,
         }
 
-    def close_connection(self, connection_id):
+    def close_connection(self, connection_id: str) -> None:
         """Close a network connection."""
         for conn in self.connections:
             if conn["connection_id"] == connection_id:
@@ -44,7 +46,7 @@ class NetworkManager:
                 conn["closed_at"] = "2024-01-01T00:01:00Z"
                 break
 
-    def get_status(self):
+    def get_status(self) -> Dict[str, Any]:
         """Get network status."""
         return {
             "active_connections": len(

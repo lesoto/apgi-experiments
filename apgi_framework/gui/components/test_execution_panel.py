@@ -66,7 +66,7 @@ class ExecutionPanel(ctk.CTkFrame):
 
     def __init__(
         self,
-        parent,
+        parent: Any,
         test_name: str,
         controller: Optional[MainApplicationController] = None,
         progress_callback: Optional[Callable] = None,
@@ -112,7 +112,7 @@ class ExecutionPanel(ctk.CTkFrame):
 
         logger.info(f"TestExecutionPanel initialized for test: {test_name}")
 
-    def _create_widgets(self):
+    def _create_widgets(self) -> None:
         """Create test execution widgets."""
         # Create scrollable frame
         self.scrollable_frame = ctk.CTkScrollableFrame(self)
@@ -672,17 +672,17 @@ class ExecutionPanel(ctk.CTkFrame):
 
     def _calculate_total_operations(self, test_params: Dict[str, Any]) -> int:
         """Calculate total operations for progress tracking."""
-        n_trials = test_params.get("n_trials", 1000)
-        n_participants = test_params.get("n_participants", 20)
+        n_trials = int(test_params.get("n_trials", 1000))
+        n_participants = int(test_params.get("n_participants", 20))
 
         if self.test_name == "Threshold Insensitivity":
-            n_drug_conditions = test_params.get("n_drug_conditions", 5)
-            return n_trials * n_participants * n_drug_conditions
+            n_drug_conditions = int(test_params.get("n_drug_conditions", 5))
+            return int(n_trials * n_participants * n_drug_conditions)
         elif self.test_name == "Cross-Species Validation":
-            n_species = test_params.get("n_species", 3)
-            return n_trials * n_participants * n_species
+            n_species = int(test_params.get("n_species", 3))
+            return int(n_trials * n_participants * n_species)
         else:
-            return n_trials * n_participants
+            return int(n_trials * n_participants)
 
     def _update_progress(self, completed: int, total: int, message: str):
         """Update progress bar and label."""
@@ -812,16 +812,19 @@ class ExecutionPanel(ctk.CTkFrame):
         """Export results as JSON."""
         import json
 
+        # Build results data
+        results_data: Any = self.test_results
+        has_to_dict = self.test_results is not None
+        if has_to_dict:
+            has_to_dict = hasattr(self.test_results, "to_dict")
+        if has_to_dict:
+            results_data = self.test_results.to_dict()  # type: ignore[attr-defined]
+
         export_data = {
             "test_name": self.test_name,
             "timestamp": datetime.now().isoformat(),
             "parameters": self._get_test_parameters(),
-            "results": (
-                self.test_results.to_dict()
-                if self.test_results is not None
-                and hasattr(self.test_results, "to_dict")
-                else self.test_results
-            ),
+            "results": results_data,
         }
 
         with open(file_path, "w") as f:
@@ -861,19 +864,19 @@ class ExecutionPanel(ctk.CTkFrame):
         """Default log callback if none provided."""
         logger.info(f"[{self.test_name}] {message}")
 
-    def set_test_started_callback(self, callback: Callable):
+    def set_test_started_callback(self, callback: Callable) -> None:
         """Set callback for test started events."""
         self.on_test_started = callback
 
-    def set_test_completed_callback(self, callback: Callable):
+    def set_test_completed_callback(self, callback: Callable) -> None:
         """Set callback for test completed events."""
         self.on_test_completed = callback
 
-    def set_test_failed_callback(self, callback: Callable):
+    def set_test_failed_callback(self, callback: Callable) -> None:
         """Set callback for test failed events."""
         self.on_test_failed = callback
 
-    def set_progress_updated_callback(self, callback: Callable):
+    def set_progress_updated_callback(self, callback: Callable) -> None:
         """Set callback for progress update events."""
         self.on_progress_updated = callback
 

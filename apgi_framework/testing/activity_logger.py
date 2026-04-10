@@ -420,8 +420,17 @@ class ActivityLogger:
                         ActivityLevel.CRITICAL,
                     ]:
                         formatted = text_formatter.format(entry)
-                        self.console_handler.stream.write(formatted + "\n")
-                self.console_handler.flush()
+                        try:
+                            self.console_handler.stream.write(formatted + "\n")
+                        except ValueError:
+                            # Stream closed, disable console output
+                            self.config.enable_console_output = False
+                            break
+                try:
+                    self.console_handler.flush()
+                except ValueError:
+                    # Stream closed, disable console output
+                    self.config.enable_console_output = False
 
         except Exception as e:
             # Use standard logging to avoid recursion

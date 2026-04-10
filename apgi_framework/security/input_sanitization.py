@@ -6,7 +6,7 @@ Provides secure input validation and sanitization utilities.
 import logging
 import re
 from pathlib import Path
-from typing import Any, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
@@ -364,7 +364,7 @@ class InputSanitizer:
         except json.JSONDecodeError as e:
             raise SecurityError(f"Invalid JSON: {e}")
 
-        return parsed
+        return cast(Dict[Any, Any], parsed)
 
     def create_secure_filename(self, base_name: str, extension: str) -> str:
         """

@@ -730,14 +730,14 @@ class ExperimentalControlValidator:
         self, motor_details: Dict, verbal_details: Dict
     ) -> float:
         """Calculate overall response quality score"""
-        motor_quality = motor_details.get("mean_accuracy", 0) * motor_details.get(
-            "mean_consistency", 0
+        motor_quality = float(motor_details.get("mean_accuracy", 0)) * float(
+            motor_details.get("mean_consistency", 0)
         )
-        verbal_quality = verbal_details.get("mean_clarity", 0) * verbal_details.get(
-            "mean_comprehension", 0
+        verbal_quality = float(verbal_details.get("mean_clarity", 0)) * float(
+            verbal_details.get("mean_comprehension", 0)
         )
 
-        return (motor_quality + verbal_quality) / 2.0
+        return float((motor_quality + verbal_quality) / 2.0)
 
     def _calculate_reliability_score(
         self,

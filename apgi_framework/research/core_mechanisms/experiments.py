@@ -76,7 +76,7 @@ class ConsciousnessExperiment(ExperimentalParadigm):
         base_data = np.random.randn(trials)
         # Modulate by consciousness level
         consciousness_modulation = base_data * (1 + self.consciousness_level)
-        return consciousness_modulation
+        return consciousness_modulation  # type: ignore[no-any-return]
 
 
 class SomaticMarkerExperiment(ExperimentalParadigm):
@@ -96,7 +96,7 @@ class SomaticMarkerExperiment(ExperimentalParadigm):
         base_data = np.random.randn(trials)
         # Apply somatic gain
         somatic_effect = base_data * self.somatic_gain
-        return somatic_effect
+        return somatic_effect  # type: ignore[no-any-return]
 
 
 # Experimental module interface

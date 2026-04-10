@@ -22,7 +22,7 @@ from apgi_framework.neural.pupillometry_interface import (
 )
 
 
-def test_pupillometry_interface():
+def test_pupillometry_interface() -> None:
     """Test pupillometry interface functionality."""
     print("=" * 60)
     print("Testing PupillometryInterface")
@@ -94,7 +94,7 @@ def test_pupillometry_interface():
     print("\n✓ PupillometryInterface test completed successfully!\n")
 
 
-def test_physiological_monitoring():
+def test_physiological_monitoring() -> None:
     """Test physiological monitoring functionality."""
     print("=" * 60)
     print("Testing PhysiologicalMonitoring")

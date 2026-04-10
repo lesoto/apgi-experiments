@@ -11,9 +11,10 @@ import logging
 from dataclasses import asdict
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import h5py
+import numpy as np
 
 from ..core.data_models import (
     ExperimentalTrial,
@@ -27,15 +28,17 @@ class DataExporter:
     Handles multi-format data export (CSV, JSON, HDF5) for experimental results.
     """
 
-    def __init__(self, output_dir: str = "exports"):
+    def __init__(self, output_dir: Optional[str] = None):
         """
         Initialize the data exporter.
 
         Args:
-            output_dir: Directory to save exported data
+            output_dir: Directory to save exported data (default: current directory)
         """
+        if output_dir is None:
+            output_dir = "."
         self.output_dir = Path(output_dir)
-        self.output_dir.mkdir(exist_ok=True)
+        self.output_dir.mkdir(exist_ok=True, parents=True)
         self.logger = logging.getLogger(__name__)
 
     def export_falsification_results(
@@ -321,3 +324,81 @@ class DataExporter:
 
         self.logger.info(f"Exported {len(trials)} experimental trials to {filepath}")
         return str(filepath)
+
+    # Convenience methods for simpler API
+    def export_to_json(self, data: dict, filepath: Union[str, Path]) -> str:
+        """
+        Export dictionary data to JSON file.
+
+        Args:
+            data: Dictionary to export
+            filepath: Path for output file
+
+        Returns:
+            Path to exported file
+        """
+        filepath = Path(filepath)
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(filepath, "w") as f:
+            json.dump(data, f, indent=2, default=str)
+
+        self.logger.info(f"Exported data to {filepath}")
+        return str(filepath)
+
+    def export_to_csv(self, data, filepath: Union[str, Path]) -> str:
+        """
+        Export data to CSV file.
+
+        Args:
+            data: DataFrame or dict/list to export
+            filepath: Path for output file
+
+        Returns:
+            Path to exported file
+        """
+        import pandas as pd
+
+        filepath = Path(filepath)
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+
+        # Convert to DataFrame if needed
+        if isinstance(data, pd.DataFrame):
+            df = data
+        elif isinstance(data, dict):
+            df = pd.DataFrame([data])
+        elif isinstance(data, list):
+            df = pd.DataFrame(data)
+        else:
+            raise ValueError(f"Cannot export type {type(data)} to CSV")
+
+        df.to_csv(filepath, index=False)
+        self.logger.info(f"Exported data to {filepath}")
+        return str(filepath)
+
+    def export_numpy(self, data: np.ndarray, filepath: Union[str, Path]) -> str:
+        """
+        Export numpy array to file.
+
+        Args:
+            data: Numpy array to export
+            filepath: Path for output file
+
+        Returns:
+            Path to exported file
+        """
+        filepath = Path(filepath)
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+
+        np.save(filepath, data)
+        self.logger.info(f"Exported array to {filepath}")
+        return str(filepath)
+
+    def get_supported_formats(self) -> list:
+        """
+        Get list of supported export formats.
+
+        Returns:
+            List of format names
+        """
+        return ["csv", "json", "hdf5", "npy"]

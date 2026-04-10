@@ -11,6 +11,7 @@ import sys
 import tempfile
 from datetime import datetime
 from pathlib import Path
+from typing import Tuple
 
 # Add the project root to the path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -21,14 +22,13 @@ from apgi_framework.test_enhancement.coverage.coverage_collector import (
 from apgi_framework.test_enhancement.models import TestConfiguration, TestExecution
 
 
-def create_sample_module():
+def create_sample_module() -> Tuple[str, str]:
     """Create a sample Python module for coverage demonstration."""
     temp_dir = tempfile.mkdtemp()
     sample_file = os.path.join(temp_dir, "sample_module.py")
 
     with open(sample_file, "w") as f:
-        f.write(
-            """
+        f.write("""
 def calculate_area(length, width):
     '''Calculate the area of a rectangle.'''
     if length <= 0 or width <= 0:
@@ -53,13 +53,12 @@ class Rectangle:
     
     def perimeter(self):
         return calculate_perimeter(self.length, self.width)
-"""
-        )
+""")
 
     return temp_dir, sample_file
 
 
-def demonstrate_coverage_collection():
+def demonstrate_coverage_collection() -> None:
     """Demonstrate coverage collection with the CoverageCollector."""
     print("=== CoverageCollector Demonstration ===\n")
 
@@ -94,6 +93,8 @@ def demonstrate_coverage_collection():
             import importlib.util
 
             spec = importlib.util.spec_from_file_location("sample_module", sample_file)
+            if spec is None or spec.loader is None:
+                raise ImportError(f"Could not load module spec from {sample_file}")
             sample_module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(sample_module)
 

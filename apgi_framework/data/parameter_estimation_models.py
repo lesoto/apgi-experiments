@@ -423,9 +423,9 @@ class SessionData:
     def get_all_trials(self) -> List[TrialData]:
         """Get all trials from session."""
         all_trials: List[TrialData] = []
-        all_trials.extend(self.detection_trials)  # type: ignore
-        all_trials.extend(self.heartbeat_trials)  # type: ignore
-        all_trials.extend(self.oddball_trials)  # type: ignore
+        all_trials.extend(self.detection_trials)
+        all_trials.extend(self.heartbeat_trials)
+        all_trials.extend(self.oddball_trials)
         return all_trials
 
     def get_trial_count_by_task(self) -> Dict[str, int]:

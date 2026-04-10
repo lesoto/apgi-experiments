@@ -71,13 +71,25 @@ class RealTimeProgressMonitor:
 
         self._notify_progress()
 
-    def complete_task(self) -> None:
-        """Mark current task as completed."""
+    def complete_task(self, success: bool = True) -> None:
+        """Mark current task as completed.
+
+        Args:
+            success: Whether the task completed successfully
+        """
         self.completed_trials = self.total_trials
         self._notify_progress()
 
-        logger.info(f"Task completed: {self.current_task}")
+        logger.info(f"Task completed: {self.current_task} (success={success})")
         self.current_task = None
+
+    def is_active(self) -> bool:
+        """Check if a task is currently being monitored.
+
+        Returns:
+            True if a task is active
+        """
+        return self.current_task is not None
 
     def add_progress_callback(self, callback: Callable[[Dict[str, Any]], None]) -> None:
         """
@@ -167,7 +179,7 @@ if __name__ == "__main__":
     class ProgressMonitorDemo:
         """Demo application for progress monitoring."""
 
-        def __init__(self):
+        def __init__(self) -> None:
             self.root = tk.Tk()
             self.root.title("Progress Monitoring Demo")
             self.root.geometry("600x400")
@@ -175,11 +187,11 @@ if __name__ == "__main__":
             self.monitor = RealTimeProgressMonitor()
             self.setup_ui()
 
-        def setup_ui(self):
+        def setup_ui(self) -> None:
             """Setup demo UI."""
             # Main frame
             main_frame = ttk.Frame(self.root, padding="20")
-            main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+            main_frame.grid(row=0, column=0, sticky="nsew")
 
             # Title
             title = ttk.Label(
@@ -197,12 +209,12 @@ if __name__ == "__main__":
             self.status_text = tk.Text(main_frame, height=15, width=60)
             self.status_text.grid(row=2, column=0, columnspan=2, pady=10)
 
-        def start_demo(self):
+        def start_demo(self) -> None:
             """Start demo task."""
             self.monitor.start_task("Demo Task", 100)
             self.update_progress()
 
-        def update_progress(self):
+        def update_progress(self) -> None:
             """Update progress display."""
             if self.monitor.is_active():
                 # Simulate progress
@@ -211,7 +223,7 @@ if __name__ == "__main__":
                     self.monitor.update_progress(completed)
 
                     # Update display
-                    status = self.monitor.get_status()
+                    status = self.monitor.get_progress_data()
                     self.status_text.delete(1.0, tk.END)
                     self.status_text.insert(tk.END, f"Task: {status['current_task']}\n")
                     self.status_text.insert(
@@ -235,7 +247,7 @@ if __name__ == "__main__":
                     self.monitor.complete_task(success=True)
                     messagebox.showinfo("Complete", "Demo task completed successfully!")
 
-        def run(self):
+        def run(self) -> None:
             """Run the demo."""
             self.root.mainloop()
 

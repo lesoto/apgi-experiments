@@ -29,7 +29,7 @@ except ImportError:
 try:
     from apgi_framework.logging.standardized_logging import get_logger
 
-    logger = get_logger(__name__)  # type: ignore
+    logger = get_logger(__name__)
 except ImportError:
     import logging
 
@@ -153,7 +153,7 @@ class CrossBrowserTester:
             driver = cast(
                 Any, webdriver.Firefox(options=options)
             )  # Cast to avoid type conflicts
-            driver.quit()  # type: ignore
+            driver.quit()
             browsers["firefox"] = True
             logger.info("Firefox browser detected and working")
         except (WebDriverException, Exception) as e:
@@ -167,7 +167,7 @@ class CrossBrowserTester:
                 driver = cast(
                     Any, webdriver.Safari(options=options)
                 )  # Cast to avoid type conflicts
-                driver.quit()  # type: ignore
+                driver.quit()
                 browsers["safari"] = True
                 logger.info("Safari browser detected and working")
             except (WebDriverException, Exception) as e:

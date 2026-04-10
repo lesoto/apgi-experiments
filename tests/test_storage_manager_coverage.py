@@ -191,7 +191,7 @@ class TestStorageManager:
         ) as mock_delete:
             res = storage_manager.delete_dataset("test_exp_1", confirm=True)
             assert res is True
-            mock_delete.assert_called_once_with("test_exp_1", False)
+            mock_delete.assert_called_once_with("test_exp_1")
 
     def test_delete_dataset_no_confirmation(self, storage_manager):
         with pytest.raises(StorageError, match="requires explicit confirmation"):

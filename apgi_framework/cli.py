@@ -11,7 +11,7 @@ import logging
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 from apgi_framework.main_controller import MainApplicationController
 from apgi_framework.testing.batch_runner import BatchTestRunner
@@ -1017,14 +1017,17 @@ Examples:
             )
 
             # Discover tests based on criteria
-            test_suites = []
+            from typing import List
+            from apgi_framework.utils.framework_test_utils import FrameworkTestSuite
+
+            test_suites: List[FrameworkTestSuite] = []
 
             if args.test_paths:
                 # Run specific test paths
                 for path in args.test_paths:
-                    suite = test_utils.discover_tests_in_path(Path(path))
-                    if suite:
-                        test_suites.append(suite)
+                    discovered = test_utils.discover_tests(Path(path))
+                    # discover_tests always returns a list, extend directly
+                    test_suites.extend(discovered)
             else:
                 # Discover tests by categories, modules, or tags
                 all_suites = test_utils.discover_all_tests()
@@ -1143,39 +1146,39 @@ Examples:
                     )
 
                     if args.categorize:
-                        categories = {}
+                        categories: Dict[str, int] = {}
                         for tc in suite.test_cases:
                             cat = tc.category.value
                             categories[cat] = categories.get(cat, 0) + 1
 
                         logger.info(f"  Categories: {dict(categories)}")
 
-                    logger.info()
+                    logger.info("")
 
                 logger.info(f"Total Tests: {total_tests}")
                 logger.info(f"{'=' * 60}\n")
 
             elif args.list_categories:
-                test_suites = test_utils.discover_all_tests()
-                categories = set()
-                category_counts = {}
+                all_suites_for_list = test_utils.discover_all_tests()
+                categories_set: Set[str] = set()
+                category_counts: Dict[str, int] = {}
 
-                for suite in test_suites:
+                for suite in all_suites_for_list:
                     for tc in suite.test_cases:
                         cat = tc.category.value
-                        categories.add(cat)
+                        categories_set.add(cat)
                         category_counts[cat] = category_counts.get(cat, 0) + 1
 
                 logger.info("\nAvailable Test Categories:")
                 logger.info(f"{'=' * 40}")
-                for category in sorted(categories):
+                for category in sorted(categories_set):
                     logger.info(f"  {category}: {category_counts[category]} tests")
                 logger.info(f"{'=' * 40}\n")
 
             elif args.list_modules:
                 test_suites = test_utils.discover_all_tests()
-                modules = set()
-                module_counts = {}
+                modules: Set[str] = set()
+                module_counts: Dict[str, int] = {}
 
                 for suite in test_suites:
                     module = self._extract_module_from_suite(suite)
@@ -1192,8 +1195,8 @@ Examples:
 
             elif args.list_tags:
                 test_suites = test_utils.discover_all_tests()
-                all_tags = set()
-                tag_counts = {}
+                all_tags: Set[str] = set()
+                tag_counts: Dict[str, int] = {}
 
                 for suite in test_suites:
                     for tc in suite.test_cases:
@@ -1329,8 +1332,12 @@ Examples:
         except Exception as e:
             self.logger.error(f"Enhanced coverage management failed: {e}")
             sys.exit(1)
+
+    def manage_test_coverage(self, args: argparse.Namespace) -> None:
         """Manage test coverage analysis and generation."""
         try:
+            from .testing.test_generator import SuiteGenerator
+
             generator = SuiteGenerator()
 
             if args.analyze:
@@ -1779,11 +1786,13 @@ Examples:
             "experimental_config": {"n_trials": 100, "output_directory": "results"},
         }
 
-    def _extract_module_from_suite(self, suite) -> str:
+    def _extract_module_from_suite(self, suite: Any) -> str:
         """Extract module name from test suite."""
+        from typing import cast
+
         # Extract module from suite name or file path
         if hasattr(suite, "name") and "." in suite.name:
-            return suite.name.split(".")[0]
+            return cast(str, suite.name.split(".")[0])
         elif hasattr(suite, "test_cases") and suite.test_cases:
             # Extract from first test case file path
             file_path = suite.test_cases[0].file_path
@@ -1974,7 +1983,7 @@ Examples:
         logger.info(html_content)
 
     def _save_results_to_file(
-        self, execution, output_file: str, format_type: str
+        self, execution: Any, output_file: str, format_type: str
     ) -> None:
         """Save test results to specified file."""
         try:
@@ -2028,7 +2037,7 @@ Examples:
         except Exception as e:
             self.logger.error(f"Failed to save results to file: {e}")
 
-    def _generate_coverage_report(self, coverage_data, report_format: str) -> None:
+    def _generate_coverage_report(self, coverage_data: Any, report_format: str) -> None:
         """Generate coverage report in specified format."""
         try:
             if report_format == "html":
@@ -2074,7 +2083,7 @@ Examples:
 
         # Build tree structure
         for module_name, module_suites in modules.items():
-            module_node = {
+            module_node: Dict[str, Any] = {
                 "name": module_name,
                 "type": "module",
                 "children": [],
@@ -2085,7 +2094,7 @@ Examples:
             }
 
             for suite in module_suites:
-                suite_node = {
+                suite_node: Dict[str, Any] = {
                     "name": suite.name,
                     "type": "suite",
                     "children": [],
@@ -2133,7 +2142,7 @@ Examples:
 
         return config
 
-    def manage_test_coverage(self, args: argparse.Namespace) -> None:
+    def manage_test_coverage_legacy(self, args: argparse.Namespace) -> None:
         """Manage test coverage analysis and generation (legacy method for compatibility)."""
         # Redirect to enhanced coverage management
         self.manage_enhanced_coverage(args)
@@ -2293,7 +2302,7 @@ def run_failed_tests(result_file: str, parallel: bool = True) -> Any:
         return {"error": str(e)}
 
 
-def main():
+def main() -> None:
     """Entry point for the CLI when run as a module."""
     cli = APGIFrameworkCLI()
     cli.run()

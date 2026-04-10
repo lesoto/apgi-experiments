@@ -13,7 +13,7 @@ import traceback
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, cast
 
 # Declare psutil for conditional import
 psutil: Optional[Any] = None
@@ -558,9 +558,11 @@ class ErrorHandler:
                     estimated_fix_time="1-2 minutes",
                     success_probability=0.95,
                 )
-                return [specific_guidance] + guidance_list
+                return cast(
+                    List[ResolutionGuidance], [specific_guidance] + guidance_list
+                )
 
-        return guidance_list
+        return cast(List[ResolutionGuidance], guidance_list)
 
     def _log_diagnostic_info(self, diagnostic_info: DiagnosticInfo):
         """Log diagnostic information with appropriate level."""

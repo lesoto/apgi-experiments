@@ -226,7 +226,7 @@ class HeartRateMonitor:
 
         heart_rate = 60000.0 / mean_rr  # Convert ms to bpm
 
-        return heart_rate
+        return float(heart_rate)
 
     def compute_hrv_metrics(
         self, rr_intervals: Optional[np.ndarray] = None
@@ -528,7 +528,7 @@ class RespirationMonitor:
         # Clamp to physiological range
         resp_rate = np.clip(resp_rate, self.config.resp_min, self.config.resp_max)
 
-        return resp_rate
+        return float(resp_rate)
 
     def get_current_phase(
         self, resp_signal: np.ndarray, timestamps: np.ndarray, current_time: float
@@ -919,9 +919,9 @@ class PhysiologicalMonitoring:
             )
 
             if cycles:
-                metrics[
-                    "respiration_rate"
-                ] = self.respiration_monitor.compute_respiration_rate(cycles)
+                metrics["respiration_rate"] = (
+                    self.respiration_monitor.compute_respiration_rate(cycles)
+                )
                 metrics["breath_cycles"] = len(cycles)
                 phase_enum = self.respiration_monitor.get_current_phase(
                     resp_data, timestamps, time.time()

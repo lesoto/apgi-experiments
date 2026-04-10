@@ -504,7 +504,7 @@ _config_lock = threading.Lock()
 
 
 def get_config_manager(
-    config_file: Optional[Union[str, Path]] = None
+    config_file: Optional[Union[str, Path]] = None,
 ) -> ConfigurationManager:
     """Get or create the global configuration manager."""
     global _global_config_manager

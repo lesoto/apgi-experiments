@@ -378,38 +378,38 @@ except ImportError:
             pass
 
     # Assign fallback classes to expected names
-    QWidget = FallbackQWidget  # type: ignore[no-redef]
-    QVBoxLayout = FallbackQVBoxLayout  # type: ignore[no-redef]
-    QHBoxLayout = FallbackQHBoxLayout  # type: ignore[no-redef]
-    QTreeWidget = FallbackQTreeWidget  # type: ignore[no-redef]
-    QTreeWidgetItem = FallbackQTreeWidgetItem  # type: ignore[no-redef]
-    QTextEdit = FallbackQTextEdit  # type: ignore[no-redef]
-    QSplitter = FallbackQSplitter  # type: ignore[no-redef]
-    QTabWidget = FallbackQTabWidget  # type: ignore[no-redef]
-    QLabel = FallbackQLabel  # type: ignore[no-redef]
-    QPushButton = FallbackQPushButton  # type: ignore[no-redef]
-    QGroupBox = FallbackQGroupBox  # type: ignore[no-redef]
-    QScrollArea = FallbackQScrollArea  # type: ignore[no-redef]
-    QFrame = FallbackQFrame  # type: ignore[no-redef]
-    QLineEdit = FallbackQLineEdit  # type: ignore[no-redef]
-    QComboBox = FallbackQComboBox  # type: ignore[no-redef]
-    QProgressBar = FallbackQProgressBar  # type: ignore[no-redef]
-    QTableWidget = FallbackQTableWidget  # type: ignore[no-redef]
-    QTableWidgetItem = FallbackQTableWidgetItem  # type: ignore[no-redef]
-    QHeaderView = FallbackQHeaderView  # type: ignore[no-redef]
-    QApplication = FallbackQApplication  # type: ignore[no-redef]
-    QSlider = FallbackQSlider  # type: ignore[no-redef]
-    QSpinBox = FallbackQSpinBox  # type: ignore[no-redef]
-    Signal = FallbackSignal  # type: ignore[no-redef]
-    QSyntaxHighlighter = FallbackQSyntaxHighlighter  # type: ignore[no-redef]
-    QPaintEvent = FallbackQPaintEvent  # type: ignore[no-redef]
-    QFont = FallbackQFont  # type: ignore[no-redef]
-    QColor = FallbackQColor  # type: ignore[no-redef]
-    Qt = FallbackQt  # type: ignore[no-redef]
-    QRect = FallbackQRect  # type: ignore[no-redef]
-    QPainter = FallbackQPainter  # type: ignore[no-redef]
-    QPen = FallbackQPen  # type: ignore[no-redef]
-    QBrush = FallbackQBrush  # type: ignore[no-redef]
+    QWidget = FallbackQWidget
+    QVBoxLayout = FallbackQVBoxLayout
+    QHBoxLayout = FallbackQHBoxLayout
+    QTreeWidget = FallbackQTreeWidget
+    QTreeWidgetItem = FallbackQTreeWidgetItem
+    QTextEdit = FallbackQTextEdit
+    QSplitter = FallbackQSplitter
+    QTabWidget = FallbackQTabWidget
+    QLabel = FallbackQLabel
+    QPushButton = FallbackQPushButton
+    QGroupBox = FallbackQGroupBox
+    QScrollArea = FallbackQScrollArea
+    QFrame = FallbackQFrame
+    QLineEdit = FallbackQLineEdit
+    QComboBox = FallbackQComboBox
+    QProgressBar = FallbackQProgressBar
+    QTableWidget = FallbackQTableWidget
+    QTableWidgetItem = FallbackQTableWidgetItem
+    QHeaderView = FallbackQHeaderView
+    QApplication = FallbackQApplication
+    QSlider = FallbackQSlider
+    QSpinBox = FallbackQSpinBox
+    Signal = FallbackSignal
+    QSyntaxHighlighter = FallbackQSyntaxHighlighter
+    QPaintEvent = FallbackQPaintEvent
+    QFont = FallbackQFont
+    QColor = FallbackQColor
+    Qt = FallbackQt
+    QRect = FallbackQRect
+    QPainter = FallbackQPainter
+    QPen = FallbackQPen
+    QBrush = FallbackQBrush
 
 
 class CoverageProgressBar(QProgressBar):
@@ -442,13 +442,11 @@ class CoverageProgressBar(QProgressBar):
             color = QColor(200, 0, 0)  # Red
 
         # Apply color styling
-        self.setStyleSheet(
-            f"""
+        self.setStyleSheet(f"""
             QProgressBar::chunk {{
                 background-color: {color.name()};
             }}
-        """
-        )
+        """)
 
 
 class CoverageTreeWidget(QTreeWidget):
@@ -456,12 +454,12 @@ class CoverageTreeWidget(QTreeWidget):
 
     coverage_item_selected = Signal(str, object)  # file_path, coverage_data
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[object] = None) -> None:
         super().__init__(parent)
         self._setup_tree()
         self._coverage_items: Dict[str, QTreeWidgetItem] = {}
 
-    def _setup_tree(self):
+    def _setup_tree(self) -> None:
         """Set up the coverage tree widget."""
         self.setHeaderLabels(
             [
@@ -592,7 +590,7 @@ class CoverageDetailWidget(QWidget):
         self._setup_ui()
         self._current_coverage: Optional[ModuleCoverage] = None
 
-    def _setup_ui(self):
+    def _setup_ui(self) -> None:
         """Set up the coverage detail UI."""
         layout = QVBoxLayout(self)
 
@@ -707,7 +705,7 @@ class CoverageTrendWidget(QWidget):
         self._setup_ui()
         self._coverage_history: List[Tuple[datetime, CoverageData]] = []
 
-    def _setup_ui(self):
+    def _setup_ui(self) -> None:
         """Set up the trend visualization UI."""
         layout = QVBoxLayout(self)
 
@@ -830,7 +828,7 @@ class CoverageTrendChart(QWidget):
         self.setMinimumHeight(200)
         self._data_points: List[Tuple[datetime, float]] = []
 
-    def update_data(self, data_points: List[Tuple[datetime, float]]):
+    def update_data(self, data_points: List[Tuple[datetime, float]]) -> None:
         """Update the chart data."""
         self._data_points = data_points
         self.update()

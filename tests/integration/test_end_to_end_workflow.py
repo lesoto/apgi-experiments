@@ -86,8 +86,7 @@ class TestEndToEndWorkflow:
         src_dir.mkdir()
 
         (src_dir / "__init__.py").write_text("")
-        (src_dir / "calculator.py").write_text(
-            """
+        (src_dir / "calculator.py").write_text("""
 def add(a, b):
     return a + b
 
@@ -98,16 +97,14 @@ def divide(a, b):
 
 def multiply(a, b):
     return a * b
-"""
-        )
+""")
 
         # Create test files
         tests_dir = self.project_root / "tests"
         tests_dir.mkdir()
 
         (tests_dir / "__init__.py").write_text("")
-        (tests_dir / "test_calculator.py").write_text(
-            """
+        (tests_dir / "test_calculator.py").write_text("""
 import pytest
 import sys
 from pathlib import Path
@@ -131,11 +128,9 @@ def test_multiply():
 def test_failing_example():
     # This test will fail intentionally
     assert False, "Intentional failure for testing"
-"""
-        )
+""")
 
-        (tests_dir / "test_integration.py").write_text(
-            """
+        (tests_dir / "test_integration.py").write_text("""
 import pytest
 import sys
 from pathlib import Path
@@ -151,22 +146,19 @@ def test_chain_operations():
     x = add(1, 2)
     y = multiply(x, 3)
     assert y == 9
-"""
-        )
+""")
 
         # Create requirements.txt
         (self.project_root / "requirements.txt").write_text("pytest>=6.0.0\n")
 
         # Create pytest.ini
-        (self.project_root / "pytest.ini").write_text(
-            """
+        (self.project_root / "pytest.ini").write_text("""
 [tool:pytest]
 testpaths = tests
 python_files = test_*.py
 python_classes = Test*
 python_functions = test_*
-"""
-        )
+""")
 
     def test_complete_test_discovery_to_report_workflow(self):
         """Test complete workflow from test discovery to report generation."""
@@ -256,8 +248,7 @@ python_functions = test_*
         """Test error handling and recovery scenarios."""
         # Create a test that will cause different types of errors
         error_test_file = self.project_root / "tests" / "test_errors.py"
-        error_test_file.write_text(
-            """
+        error_test_file.write_text("""
 import pytest
 
 def test_import_error():
@@ -273,8 +264,7 @@ def test_timeout_simulation():
     import time
     time.sleep(0.1)  # Short sleep to simulate work
     assert True
-"""
-        )
+""")
 
         os.chdir(self.project_root)
 
@@ -488,13 +478,11 @@ def test_timeout_simulation():
 
         # Scenario 1: Missing dependency recovery
         missing_dep_test = self.project_root / "tests" / "test_missing_dep.py"
-        missing_dep_test.write_text(
-            """
+        missing_dep_test.write_text("""
 def test_missing_dependency():
     import nonexistent_package
     assert True
-"""
-        )
+""")
 
         # Run test and expect failure
         summary = self.batch_runner.run_batch_tests(
@@ -504,13 +492,11 @@ def test_missing_dependency():
         assert summary.failed > 0 or summary.errors > 0
 
         # Simulate recovery by "installing" dependency (modify test)
-        missing_dep_test.write_text(
-            """
+        missing_dep_test.write_text("""
 def test_missing_dependency():
     # import nonexistent_package  # Fixed by commenting out
     assert True
-"""
-        )
+""")
 
         # Re-run test
         recovery_summary = self.batch_runner.run_batch_tests(
@@ -554,8 +540,7 @@ def test_missing_dependency():
         # Create multiple test files to simulate load
         for i in range(5):
             test_file = self.project_root / "tests" / f"test_load_{i}.py"
-            test_file.write_text(
-                f"""
+            test_file.write_text(f"""
 def test_load_test_{i}_1():
     assert {i} + 1 == {i + 1}
 
@@ -566,8 +551,7 @@ def test_load_test_{i}_2():
 def test_load_test_{i}_3():
     data = list(range({i * 10}))
     assert len(data) == {i * 10}
-"""
-            )
+""")
 
         # Measure execution time
         start_time = datetime.now()

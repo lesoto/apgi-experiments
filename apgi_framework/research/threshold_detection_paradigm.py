@@ -267,9 +267,9 @@ class PsychometricFunction:
             # Not enough data for fitting, return default parameters
             default_params = {
                 "parameters": {
-                    "alpha": float(np.median(intensities))
-                    if len(intensities) > 0
-                    else 5.0,
+                    "alpha": (
+                        float(np.median(intensities)) if len(intensities) > 0 else 5.0
+                    ),
                     "beta": 1.0,
                     "gamma": 0.5,
                     "lambda": 0.05,

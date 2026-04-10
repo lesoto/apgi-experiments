@@ -10,7 +10,7 @@ import time
 from collections import deque
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple, cast
 
 import numpy as np
 
@@ -98,7 +98,7 @@ class ArtifactDetector:
             }
         )
 
-        return artifacts
+        return cast(np.ndarray, artifacts)
 
     def detect_gradient_artifacts(
         self, data: np.ndarray, gradient_threshold: float = 50.0
@@ -258,7 +258,7 @@ class EEGInterface:
         if self.config.reference_type == "average":
             # Average reference
             reference = np.mean(data, axis=0, keepdims=True)
-            return data - reference
+            return cast(np.ndarray, np.subtract(data, reference))
 
         elif self.config.reference_type == "none":
             return data

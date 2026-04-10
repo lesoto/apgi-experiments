@@ -459,7 +459,7 @@ class EdgeCaseInterpreter:
 
             # Exponential decay based on distance
             normalized_distance = distance / range_size if range_size > 0 else distance
-            return max(0.0, np.exp(-normalized_distance))
+            return max(0.0, float(np.exp(-normalized_distance)))
 
     def _create_classification(
         self,

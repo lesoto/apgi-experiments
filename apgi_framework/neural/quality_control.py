@@ -532,7 +532,7 @@ class ArtifactDetector:
             artifact_count += cardiac_artifacts.astype(int)
 
         correlated_mask = artifact_count >= 2  # Artifacts in 2+ modalities
-        result["correlated_artifacts"] = correlated_mask  # type: ignore[no-redef]
+        result["correlated_artifacts"] = correlated_mask
 
         # Store artifact statistics
         self.artifact_history.append(

@@ -333,8 +333,7 @@ class TemplateManager:
                     order=4,
                 ),
             ],
-            styles={
-                "css": """
+            styles={"css": """
                 body { font-family: Arial, sans-serif; margin: 40px; }
                 h1 { color: #2c3e50; border-bottom: 2px solid #3498db; }
                 h2 { color: #34495e; margin-top: 30px; }
@@ -343,8 +342,7 @@ class TemplateManager:
                 th { background-color: #3498db; color: white; padding: 10px; }
                 td { padding: 8px; }
                 tr:nth-child(even) { background-color: #f2f2f2; }
-                """
-            },
+                """},
         )
 
         self.save_template(apgi_template)

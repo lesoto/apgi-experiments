@@ -15,7 +15,7 @@ from collections import defaultdict
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 
 import numpy as np
 import pandas as pd
@@ -611,8 +611,7 @@ class ResultsProcessor:
 
         # Save as pickle for faster loading
         pickle_path = self.output_dir / f"{processed_result.result_id}.pkl"
-        with open(pickle_path, "wb") as pickle_file:
-            safe_pickle_dump(processed_result, pickle_file)
+        safe_pickle_dump(processed_result, pickle_path)
 
         logger.debug(f"Processed result saved: {processed_result.result_id}")
 
@@ -776,9 +775,7 @@ class ResultsProcessor:
                 css_class = (
                     "quality-good"
                     if value > 0.8
-                    else "quality-warning"
-                    if value > 0.6
-                    else "quality-poor"
+                    else "quality-warning" if value > 0.6 else "quality-poor"
                 )
                 quality_rows += (
                     f"<tr><td>{key}</td><td class='{css_class}'>{value:.4f}</td></tr>"
@@ -944,8 +941,7 @@ class ResultsProcessor:
                 self.output_dir / "exports" / f"{result.result_id}_{timestamp}.pkl"
             )
 
-            with open(pickle_path, "wb") as f:
-                safe_pickle_dump(result, f)
+            safe_pickle_dump(result, pickle_path)
 
             export_paths.append(str(pickle_path))
 
@@ -990,8 +986,7 @@ class ResultsProcessor:
         if not pickle_path.exists():
             raise FileNotFoundError(f"Processed result {result_id} not found")
 
-        with open(pickle_path, "rb") as f:
-            return safe_pickle_load(f)
+        return cast(ProcessedResult, safe_pickle_load(pickle_path))
 
     def list_processed_results(
         self, experiment_type: Optional[str] = None

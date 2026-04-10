@@ -131,7 +131,8 @@ class ExperimentMonitor:
     def get_experiment_status(self, experiment_id: str) -> Optional[Dict[str, Any]]:
         """Get current experiment status"""
         with self._lock:
-            return self.experiments.get(experiment_id, {}).copy()
+            result: Dict[str, Any] = self.experiments.get(experiment_id, {}).copy()
+            return result if result else None
 
     def get_all_experiments(self) -> Dict[str, Dict[str, Any]]:
         """Get status of all experiments"""
@@ -588,7 +589,7 @@ class DashboardServer:
         if event_type in ["experiment_completed", "experiment_registered"]:
             self._save_dashboard_state()
 
-    def _save_dashboard_state(self):
+    def _save_dashboard_state(self) -> None:
         """Save current dashboard state to disk"""
         try:
             state_file = self.data_dir / "dashboard_state.json"
@@ -599,7 +600,7 @@ class DashboardServer:
         except Exception as e:
             self.logger.error(f"Error saving dashboard state: {str(e)}")
 
-    def _load_dashboard_state(self):
+    def _load_dashboard_state(self) -> None:
         """Load dashboard state from disk"""
         try:
             state_file = self.data_dir / "dashboard_state.json"

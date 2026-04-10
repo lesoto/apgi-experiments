@@ -127,7 +127,7 @@ class DetectionTask:
     def _calculate_detection_probability(self) -> float:
         """Calculate detection probability based on stimulus intensity."""
         # Sigmoid psychometric function
-        return 1.0 / (1.0 + np.exp(-10 * (self.stimulus_intensity - 0.5)))
+        return float(1.0 / (1.0 + np.exp(-10 * (self.stimulus_intensity - 0.5))))
 
     def _generate_response_time(self, detected: bool) -> float:
         """Generate response time based on detection."""
@@ -340,7 +340,7 @@ class DualModalityOddballTask:
                 ["systole", "diastole"], size=self.n_trials, p=[0.5, 0.5]
             )
         else:
-            cardiac_phases = ["none"] * self.n_trials
+            cardiac_phases = np.array(["none"] * self.n_trials)
 
         for trial in range(self.n_trials):
             if not self.running:

@@ -646,7 +646,7 @@ class LoggingUtils:
 
 
 # Global logging utilities instance
-_logging_utils = None
+_logging_utils: Optional[LoggingUtils] = None
 _logging_lock = threading.Lock()
 
 
@@ -662,9 +662,12 @@ def get_logging_utils(base_log_dir: Optional[Union[str, Path]] = None) -> Loggin
     """
     global _logging_utils
     with _logging_lock:
-        if _logging_utils is None or base_log_dir is not None:
+        should_create = _logging_utils is None
+        if base_log_dir is not None:
+            should_create = True
+        if should_create:
             _logging_utils = LoggingUtils(base_log_dir)
-    return _logging_utils
+    return _logging_utils  # type: ignore[return-value]
 
 
 def get_component_logger(

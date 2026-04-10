@@ -26,7 +26,7 @@ class ThemeManager:
     """Dummy ThemeManager for when the real one is not available."""
 
     def __init__(self, initial_theme: str = "normal"):
-        pass
+        self.current_theme = initial_theme
 
     def get_available_themes(self):
         return []

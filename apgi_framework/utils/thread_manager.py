@@ -1,11 +1,13 @@
 """Thread pool manager for APGI Framework to control resource usage."""
 
+from __future__ import annotations
+
 import concurrent.futures
 import logging
 import os
 import threading
 from contextlib import contextmanager
-from typing import Callable, Optional, Any
+from typing import Callable, Optional, Any, cast
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +48,7 @@ class ThreadPoolManager:
         future.add_done_callback(self._active_futures.discard)
 
         logger.debug(f"Submitted task {fn.__name__} to thread pool")
-        return future  # type: concurrent.futures.Future[Any]
+        return cast(concurrent.futures.Future[Any], future)
 
     def submit_with_timeout(
         self,
@@ -69,7 +71,7 @@ class ThreadPoolManager:
         future.add_done_callback(self._active_futures.discard)
 
         logger.debug(f"Submitted task {fn.__name__} with timeout {timeout}s")
-        return future  # type: concurrent.futures.Future[Any]
+        return cast(concurrent.futures.Future[Any], future)
 
     def _wrap_future_with_timeout(
         self, future: concurrent.futures.Future, timeout: float
@@ -158,6 +160,26 @@ class ThreadPoolManager:
 
         self.cancel_all()
         self._executor.shutdown(wait=wait)
+
+    def reconfigure_pool(self, max_workers: int) -> None:
+        """Reconfigure the thread pool with a new size."""
+        if self._shutdown:
+            raise RuntimeError("Cannot reconfigure shut down ThreadPoolManager")
+
+        logger.info(f"Reconfiguring thread pool to max_workers={max_workers}")
+
+        # Cancel pending tasks
+        self.cancel_all()
+
+        # Shutdown old executor
+        old_executor = self._executor
+        old_executor.shutdown(wait=False)
+
+        # Create new executor with new size
+        self._executor = concurrent.futures.ThreadPoolExecutor(
+            max_workers=max_workers,
+            thread_name_prefix="apgi-worker",
+        )
 
     @property
     def active_count(self) -> int:

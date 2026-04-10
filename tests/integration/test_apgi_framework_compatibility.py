@@ -323,16 +323,18 @@ class SyntheticDataGenerator:
             gaze_y[i] = current_y
 
         # Calculate quality metrics
-        quality_metrics = {
-            "data_loss_percentage": np.sum(pupil_diameter < 0.5) / num_samples * 100,
-            "blink_rate_per_minute": len(
-                [t for t in blink_times if t < duration_seconds]
-            )
-            / (duration_seconds / 60),
-            "mean_pupil_diameter": np.mean(pupil_diameter[pupil_diameter > 0.5]),
-            "pupil_diameter_std": np.std(pupil_diameter[pupil_diameter > 0.5]),
-            "gaze_stability_x": np.std(np.diff(gaze_x)),
-            "gaze_stability_y": np.std(np.diff(gaze_y)),
+        quality_metrics: dict[str, float] = {
+            "data_loss_percentage": float(
+                np.sum(pupil_diameter < 0.5) / num_samples * 100
+            ),
+            "blink_rate_per_minute": float(
+                len([t for t in blink_times if t < duration_seconds])
+                / (duration_seconds / 60)
+            ),
+            "mean_pupil_diameter": float(np.mean(pupil_diameter[pupil_diameter > 0.5])),
+            "pupil_diameter_std": float(np.std(pupil_diameter[pupil_diameter > 0.5])),
+            "gaze_stability_x": float(np.std(np.diff(gaze_x))),
+            "gaze_stability_y": float(np.std(np.diff(gaze_y))),
         }
 
         metadata = {
@@ -948,8 +950,7 @@ class TestAPGITestExecution:
         tests_dir.mkdir()
 
         # Core module tests
-        (tests_dir / "test_apgi_core.py").write_text(
-            """
+        (tests_dir / "test_apgi_core.py").write_text("""
 import pytest
 import numpy as np
 
@@ -988,12 +989,10 @@ def test_threshold_detection():
     assert isinstance(conscious_states, np.ndarray)
     assert conscious_states.dtype == bool
     assert np.sum(conscious_states) >= 0  # At least 0 conscious states
-"""
-        )
+""")
 
         # Neural processing tests
-        (tests_dir / "test_neural_processing.py").write_text(
-            """
+        (tests_dir / "test_neural_processing.py").write_text("""
 import pytest
 import numpy as np
 
@@ -1057,12 +1056,10 @@ def test_physiological_monitoring():
     assert 60 <= mean_hr <= 100  # Typical resting HR range
     assert hr_std > 0  # Should have some variability
     assert len(heart_rate) == num_samples
-"""
-        )
+""")
 
         # Integration tests
-        (tests_dir / "test_apgi_integration.py").write_text(
-            """
+        (tests_dir / "test_apgi_integration.py").write_text("""
 import pytest
 import numpy as np
 
@@ -1173,8 +1170,7 @@ def test_apgi_parameter_estimation():
     
     assert len(trial_outcomes) == num_trials
     assert all('surprise' in trial for trial in trial_outcomes)
-"""
-        )
+""")
 
     def test_apgi_test_execution(self):
         """Test execution of APGI-style tests."""
@@ -1218,8 +1214,7 @@ def test_apgi_parameter_estimation():
         tests_dir = self.test_project_dir / "tests"
         error_test_file = tests_dir / "test_apgi_errors.py"
 
-        error_test_file.write_text(
-            """
+        error_test_file.write_text("""
 import pytest
 import numpy as np
 
@@ -1238,8 +1233,7 @@ def test_apgi_calculation_error():
     data = np.array([1, 2, 3])
     result = np.mean(data) / 0  # Division by zero
     assert result > 0
-"""
-        )
+""")
 
         original_cwd = Path.cwd()
         try:

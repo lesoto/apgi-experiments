@@ -228,3 +228,7 @@ class PredictiveIgnitionNetwork:
     def reset(self):
         """Reset the network state."""
         self.global_activation = np.zeros(self.n_global_units)
+
+
+# Aliases for backward compatibility with tests
+AgentModel = SomaticAgent

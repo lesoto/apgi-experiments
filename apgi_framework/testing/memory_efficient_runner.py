@@ -396,9 +396,11 @@ class MemoryEfficientTestRunner(BatchTestRunner):
             timestamp=datetime.now(),
             completed_tests=completed_tests.copy(),
             failed_tests=failed_tests.copy(),
-            test_results=[asdict(r) for r in test_results if isinstance(r, TestResult)]
-            if test_results
-            else [],
+            test_results=(
+                [asdict(r) for r in test_results if isinstance(r, TestResult)]
+                if test_results
+                else []
+            ),
             memory_stats=asdict(self.memory_monitor.get_current_stats()),
             execution_config=execution_config,
             next_test_index=next_test_index,

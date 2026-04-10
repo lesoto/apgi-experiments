@@ -451,9 +451,9 @@ class BIDSExporter:
 
         # Add data type specific information with proper column descriptions
         if data_type.lower() == "pupil":
-            json_data[
-                "Description"
-            ] = "Pupillometry data measuring pupil diameter over time"
+            json_data["Description"] = (
+                "Pupillometry data measuring pupil diameter over time"
+            )
             json_data["Units"] = "mm"
             json_data["Columns"] = [
                 {
@@ -468,9 +468,9 @@ class BIDSExporter:
                 },
             ]
         elif data_type.lower() == "cardiac":
-            json_data[
-                "Description"
-            ] = "Cardiac physiological data including heart rate and heart rate variability"
+            json_data["Description"] = (
+                "Cardiac physiological data including heart rate and heart rate variability"
+            )
             json_data["Units"] = ["bpm", "ms"]
             json_data["Columns"] = [
                 {
@@ -744,4 +744,4 @@ if __name__ == "__main__":
 
     # Validate structure
     validation = exporter.validate_bids_structure()
-    logger.info("Validation results:", validation)
+    logger.info(f"Validation results: {validation}")

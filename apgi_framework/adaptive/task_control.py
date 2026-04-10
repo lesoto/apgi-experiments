@@ -395,7 +395,7 @@ class ResponseCollector:
         timeout = (timeout_ms or self.response_window_ms) / 1000.0
 
         try:
-            response = self.response_queue.get(timeout=timeout)
+            response: ResponseData = self.response_queue.get(timeout=timeout)
             logger.debug(f"Response received: RT={response.reaction_time_ms:.1f}ms")
             return response
         except queue.Empty:

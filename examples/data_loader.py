@@ -240,7 +240,7 @@ class ExampleDataLoader:
                 subject_id = f"synthetic_subject_{subj_idx + 1:03d}"
 
                 # Generate realistic EEG-like signals
-                data = {}
+                data: Dict[str, Any] = {}
                 for channel in channels:
                     # Base signal with alpha, beta, theta components
                     t = np.linspace(0, duration_seconds, n_samples)

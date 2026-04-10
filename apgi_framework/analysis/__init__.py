@@ -146,9 +146,11 @@ class ProgressiveAnalyzer:
         return {
             "total_steps": len(self.analysis_steps),
             "completed_steps": completed,
-            "progress_percentage": (completed / len(self.analysis_steps) * 100)
-            if self.analysis_steps
-            else 0,
+            "progress_percentage": (
+                (completed / len(self.analysis_steps) * 100)
+                if self.analysis_steps
+                else 0
+            ),
         }
 
 

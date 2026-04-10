@@ -9,7 +9,7 @@ import datetime
 import io
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union, cast
 
 try:
     from reportlab.lib import colors
@@ -576,7 +576,8 @@ class APGIReportTemplate:
             self.generator.add_section("Conclusions", [experiment_data["conclusions"]])
 
         # Generate PDF
-        return self.generator.generate_pdf(output_path)
+        result = self.generator.generate_pdf(output_path)
+        return cast(bool, result)
 
 
 # Convenience functions

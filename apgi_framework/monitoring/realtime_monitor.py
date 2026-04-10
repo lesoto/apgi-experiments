@@ -78,14 +78,14 @@ class RealtimeDataStreamer:
         self.clients: set = set()
         self.data_queue: asyncio.Queue = asyncio.Queue()
         self.is_running = False
-        self.server = None
+        self.server: Optional[Any] = None
 
         # Data subscribers
         self.subscribers: Dict[str, set] = {}
 
         logger.info(f"RealtimeDataStreamer initialized on port {port}")
 
-    async def register_client(self, websocket, path):
+    async def register_client(self, websocket):
         """Register a new WebSocket client."""
         self.clients.add(websocket)
         logger.info(f"Client connected: {websocket.remote_address}")
@@ -396,9 +396,9 @@ class RealtimeMonitor:
                         cpu_usage=cpu_percent,
                         memory_usage=memory.percent,
                         disk_usage=disk.percent,
-                        active_connections=len(self.streamer.clients)
-                        if self.streamer
-                        else 0,
+                        active_connections=(
+                            len(self.streamer.clients) if self.streamer else 0
+                        ),
                         experiment_count=len(
                             set(
                                 d.experiment_id
@@ -454,7 +454,8 @@ class RealtimeMonitor:
         """Broadcast system status with retry logic."""
         for attempt in range(max_retries):
             try:
-                await self.streamer.broadcast_system_status(status)
+                if self.streamer is not None:
+                    await self.streamer.broadcast_system_status(status)
                 return
             except (OSError, ConnectionError, asyncio.TimeoutError) as e:
                 if attempt == max_retries - 1:
@@ -590,7 +591,8 @@ async def start_monitoring(
     if _global_monitor is None:
         _global_monitor = RealtimeMonitor(enable_websocket, websocket_port)
 
-    return await _global_monitor.start()
+    result = await _global_monitor.start()
+    return bool(result)
 
 
 async def stop_monitoring():

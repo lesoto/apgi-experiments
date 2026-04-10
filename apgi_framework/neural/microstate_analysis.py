@@ -8,7 +8,7 @@ for APGI framework validation.
 
 from collections import Counter
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, cast
 
 import numpy as np
 from scipy import signal
@@ -78,7 +78,7 @@ class MicrostateAnalysis:
         # Compute spatial standard deviation
         gfp = np.std(data_avg_ref, axis=0)
 
-        return gfp
+        return cast(np.ndarray, gfp)
 
     def normalize_topography(self, data: np.ndarray) -> np.ndarray:
         """
@@ -99,7 +99,7 @@ class MicrostateAnalysis:
         # Normalize each time point
         normalized = data / gfp[np.newaxis, :]
 
-        return normalized
+        return cast(np.ndarray, normalized)
 
     def select_gfp_peaks(
         self, data: np.ndarray, gfp: np.ndarray, min_peak_distance: int = 10
@@ -234,12 +234,7 @@ class MicrostateAnalysis:
         # Normalize data
         normalized_data = self.normalize_topography(data)
 
-        # Check templates
-        if templates is None:
-            if self.templates is None:
-                raise ValueError("Must fit templates first or provide templates")
-            templates = self.templates
-
+        # Templates must be set by now
         if templates is None:
             raise ValueError("Templates cannot be None")
 
@@ -279,7 +274,7 @@ class MicrostateAnalysis:
         # Assign label with maximum correlation
         labels = np.argmax(correlations, axis=0)
 
-        return labels
+        return cast(np.ndarray, labels)
 
     def smooth_labels(self, labels: np.ndarray, min_duration: int = 3) -> np.ndarray:
         """
@@ -403,7 +398,7 @@ class MicrostateAnalysis:
 
         transition_matrix = transition_counts / row_sums
 
-        return transition_matrix
+        return cast(np.ndarray, transition_matrix)
 
     def analyze_sequence(
         self,

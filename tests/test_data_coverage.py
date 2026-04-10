@@ -66,10 +66,13 @@ class TestDataValidator:
             "timestamp": 1234567890.0,
             "values": [1.0, 2.0, 3.0],
         }
-        is_valid, errors = validator.validate_data_structure(data)
+        result = validator.validate_data_structure(data)
 
-        assert isinstance(is_valid, bool)
-        assert isinstance(errors, list)
+        assert isinstance(result, dict)
+        assert "is_valid" in result
+        assert "errors" in result
+        assert isinstance(result["is_valid"], bool)
+        assert isinstance(result["errors"], list)
 
     def test_validate_missing_required_fields(self, validator):
         """Test validation with missing required fields."""

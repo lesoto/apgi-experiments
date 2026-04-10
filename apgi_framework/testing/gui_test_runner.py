@@ -270,7 +270,7 @@ class TestRunnerGUI:
         except Exception as e:
             messagebox.showerror("Error", f"Failed to save results: {e}")
 
-    def _execute_tests(self):
+    def _execute_tests(self) -> None:
         """Execute tests in background thread."""
         try:
             category = self.category_var.get()
@@ -307,7 +307,7 @@ class TestRunnerGUI:
         finally:
             self.root.after(0, self._finish_test_run)
 
-    def _check_output(self):
+    def _check_output(self) -> None:
         """Check for new output from test process."""
         try:
             while True:
@@ -319,7 +319,7 @@ class TestRunnerGUI:
         if self.is_running:
             self.root.after(100, self._check_output)
 
-    def _append_output(self, line):
+    def _append_output(self, line: str) -> None:
         """Append line to output text area with coloring."""
         # Color coding based on content
         if "ERROR" in line or "FAILED" in line or "❌" in line:

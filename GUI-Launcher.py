@@ -234,13 +234,6 @@ class ComprehensiveGUILauncher:
                     "icon": "[Play]",
                     "command": self.launch_experiment_runner,
                 },
-                {
-                    "name": "Auto-Improving Experiment Runner",
-                    "file": "auto-improvement/standard_apgi_runner.py",
-                    "description": "GUI for running Auto-Improving experiments",
-                    "icon": "[Auto-Improving]",
-                    "command": self.launch_simple_experiment_runner,
-                },
             ],
             "Analysis & Visualization": [
                 {
@@ -707,12 +700,6 @@ class ComprehensiveGUILauncher:
     def launch_experiment_runner(self):
         """Launch Experiment Runner."""
         self.launch_python_script("apps/experiment_runner_gui.py", "Experiment Runner")
-
-    def launch_simple_experiment_runner(self):
-        """Launch Simple Experiment Runner."""
-        self.launch_python_script(
-            "auto-improvement/standard_apgi_runner.py", "Simple Experiment Runner"
-        )
 
     def launch_parameter_estimation(self):
         """Launch Parameter Estimation GUI."""

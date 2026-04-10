@@ -112,8 +112,8 @@ class ErrorRecoveryManager:
     """
 
     def __init__(self):
-        self.error_log: List[Dict[str, Any]] = []  # type: ignore
-        self.recovery_strategies: Dict[  # type: ignore
+        self.error_log: List[Dict[str, Any]] = []
+        self.recovery_strategies: Dict[
             Type[Exception], Callable[[Exception, Dict[str, Any]], Dict[str, Any]]
         ] = {}
 

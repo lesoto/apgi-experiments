@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Set, Union, cast
 
 from .ast_analyzer import ASTAnalyzer
 from .file_utils import FileUtils
@@ -398,7 +398,7 @@ class FrameworkTestUtils:
                 type_factor = factor
                 break
 
-        return base_duration * complexity_factor * type_factor
+        return cast(float, base_duration * complexity_factor * type_factor)
 
     def _extract_test_tags(self, element) -> Set[str]:
         """Extract test tags from decorators and docstring."""

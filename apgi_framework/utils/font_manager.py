@@ -7,7 +7,7 @@ import logging
 import platform
 import tkinter as tk
 from tkinter import font as tkFont
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union, cast
 
 logger = logging.getLogger(__name__)
 
@@ -131,7 +131,7 @@ class FontManager:
             Best available font family name
         """
         if font_type in self.font_cache:
-            return self.font_cache[font_type]
+            return cast(str, self.font_cache[font_type])
 
         # Get platform-specific font list
         platform_key = "Darwin" if self.platform == "Darwin" else self.platform
@@ -314,7 +314,9 @@ def get_body_font(size: int = 12) -> tkFont.Font:
 
 
 def configure_widget_fonts(
-    widget: tk.Widget, font_type: str = "ui", size: Optional[int] = None
+    widget: Union[tk.Widget, tk.Toplevel],
+    font_type: str = "ui",
+    size: Optional[int] = None,
 ) -> None:
     """
     Configure font for a widget and its children.

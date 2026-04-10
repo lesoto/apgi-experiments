@@ -125,8 +125,6 @@ class SecurityValidator:
         Raises:
             SecurityError: If dangerous patterns are detected
         """
-        if not isinstance(input_string, str):
-            return True  # Non-strings are handled elsewhere
 
         input_lower = input_string.lower()
 
@@ -169,7 +167,6 @@ class SecurityValidator:
         # Check basic types
         if isinstance(data, (int, float, bool, type(None), bytes, bytearray)):
             return True
-
         # Check strings for dangerous content
         if isinstance(data, str):
             return self.validate_string_input(data, "data structure validation")

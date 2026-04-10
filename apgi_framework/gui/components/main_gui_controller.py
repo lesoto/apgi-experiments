@@ -10,7 +10,7 @@ import queue
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, TypedDict
+from typing import Any, Callable, Dict, List, Optional, TypedDict, cast
 
 from tkinter import messagebox
 
@@ -73,7 +73,7 @@ class MainGUIController:
     centralized communication between components.
     """
 
-    def __init__(self, parent_widget):
+    def __init__(self, parent_widget: Any) -> None:
         """
         Initialize the main GUI controller.
 
@@ -87,24 +87,24 @@ class MainGUIController:
         self.framework_controller = MainApplicationController()
 
         # GUI components
-        self.parameter_panel = None
-        self.test_panels = {}  # Dictionary of test execution panels
-        self.results_panel = None
-        self.logging_panel = None
+        self.parameter_panel: Optional[Any] = None
+        self.test_panels: Dict[str, Any] = {}  # Dictionary of test execution panels
+        self.results_panel: Optional[Any] = None
+        self.logging_panel: Optional[Any] = None
 
         # State management
-        self.current_test = None
-        self.test_results = {}
-        self.system_initialized = False
+        self.current_test: Optional[str] = None
+        self.test_results: Dict[str, Any] = {}
+        self.system_initialized: bool = False
 
         # Communication channels
-        self.message_queue = queue.Queue()
-        self.progress_callbacks = []
-        self.log_callbacks = []
-        self.results_callbacks = []
+        self.message_queue: queue.Queue = queue.Queue()
+        self.progress_callbacks: list[Callable[..., Any]] = []
+        self.log_callbacks: list[Callable[..., Any]] = []
+        self.results_callbacks: list[Callable[..., Any]] = []
 
         # Event handlers
-        self.event_handlers = {}
+        self.event_handlers: dict[str, Callable[..., Any]] = {}
 
         # Initialize components
         self._setup_event_handlers()
@@ -123,7 +123,7 @@ class MainGUIController:
 
         logger.info("MainGUIController initialized")
 
-    def _initialize_components(self):
+    def _initialize_components(self) -> None:
         """Initialize all GUI components."""
         if not GUI_COMPONENTS_AVAILABLE:
             logger.warning("GUI components not available - using placeholder panels")
@@ -160,7 +160,7 @@ class MainGUIController:
             logger.error(f"Failed to initialize GUI components: {e}")
             raise
 
-    def _initialize_test_panels(self):
+    def _initialize_test_panels(self) -> None:
         """Initialize test execution panels."""
         test_names = [
             "Primary",
@@ -382,7 +382,7 @@ class MainGUIController:
     # Public API methods
     def get_parameter_panel(self) -> ParameterConfigPanel:
         """Get the parameter configuration panel."""
-        return self.parameter_panel
+        return cast(ParameterConfigPanel, self.parameter_panel)
 
     def get_test_panel(self, test_name: str) -> Optional[TestExecutionPanel]:
         """Get a specific test execution panel."""
@@ -394,11 +394,11 @@ class MainGUIController:
 
     def get_results_panel(self) -> ResultsVisualizationPanel:
         """Get the results visualization panel."""
-        return self.results_panel
+        return cast(ResultsVisualizationPanel, self.results_panel)
 
     def get_logging_panel(self) -> LoggingPanel:
         """Get the logging panel."""
-        return self.logging_panel
+        return cast(LoggingPanel, self.logging_panel)
 
     def get_current_test(self) -> Optional[str]:
         """Get the currently running test."""
@@ -407,14 +407,15 @@ class MainGUIController:
     def get_test_results(self, test_name: Optional[str] = None) -> Dict[str, Any]:
         """Get test results."""
         if test_name:
-            return self.test_results.get(test_name)
+            return cast(Dict[str, Any], self.test_results.get(test_name))
         return self.test_results.copy()
 
     def get_current_config(self) -> Dict[str, Any]:
         """Get current configuration."""
         try:
             if self.parameter_panel:
-                return self.parameter_panel._get_configuration_dict()
+                result = self.parameter_panel._get_configuration_dict()
+                return result if isinstance(result, dict) else {}
             return {}
         except Exception as e:
             logger.error(f"Failed to get current config: {e}")
@@ -656,7 +657,7 @@ class MainGUIController:
                     # Basic validation would go here
                     pass
                 except Exception as e:
-                    issues.append(f"Parameter panel error: {e}")  # type: ignore[attr-defined]
+                    issues.append(f"Parameter panel error: {e}")
                     validation_results["valid"] = False
 
             # Check test panels
@@ -665,7 +666,7 @@ class MainGUIController:
                     if hasattr(panel, "is_test_running") and panel.is_test_running():
                         warnings.append(f"Test {test_name} is still running")
                 except Exception as e:
-                    issues.append(f"Error checking test {test_name}: {e}")  # type: ignore[attr-defined]
+                    issues.append(f"Error checking test {test_name}: {e}")
                     validation_results["valid"] = False
 
             # Check results panel
@@ -677,7 +678,7 @@ class MainGUIController:
                             "Large amount of results data may affect performance"
                         )
                 except Exception as e:
-                    issues.append(f"Error checking results panel: {e}")  # type: ignore[attr-defined]
+                    issues.append(f"Error checking results panel: {e}")
                     validation_results["valid"] = False
 
             # Check logging panel
@@ -687,11 +688,11 @@ class MainGUIController:
                     if isinstance(stats, dict) and stats.get("ERROR", 0) > 10:
                         warnings.append("High number of error logs detected")
                 except Exception as e:
-                    issues.append(f"Error checking logging panel: {e}")  # type: ignore[attr-defined]
+                    issues.append(f"Error checking logging panel: {e}")
                     validation_results["valid"] = False
 
         except Exception as e:
-            issues.append(f"Validation error: {e}")  # type: ignore[attr-defined]
+            issues.append(f"Validation error: {e}")
             validation_results["valid"] = False
 
         return validation_results

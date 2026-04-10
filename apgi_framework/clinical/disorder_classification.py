@@ -533,9 +533,9 @@ class DisorderClassification:
             "cv_scores": cv_scores.tolist(),
             "n_samples": len(profiles),
             "n_features": X.shape[1],
-            "feature_importance": feature_importance
-            if feature_importance is not None
-            else {},
+            "feature_importance": (
+                feature_importance if feature_importance is not None else {}
+            ),
         }
 
     def classify(

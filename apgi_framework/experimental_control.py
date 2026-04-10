@@ -2575,8 +2575,8 @@ class ExperimentalIntegrityChecker:
                     ],
                     timestamp=datetime.now(),
                 )
-                reports[
-                    f"error_{exp_data.get('experiment_id', 'unknown')}"
-                ] = error_report
+                reports[f"error_{exp_data.get('experiment_id', 'unknown')}"] = (
+                    error_report
+                )
 
         return reports

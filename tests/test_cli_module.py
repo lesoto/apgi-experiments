@@ -231,15 +231,6 @@ class TestAPGIFrameworkCLI:
         assert args.command == "validate-system"
         assert args.detailed is True
 
-    def test_show_config(self):
-        """Test show-config command parsing."""
-        cli = APGIFrameworkCLI()
-        parser = cli.create_parser()
-
-        # Test show-config command
-        args = parser.parse_args(["show-config"])
-        assert args.command == "show-config"
-
     def test_set_params_command(self):
         """Test set-params command parsing."""
         cli = APGIFrameworkCLI()
@@ -302,8 +293,9 @@ class TestAPGIFrameworkCLI:
             test_type="primary", trials=1000, participants=100, seed=None, config=None
         )
 
-        with patch.object(cli, "_display_test_result"), patch.object(
-            cli, "_save_test_result"
+        with (
+            patch.object(cli, "_display_test_result"),
+            patch.object(cli, "_save_test_result"),
         ):
             cli.run_individual_test(args)
 
@@ -320,11 +312,13 @@ class TestAPGIFrameworkCLI:
 
         args = argparse.Namespace(output="test_config.json", template="default")
 
-        with patch.object(
-            cli, "_create_default_config", return_value={"test": "config"}
-        ), patch("builtins.open", create=True) as mock_open, patch(
-            "json.dump"
-        ) as mock_json_dump:
+        with (
+            patch.object(
+                cli, "_create_default_config", return_value={"test": "config"}
+            ),
+            patch("builtins.open", create=True) as mock_open,
+            patch("json.dump") as mock_json_dump,
+        ):
             cli.generate_configuration(args)
 
             mock_open.assert_called_once_with("test_config.json", "w")
@@ -416,8 +410,8 @@ class TestAPGIFrameworkCLI:
         assert args.command == "run-batch"
         assert args.all_tests is True
 
-    def test_show_config(self):
-        """Test showing configuration."""
+    def test_generate_config_command(self):
+        """Test generate-config command parsing."""
         cli = APGIFrameworkCLI()
         cli.setup_logging()
 

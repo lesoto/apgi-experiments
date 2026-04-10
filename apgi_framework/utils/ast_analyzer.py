@@ -11,7 +11,7 @@ import logging
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Union
+from typing import Dict, List, Optional, Set, Union, cast
 
 from .file_utils import FileUtils
 
@@ -104,7 +104,7 @@ class ASTAnalyzer:
             content = self.file_utils.safe_read_text(file_path)
             tree = ast.parse(content, filename=str(file_path))
             self.logger.debug(f"Successfully parsed {file_path}")
-            return tree
+            return cast(ast.AST, tree)
         except SyntaxError as e:
             self.logger.error(f"Syntax error in {file_path}: {e}")
             raise
@@ -617,7 +617,7 @@ class ASTAnalyzer:
 
         visitor = CognitiveVisitor()
         visitor.visit(tree)
-        return visitor.complexity
+        return cast(int, visitor.complexity)
 
     def _calculate_maintainability_index(
         self, logical_lines: int, cyclomatic: int, total_lines: int

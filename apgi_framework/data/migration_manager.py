@@ -61,12 +61,10 @@ class MigrationManager:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 # Check if schema_versions table exists
-                cursor = conn.execute(
-                    """
+                cursor = conn.execute("""
                     SELECT name FROM sqlite_master 
                     WHERE type='table' AND name='schema_versions'
-                """
-                )
+                """)
 
                 if not cursor.fetchone():
                     return {"core": None, "parameter_estimation": None}
@@ -100,34 +98,28 @@ class MigrationManager:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 # Check if experiments table exists (from persistence layer)
-                cursor = conn.execute(
-                    """
+                cursor = conn.execute("""
                     SELECT name FROM sqlite_master 
                     WHERE type='table' AND name='experiments'
-                """
-                )
+                """)
 
                 if cursor.fetchone():
                     # Core tables already exist, record version if not already recorded
-                    cursor = conn.execute(
-                        """
+                    cursor = conn.execute("""
                         SELECT version FROM schema_versions 
                         WHERE component = 'core'
-                    """
-                    )
+                    """)
 
                     if not cursor.fetchone():
                         # Create schema_versions table if it doesn't exist
-                        conn.execute(
-                            """
+                        conn.execute("""
                             CREATE TABLE IF NOT EXISTS schema_versions (
                                 component TEXT PRIMARY KEY,
                                 version TEXT NOT NULL,
                                 applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                 description TEXT
                             )
-                        """
-                        )
+                        """)
 
                         # Record core version
                         conn.execute(
@@ -159,12 +151,10 @@ class MigrationManager:
             # Check core tables exist
             with sqlite3.connect(self.db_path) as conn:
                 required_core_tables = ["experiments", "versions", "backups"]
-                cursor = conn.execute(
-                    """
+                cursor = conn.execute("""
                     SELECT name FROM sqlite_master 
                     WHERE type='table' AND name NOT LIKE 'sqlite_%'
-                """
-                )
+                """)
                 existing_tables = {row[0] for row in cursor.fetchall()}
 
                 missing_core = set(required_core_tables) - existing_tables
@@ -196,13 +186,11 @@ class MigrationManager:
         """
         try:
             with sqlite3.connect(self.db_path) as conn:
-                cursor = conn.execute(
-                    """
+                cursor = conn.execute("""
                     SELECT name FROM sqlite_master 
                     WHERE type='table' AND name NOT LIKE 'sqlite_%'
                     ORDER BY name
-                """
-                )
+                """)
 
                 table_info = {}
                 for (table_name,) in cursor.fetchall():

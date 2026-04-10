@@ -45,7 +45,7 @@ class CacheManager:
         if self.metadata_file.exists():
             try:
                 with open(self.metadata_file, "r") as f:
-                    return json.load(f)
+                    return dict(json.load(f))
             except (json.JSONDecodeError, FileNotFoundError, PermissionError) as e:
                 print(f"Error loading cache metadata: {type(e).__name__}: {e}")
                 return {}
@@ -514,7 +514,8 @@ class DataCache:
             "file_mtime": file_mtime,
         }
 
-        return self.cache.get(cache_key)
+        result: Optional[pd.DataFrame] = self.cache.get(cache_key)
+        return result
 
     def cache_simulation_results(
         self,
@@ -542,7 +543,8 @@ class DataCache:
             "simulation_config": simulation_config,
         }
 
-        return self.cache.get(cache_key)
+        result: Optional[Dict[Any, Any]] = self.cache.get(cache_key)
+        return result
 
     def cache_validation_results(
         self,
@@ -570,7 +572,8 @@ class DataCache:
             "config": validation_config,
         }
 
-        return self.cache.get(cache_key)
+        result: Optional[Dict[Any, Any]] = self.cache.get(cache_key)
+        return result
 
 
 def main():

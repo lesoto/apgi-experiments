@@ -71,6 +71,39 @@ class SomaticAgent:
         G_basic = np.random.random(self.n_actions)
         return G_modified, G_basic
 
+    def update_somatic_marker(self, context: int, action: int, outcome: float) -> None:
+        """
+        Update somatic marker based on outcome.
+
+        Args:
+            context: Environmental context
+            action: Action taken
+            outcome: Outcome value (positive or negative)
+        """
+        self.somatic_markers[context, action] += self.learning_rate * outcome
+
+    def decide(
+        self, beliefs: np.ndarray, context: int = 0, surprise: float = 0.1
+    ) -> Tuple[int, bool, dict]:
+        """
+        Make a decision based on beliefs and surprise.
+
+        Args:
+            beliefs: Current belief state
+            context: Current environmental context
+            surprise: Surprise level (higher triggers conscious processing)
+
+        Returns:
+            Tuple of (action, is_conscious, info_dict)
+        """
+        # Simple decision making - select action with best somatic marker
+        action = int(np.argmax(self.somatic_markers[context]))
+
+        # High surprise triggers conscious access
+        conscious = surprise > 1.0
+
+        return action, conscious, {"surprise": surprise}
+
 
 class PhaseTransitionAnalyzer:
     """

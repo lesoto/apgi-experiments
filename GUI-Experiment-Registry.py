@@ -20,7 +20,6 @@ from tkinter import filedialog, messagebox, scrolledtext, ttk
 from typing import Any, Dict, Union
 import logging as logging_lib
 
-
 # Set matplotlib backend before importing to avoid threading issues
 import matplotlib
 
@@ -202,7 +201,7 @@ class ExperimentRegistryGUI:
         self.create_widgets()
         self.populate_experiment_list()
 
-    def _setup_custom_shortcuts(self):
+    def _setup_custom_shortcuts(self) -> None:
         """Setup custom shortcuts specific to this GUI."""
         if self.keyboard_manager:
             # Run selected experiment
@@ -214,16 +213,16 @@ class ExperimentRegistryGUI:
                 "Ctrl+Shift+R", self._run_all_experiments, "Run all experiments"
             )
 
-    def initialize_experiment_status(self):
+    def initialize_experiment_status(self) -> None:
         """Initialize status tracking for all experiments."""
         for exp_name in EXPERIMENTS.keys():
             self.experiment_status[exp_name] = "Not Run"
 
-    def create_widgets(self):
+    def create_widgets(self) -> None:
         """Create all GUI widgets."""
         # Main container
         main_frame = ttk.Frame(self.root, padding="10")
-        main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        main_frame.grid(row=0, column=0, sticky=tk.W + tk.E + tk.N + tk.S)
 
         # Configure grid weights
         self.root.columnconfigure(0, weight=1)

@@ -6,7 +6,7 @@ Tests critical performance paths and identifies regressions.
 import pytest
 
 try:
-    import pytest_benchmark  # type: ignore # noqa: F401
+    import pytest_benchmark  # noqa: F401
 
     HAS_BENCHMARK = True
 except ImportError:
@@ -43,10 +43,12 @@ try:
         AnalysisEngine as ImportedAnalysisEngine,
     )
     from apgi_framework.core.data_models import ExperimentalTrial
-    from apgi_framework.core.models.apgi_agent import APGIAgent as ImportedAPGIAgent
+
+    # APGIAgent class doesn't exist yet, skip import
+    # from apgi_framework.core.models.apgi_agent import APGIAgent as ImportedAPGIAgent
 
     # Use imported classes
-    APGIAgent = ImportedAPGIAgent
+    # APGIAgent = ImportedAPGIAgent  # Class doesn't exist
     AnalysisEngine = ImportedAnalysisEngine
     ExperimentData = ExperimentalTrial
     StimulusGenerator = ImportedStimulusGenerator

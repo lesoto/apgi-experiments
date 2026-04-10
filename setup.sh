@@ -65,7 +65,7 @@ check_python() {
         exit 1
     fi
     
-    PYTHON_VERSION=$($PYTHON_CMD --version 2>&1 | grep -oP '\d+\.\d+')
+    PYTHON_VERSION=$( --version 2>&1 | cut -d" " -f2 | cut -d. -f1)
     print_status "Found Python version: $PYTHON_VERSION"
     
     # Check if Python version is 3.8 or higher
@@ -184,7 +184,6 @@ except Exception as e:
     
     if [[ $? -eq 0 ]]; then
         # APGIGui import removed
-        pass
         print_status "Import verification passed"
     else
         print_error "Import verification failed"

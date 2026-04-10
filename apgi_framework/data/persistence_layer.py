@@ -69,18 +69,16 @@ class PersistenceLayer:
         # Initialize backends
         if backend == "hdf5":
             self._init_hdf5()
+        elif backend == "hybrid":
+            # Hybrid uses HDF5 for data and SQLite for metadata
+            self._init_hdf5()
+            self._init_sqlite()
         elif backend == "postgresql":
             self._init_postgresql()
         elif backend == "sqlite":
             self._init_sqlite()
         else:
             raise PersistenceError(f"Unknown backend: {backend}")
-
-        # Initialize backends (Legacy support for different backend strings)
-        if self.backend in ["hdf5", "hybrid"]:
-            self._init_hdf5()
-        if self.backend == "postgresql":
-            self._init_postgresql()
 
     def _validate_experiment_id(self, experiment_id: str) -> None:
         """Validate experiment_id to prevent path traversal."""
@@ -94,8 +92,7 @@ class PersistenceLayer:
         self.db_path = self.metadata_path / "experiments.db"
 
         with sqlite3.connect(self.db_path) as conn:
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS experiments (
                     experiment_id TEXT PRIMARY KEY,
                     experiment_name TEXT,
@@ -118,11 +115,9 @@ class PersistenceLayer:
                     completeness_percentage REAL,
                     validation_status TEXT
                 )
-            """
-            )
+            """)
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS versions (
                     version_id TEXT PRIMARY KEY,
                     experiment_id TEXT,
@@ -135,11 +130,9 @@ class PersistenceLayer:
                     size_bytes INTEGER,
                     FOREIGN KEY (experiment_id) REFERENCES experiments (experiment_id)
                 )
-            """
-            )
+            """)
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS backups (
                     backup_id TEXT PRIMARY KEY,
                     experiment_id TEXT,
@@ -153,8 +146,7 @@ class PersistenceLayer:
                     status TEXT,
                     FOREIGN KEY (experiment_id) REFERENCES experiments (experiment_id)
                 )
-            """
-            )
+            """)
 
             conn.commit()
 
@@ -224,8 +216,7 @@ class PersistenceLayer:
         ) as conn:
             with conn.cursor() as cursor:
                 # Experiments table
-                cursor.execute(
-                    """
+                cursor.execute("""
                     CREATE TABLE IF NOT EXISTS experiments (
                         experiment_id VARCHAR(255) PRIMARY KEY,
                         experiment_name VARCHAR(255),
@@ -248,12 +239,10 @@ class PersistenceLayer:
                         completeness_percentage REAL,
                         validation_status VARCHAR(50)
                     )
-                """
-                )
+                """)
 
                 # Versions table
-                cursor.execute(
-                    """
+                cursor.execute("""
                     CREATE TABLE IF NOT EXISTS versions (
                         version_id VARCHAR(255) PRIMARY KEY,
                         experiment_id VARCHAR(255) REFERENCES experiments(experiment_id),
@@ -265,12 +254,10 @@ class PersistenceLayer:
                         checksum VARCHAR(255),
                         size_bytes BIGINT
                     )
-                """
-                )
+                """)
 
                 # Backups table
-                cursor.execute(
-                    """
+                cursor.execute("""
                     CREATE TABLE IF NOT EXISTS backups (
                         backup_id VARCHAR(255) PRIMARY KEY,
                         experiment_id VARCHAR(255) REFERENCES experiments(experiment_id),
@@ -283,12 +270,10 @@ class PersistenceLayer:
                         retention_days INTEGER,
                         status VARCHAR(50)
                     )
-                """
-                )
+                """)
 
                 # Data chunks table for large datasets
-                cursor.execute(
-                    """
+                cursor.execute("""
                     CREATE TABLE IF NOT EXISTS data_chunks (
                         chunk_id SERIAL PRIMARY KEY,
                         experiment_id VARCHAR(255) REFERENCES experiments(experiment_id),
@@ -298,8 +283,7 @@ class PersistenceLayer:
                         data JSONB,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
-                """
-                )
+                """)
 
                 # Indexes for performance
                 cursor.execute(
@@ -403,6 +387,469 @@ class PersistenceLayer:
 
         except Exception as e:
             raise PersistenceError(f"Failed to load dataset {experiment_id}: {str(e)}")
+
+    def store_data(
+        self,
+        experiment_id: str,
+        data: Union[Dict[str, Any], pd.DataFrame],
+        format: str = "hdf5",
+    ) -> None:
+        """Store data for an experiment (convenience method)."""
+        self._validate_experiment_id(experiment_id)
+        try:
+            file_path = self.data_path / f"{experiment_id}.h5"
+            with h5py.File(file_path, "w") as f:
+                if isinstance(data, pd.DataFrame):
+                    # Store DataFrame in HDF5
+                    self._store_dataframe_hdf5(f, "data", data)
+                elif isinstance(data, dict):
+                    for key, value in data.items():
+                        if isinstance(value, np.ndarray):
+                            f.create_dataset(key, data=value)
+                        elif isinstance(value, pd.DataFrame):
+                            self._store_dataframe_hdf5(f, key, value)
+                        else:
+                            try:
+                                f.attrs[key] = value
+                            except (TypeError, ValueError):
+                                # Fallback to JSON serialization for complex objects
+                                f.attrs[key] = json.dumps(value, default=str)
+                else:
+                    raise PersistenceError(f"Unsupported data type: {type(data)}")
+        except Exception as e:
+            raise PersistenceError(f"Failed to store data: {str(e)}")
+
+    def _store_dataframe_hdf5(
+        self, group: h5py.Group, key: str, df: pd.DataFrame
+    ) -> None:
+        """Store a pandas DataFrame in HDF5."""
+        df_group = group.create_group(key)
+        # Store column names
+        df_group.attrs["columns"] = json.dumps(list(df.columns), default=str)
+        df_group.attrs["index"] = json.dumps(list(df.index), default=str)
+        df_group.attrs["dtype"] = (
+            str(df.dtypes.iloc[0]) if len(df.columns) > 0 else "object"
+        )
+
+        # Store each column as a separate dataset
+        for col in df.columns:
+            col_data = df[col].values
+            if col_data.dtype == "O":  # Object dtype - convert to strings
+                col_data = np.array([str(x) for x in col_data])
+            try:
+                df_group.create_dataset(col, data=col_data)
+            except (TypeError, ValueError):
+                # Fallback: store as JSON
+                df_group.attrs[col] = json.dumps(df[col].tolist(), default=str)
+
+    def store_numpy_array(
+        self, experiment_id: str, dataset_name: str, array: np.ndarray
+    ) -> None:
+        """Store a numpy array for an experiment."""
+        self._validate_experiment_id(experiment_id)
+        try:
+            file_path = self.data_path / f"{experiment_id}.h5"
+            with h5py.File(file_path, "a") as f:
+                if dataset_name in f:
+                    del f[dataset_name]
+                f.create_dataset(dataset_name, data=array)
+        except Exception as e:
+            raise PersistenceError(f"Failed to store numpy array: {str(e)}")
+
+    def create_version(
+        self, experiment_id: str, version_number: str, description: str = ""
+    ) -> DataVersion:
+        """Create a new version for an experiment."""
+        self._validate_experiment_id(experiment_id)
+        try:
+            data_version = DataVersion(
+                version_id=f"{experiment_id}_{version_number}",
+                version_number=version_number,
+                description=description,
+            )
+            self._store_version(experiment_id, data_version)
+            # Attach experiment_id for compatibility with tests
+            setattr(data_version, "experiment_id", experiment_id)
+            return data_version
+        except Exception as e:
+            raise PersistenceError(f"Failed to create version: {str(e)}")
+
+    def list_versions(self, experiment_id: str) -> List[DataVersion]:
+        """List all versions for an experiment."""
+        self._validate_experiment_id(experiment_id)
+        try:
+            return self._load_versions(experiment_id)
+        except Exception as e:
+            raise PersistenceError(f"Failed to list versions: {str(e)}")
+
+    def get_version(
+        self, experiment_id: str, version_number: str
+    ) -> Optional[DataVersion]:
+        """Get a specific version for an experiment."""
+        self._validate_experiment_id(experiment_id)
+        try:
+            versions = self._load_versions(experiment_id)
+            for version in versions:
+                if version.version_number == version_number:
+                    return version
+            return None
+        except Exception as e:
+            raise PersistenceError(f"Failed to get version: {str(e)}")
+
+    def store_backup(self, experiment_id: str, backup_type: str = "full") -> BackupInfo:
+        """Create a backup for an experiment (alias for create_backup)."""
+        return self.create_backup(experiment_id, backup_type)
+
+    def restore_backup(self, backup_id: str) -> str:
+        """Restore an experiment from a backup."""
+        try:
+            # First find the backup info from database to get the backup path
+            with sqlite3.connect(self.db_path) as conn:
+                conn.row_factory = sqlite3.Row
+                cursor = conn.execute(
+                    "SELECT backup_path, experiment_id FROM backups WHERE backup_id = ?",
+                    (backup_id,),
+                )
+                row = cursor.fetchone()
+                if not row:
+                    raise PersistenceError(f"Backup {backup_id} not found in database")
+                backup_path = Path(row["backup_path"])
+                experiment_id = row["experiment_id"]
+
+            if not backup_path.exists():
+                raise PersistenceError(f"Backup directory not found: {backup_path}")
+
+            # Restore experiment-specific data file if it exists
+            exp_backup_file = backup_path / f"{experiment_id}.h5"
+            if exp_backup_file.exists():
+                target_file = self.data_path / f"{experiment_id}.h5"
+                shutil.copy2(exp_backup_file, target_file)
+
+            # Restore main experiments file if it exists
+            main_backup = backup_path / "experiments.h5"
+            if main_backup.exists() and self.hdf5_path.exists():
+                # For safety, don't overwrite the whole file - individual experiment groups should be handled separately
+                pass
+
+            # Restore database if needed
+            db_backup = backup_path / "experiments.db"
+            if db_backup.exists():
+                shutil.copy2(db_backup, self.db_path)
+
+            return str(experiment_id)
+        except Exception as e:
+            raise PersistenceError(f"Failed to restore backup: {str(e)}")
+
+    def save_metadata(
+        self, experiment_id: str, metadata: Union[Dict[str, Any], ExperimentMetadata]
+    ) -> None:
+        """Save metadata for an experiment."""
+        self._validate_experiment_id(experiment_id)
+        try:
+            # Save to JSON file for backward compatibility
+            metadata_file = self.metadata_path / f"{experiment_id}.json"
+            with open(metadata_file, "w") as f:
+                json.dump(metadata, f, indent=2, default=str)
+
+            # Also save to SQLite so list_experiments works
+            if isinstance(metadata, dict):
+                metadata_obj = ExperimentMetadata(
+                    experiment_id=experiment_id,
+                    experiment_name=metadata.get("experiment_name", ""),
+                    description=metadata.get("description", ""),
+                    created_at=metadata.get("created_at", datetime.now()),
+                    updated_at=metadata.get("updated_at", datetime.now()),
+                    researcher=metadata.get("researcher", ""),
+                    institution=metadata.get("institution", ""),
+                    n_participants=metadata.get("n_participants", 0),
+                    n_trials=metadata.get("n_trials", 0),
+                    conditions=metadata.get("conditions", []),
+                    parameters=metadata.get("parameters", {}),
+                    data_format=metadata.get("data_format", "hdf5"),
+                    file_paths=metadata.get("file_paths", []),
+                    total_size_mb=metadata.get("total_size_mb", 0.0),
+                    current_version=metadata.get("current_version", "1.0.0"),
+                    tags=metadata.get("tags", []),
+                    category=metadata.get("category", ""),
+                    data_quality_score=metadata.get("data_quality_score", 0.0),
+                    completeness_percentage=metadata.get(
+                        "completeness_percentage", 0.0
+                    ),
+                    validation_status=metadata.get("validation_status", "unknown"),
+                )
+            else:
+                metadata_obj = metadata
+
+            self._store_metadata(metadata_obj)
+        except Exception as e:
+            raise PersistenceError(f"Failed to save metadata: {str(e)}")
+
+    def get_metadata(self, experiment_id: str) -> Optional[ExperimentMetadata]:
+        """Get metadata for an experiment."""
+        self._validate_experiment_id(experiment_id)
+        try:
+            # First try to load from SQLite database
+            metadata = self._load_metadata(experiment_id)
+            if metadata:
+                return metadata
+
+            # Fallback to JSON file if exists
+            metadata_file = self.metadata_path / f"{experiment_id}.json"
+            if metadata_file.exists():
+                with open(metadata_file, "r") as f:
+                    data = json.load(f)
+                    # Convert dict to ExperimentMetadata
+                    if isinstance(data, dict):
+                        # Handle datetime fields
+                        for dt_field in ["created_at", "updated_at"]:
+                            if dt_field in data and isinstance(data[dt_field], str):
+                                data[dt_field] = datetime.fromisoformat(data[dt_field])
+                        return ExperimentMetadata(**data)
+                return None
+            return None
+        except Exception as e:
+            raise PersistenceError(f"Failed to get metadata: {str(e)}")
+
+    def update_metadata(self, experiment_id: str, metadata: Dict[str, Any]) -> None:
+        """Update metadata for an experiment."""
+        self._validate_experiment_id(experiment_id)
+        try:
+            existing_metadata = self.get_metadata(experiment_id)
+            existing: Dict[str, Any]
+            if existing_metadata is None:
+                existing = {}
+            else:
+                # Convert ExperimentMetadata to dict
+                existing = {
+                    "experiment_id": existing_metadata.experiment_id,
+                    "experiment_name": existing_metadata.experiment_name,
+                    "description": existing_metadata.description,
+                    "created_at": existing_metadata.created_at,
+                    "updated_at": existing_metadata.updated_at,
+                    "researcher": existing_metadata.researcher,
+                    "institution": existing_metadata.institution,
+                    "n_participants": existing_metadata.n_participants,
+                    "n_trials": existing_metadata.n_trials,
+                    "conditions": existing_metadata.conditions,
+                    "parameters": existing_metadata.parameters,
+                    "data_format": existing_metadata.data_format,
+                    "file_paths": existing_metadata.file_paths,
+                    "total_size_mb": existing_metadata.total_size_mb,
+                    "current_version": existing_metadata.current_version,
+                    "tags": existing_metadata.tags,
+                    "category": existing_metadata.category,
+                    "data_quality_score": existing_metadata.data_quality_score,
+                    "completeness_percentage": existing_metadata.completeness_percentage,
+                    "validation_status": existing_metadata.validation_status,
+                }
+            existing.update(metadata)
+            self.save_metadata(experiment_id, existing)
+        except Exception as e:
+            raise PersistenceError(f"Failed to update metadata: {str(e)}")
+
+    def delete_experiment(self, experiment_id: str) -> None:
+        """Delete an experiment and all its data."""
+        self._validate_experiment_id(experiment_id)
+        try:
+            # Delete data file
+            data_file = self.data_path / f"{experiment_id}.h5"
+            if data_file.exists():
+                data_file.unlink()
+
+            # Delete metadata file
+            metadata_file = self.metadata_path / f"{experiment_id}.json"
+            if metadata_file.exists():
+                metadata_file.unlink()
+
+            # Delete from SQLite
+            with sqlite3.connect(self.db_path) as conn:
+                conn.execute(
+                    "DELETE FROM experiments WHERE experiment_id = ?", (experiment_id,)
+                )
+                conn.commit()
+        except Exception as e:
+            raise PersistenceError(f"Failed to delete experiment: {str(e)}")
+
+    def delete_version(self, version_id: str) -> None:
+        """Delete a specific version by its version_id."""
+        try:
+            # Extract experiment_id from version_id (format: experiment_id_version)
+            # Find and delete the version from the database
+            with sqlite3.connect(self.db_path) as conn:
+                conn.execute("DELETE FROM versions WHERE version_id = ?", (version_id,))
+                conn.commit()
+        except Exception as e:
+            raise PersistenceError(f"Failed to delete version: {str(e)}")
+
+    def retrieve_data(
+        self, experiment_id: str, format: str = "hdf5"
+    ) -> Optional[pd.DataFrame]:
+        """Retrieve data for an experiment."""
+        self._validate_experiment_id(experiment_id)
+        try:
+            file_path = self.data_path / f"{experiment_id}.h5"
+            if not file_path.exists():
+                raise PersistenceError(f"Experiment {experiment_id} not found")
+
+            # Load from HDF5
+            with h5py.File(file_path, "r") as f:
+                # Check if data is stored as a DataFrame group
+                if "data" in f and isinstance(f["data"], h5py.Group):
+                    df_group = f["data"]
+                    # Load columns from attrs
+                    columns = json.loads(df_group.attrs.get("columns", "[]"))
+                    # Load data from datasets
+                    data_dict = {}
+                    for col in columns:
+                        if col in df_group:
+                            data_dict[col] = df_group[col][:]
+                        elif col in df_group.attrs:
+                            # Column stored as JSON
+                            data_dict[col] = json.loads(df_group.attrs[col])
+                    return pd.DataFrame(data_dict)
+                else:
+                    # Legacy format: simple key-value storage
+                    data_dict = {}
+                    for key in f.keys():
+                        data_dict[key] = f[key][:]
+                    for key in f.attrs.keys():
+                        data_dict[key] = f.attrs[key]
+
+                    if data_dict:
+                        return pd.DataFrame(data_dict)
+                    raise PersistenceError(
+                        f"No data found for experiment {experiment_id}"
+                    )
+        except PersistenceError:
+            raise
+        except Exception as e:
+            raise PersistenceError(f"Failed to retrieve data: {str(e)}")
+
+    def retrieve_numpy_array(
+        self, experiment_id: str, dataset_name: str
+    ) -> Optional[np.ndarray]:
+        """Retrieve a numpy array for an experiment."""
+        self._validate_experiment_id(experiment_id)
+        try:
+            file_path = self.data_path / f"{experiment_id}.h5"
+            if not file_path.exists():
+                return None
+
+            with h5py.File(file_path, "r") as f:
+                if dataset_name in f:
+                    return f[dataset_name][:]  # type: ignore
+                return None
+        except Exception as e:
+            raise PersistenceError(f"Failed to retrieve numpy array: {str(e)}")
+
+    def export_to_csv(self, experiment_id: str, file_path: str) -> None:
+        """Export experiment data to CSV."""
+        self._validate_experiment_id(experiment_id)
+        try:
+            dataset = self.load_dataset(experiment_id)
+            if dataset.data:
+                df = pd.DataFrame(dataset.data)
+                df.to_csv(file_path, index=False)
+        except Exception as e:
+            raise PersistenceError(f"Failed to export to CSV: {str(e)}")
+
+    def export_to_json(self, experiment_id: str, file_path: str) -> None:
+        """Export experiment data to JSON."""
+        self._validate_experiment_id(experiment_id)
+        try:
+            dataset = self.load_dataset(experiment_id)
+            with open(file_path, "w") as f:
+                json.dump(dataset.data, f, indent=2, default=str)
+        except Exception as e:
+            raise PersistenceError(f"Failed to export to JSON: {str(e)}")
+
+    def import_from_csv(self, file_path: str, experiment_id: str) -> None:
+        """Import experiment data from CSV."""
+        self._validate_experiment_id(experiment_id)
+        try:
+            df = pd.read_csv(file_path)
+            self.store_data(
+                experiment_id, {str(k): v for k, v in df.to_dict("list").items()}
+            )
+        except Exception as e:
+            raise PersistenceError(f"Failed to import from CSV: {str(e)}")
+
+    def list_backups(self, experiment_id: str) -> List[BackupInfo]:
+        """List all backups for an experiment."""
+        self._validate_experiment_id(experiment_id)
+        try:
+            return self._load_backup_info(experiment_id)
+        except Exception as e:
+            raise PersistenceError(f"Failed to list backups: {str(e)}")
+
+    def export_data(
+        self, experiment_id: str, file_path: str, format: str = "csv"
+    ) -> None:
+        """Export experiment data to a file."""
+        self._validate_experiment_id(experiment_id)
+        try:
+            data = self.retrieve_data(experiment_id)
+            if data is None:
+                raise PersistenceError(f"No data found for experiment {experiment_id}")
+
+            export_path = Path(file_path)
+            if format.lower() == "csv":
+                data.to_csv(export_path, index=False)
+            elif format.lower() == "json":
+                data.to_json(export_path, orient="records", indent=2)
+            else:
+                raise PersistenceError(f"Unsupported export format: {format}")
+        except Exception as e:
+            raise PersistenceError(f"Failed to export data: {str(e)}")
+
+    def import_data(
+        self, experiment_id: str, file_path: str, format: str = "csv"
+    ) -> None:
+        """Import experiment data from a file."""
+        self._validate_experiment_id(experiment_id)
+        try:
+            import_path = Path(file_path)
+            if format.lower() == "csv":
+                data = pd.read_csv(import_path)
+            elif format.lower() == "json":
+                data = pd.read_json(import_path)
+            else:
+                raise PersistenceError(f"Unsupported import format: {format}")
+
+            self.store_data(experiment_id, data)
+        except Exception as e:
+            raise PersistenceError(f"Failed to import data: {str(e)}")
+
+    def get_storage_stats(self) -> Dict[str, Any]:
+        """Get storage statistics."""
+        try:
+            total_size = 0
+            experiment_count = 0
+
+            for file in self.data_path.glob("*.h5"):
+                total_size += file.stat().st_size
+                experiment_count += 1
+
+            return {
+                "total_size_bytes": total_size,
+                "total_size_mb": total_size / (1024 * 1024),
+                "total_experiments": experiment_count,
+                "backend": self.backend,
+                "data_path": str(self.data_path),
+            }
+        except Exception as e:
+            raise PersistenceError(f"Failed to get storage stats: {str(e)}")
+
+    def get_experiment_size(self, experiment_id: str) -> int:
+        """Get the size of an experiment in bytes."""
+        self._validate_experiment_id(experiment_id)
+        try:
+            data_file = self.data_path / f"{experiment_id}.h5"
+            if data_file.exists():
+                return data_file.stat().st_size
+            return 0
+        except Exception as e:
+            raise PersistenceError(f"Failed to get experiment size: {str(e)}")
 
     def _store_metadata(self, metadata: ExperimentMetadata):
         """Store experiment metadata in SQLite or PostgreSQL."""
@@ -880,7 +1327,7 @@ class PersistenceLayer:
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
                 """
-                INSERT INTO versions VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT OR REPLACE INTO versions VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
                 (
                     version.version_id,
@@ -889,11 +1336,64 @@ class PersistenceLayer:
                     version.created_at.isoformat(),
                     version.created_by,
                     version.description,
-                    version.parent_version,
+                    version.parent_version or "",
                     version.checksum,
                     version.size_bytes,
                 ),
             )
+            conn.commit()
+
+    def _load_versions(self, experiment_id: str) -> List[DataVersion]:
+        """Load all versions for an experiment."""
+        with sqlite3.connect(self.db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.execute(
+                "SELECT * FROM versions WHERE experiment_id = ?", (experiment_id,)
+            )
+
+            versions = []
+            for row in cursor.fetchall():
+                version = DataVersion(
+                    version_id=row["version_id"],
+                    version_number=row["version_number"],
+                    created_at=datetime.fromisoformat(row["created_at"]),
+                    created_by=row["created_by"],
+                    description=row["description"],
+                    parent_version=row["parent_version"],
+                    checksum=row["checksum"],
+                    size_bytes=row["size_bytes"],
+                )
+                # Attach experiment_id for compatibility with tests
+                setattr(version, "experiment_id", experiment_id)
+                versions.append(version)
+
+            return versions
+
+    def _save_versions(self, experiment_id: str, versions: List[DataVersion]) -> None:
+        """Save versions for an experiment (replaces existing)."""
+        with sqlite3.connect(self.db_path) as conn:
+            # Delete existing versions
+            conn.execute(
+                "DELETE FROM versions WHERE experiment_id = ?", (experiment_id,)
+            )
+            # Insert new versions
+            for version in versions:
+                conn.execute(
+                    """
+                    INSERT INTO versions VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                    (
+                        version.version_id,
+                        experiment_id,
+                        version.version_number,
+                        version.created_at.isoformat(),
+                        version.created_by,
+                        version.description,
+                        version.parent_version,
+                        version.checksum,
+                        version.size_bytes,
+                    ),
+                )
             conn.commit()
 
     def _load_backup_info(self, experiment_id: str) -> List[BackupInfo]:
@@ -936,13 +1436,10 @@ class PersistenceLayer:
         return hashlib.sha256(data_str.encode()).hexdigest()
 
     def create_backup(
-        self, experiment_id: str, backup_type: str = "full"
+        self, experiment_id: str, backup_type: str = "full", retention_days: int = 30
     ) -> BackupInfo:
         """Create backup of experimental dataset."""
         try:
-            # Load dataset
-            # dataset = self.load_dataset(experiment_id)
-
             # Create backup directory
             backup_dir = (
                 self.backup_path
@@ -952,7 +1449,14 @@ class PersistenceLayer:
 
             # Copy data files
             if self.backend in ["hdf5", "hybrid"]:
-                shutil.copy2(self.hdf5_path, backup_dir / "experiments.h5")
+                # Copy main experiments file
+                if self.hdf5_path.exists():
+                    shutil.copy2(self.hdf5_path, backup_dir / "experiments.h5")
+
+            # Copy experiment-specific data file if it exists
+            exp_data_file = self.data_path / f"{experiment_id}.h5"
+            if exp_data_file.exists():
+                shutil.copy2(exp_data_file, backup_dir / f"{experiment_id}.h5")
 
             if self.backend in ["sqlite", "hybrid"]:
                 shutil.copy2(self.db_path, backup_dir / "experiments.db")
@@ -974,7 +1478,10 @@ class PersistenceLayer:
                 backup_type=backup_type,
                 size_bytes=backup_size,
                 checksum=backup_checksum,
+                retention_days=retention_days,
             )
+            # Attach experiment_id for compatibility with tests
+            setattr(backup_info, "experiment_id", experiment_id)
 
             # Store backup info in database
             with sqlite3.connect(self.db_path) as conn:
@@ -1026,7 +1533,21 @@ class PersistenceLayer:
             cursor = conn.execute(query)
             return [row[0] for row in cursor.fetchall()]
 
-    def delete_experiment(self, experiment_id: str, include_backups: bool = False):
+    def list_experiments_with_metadata(
+        self, limit: Optional[int] = None
+    ) -> List[ExperimentMetadata]:
+        """List all experiments with their metadata."""
+        experiment_ids = self.list_experiments(limit)
+        metadata_list = []
+        for exp_id in experiment_ids:
+            metadata = self._load_metadata(exp_id)
+            if metadata:
+                metadata_list.append(metadata)
+        return metadata_list
+
+    def delete_experiment_with_backups(
+        self, experiment_id: str, include_backups: bool = False
+    ):
         """Delete experiment and optionally its backups."""
         try:
             # Delete from SQLite
