@@ -15,7 +15,7 @@ from typing import Any, Dict, List, Optional, Type
 
 # Import standardized GUI utilities
 try:
-    from ..utils.standard_gui import (
+    from .utils.standard_gui import (
         ErrorHandler,
         GUIStyleManager,
         StandardMenuBar,
@@ -297,7 +297,7 @@ if __name__ == "__main__":
     """Standardized GUI for session management."""
 
     class SessionManagementGUI(StandardWindow):
-        def __init__(self):
+        def __init__(self) -> None:
             """Initialize the session management GUI."""
             super().__init__(
                 "APGI Session Management", GUIStyleManager.DEFAULT_WINDOW_SIZE
@@ -305,12 +305,14 @@ if __name__ == "__main__":
 
             # Initialize managers
             self.session_manager = (
-                SessionSetupManager(None)
+                SessionSetupManager(None)  # type: ignore[arg-type]
                 if ParameterEstimationDAO is not None
                 else None
             )
             self.participant_manager = (
-                ParticipantManager(None) if ParameterEstimationDAO is not None else None
+                ParticipantManager(None)  # type: ignore[arg-type]
+                if ParameterEstimationDAO is not None
+                else None
             )
 
             # Create menu bar
@@ -321,7 +323,7 @@ if __name__ == "__main__":
 
             logger.info("SessionManagementGUI initialized")
 
-        def create_main_interface(self):
+        def create_main_interface(self) -> None:
             """Create the main interface components."""
             # Create notebook for tabs
             self.notebook = create_standard_notebook(self.root)
@@ -338,7 +340,7 @@ if __name__ == "__main__":
             # Button frame
             self.create_button_frame()
 
-        def create_session_tab(self):
+        def create_session_tab(self) -> None:
             """Create session setup tab."""
             session_frame = ttk.Frame(self.notebook)
             self.notebook.add(session_frame, text="Session Setup")
@@ -395,7 +397,7 @@ if __name__ == "__main__":
                 row=3, column=1, columnspan=2, sticky="w", pady=5, padx=5
             )
 
-        def create_participant_tab(self):
+        def create_participant_tab(self) -> None:
             """Create participant management tab."""
             participant_frame = ttk.Frame(self.notebook)
             self.notebook.add(participant_frame, text="Participant Management")
@@ -451,7 +453,7 @@ if __name__ == "__main__":
                 participant_button_frame, "View Participants", self.view_participants
             ).pack(side="left", padx=5)
 
-        def create_session_list_tab(self):
+        def create_session_list_tab(self) -> None:
             """Create session list tab."""
             list_frame = ttk.Frame(self.notebook)
             self.notebook.add(list_frame, text="Session List")
@@ -488,7 +490,7 @@ if __name__ == "__main__":
             # Add sample data
             self.add_sample_sessions()
 
-        def create_button_frame(self):
+        def create_button_frame(self) -> None:
             """Create the button frame."""
             button_frame = create_standard_button_frame(self.root)
 
@@ -508,12 +510,12 @@ if __name__ == "__main__":
                 side="left", padx=5
             )
 
-        def generate_session_id(self):
+        def generate_session_id(self) -> None:
             """Generate a unique session ID."""
             session_id = f"session_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
             self.session_id_var.set(session_id)
 
-        def add_participant(self):
+        def add_participant(self) -> None:
             """Add a new participant."""
             participant_id = self.new_participant_id_var.get().strip()
             if not participant_id:
@@ -531,10 +533,12 @@ if __name__ == "__main__":
             # Add participant
             if self.participant_manager:
                 try:
-                    self.participant_manager.add_participant(
-                        participant_id=participant_id,
-                        age=self.age_var.get(),
-                        gender=self.gender_var.get(),
+                    self.participant_manager.register_participant(
+                        participant_id,
+                        metadata={
+                            "age": self.age_var.get(),
+                            "gender": self.gender_var.get(),
+                        },
                     )
                     show_info_dialog(
                         "Success", f"Participant {participant_id} added successfully"
@@ -545,7 +549,7 @@ if __name__ == "__main__":
             else:
                 show_warning_dialog("Info", "Participant manager not available")
 
-        def view_participants(self):
+        def view_participants(self) -> None:
             """View all participants."""
             if not self.participant_manager:
                 show_warning_dialog("Info", "Participant manager not available")
@@ -561,7 +565,7 @@ if __name__ == "__main__":
                 "Participants", f"Current participants:\n\n{participant_list}"
             )
 
-        def create_session(self):
+        def create_session(self) -> None:
             """Create a new session."""
             session_id = self.session_id_var.get().strip()
             participant_id = self.participant_id_var.get().strip()
@@ -589,7 +593,7 @@ if __name__ == "__main__":
             else:
                 show_warning_dialog("Info", "Session manager not available")
 
-        def save_session(self):
+        def save_session(self) -> None:
             """Save session data."""
             filename = filedialog.asksaveasfilename(
                 title="Save Session Data",
@@ -614,7 +618,7 @@ if __name__ == "__main__":
                 except Exception:
                     ErrorHandler.handle_file_error(filename, "save")
 
-        def load_session(self):
+        def load_session(self) -> None:
             """Load session data."""
             filename = filedialog.askopenfilename(
                 title="Load Session Data",
@@ -636,14 +640,14 @@ if __name__ == "__main__":
                 except Exception:
                     ErrorHandler.handle_file_error(filename, "load")
 
-        def export_data(self):
+        def export_data(self) -> None:
             """Export session data."""
             show_info_dialog(
                 "Export",
                 "Export functionality would save all session data to CSV/Excel format",
             )
 
-        def refresh_data(self):
+        def refresh_data(self) -> None:
             """Refresh the session list."""
             # Clear existing items
             for item in self.session_tree.get_children():
@@ -652,7 +656,9 @@ if __name__ == "__main__":
             # Add sample data again
             self.add_sample_sessions()
 
-        def add_session_to_tree(self, session_id, participant_id, session_type):
+        def add_session_to_tree(
+            self, session_id: str, participant_id: str, session_type: str
+        ) -> None:
             """Add a session to the tree view."""
             status = "Active"
             date = datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -662,7 +668,7 @@ if __name__ == "__main__":
                 values=(session_id, participant_id, session_type, date, status),
             )
 
-        def add_sample_sessions(self):
+        def add_sample_sessions(self) -> None:
             """Add sample session data."""
             sample_sessions = [
                 (
@@ -702,7 +708,7 @@ if __name__ == "__main__":
 
     # Launch GUI
     try:
-        app = SessionManagementGUI()
+        app = SessionManagementGUI()  # type: ignore[no-untyped-call]
         app.run()
     except Exception as e:
         logger.error(f"Error launching Session Management GUI: {e}")

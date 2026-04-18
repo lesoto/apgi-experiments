@@ -315,7 +315,7 @@ class MicrostateAnalysis:
 
             i = j
 
-        return smoothed
+        return np.asarray(smoothed)
 
     def compute_temporal_metrics(self, labels: np.ndarray) -> Dict[str, Any]:
         """
@@ -557,7 +557,7 @@ class MicrostateAnalysis:
             "transition_difference": transition_diff,
         }
 
-    def export_templates(self, filename: str):
+    def export_templates(self, filename: str) -> None:
         """
         Export microstate templates to file.
 
@@ -574,7 +574,7 @@ class MicrostateAnalysis:
             labels=self.template_labels,
         )
 
-    def load_templates(self, filename: str):
+    def load_templates(self, filename: str) -> None:
         """
         Load microstate templates from file.
 

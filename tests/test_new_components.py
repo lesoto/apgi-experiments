@@ -30,7 +30,7 @@ except ImportError as e:
     print(f"Warning: Could not import cross-species validation: {e}")
 
 try:
-    from research.clinical_biomarkers.experiments.biomarker_analysis import (
+    from research.clinical_biomarkers.experiments.biomarker_analysis import (  # type: ignore[import-not-found]
         BiomarkerAnalyzer,
         BiomarkerType,
         ClinicalBiomarker,

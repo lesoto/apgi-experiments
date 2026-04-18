@@ -76,10 +76,10 @@ class LogStreamer:
     """Real-time log streaming functionality."""
 
     def __init__(self) -> None:
-        self.subscribers = {}
+        self.subscribers: Dict[str, Dict[str, Any]] = {}
         self.queue: queue.Queue = queue.Queue()
         self.running = False
-        self.thread = None
+        self.thread: Optional[threading.Thread] = None
 
     def subscribe(
         self,

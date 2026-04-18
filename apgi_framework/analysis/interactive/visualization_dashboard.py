@@ -15,7 +15,7 @@ and analysis of consciousness experiments. Features include:
 
 import numpy as np
 import pandas as pd
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 import warnings
 from apgi_framework.logging.standardized_logging import get_logger
 
@@ -23,9 +23,9 @@ logger = get_logger(__name__)
 
 
 try:
-    import plotly.graph_objects as go
-    import plotly.express as px
-    from plotly.subplots import make_subplots
+    import plotly.graph_objects as go  # type: ignore
+    import plotly.express as px  # type: ignore
+    from plotly.subplots import make_subplots  # type: ignore
 
     PLOTLY_AVAILABLE = True
 except ImportError:
@@ -46,7 +46,7 @@ except ImportError:
 class InteractiveVisualizer:
     """Interactive visualization tools for APGI experiments."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the interactive visualizer."""
         if not PLOTLY_AVAILABLE:
             raise ImportError("Plotly required for interactive visualization")
@@ -435,12 +435,12 @@ class InteractiveVisualizer:
 class StreamlitDashboard:
     """Streamlit-based web dashboard for real-time monitoring."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the Streamlit dashboard."""
         if not STREAMLIT_AVAILABLE:
             raise ImportError("Streamlit required for web dashboard")
 
-    def run_dashboard(self, experiment_data: Dict):
+    def run_dashboard(self, experiment_data: Dict[str, Any]) -> None:
         """
         Run the Streamlit dashboard.
 
@@ -481,7 +481,9 @@ class StreamlitDashboard:
             st.success("Data exported successfully!")
 
 
-def create_interactive_report(results: Dict, output_file: str = "apgi_report.html"):
+def create_interactive_report(
+    results: Dict[str, Any], output_file: str = "apgi_report.html"
+) -> None:
     """
     Create an interactive HTML report.
 
@@ -496,7 +498,7 @@ def create_interactive_report(results: Dict, output_file: str = "apgi_report.htm
         warnings.warn("Plotly required for interactive reports")
         return
 
-    visualizer = InteractiveVisualizer()
+    visualizer = InteractiveVisualizer()  # type: ignore[no-untyped-call]
 
     # Create figures
     figures = []
@@ -550,7 +552,7 @@ def create_interactive_report(results: Dict, output_file: str = "apgi_report.htm
 
 if __name__ == "__main__":
     # Example usage
-    visualizer = InteractiveVisualizer()
+    visualizer = InteractiveVisualizer()  # type: ignore[no-untyped-call]
 
     # Sample parameter data
     theta_history = [0.5 + 0.1 * np.sin(i / 10) for i in range(50)]

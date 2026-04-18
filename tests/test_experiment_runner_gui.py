@@ -64,7 +64,7 @@ class TestExperimentRunnerGUIHeadless:  # noqa: F401
     def test_experiment_runner_imports(self):
         """Test that experiment runner module imports correctly."""
         try:
-            from apgi_framework.gui.experiment_runner_gui import (
+            from apgi_framework.gui.experiment_runner_gui import (  # type: ignore[import-not-found]
                 ExperimentRunnerGUI,
             )
 
@@ -76,7 +76,7 @@ class TestExperimentRunnerGUIHeadless:  # noqa: F401
     def test_experiment_runner_class_exists(self):
         """Test that ExperimentRunnerGUI class exists."""
         try:
-            from apgi_framework.gui.experiment_runner_gui import (
+            from apgi_framework.gui.experiment_runner_gui import (  # type: ignore[import-not-found]
                 ExperimentRunnerGUI,
             )
 

@@ -73,7 +73,7 @@ class LargeDatasetHandler:
         ):
             self._init_database()
 
-    def _init_database(self):
+    def _init_database(self) -> None:
         """Initialize PostgreSQL database connection pool."""
         try:
             # Build connection string
@@ -105,7 +105,7 @@ class LargeDatasetHandler:
             self.logger.error(f"Failed to initialize database: {e}")
             raise DatabaseIntegrationError(f"Database initialization failed: {e}")
 
-    def _init_database_schema(self):
+    def _init_database_schema(self) -> None:
         """Initialize database schema for large dataset handling."""
         if not self._pool:
             return
@@ -655,7 +655,7 @@ class LargeDatasetHandler:
             self.logger.error(f"Failed to get database stats: {e}")
             return {"status": "error", "error": str(e)}
 
-    def close(self):
+    def close(self) -> None:
         """Close database connections."""
         if self._pool:
             self._pool.closeall()

@@ -220,6 +220,20 @@ filterwarnings = [
     "ignore::PendingDeprecationWarning",
 ]
 
+[tool.coverage.run]
+source = ["apgi_framework"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/site-packages/*",
+    "*/dist/*",
+    "*/build/*",
+    "*/.tox/*",
+    "*/.eggs/*",
+]
+branch = false
+
 [tool.coverage.report]
 exclude_lines = [
     "pragma: no cover",
@@ -384,9 +398,8 @@ log_level = "INFO"
 mock_external = true
 
 [tool.mypy]
-# Incremental strict mode enablement - Phase 2: Enhanced strictness
-# Enable basic strict mode options first
-strict = false  # Keep false for now, enable incrementally
+# Incremental strict mode enablement - Phase 3: Enable strict mode
+strict = true
 
 # Enable some basic strict options
 warn_return_any = true

@@ -14,7 +14,7 @@ import logging
 from typing import Any, Dict, List, Optional
 
 try:
-    from RestrictedPython import compile_restricted, safe_globals
+    from RestrictedPython import compile_restricted, safe_globals  # type: ignore
 
     HAS_RESTRICTED_PYTHON = True
 except ImportError:
@@ -561,7 +561,7 @@ class SecurityValidator(ast.NodeVisitor):
         self.forbidden_functions = forbidden_functions
         self.violations: List[str] = []
 
-    def visit_Import(self, node):
+    def visit_Import(self, node: ast.Import) -> None:
         """Check import statements."""
         for alias in node.names:
             # Check for exact matches and submodule imports
@@ -571,7 +571,7 @@ class SecurityValidator(ast.NodeVisitor):
                 self.violations.append(f"Forbidden import: {alias.name}")
         self.generic_visit(node)
 
-    def visit_ImportFrom(self, node):
+    def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
         """Check from-import statements."""
         if node.module and any(
             forbidden in node.module for forbidden in self.forbidden_modules
@@ -579,7 +579,7 @@ class SecurityValidator(ast.NodeVisitor):
             self.violations.append(f"Forbidden import from: {node.module}")
         self.generic_visit(node)
 
-    def visit_Call(self, node):
+    def visit_Call(self, node: ast.Call) -> None:
         """Check function calls."""
         if isinstance(node.func, ast.Name):
             if node.func.id in self.forbidden_functions:
@@ -592,7 +592,7 @@ _default_sandbox = CodeSandbox()
 
 
 def safe_execute(
-    code: str, context: Optional[Dict[str, Any]] = None, **kwargs
+    code: str, context: Optional[Dict[str, Any]] = None, **kwargs: Any
 ) -> Dict[str, Any]:
     """
     Safely execute code in the default sandbox.

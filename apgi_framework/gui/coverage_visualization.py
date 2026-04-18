@@ -8,59 +8,59 @@ visualization with delta display.
 
 import sys
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 
 # Data classes for coverage information
 class CoverageData:
     def __init__(
         self,
-        line_coverage=None,
-        branch_coverage=None,
-        function_coverage=None,
-        module_coverage=None,
-        overall_coverage=0.0,
-        timestamp=None,
-    ):
-        self.line_coverage = line_coverage or {}
-        self.branch_coverage = branch_coverage or {}
-        self.function_coverage = function_coverage or {}
-        self.module_coverage = module_coverage or {}
-        self.overall_coverage = overall_coverage
-        self.timestamp = timestamp or datetime.now()
+        line_coverage: Optional[Dict[str, float]] = None,
+        branch_coverage: Optional[Dict[str, float]] = None,
+        function_coverage: Optional[Dict[str, float]] = None,
+        module_coverage: Optional[Dict[str, "ModuleCoverage"]] = None,
+        overall_coverage: float = 0.0,
+        timestamp: Optional[datetime] = None,
+    ) -> None:
+        self.line_coverage: Dict[str, float] = line_coverage or {}
+        self.branch_coverage: Dict[str, float] = branch_coverage or {}
+        self.function_coverage: Dict[str, float] = function_coverage or {}
+        self.module_coverage: Dict[str, "ModuleCoverage"] = module_coverage or {}
+        self.overall_coverage: float = overall_coverage
+        self.timestamp: datetime = timestamp or datetime.now()
 
 
 class ModuleCoverage:
     def __init__(
         self,
-        module_name="",
-        line_coverage=0.0,
-        branch_coverage=0.0,
-        function_coverage=0.0,
-        total_lines=0,
-        covered_lines=0,
-        total_branches=0,
-        covered_branches=0,
-        total_functions=0,
-        covered_functions=0,
-        uncovered_lines=None,
-    ):
-        self.module_name = module_name
-        self.line_coverage = line_coverage
-        self.branch_coverage = branch_coverage
-        self.function_coverage = function_coverage
-        self.total_lines = total_lines
-        self.covered_lines = covered_lines
-        self.total_branches = total_branches
-        self.covered_branches = covered_branches
-        self.total_functions = total_functions
-        self.covered_functions = covered_functions
-        self.uncovered_lines = uncovered_lines or []
+        module_name: str = "",
+        line_coverage: float = 0.0,
+        branch_coverage: float = 0.0,
+        function_coverage: float = 0.0,
+        total_lines: int = 0,
+        covered_lines: int = 0,
+        total_branches: int = 0,
+        covered_branches: int = 0,
+        total_functions: int = 0,
+        covered_functions: int = 0,
+        uncovered_lines: Optional[List[int]] = None,
+    ) -> None:
+        self.module_name: str = module_name
+        self.line_coverage: float = line_coverage
+        self.branch_coverage: float = branch_coverage
+        self.function_coverage: float = function_coverage
+        self.total_lines: int = total_lines
+        self.covered_lines: int = covered_lines
+        self.total_branches: int = total_branches
+        self.covered_branches: int = covered_branches
+        self.total_functions: int = total_functions
+        self.covered_functions: int = covered_functions
+        self.uncovered_lines: List[int] = uncovered_lines or []
 
 
 try:
-    from PySide6.QtCore import QRect, Qt, Signal
-    from PySide6.QtGui import (
+    from PySide6.QtCore import QRect, Qt, Signal  # type: ignore[import-not-found]
+    from PySide6.QtGui import (  # type: ignore[import-not-found]
         QBrush,
         QColor,
         QFont,
@@ -69,7 +69,7 @@ try:
         QPen,
         QSyntaxHighlighter,
     )
-    from PySide6.QtWidgets import (
+    from PySide6.QtWidgets import (  # type: ignore[import-not-found]
         QApplication,
         QComboBox,
         QFrame,
@@ -100,175 +100,214 @@ except ImportError:
     PYSIDE6_AVAILABLE = False
 
     class FallbackQWidget:
-        def __init__(self, *args, **kwargs):
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
+            pass
+
+        def __init_subclass__(self, *args: Any, **kwargs: Any) -> None:
             pass
 
     class FallbackQVBoxLayout:
-        def __init__(self, *args, **kwargs):
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
+            pass
+
+        def __init_subclass__(self, *args: Any, **kwargs: Any) -> None:
             pass
 
     class FallbackQHBoxLayout:
-        def __init__(self, *args, **kwargs):
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
+            pass
+
+        def __init_subclass__(self, *args: Any, **kwargs: Any) -> None:
             pass
 
     class FallbackSig:
-        def connect(self, f):
+        def connect(self, f: Any) -> None:
+            pass
+
+        def disconnect(self, *args: Any) -> None:
             pass
 
     class FallbackQTreeWidget:
-        def __init__(self, *args, **kwargs):
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
             pass
 
-        def setHeaderLabels(self, *args):
+        def setHeaderLabels(self, *args: Any) -> None:
             pass
 
-        def setAlternatingRowColors(self, *args):
+        def setAlternatingRowColors(self, *args: Any) -> None:
             pass
 
-        def setSortingEnabled(self, *args):
+        def setSortingEnabled(self, *args: Any) -> None:
             pass
 
-        def header(self):
+        def header(self) -> "FallbackQHeaderView":
             return FallbackQHeaderView()
 
-        def clear(self):
+        def clear(self) -> None:
             pass
 
-        def expandAll(self):
+        def expandAll(self) -> None:
             pass
 
-        def currentItem(self):
+        def collapseAll(self) -> None:
+            pass
+
+        def currentItem(self) -> Optional["FallbackQTreeWidgetItem"]:
             return None
 
         @property
-        def itemSelectionChanged(self):
+        def itemSelectionChanged(self) -> "FallbackSig":
             return FallbackSig()
 
     class FallbackQTreeWidgetItem:
-        def __init__(self, *args, **kwargs):
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
             pass
 
-        def setFont(self, *args):
+        def setFont(self, *args: Any) -> None:
             pass
 
-        def setText(self, *args):
+        def setText(self, *args: Any) -> None:
             pass
 
-        def setForeground(self, *args):
+        def setForeground(self, *args: Any) -> None:
             pass
 
-        def setData(self, *args):
+        def setData(self, *args: Any) -> None:
             pass
 
-        def data(self, *args):
+        def data(self, *args: Any) -> Any:
             return None
 
-        def text(self, *args):
+        def text(self, *args: Any) -> str:
             return ""
 
+        def child(self, *args: Any) -> Any:
+            return None
+
+        def childCount(self, *args: Any) -> int:
+            return 0
+
     class FallbackQTextEdit:
-        def __init__(self, *args, **kwargs):
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
             pass
 
-        def setMaximumHeight(self, *args):
+        def setMaximumHeight(self, *args: Any) -> None:
             pass
 
-        def setReadOnly(self, *args):
+        def setReadOnly(self, *args: Any) -> None:
             pass
 
-        def setPlainText(self, *args):
+        def setPlainText(self, *args: Any) -> None:
             pass
 
-        def clear(self):
+        def clear(self) -> None:
             pass
+
+        def toPlainText(self, *args: Any) -> str:
+            return ""
 
     class FallbackQSplitter:
-        def __init__(self, *args, **kwargs):
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
             pass
 
-        def addWidget(self, *args):
+        def addWidget(self, *args: Any) -> None:
             pass
 
-        def setStretchFactor(self, *args):
+        def setStretchFactor(self, *args: Any) -> None:
+            pass
+
+        def setSizes(self, *args: Any) -> None:
             pass
 
     class FallbackQTabWidget:
-        def __init__(self, *args, **kwargs):
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
             pass
 
-        def addTab(self, *args):
+        def addTab(self, *args: Any) -> None:
             pass
 
     class FallbackQLabel:
-        def __init__(self, *args, **kwargs):
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
             pass
 
-        def setFont(self, *args):
+        def setFont(self, *args: Any) -> None:
             pass
 
-        def setText(self, *args):
+        def setText(self, *args: Any) -> None:
             pass
 
-        def setStyleSheet(self, *args):
+        def text(self, *args: Any) -> str:
+            return ""
+
+        def setStyleSheet(self, *args: Any) -> None:
             pass
 
     class FallbackQPushButton:
-        def __init__(self, *args, **kwargs):
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
             pass
 
-        def setEnabled(self, *args):
+        def setEnabled(self, *args: Any) -> None:
+            pass
+
+        def setText(self, *args: Any) -> None:
+            pass
+
+        def isEnabled(self, *args: Any) -> bool:
+            return False
+
+        def click(self, *args: Any) -> None:
             pass
 
     class FallbackQGroupBox:
-        def __init__(self, *args, **kwargs):
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
             pass
 
     class FallbackQScrollArea:
-        def __init__(self, *args, **kwargs):
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
             pass
 
     class FallbackQFrame:
-        def __init__(self, *args, **kwargs):
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
             pass
 
     class FallbackQLineEdit:
-        def __init__(self, *args, **kwargs):
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
             pass
 
     class FallbackQComboBox:
-        def __init__(self, *args, **kwargs):
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
             pass
 
-        def addItems(self, *args):
+        def addItems(self, *args: Any) -> None:
             pass
 
-        def currentText(self):
+        def currentText(self) -> str:
             return ""
 
         @property
-        def currentTextChanged(self):
+        def currentTextChanged(self) -> "FallbackSig":
             return FallbackSig()
 
     class FallbackQProgressBar:
-        def __init__(self, *args, **kwargs):
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
             pass
 
-        def setTextVisible(self, *args):
+        def setTextVisible(self, *args: Any) -> None:
             pass
 
-        def setFormat(self, *args):
+        def setFormat(self, *args: Any) -> None:
             pass
 
-        def value(self):
+        def value(self) -> int:
             return 0
 
-        def setValue(self, *args):
+        def setValue(self, *args: Any) -> None:
             pass
 
-        def setStyleSheet(self, *args):
+        def setStyleSheet(self, *args: Any) -> None:
             pass
 
-        def update(self):
+        def update(self) -> None:
             pass
 
     class FallbackQTableWidget:
@@ -278,14 +317,17 @@ except ImportError:
         pass
 
     class FallbackQHeaderView:
-        Stretch = 1
-        ResizeToContents = 2
+        Stretch: int = 1
+        ResizeToContents: int = 2
 
-        def setStretchLastSection(self, *args):
+        def setStretchLastSection(self, *args: Any) -> None:
             pass
 
-        def setSectionResizeMode(self, *args):
+        def setSectionResizeMode(self, *args: Any) -> None:
             pass
+
+        def count(self, *args: Any) -> int:
+            return 0
 
     class FallbackQApplication:
         pass
@@ -297,7 +339,7 @@ except ImportError:
         pass
 
     class FallbackSignal:
-        def __init__(self, *args):
+        def __init__(self, *args: Any) -> None:
             pass
 
     class FallbackQSyntaxHighlighter:
@@ -307,74 +349,74 @@ except ImportError:
         pass
 
     class FallbackQFont:
-        Bold = 1
+        Bold: int = 1
 
     class FallbackQColor:
-        def __init__(self, *args):
+        def __init__(self, *args: Any) -> None:
             pass
 
-        def name(self):
+        def name(self) -> str:
             return "#000000"
 
     class FallbackQt:
-        Horizontal = 1
-        UserRole = 256
+        Horizontal: int = 1
+        UserRole: int = 256
 
     class FallbackQRect:
-        def __init__(self, *args):
+        def __init__(self, *args: Any) -> None:
             pass
 
-        def top(self):
+        def top(self) -> int:
             return 0
 
-        def bottom(self):
+        def bottom(self) -> int:
             return 0
 
-        def left(self):
+        def left(self) -> int:
             return 0
 
-        def right(self):
+        def right(self) -> int:
             return 0
 
-        def width(self):
+        def width(self) -> int:
             return 0
 
-        def height(self):
+        def height(self) -> int:
             return 0
 
     class FallbackQPainter:
-        Antialiasing = 1
+        Antialiasing: int = 1
 
-        def __init__(self, *args):
+        def __init__(self, *args: Any) -> None:
             pass
 
-        def setRenderHint(self, *args):
+        def setRenderHint(self, *args: Any) -> None:
             pass
 
-        def fillRect(self, *args):
+        def fillRect(self, *args: Any) -> None:
             pass
 
-        def setPen(self, *args):
+        def setPen(self, *args: Any) -> None:
             pass
 
-        def drawRect(self, *args):
+        def drawRect(self, *args: Any) -> None:
             pass
 
-        def drawLine(self, *args):
+        def drawLine(self, *args: Any) -> None:
             pass
 
-        def setBrush(self, *args):
+        def setBrush(self, *args: Any) -> None:
             pass
 
-        def drawEllipse(self, *args):
+        def drawEllipse(self, *args: Any) -> None:
             pass
 
     class FallbackQPen:
-        def __init__(self, *args):
+        def __init__(self, *args: Any) -> None:
             pass
 
     class FallbackQBrush:
-        def __init__(self, *args):
+        def __init__(self, *args: Any) -> None:
             pass
 
     # Assign fallback classes to expected names
@@ -415,20 +457,20 @@ except ImportError:
 class CoverageProgressBar(QProgressBar):
     """Custom progress bar for coverage display with color coding."""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.setTextVisible(True)
         self.setFormat("%p%")
-        self._threshold_good = 90
-        self._threshold_warning = 70
+        self._threshold_good: float = 90.0
+        self._threshold_warning: float = 70.0
 
-    def set_thresholds(self, warning: float, good: float):
+    def set_thresholds(self, warning: float, good: float) -> None:
         """Set coverage thresholds for color coding."""
         self._threshold_warning = warning
         self._threshold_good = good
         self.update()
 
-    def paintEvent(self, event: QPaintEvent):
+    def paintEvent(self, event: QPaintEvent) -> None:
         """Custom paint event for color-coded progress bar."""
         super().paintEvent(event)
 
@@ -557,7 +599,9 @@ class CoverageTreeWidget(QTreeWidget):
 
         self.expandAll()
 
-    def _apply_coverage_colors(self, item: QTreeWidgetItem, coverage: ModuleCoverage):
+    def _apply_coverage_colors(
+        self, item: QTreeWidgetItem, coverage: ModuleCoverage
+    ) -> None:
         """Apply color coding based on coverage levels."""
 
         def get_coverage_color(percentage: float) -> QColor:
@@ -573,7 +617,7 @@ class CoverageTreeWidget(QTreeWidget):
         item.setForeground(2, get_coverage_color(coverage.branch_coverage))
         item.setForeground(3, get_coverage_color(coverage.function_coverage))
 
-    def _on_selection_changed(self):
+    def _on_selection_changed(self) -> None:
         """Handle selection changes."""
         current_item = self.currentItem()
         if current_item and current_item.data(0, Qt.UserRole):
@@ -585,7 +629,7 @@ class CoverageTreeWidget(QTreeWidget):
 class CoverageDetailWidget(QWidget):
     """Widget for displaying detailed coverage information for a selected module."""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self._setup_ui()
         self._current_coverage: Optional[ModuleCoverage] = None
@@ -685,7 +729,7 @@ class CoverageDetailWidget(QWidget):
         self.view_source_btn.setEnabled(True)
         self.generate_tests_btn.setEnabled(bool(coverage.uncovered_lines))
 
-    def _clear_display(self):
+    def _clear_display(self) -> None:
         """Clear the coverage display."""
         self.module_name_label.setText("No module selected")
         self.line_coverage_bar.setValue(0)
@@ -700,7 +744,7 @@ class CoverageDetailWidget(QWidget):
 class CoverageTrendWidget(QWidget):
     """Widget for displaying coverage trends over time."""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self._setup_ui()
         self._coverage_history: List[Tuple[datetime, CoverageData]] = []
@@ -754,7 +798,7 @@ class CoverageTrendWidget(QWidget):
         self._coverage_history.sort(key=lambda x: x[0])  # Sort by timestamp
         self._update_trend_display()
 
-    def _update_trend_display(self):
+    def _update_trend_display(self) -> None:
         """Update the trend display based on current settings."""
         if not self._coverage_history:
             return
@@ -823,7 +867,7 @@ class CoverageTrendWidget(QWidget):
 class CoverageTrendChart(QWidget):
     """Simple line chart for coverage trends."""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.setMinimumHeight(200)
         self._data_points: List[Tuple[datetime, float]] = []
@@ -903,7 +947,7 @@ class CoverageVisualization(QWidget):
     source_view_requested = Signal(str)  # file_path
     test_generation_requested = Signal(str, list)  # module_name, uncovered_lines
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self._setup_ui()
         self._setup_connections()
@@ -958,7 +1002,7 @@ class CoverageVisualization(QWidget):
         self.trend_widget = CoverageTrendWidget()
         content_tabs.addTab(self.trend_widget, "Coverage Trends")
 
-    def _setup_connections(self):
+    def _setup_connections(self) -> None:
         """Set up signal connections."""
         # Coverage tree connections
         self.coverage_tree.coverage_item_selected.connect(
@@ -970,7 +1014,7 @@ class CoverageVisualization(QWidget):
         self.coverage_detail.view_source_btn.clicked.connect(self._view_source)
         self.coverage_detail.generate_tests_btn.clicked.connect(self._generate_tests)
 
-    def display_coverage(self, coverage_data: CoverageData):
+    def display_coverage(self, coverage_data: CoverageData) -> None:
         """Display coverage data in the visualization."""
         self._current_coverage = coverage_data
 
@@ -996,7 +1040,7 @@ class CoverageVisualization(QWidget):
         # Add to trend data
         self.trend_widget.add_coverage_data(coverage_data.timestamp, coverage_data)
 
-    def _view_source(self):
+    def _view_source(self) -> None:
         """Handle view source request."""
         current_item = self.coverage_tree.currentItem()
         if current_item:
@@ -1005,7 +1049,7 @@ class CoverageVisualization(QWidget):
             file_path = f"{module_name.replace('.', '/')}.py"
             self.source_view_requested.emit(file_path)
 
-    def _generate_tests(self):
+    def _generate_tests(self) -> None:
         """Handle test generation request."""
         if self.coverage_detail._current_coverage:
             current_item = self.coverage_tree.currentItem()
@@ -1018,7 +1062,7 @@ class CoverageVisualization(QWidget):
         """Get the currently displayed coverage data."""
         return self._current_coverage
 
-    def clear_coverage(self):
+    def clear_coverage(self) -> None:
         """Clear all displayed coverage data."""
         self._current_coverage = None
         self.coverage_tree.clear()
@@ -1030,7 +1074,7 @@ class CoverageVisualization(QWidget):
         self.overall_function_bar.setValue(0)
 
 
-def main():
+def main() -> None:
     """Main function for testing the coverage visualization."""
     app = QApplication(sys.argv)
 
@@ -1079,8 +1123,8 @@ def main():
     visualization.display_coverage(sample_coverage)
     visualization.show()
 
-    return app.exec()
+    sys.exit(app.exec())
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

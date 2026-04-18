@@ -105,7 +105,7 @@ class SurpriseAccumulator:
         self.surprise = 0.0
         self.history: List[float] = []
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset surprise accumulator to initial state."""
         self.surprise = 0.0
         self.history = []
@@ -337,7 +337,7 @@ class StanModelCompiler:
 
         # Compile new model
         try:
-            import pystan
+            import pystan  # type: ignore[import-not-found]
 
             model = pystan.StanModel(model_code=model_code)
 
@@ -356,7 +356,7 @@ class StanModelCompiler:
                 "Install with: pip install pystan"
             )
 
-    def clear_cache(self):
+    def clear_cache(self) -> None:
         """Clear all cached compiled models."""
         for cache_file in self.cache_dir.glob("model_*.pkl"):
             cache_file.unlink()
@@ -527,7 +527,7 @@ class HierarchicalBayesianModel:
         }
         """
 
-    def compile_model(self, force_recompile: bool = False):
+    def compile_model(self, force_recompile: bool = False) -> None:
         """
         Compile the Stan model.
 
@@ -586,7 +586,7 @@ class HierarchicalBayesianModel:
         chains: int = 4,
         iter: int = 2000,
         warmup: Optional[int] = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> Any:
         """
         Fit the hierarchical Bayesian model.

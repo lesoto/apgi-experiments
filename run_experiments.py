@@ -36,7 +36,7 @@ from typing import Any, Dict, List, Optional, cast
 import yaml
 
 try:
-    import jsonschema
+    import jsonschema  # type: ignore[import-untyped]
 
     JSONSCHEMA_AVAILABLE = True
 except ImportError:

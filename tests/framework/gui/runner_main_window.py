@@ -10,22 +10,22 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 try:
-    import PySide6  # noqa: F401
+    import PySide6  # noqa: F401  # type: ignore[import-not-found]
 
     PYSIDE6_AVAILABLE = True
 except ImportError:
     PYSIDE6_AVAILABLE = False
 
 if PYSIDE6_AVAILABLE:
-    from PySide6.QtCore import (
+    from PySide6.QtCore import (  # type: ignore[import-not-found]
         Qt,
         QThread,
         QTimer,
         Signal,
         pyqtSignal,
     )
-    from PySide6.QtGui import QFont, QIcon, QPixmap
-    from PySide6.QtWidgets import (
+    from PySide6.QtGui import QFont, QIcon, QPixmap  # type: ignore[import-not-found]
+    from PySide6.QtWidgets import (  # type: ignore[import-not-found]
         QApplication,
         QCheckBox,
         QComboBox,
@@ -75,7 +75,7 @@ else:
 
     class Signal:  # type: ignore[no-redef]
         def __init__(self, *args) -> None:
-            self._connected_slots = []
+            self._connected_slots: List[Any] = []
 
         def connect(self, slot) -> None:
             """Connect a slot to this signal."""
@@ -91,7 +91,7 @@ else:
 
         def __init__(self, parent=None) -> None:
             self.itemChanged = Signal()
-            self._children = []
+            self._children: List[Any] = []
 
         def setHeaderLabels(self, labels) -> None:
             pass
@@ -127,8 +127,8 @@ else:
     class QTreeWidgetItem:  # type: ignore[no-redef]
         def __init__(self, parent=None, strings=None) -> None:
             self._parent = parent
-            self._strings = strings or []
-            self._children = []
+            self._strings: List[str] = strings or []
+            self._children: List[Any] = []
             self._check_state = 0
             self._flags = 0
             if parent:
@@ -152,7 +152,7 @@ else:
         def data(self, column, role) -> Any:
             return None
 
-        def text(self, column) -> str:
+        def text(self, column: int) -> str:
             if column < len(self._strings):
                 return self._strings[column]
             return ""

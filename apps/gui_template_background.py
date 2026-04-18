@@ -86,46 +86,27 @@ try:
     except ImportError:
         pass
 
-    # Falsification tests - use available classes
+    # Falsification tests - use available classes from __init__.py
     PrimaryFalsificationTest: Optional[Any] = None
+    ConsciousnessAssessment: Optional[Any] = None
+    ConsciousnessAssessmentSimulator: Optional[Any] = None
     try:
-        from apgi_framework.falsification.primary_falsification_test import (
+        from apgi_framework.falsification import (
             PrimaryFalsificationTest as _PrimaryFalsificationTest,
+            ConsciousnessAssessment as _ConsciousnessAssessment,
+            ConsciousnessAssessmentSimulator as _ConsciousnessAssessmentSimulator,
         )
 
         PrimaryFalsificationTest = _PrimaryFalsificationTest
+        ConsciousnessAssessment = _ConsciousnessAssessment
+        ConsciousnessAssessmentSimulator = _ConsciousnessAssessmentSimulator
     except ImportError:
         pass
 
+    # Fallback classes for falsification tests that don't exist as separate modules
     ConsciousnessWithoutIgnitionTest: Optional[Any] = None
-    try:
-        from apgi_framework.falsification.consciousness_without_ignition_test import (
-            ConsciousnessWithoutIgnitionTest as _ConsciousnessWithoutIgnitionTest,
-        )
-
-        ConsciousnessWithoutIgnitionTest = _ConsciousnessWithoutIgnitionTest
-    except ImportError:
-        pass
-
     ThresholdInsensitivityTest: Optional[Any] = None
-    try:
-        from apgi_framework.falsification.threshold_insensitivity_test import (
-            ThresholdInsensitivityTest as _ThresholdInsensitivityTest,
-        )
-
-        ThresholdInsensitivityTest = _ThresholdInsensitivityTest
-    except ImportError:
-        pass
-
     SomaBiasTest: Optional[Any] = None
-    try:
-        from apgi_framework.falsification.soma_bias_test import (
-            SomaBiasTest as _SomaBiasTest,
-        )
-
-        SomaBiasTest = _SomaBiasTest
-    except ImportError:
-        pass
 
     # Analysis modules - use available classes
     BayesianParameterEstimator: Optional[Any] = None
@@ -1684,7 +1665,7 @@ class APGIFrameworkGUI(ctk.CTk):
 
         try:
             # Import the research experiment
-            from research.ai_benchmarking.experiments.experiment import (
+            from research.ai_benchmarking.experiments.experiment import (  # type: ignore[import-not-found, import-untyped]
                 run_ai_benchmarking_experiment,
             )
 
@@ -1756,7 +1737,7 @@ class APGIFrameworkGUI(ctk.CTk):
 
         try:
             # Import the research experiment
-            from research.interoceptive_gating.experiments.interoceptive_gating.experiment import (
+            from research.interoceptive_gating.experiments.interoceptive_gating.experiment import (  # type: ignore[import-not-found, import-untyped]
                 run_interoceptive_gating_experiment,
             )
 
@@ -3466,7 +3447,7 @@ class APGIFrameworkGUI(ctk.CTk):
         )
 
     def plot_results(self):
-        """Plot experimental results using matplotlib and APGI framework visualizer."""
+        """Plot experimental results using matplotlib with black background and cyan styling."""
         try:
             # Check if we have results to plot
             if not self.current_results:
@@ -3483,11 +3464,15 @@ class APGIFrameworkGUI(ctk.CTk):
             plot_window.title("Experimental Results")
             plot_window.geometry("800x600")
 
-            # Create matplotlib figure
+            # Create matplotlib figure with black background
             from matplotlib.figure import Figure
 
-            fig = Figure(figsize=(10, 6))
+            fig = Figure(figsize=(10, 6), facecolor="black")
             ax = fig.add_subplot(111)
+            ax.set_facecolor("black")
+
+            # Add grid lines
+            ax.grid(True, color="gray", linestyle="--", alpha=0.5)
 
             # Plot basic results if available
             if "results" in self.current_results:
@@ -3507,11 +3492,15 @@ class APGIFrameworkGUI(ctk.CTk):
                             for m in metrics
                             if isinstance(results.get(m), (int, float))
                         ]
-                        ax.bar(metric_names, values)
-                        ax.set_title("Experimental Results")
-                        ax.set_xlabel("Metrics")
-                        ax.set_ylabel("Values")
+                        ax.bar(metric_names, values, color="cyan", alpha=0.7)
+                        ax.set_title("Experimental Results", color="white")
+                        ax.set_xlabel("Metrics", color="white")
+                        ax.set_ylabel("Values", color="white")
+                        ax.tick_params(axis="x", colors="white")
+                        ax.tick_params(axis="y", colors="white")
                         plt.setp(ax.get_xticklabels(), rotation=45, ha="right")
+                        for spine in ax.spines.values():
+                            spine.set_edgecolor("white")
                     else:
                         ax.text(
                             0.5,
@@ -3519,6 +3508,7 @@ class APGIFrameworkGUI(ctk.CTk):
                             "No numerical data to plot",
                             ha="center",
                             va="center",
+                            color="white",
                             transform=ax.transAxes,
                         )
                 else:
@@ -3528,6 +3518,7 @@ class APGIFrameworkGUI(ctk.CTk):
                         "Results format not supported for plotting",
                         ha="center",
                         va="center",
+                        color="white",
                         transform=ax.transAxes,
                     )
             else:
@@ -3537,6 +3528,7 @@ class APGIFrameworkGUI(ctk.CTk):
                     "No results data available",
                     ha="center",
                     va="center",
+                    color="white",
                     transform=ax.transAxes,
                 )
 
@@ -3580,14 +3572,19 @@ class APGIFrameworkGUI(ctk.CTk):
                     neural_data = self.current_results["neural_signatures"]
                     signatures = neural_data.get("signatures", {})
 
-                    # Create figure for neural signatures
-                    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+                    # Create figure for neural signatures with black background
+                    fig, axes = plt.subplots(2, 2, figsize=(14, 10), facecolor="black")
                     fig.suptitle(
-                        "Neural Signatures Analysis", fontsize=16, fontweight="bold"
+                        "Neural Signatures Analysis",
+                        fontsize=16,
+                        fontweight="bold",
+                        color="white",
                     )
 
                     # Plot 1: P3b Components
                     ax1 = axes[0, 0]
+                    ax1.set_facecolor("black")
+                    ax1.grid(True, color="gray", linestyle="--", alpha=0.5)
                     p3b_data = signatures.get("p3b", {})
                     if p3b_data:
                         metrics = ["amplitude", "latency"]
@@ -3600,9 +3597,13 @@ class APGIFrameworkGUI(ctk.CTk):
                                 labels.append(f"P3b {metric.title()}")
 
                         if values:
-                            bars = ax1.bar(labels, values, color=["#2E86AB", "#A23B72"])
-                            ax1.set_title("P3b Components")
-                            ax1.set_ylabel("Value")
+                            bars = ax1.bar(labels, values, color="cyan", alpha=0.7)
+                            ax1.set_title("P3b Components", color="white")
+                            ax1.set_ylabel("Value", color="white")
+                            ax1.tick_params(axis="x", colors="white")
+                            ax1.tick_params(axis="y", colors="white")
+                            for spine in ax1.spines.values():
+                                spine.set_edgecolor("white")
 
                             # Add value labels
                             for bar, val in zip(bars, values):
@@ -3613,6 +3614,7 @@ class APGIFrameworkGUI(ctk.CTk):
                                     f"{val:.2f}",
                                     ha="center",
                                     va="bottom",
+                                    color="white",
                                 )
                         else:
                             ax1.text(
@@ -3621,6 +3623,7 @@ class APGIFrameworkGUI(ctk.CTk):
                                 "No P3b data available",
                                 ha="center",
                                 va="center",
+                                color="white",
                                 transform=ax1.transAxes,
                             )
                     else:
@@ -3630,12 +3633,15 @@ class APGIFrameworkGUI(ctk.CTk):
                             "No P3b data available",
                             ha="center",
                             va="center",
+                            color="white",
                             transform=ax1.transAxes,
                         )
-                    ax1.set_title("P3b Components")
+                    ax1.set_title("P3b Components", color="white")
 
                     # Plot 2: Gamma Band Activity
                     ax2 = axes[0, 1]
+                    ax2.set_facecolor("black")
+                    ax2.grid(True, color="gray", linestyle="--", alpha=0.5)
                     gamma_data = signatures.get("gamma", {})
                     if gamma_data:
                         metrics = ["power", "coherence"]
@@ -3651,11 +3657,13 @@ class APGIFrameworkGUI(ctk.CTk):
                                 labels.append(f"Posterior {metric.title()}")
 
                         if values:
-                            colors = ["#F18F01", "#C73E1D", "#F18F01", "#C73E1D"]
-                            bars = ax2.bar(labels, values, color=colors)
-                            ax2.set_title("Gamma Band Activity")
-                            ax2.set_ylabel("Power/Coherence")
-                            ax2.tick_params(axis="x", rotation=45)
+                            bars = ax2.bar(labels, values, color="cyan", alpha=0.7)
+                            ax2.set_title("Gamma Band Activity", color="white")
+                            ax2.set_ylabel("Power/Coherence", color="white")
+                            ax2.tick_params(axis="x", colors="white", rotation=45)
+                            ax2.tick_params(axis="y", colors="white")
+                            for spine in ax2.spines.values():
+                                spine.set_edgecolor("white")
 
                             # Add value labels
                             for bar, val in zip(bars, values):
@@ -3666,6 +3674,7 @@ class APGIFrameworkGUI(ctk.CTk):
                                     f"{val:.3f}",
                                     ha="center",
                                     va="bottom",
+                                    color="white",
                                 )
                         else:
                             ax2.text(
@@ -3674,6 +3683,7 @@ class APGIFrameworkGUI(ctk.CTk):
                                 "No gamma data available",
                                 ha="center",
                                 va="center",
+                                color="white",
                                 transform=ax2.transAxes,
                             )
                     else:
@@ -3683,12 +3693,15 @@ class APGIFrameworkGUI(ctk.CTk):
                             "No gamma data available",
                             ha="center",
                             va="center",
+                            color="white",
                             transform=ax2.transAxes,
                         )
-                    ax2.set_title("Gamma Band Activity")
+                    ax2.set_title("Gamma Band Activity", color="white")
 
                     # Plot 3: BOLD/fMRI Activity
                     ax3 = axes[1, 0]
+                    ax3.set_facecolor("black")
+                    ax3.grid(True, color="gray", linestyle="--", alpha=0.5)
                     bold_data = signatures.get("bold", {})
                     if bold_data:
                         metrics = ["activation", "duration", "transitions"]
@@ -3701,12 +3714,13 @@ class APGIFrameworkGUI(ctk.CTk):
                                 labels.append(f"BOLD {metric.title()}")
 
                         if values:
-                            bars = ax3.bar(
-                                labels, values, color=["#264653", "#2A9D8F", "#E9C46A"]
-                            )
-                            ax3.set_title("BOLD/fMRI Activity")
-                            ax3.set_ylabel("Value")
-                            ax3.tick_params(axis="x", rotation=45)
+                            bars = ax3.bar(labels, values, color="cyan", alpha=0.7)
+                            ax3.set_title("BOLD/fMRI Activity", color="white")
+                            ax3.set_ylabel("Value", color="white")
+                            ax3.tick_params(axis="x", colors="white", rotation=45)
+                            ax3.tick_params(axis="y", colors="white")
+                            for spine in ax3.spines.values():
+                                spine.set_edgecolor("white")
 
                             # Add value labels
                             for bar, val in zip(bars, values):
@@ -3717,6 +3731,7 @@ class APGIFrameworkGUI(ctk.CTk):
                                     f"{val:.2f}",
                                     ha="center",
                                     va="bottom",
+                                    color="white",
                                 )
                         else:
                             ax3.text(
@@ -3725,6 +3740,7 @@ class APGIFrameworkGUI(ctk.CTk):
                                 "No BOLD data available",
                                 ha="center",
                                 va="center",
+                                color="white",
                                 transform=ax3.transAxes,
                             )
                     else:
@@ -3734,12 +3750,15 @@ class APGIFrameworkGUI(ctk.CTk):
                             "No BOLD data available",
                             ha="center",
                             va="center",
+                            color="white",
                             transform=ax3.transAxes,
                         )
-                    ax3.set_title("BOLD/fMRI Activity")
+                    ax3.set_title("BOLD/fMRI Activity", color="white")
 
                     # Plot 4: PCI/Pupil Data
                     ax4 = axes[1, 1]
+                    ax4.set_facecolor("black")
+                    ax4.grid(True, color="gray", linestyle="--", alpha=0.5)
                     pci_data = signatures.get("pci", {})
                     if pci_data:
                         metrics = ["pci_value", "pupil_dilation", "latency"]
@@ -3752,12 +3771,13 @@ class APGIFrameworkGUI(ctk.CTk):
                                 labels.append(metric.replace("_", " ").title())
 
                         if values:
-                            bars = ax4.bar(
-                                labels, values, color=["#E63946", "#F1FAEE", "#A8DADC"]
-                            )
-                            ax4.set_title("PCI & Pupil Metrics")
-                            ax4.set_ylabel("Value")
-                            ax4.tick_params(axis="x", rotation=45)
+                            bars = ax4.bar(labels, values, color="cyan", alpha=0.7)
+                            ax4.set_title("PCI & Pupil Metrics", color="white")
+                            ax4.set_ylabel("Value", color="white")
+                            ax4.tick_params(axis="x", colors="white", rotation=45)
+                            ax4.tick_params(axis="y", colors="white")
+                            for spine in ax4.spines.values():
+                                spine.set_edgecolor("white")
 
                             # Add value labels
                             for bar, val in zip(bars, values):
@@ -3768,6 +3788,7 @@ class APGIFrameworkGUI(ctk.CTk):
                                     f"{val:.3f}",
                                     ha="center",
                                     va="bottom",
+                                    color="white",
                                 )
                         else:
                             ax4.text(
@@ -3776,6 +3797,7 @@ class APGIFrameworkGUI(ctk.CTk):
                                 "No PCI data available",
                                 ha="center",
                                 va="center",
+                                color="white",
                                 transform=ax4.transAxes,
                             )
                     else:
@@ -3785,9 +3807,10 @@ class APGIFrameworkGUI(ctk.CTk):
                             "No PCI data available",
                             ha="center",
                             va="center",
+                            color="white",
                             transform=ax4.transAxes,
                         )
-                    ax4.set_title("PCI & Pupil Metrics")
+                    ax4.set_title("PCI & Pupil Metrics", color="white")
 
                     # Adjust layout and display
                     plt.tight_layout()
@@ -3850,25 +3873,32 @@ class APGIFrameworkGUI(ctk.CTk):
                 try:
                     parameters = self.current_results["parameters"]
 
-                    # Create figure for parameter space
-                    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+                    # Create figure for parameter space with black background
+                    fig, axes = plt.subplots(2, 2, figsize=(14, 10), facecolor="black")
                     fig.suptitle(
-                        "APGI Parameter Space Analysis", fontsize=16, fontweight="bold"
+                        "APGI Parameter Space Analysis",
+                        fontsize=16,
+                        fontweight="bold",
+                        color="white",
                     )
 
                     # Plot 1: Parameter Values Bar Chart
                     ax1 = axes[0, 0]
+                    ax1.set_facecolor("black")
+                    ax1.grid(True, color="gray", linestyle="--", alpha=0.5)
                     if parameters:
                         param_names = list(parameters.keys())
                         param_values = list(parameters.values())
 
-                        # Create color map
-                        colors = plt.cm.viridis(np.linspace(0, 1, len(param_names)))
-                        bars = ax1.bar(param_names, param_values, color=colors)
-                        ax1.set_title("APGI Parameter Values")
-                        ax1.set_ylabel("Parameter Value")
-                        ax1.tick_params(axis="x", rotation=45)
-                        ax1.grid(True, alpha=0.3)
+                        bars = ax1.bar(
+                            param_names, param_values, color="cyan", alpha=0.7
+                        )
+                        ax1.set_title("APGI Parameter Values", color="white")
+                        ax1.set_ylabel("Parameter Value", color="white")
+                        ax1.tick_params(axis="x", colors="white", rotation=45)
+                        ax1.tick_params(axis="y", colors="white")
+                        for spine in ax1.spines.values():
+                            spine.set_edgecolor("white")
 
                         # Add value labels on bars
                         for bar, val in zip(bars, param_values):
@@ -3880,6 +3910,7 @@ class APGIFrameworkGUI(ctk.CTk):
                                 ha="center",
                                 va="bottom",
                                 fontsize=9,
+                                color="white",
                             )
                     else:
                         ax1.text(
@@ -3888,14 +3919,16 @@ class APGIFrameworkGUI(ctk.CTk):
                             "No parameters available",
                             ha="center",
                             va="center",
+                            color="white",
                             transform=ax1.transAxes,
                         )
-                        ax1.set_title("APGI Parameter Values")
+                        ax1.set_title("APGI Parameter Values", color="white")
 
                     # Plot 2: Parameter Distribution (if we have multiple parameter sets)
                     ax2 = axes[0, 1]
+                    ax2.set_facecolor("black")
+                    ax2.grid(True, color="gray", linestyle="--", alpha=0.5)
                     if len(parameters) >= 3:
-                        # ('exteroceptive_precision', 'interoceptive_precision', 'somatic_gain'):
                         # Create a sample distribution for visualization
                         param_names = list(parameters.keys())[
                             :3
@@ -3912,13 +3945,16 @@ class APGIFrameworkGUI(ctk.CTk):
                             y = (
                                 y / y.max() * 0.8 + i * 0.2
                             )  # Normalize and offset for visibility
-                            ax2.plot(x, y, label=name, linewidth=2)
+                            ax2.plot(x, y, label=name, linewidth=2, color="cyan")
 
-                        ax2.set_title("Parameter Distributions")
-                        ax2.set_xlabel("Parameter Value")
-                        ax2.set_ylabel("Probability Density")
+                        ax2.set_title("Parameter Distributions", color="white")
+                        ax2.set_xlabel("Parameter Value", color="white")
+                        ax2.set_ylabel("Probability Density", color="white")
+                        ax2.tick_params(axis="x", colors="white")
+                        ax2.tick_params(axis="y", colors="white")
                         ax2.legend()
-                        ax2.grid(True, alpha=0.3)
+                        for spine in ax2.spines.values():
+                            spine.set_edgecolor("white")
                     else:
                         ax2.text(
                             0.5,
@@ -3926,12 +3962,15 @@ class APGIFrameworkGUI(ctk.CTk):
                             "Insufficient parameters for distribution plot",
                             ha="center",
                             va="center",
+                            color="white",
                             transform=ax2.transAxes,
                         )
-                        ax2.set_title("Parameter Distributions")
+                        ax2.set_title("Parameter Distributions", color="white")
 
                     # Plot 3: Parameter Correlation Heatmap (if we have multiple parameter sets)
                     ax3 = axes[1, 0]
+                    ax3.set_facecolor("black")
+                    ax3.grid(True, color="gray", linestyle="--", alpha=0.5)
                     if len(parameters) >= 2:
                         # Create a correlation matrix visualization
                         param_names = list(parameters.keys())
@@ -3967,9 +4006,15 @@ class APGIFrameworkGUI(ctk.CTk):
                         )
                         ax3.set_xticks(range(n_params))
                         ax3.set_yticks(range(n_params))
-                        ax3.set_xticklabels(param_names, rotation=45, ha="right")
-                        ax3.set_yticklabels(param_names)
-                        ax3.set_title("Parameter Correlations")
+                        ax3.set_xticklabels(
+                            param_names, rotation=45, ha="right", color="white"
+                        )
+                        ax3.set_yticklabels(param_names, color="white")
+                        ax3.set_title("Parameter Correlations", color="white")
+                        ax3.tick_params(axis="x", colors="white")
+                        ax3.tick_params(axis="y", colors="white")
+                        for spine in ax3.spines.values():
+                            spine.set_edgecolor("white")
 
                         # Add correlation values as text
                         for i in range(n_params):
@@ -3980,13 +4025,17 @@ class APGIFrameworkGUI(ctk.CTk):
                                     f"{correlation_matrix[i, j]:.2f}",
                                     ha="center",
                                     va="center",
-                                    color="black",
+                                    color="white",
                                     fontsize=8,
                                 )
 
                         # Add colorbar
                         cbar = plt.colorbar(im, ax=ax3, fraction=0.046, pad=0.04)
-                        cbar.set_label("Correlation", rotation=270, labelpad=15)
+                        cbar.set_label(
+                            "Correlation", rotation=270, labelpad=15, color="white"
+                        )
+                        cbar.ax.yaxis.set_tick_params(color="white")
+                        plt.setp(plt.getp(cbar.ax.axes, "yticklabels"), color="white")
                     else:
                         ax3.text(
                             0.5,
@@ -3994,12 +4043,15 @@ class APGIFrameworkGUI(ctk.CTk):
                             "Insufficient parameters for correlation analysis",
                             ha="center",
                             va="center",
+                            color="white",
                             transform=ax3.transAxes,
                         )
-                        ax3.set_title("Parameter Correlations")
+                        ax3.set_title("Parameter Correlations", color="white")
 
                     # Plot 4: Parameter Sensitivity Analysis
                     ax4 = axes[1, 1]
+                    ax4.set_facecolor("black")
+                    ax4.grid(True, color="gray", linestyle="--", alpha=0.5)
                     if parameters:
                         # Create a sensitivity analysis visualization
                         param_names = list(parameters.keys())
@@ -4017,13 +4069,17 @@ class APGIFrameworkGUI(ctk.CTk):
                         bars = ax4.barh(
                             y_pos,
                             sensitivity_scores,
-                            color=plt.cm.plasma(np.linspace(0, 1, len(param_names))),
+                            color="cyan",
+                            alpha=0.7,
                         )
                         ax4.set_yticks(y_pos)
-                        ax4.set_yticklabels(param_names)
-                        ax4.set_xlabel("Sensitivity Score")
-                        ax4.set_title("Parameter Sensitivity Analysis")
-                        ax4.grid(True, alpha=0.3, axis="x")
+                        ax4.set_yticklabels(param_names, color="white")
+                        ax4.set_xlabel("Sensitivity Score", color="white")
+                        ax4.set_title("Parameter Sensitivity Analysis", color="white")
+                        ax4.tick_params(axis="x", colors="white")
+                        ax4.tick_params(axis="y", colors="white")
+                        for spine in ax4.spines.values():
+                            spine.set_edgecolor("white")
 
                         # Add value labels on bars
                         for i, (bar, score) in enumerate(zip(bars, sensitivity_scores)):
@@ -4035,6 +4091,7 @@ class APGIFrameworkGUI(ctk.CTk):
                                 ha="left",
                                 va="center",
                                 fontsize=9,
+                                color="white",
                             )
                     else:
                         ax4.text(
@@ -4043,9 +4100,10 @@ class APGIFrameworkGUI(ctk.CTk):
                             "No parameters available for sensitivity analysis",
                             ha="center",
                             va="center",
+                            color="white",
                             transform=ax4.transAxes,
                         )
-                        ax4.set_title("Parameter Sensitivity Analysis")
+                        ax4.set_title("Parameter Sensitivity Analysis", color="white")
 
                     # Adjust layout and display
                     plt.tight_layout()
@@ -4115,16 +4173,19 @@ class APGIFrameworkGUI(ctk.CTk):
                     n_timepoints = 100
                     time = np.linspace(0, 10, n_timepoints)  # 10 seconds of data
 
-                    # Create figure for time series
-                    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+                    # Create figure for time series with black background
+                    fig, axes = plt.subplots(2, 2, figsize=(14, 10), facecolor="black")
                     fig.suptitle(
                         f"Time Series Analysis - {test_name}",
                         fontsize=16,
                         fontweight="bold",
+                        color="white",
                     )
 
                     # Plot 1: Neural Activity Over Time
                     ax1 = axes[0, 0]
+                    ax1.set_facecolor("black")
+                    ax1.grid(True, color="gray", linestyle="--", alpha=0.5)
                     # Simulate neural activity based on parameters
                     neural_activity = np.zeros(n_timepoints)
 
@@ -4157,21 +4218,24 @@ class APGIFrameworkGUI(ctk.CTk):
                     ax1.plot(
                         time,
                         neural_activity,
-                        "b-",
+                        color="cyan",
                         linewidth=1.5,
                         label="Neural Activity",
                     )
-                    ax1.set_xlabel("Time (s)")
-                    ax1.set_ylabel("Neural Activity (μV)")
-                    ax1.set_title("Neural Activity Over Time")
-                    ax1.grid(True, alpha=0.3)
+                    ax1.set_xlabel("Time (s)", color="white")
+                    ax1.set_ylabel("Neural Activity (μV)", color="white")
+                    ax1.set_title("Neural Activity Over Time", color="white")
+                    ax1.tick_params(axis="x", colors="white")
+                    ax1.tick_params(axis="y", colors="white")
                     ax1.legend()
+                    for spine in ax1.spines.values():
+                        spine.set_edgecolor("white")
 
                     # Mark events
                     for event_time in event_times:
                         ax1.axvline(
                             x=event_time,
-                            color="r",
+                            color="red",
                             linestyle="--",
                             alpha=0.5,
                             label="Stimulus" if event_time == event_times[0] else "",
@@ -4179,6 +4243,8 @@ class APGIFrameworkGUI(ctk.CTk):
 
                     # Plot 2: Prediction Error Dynamics
                     ax2 = axes[0, 1]
+                    ax2.set_facecolor("black")
+                    ax2.grid(True, color="gray", linestyle="--", alpha=0.5)
                     # Simulate prediction error based on APGI equation
                     prediction_errors = np.random.normal(0, 0.1, n_timepoints)
 
@@ -4199,19 +4265,24 @@ class APGIFrameworkGUI(ctk.CTk):
                     ax2.plot(
                         time,
                         prediction_errors,
-                        "r-",
+                        color="cyan",
                         linewidth=1.5,
                         label="Prediction Error",
                     )
-                    ax2.set_xlabel("Time (s)")
-                    ax2.set_ylabel("Prediction Error")
-                    ax2.set_title("Prediction Error Dynamics")
-                    ax2.grid(True, alpha=0.3)
+                    ax2.set_xlabel("Time (s)", color="white")
+                    ax2.set_ylabel("Prediction Error", color="white")
+                    ax2.set_title("Prediction Error Dynamics", color="white")
+                    ax2.tick_params(axis="x", colors="white")
+                    ax2.tick_params(axis="y", colors="white")
                     ax2.legend()
-                    ax2.axhline(y=0, color="k", linestyle="-", alpha=0.3)
+                    ax2.axhline(y=0, color="white", linestyle="-", alpha=0.3)
+                    for spine in ax2.spines.values():
+                        spine.set_edgecolor("white")
 
                     # Plot 3: Precision-Weighted Surprise
                     ax3 = axes[1, 0]
+                    ax3.set_facecolor("black")
+                    ax3.grid(True, color="gray", linestyle="--", alpha=0.5)
                     # Calculate precision-weighted surprise
                     interoceptive_precision = parameters.get(
                         "interoceptive_precision", 0.5
@@ -4229,21 +4300,24 @@ class APGIFrameworkGUI(ctk.CTk):
                     ax3.plot(
                         time,
                         surprise,
-                        "g-",
+                        color="cyan",
                         linewidth=1.5,
                         label="Precision-Weighted Surprise",
                     )
-                    ax3.set_xlabel("Time (s)")
-                    ax3.set_ylabel("Surprise")
-                    ax3.set_title("Precision-Weighted Surprise")
-                    ax3.grid(True, alpha=0.3)
+                    ax3.set_xlabel("Time (s)", color="white")
+                    ax3.set_ylabel("Surprise", color="white")
+                    ax3.set_title("Precision-Weighted Surprise", color="white")
+                    ax3.tick_params(axis="x", colors="white")
+                    ax3.tick_params(axis="y", colors="white")
                     ax3.legend()
+                    for spine in ax3.spines.values():
+                        spine.set_edgecolor("white")
 
                     # Add threshold line
                     threshold = parameters.get("threshold", 0.1)
                     ax3.axhline(
                         y=threshold,
-                        color="r",
+                        color="red",
                         linestyle="--",
                         alpha=0.7,
                         label=f"Threshold = {threshold:.3f}",
@@ -4252,6 +4326,8 @@ class APGIFrameworkGUI(ctk.CTk):
 
                     # Plot 4: Ignition Probability
                     ax4 = axes[1, 1]
+                    ax4.set_facecolor("black")
+                    ax4.grid(True, color="gray", linestyle="--", alpha=0.5)
                     # Calculate ignition probability based on surprise
                     ignition_prob = 1 / (
                         1 + np.exp(-10 * (surprise - threshold))
@@ -4260,16 +4336,19 @@ class APGIFrameworkGUI(ctk.CTk):
                     ax4.plot(
                         time,
                         ignition_prob,
-                        "m-",
+                        color="cyan",
                         linewidth=1.5,
                         label="Ignition Probability",
                     )
-                    ax4.set_xlabel("Time (s)")
-                    ax4.set_ylabel("Ignition Probability")
-                    ax4.set_title("Ignition Probability Over Time")
-                    ax4.grid(True, alpha=0.3)
+                    ax4.set_xlabel("Time (s)", color="white")
+                    ax4.set_ylabel("Ignition Probability", color="white")
+                    ax4.set_title("Ignition Probability Over Time", color="white")
+                    ax4.tick_params(axis="x", colors="white")
+                    ax4.tick_params(axis="y", colors="white")
                     ax4.legend()
                     ax4.set_ylim([0, 1])
+                    for spine in ax4.spines.values():
+                        spine.set_edgecolor("white")
 
                     # Mark ignition events
                     ignition_threshold = 0.8
@@ -4645,7 +4724,9 @@ class APGIFrameworkGUI(ctk.CTk):
                 # Show validation errors but allow user to continue
                 # Convert string errors to ValidationError objects
                 validation_error_objects = [
-                    ValidationError(error, severity=ErrorSeverity.LOW)
+                    ValidationError(
+                        field=error, message=error, severity=ErrorSeverity.LOW
+                    )
                     for error in validation_errors
                 ]
                 self.error_handler.handle_validation_errors(validation_error_objects)
@@ -4668,9 +4749,9 @@ class APGIFrameworkGUI(ctk.CTk):
             # Save APGI parameters with error handling
             for param, entry in self.apgi_params.items():
                 try:
-                    config["apgi_parameters"][param] = float(entry.get())
+                    config["apgi_parameters"][param] = float(entry.get())  # type: ignore[index]
                 except (ValueError, AttributeError) as e:
-                    config["apgi_parameters"][param] = None
+                    config["apgi_parameters"][param] = None  # type: ignore[index]
                     self.logger.warning(f"Could not save parameter {param}: {e}")
 
             # Save experimental setup parameters
@@ -4679,11 +4760,11 @@ class APGIFrameworkGUI(ctk.CTk):
                     value = entry.get()
                     # Try to convert to float if possible
                     try:
-                        config["experimental_setup"][param] = float(value)
+                        config["experimental_setup"][param] = float(value)  # type: ignore[index]
                     except ValueError:
-                        config["experimental_setup"][param] = value
+                        config["experimental_setup"][param] = value  # type: ignore[index]
                 except AttributeError as e:
-                    config["experimental_setup"][param] = None
+                    config["experimental_setup"][param] = None  # type: ignore[index]
                     self.logger.warning(f"Could not save parameter {param}: {e}")
 
             # Save to file with proper error handling

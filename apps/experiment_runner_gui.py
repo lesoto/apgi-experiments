@@ -10,7 +10,7 @@ import threading
 import tkinter as tk
 from pathlib import Path
 from tkinter import messagebox, ttk
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import matplotlib
 
@@ -31,10 +31,11 @@ class StreamRedirector:
     def write(self, data: str) -> int:
         if data:
             self._q.put(data)
-        return self._stream.write(data)
+        result = self._stream.write(data)
+        return result if isinstance(result, int) else len(data)  # type: ignore[no-any-return]
 
     def flush(self) -> None:
-        return self._stream.flush()
+        self._stream.flush()  # type: ignore[no-any-return]
 
 
 class ExperimentGUI(tk.Tk):
@@ -46,7 +47,9 @@ class ExperimentGUI(tk.Tk):
         self.experiments = get_available_experiments()
         self.param_widgets: Dict[str, Any] = {}
         self.log_queue: queue.Queue[str] = queue.Queue()
-        self._worker = None  # Initialize worker thread attribute
+        self._worker: Optional[threading.Thread] = (
+            None  # Initialize worker thread attribute
+        )
         self._orig_stdout = sys.stdout
         self._orig_stderr = sys.stderr
         sys.stdout = StreamRedirector(sys.stdout, self.log_queue)
@@ -122,15 +125,15 @@ class ExperimentGUI(tk.Tk):
             default = None if param.default is inspect._empty else param.default
             widget: Any
             if isinstance(default, bool):
-                var = tk.BooleanVar()
-                var.set(default)
-                widget = ttk.Checkbutton(self.params_frame, variable=var)
-                widget.var = var
+                bool_var: tk.BooleanVar = tk.BooleanVar(value=default)
+                widget = ttk.Checkbutton(self.params_frame, variable=bool_var)
+                widget.var = bool_var  # type: ignore[attr-defined]
             else:
-                var = tk.StringVar()
-                var.set("" if default is None else str(default))
-                widget = ttk.Entry(self.params_frame, textvariable=var, width=20)
-                widget.var = var
+                str_var: tk.StringVar = tk.StringVar(
+                    value="" if default is None else str(default)
+                )
+                widget = ttk.Entry(self.params_frame, textvariable=str_var, width=20)
+                widget.var = str_var  # type: ignore[attr-defined]
             widget.grid(row=row, column=1, sticky=tk.W, padx=6, pady=4)
             self.param_widgets[pname] = widget
             row += 1
@@ -182,7 +185,8 @@ class ExperimentGUI(tk.Tk):
         self._worker = threading.Thread(
             target=self._run_worker, args=(name, kwargs), daemon=True
         )
-        self._worker.start()
+        if self._worker:
+            self._worker.start()
 
     def _run_worker(self, name: str, kwargs: Dict[str, Any]) -> None:
         try:

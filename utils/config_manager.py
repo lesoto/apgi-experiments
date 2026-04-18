@@ -21,7 +21,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-import jsonschema
+import jsonschema  # type: ignore[import-untyped, import-not-found]
 import yaml
 from dotenv import load_dotenv
 
@@ -942,8 +942,8 @@ class EnhancedConfigManager(ConfigManager):
 
     def __init__(self) -> None:
         super().__init__()
-        self.current_profile = None
-        self.profile_history = []
+        self.current_profile: Optional[ConfigProfile] = None
+        self.profile_history: List[ConfigProfile] = []
         self.max_history = 10
 
     def create_profile(  # type: ignore[override]

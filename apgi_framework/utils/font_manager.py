@@ -7,7 +7,7 @@ import logging
 import platform
 import tkinter as tk
 from tkinter import font as tkFont
-from typing import List, Optional, Tuple, Union, cast
+from typing import Dict, List, Optional, Tuple, Union, cast
 
 logger = logging.getLogger(__name__)
 
@@ -63,11 +63,11 @@ class FontManager:
         "heading": ["sans-serif"],
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize font manager and detect available fonts."""
         self.platform = platform.system()
         self.available_fonts = self._detect_available_fonts()
-        self.font_cache = {}
+        self.font_cache: Dict[str, str] = {}
 
         logger.info(f"Font manager initialized for {self.platform}")
         logger.info(f"Found {len(self.available_fonts)} available fonts")

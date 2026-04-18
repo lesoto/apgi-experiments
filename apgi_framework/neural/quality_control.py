@@ -674,7 +674,7 @@ class OperatorNotificationSystem:
         # Setup logging
         self.logger = get_logger(__name__)
 
-    def register_callback(self, callback: Callable):
+    def register_callback(self, callback: Callable) -> None:
         """
         Register callback for notifications.
 
@@ -683,7 +683,7 @@ class OperatorNotificationSystem:
         """
         self.notification_callbacks.append(callback)
 
-    def send_alert(self, alert: QualityAlert):
+    def send_alert(self, alert: QualityAlert) -> None:
         """
         Send quality alert to operator.
 
@@ -709,7 +709,7 @@ class OperatorNotificationSystem:
             except Exception as e:
                 self.logger.error(f"Notification callback error: {e}")
 
-    def send_quality_update(self, quality_metrics: MultiModalQualityMetrics):
+    def send_quality_update(self, quality_metrics: MultiModalQualityMetrics) -> None:
         """
         Send quality update to operator.
 
@@ -738,7 +738,7 @@ class OperatorNotificationSystem:
             except Exception as e:
                 self.logger.error(f"Notification callback error: {e}")
 
-    def send_status_message(self, message: str, severity: str = "info"):
+    def send_status_message(self, message: str, severity: str = "info") -> None:
         """
         Send general status message to operator.
 

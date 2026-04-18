@@ -9,16 +9,27 @@ Provides quality scoring, anomaly detection, and data validation insights.
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
-# APGI imports
-from logging_config import apgi_logger
 from scipy import stats
 from sklearn.ensemble import IsolationForest
+
+# APGI imports - handle both module and standalone execution
+if TYPE_CHECKING:
+    from apgi_framework.logging.standardized_logging import get_logger
+else:
+    try:
+        from ..logging.standardized_logging import get_logger
+    except ImportError:
+        # Add parent directory to path for standalone execution
+        sys.path.insert(0, str(Path(__file__).parent.parent))
+        from apgi_framework.logging.standardized_logging import get_logger
+
+apgi_logger = get_logger(__name__)
 
 
 @dataclass

@@ -41,9 +41,9 @@ class ExperimentMonitor:
 
         # Thread-safe data structures
         self._lock = threading.Lock()
-        self._monitor_thread = None
+        self._monitor_thread: Optional[threading.Thread] = None
 
-    def start_monitoring(self):
+    def start_monitoring(self) -> None:
         """Start the monitoring thread"""
         if not self.is_monitoring:
             self.is_monitoring = True
@@ -53,14 +53,14 @@ class ExperimentMonitor:
             self._monitor_thread.start()
             self.logger.info("Started experiment monitoring")
 
-    def stop_monitoring(self):
+    def stop_monitoring(self) -> None:
         """Stop the monitoring thread"""
         self.is_monitoring = False
         if self._monitor_thread:
             self._monitor_thread.join(timeout=5.0)
         self.logger.info("Stopped experiment monitoring")
 
-    def register_experiment(self, experiment_id: str, metadata: Dict[str, Any]):
+    def register_experiment(self, experiment_id: str, metadata: Dict[str, Any]) -> None:
         """Register a new experiment for monitoring"""
         with self._lock:
             self.experiments[experiment_id] = {
@@ -90,7 +90,7 @@ class ExperimentMonitor:
         current_trial: int,
         new_results: Optional[List[FalsificationResult]] = None,
         new_trials: Optional[List[ExperimentalTrial]] = None,
-    ):
+    ) -> None:
         """Update experiment progress"""
         with self._lock:
             if experiment_id not in self.experiments:
@@ -117,7 +117,7 @@ class ExperimentMonitor:
 
         self._notify_listeners("experiment_updated", experiment_id)
 
-    def complete_experiment(self, experiment_id: str):
+    def complete_experiment(self, experiment_id: str) -> None:
         """Mark experiment as completed"""
         with self._lock:
             if experiment_id in self.experiments:
@@ -139,16 +139,16 @@ class ExperimentMonitor:
         with self._lock:
             return {eid: exp.copy() for eid, exp in self.experiments.items()}
 
-    def add_listener(self, callback: Callable[[str, str], None]):
+    def add_listener(self, callback: Callable[[str, str], None]) -> None:
         """Add event listener for experiment updates"""
         self.listeners.append(callback)
 
-    def remove_listener(self, callback: Callable[[str, str], None]):
+    def remove_listener(self, callback: Callable[[str, str], None]) -> None:
         """Remove event listener"""
         if callback in self.listeners:
             self.listeners.remove(callback)
 
-    def _monitor_loop(self):
+    def _monitor_loop(self) -> None:
         """Main monitoring loop"""
         while self.is_monitoring:
             try:
@@ -162,7 +162,7 @@ class ExperimentMonitor:
                 self.logger.error(f"Error in monitoring loop: {str(e)}")
                 time.sleep(self.update_interval)
 
-    def _update_experiment_statistics(self, experiment_id: str):
+    def _update_experiment_statistics(self, experiment_id: str) -> None:
         """Update experiment statistics"""
         if experiment_id not in self.experiments:
             return
@@ -183,7 +183,7 @@ class ExperimentMonitor:
                     seconds=remaining_seconds
                 )
 
-    def _notify_listeners(self, event_type: str, experiment_id: str):
+    def _notify_listeners(self, event_type: str, experiment_id: str) -> None:
         """Notify all listeners of an event"""
         for listener in self.listeners:
             try:
@@ -197,7 +197,7 @@ class ExperimentComparator:
     Provides experiment comparison and analysis capabilities.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize experiment comparator"""
         self.logger = logging.getLogger(__name__)
 
@@ -476,9 +476,9 @@ class DashboardServer:
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(exist_ok=True)
 
-        self.monitor = ExperimentMonitor()
-        self.comparator = ExperimentComparator()
-        self.visualizer = InteractiveVisualizer()
+        self.monitor = ExperimentMonitor()  # type: ignore
+        self.comparator = ExperimentComparator()  # type: ignore
+        self.visualizer = InteractiveVisualizer()  # type: ignore
 
         self.logger = logging.getLogger(__name__)
 
@@ -489,7 +489,7 @@ class DashboardServer:
             "last_update": datetime.now().isoformat(),
         }
 
-    def start_dashboard(self):
+    def start_dashboard(self) -> None:
         """Start the dashboard server"""
         try:
             self.monitor.start_monitoring()
@@ -503,7 +503,7 @@ class DashboardServer:
         except Exception as e:
             raise DashboardError(f"Failed to start dashboard server: {str(e)}")
 
-    def stop_dashboard(self):
+    def stop_dashboard(self) -> None:
         """Stop the dashboard server"""
         try:
             self.monitor.stop_monitoring()
@@ -578,7 +578,7 @@ class DashboardServer:
         except Exception as e:
             raise DashboardError(f"Failed to export dashboard report: {str(e)}")
 
-    def _on_experiment_event(self, event_type: str, experiment_id: str):
+    def _on_experiment_event(self, event_type: str, experiment_id: str) -> None:
         """Handle experiment events"""
         self.logger.debug(f"Experiment event: {event_type} for {experiment_id}")
 

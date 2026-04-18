@@ -119,7 +119,7 @@ class EdgeCaseInterpreter:
     standard falsification criteria and provides framework boundary validation.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize edge case interpreter with predefined profiles"""
         self.edge_case_profiles = self._initialize_edge_case_profiles()
 

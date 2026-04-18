@@ -95,7 +95,7 @@ class ExecutionPanel(ctk.CTkFrame):
         # Test execution state
         self.is_running = False
         self.test_controller = None
-        self.current_thread = None
+        self.current_thread: Optional[threading.Thread] = None
         self.test_results = None
 
         # Test parameters
@@ -108,7 +108,7 @@ class ExecutionPanel(ctk.CTkFrame):
         self.on_progress_updated: Optional[Callable] = None
 
         self._create_widgets()
-        self._setup_test_parameters()
+        self._setup_test_parameters()  # type: ignore[no-untyped-call]
 
         logger.info(f"TestExecutionPanel initialized for test: {test_name}")
 
@@ -119,21 +119,21 @@ class ExecutionPanel(ctk.CTkFrame):
         self.scrollable_frame.pack(fill="both", expand=True, padx=5, pady=5)
 
         # Test description section
-        self._create_description_section()
+        self._create_description_section()  # type: ignore[no-untyped-call]
 
         # Test parameters section
-        self._create_parameters_section()
+        self._create_parameters_section()  # type: ignore[no-untyped-call]
 
         # Control buttons section
-        self._create_control_section()
+        self._create_control_section()  # type: ignore[no-untyped-call]
 
         # Progress section
-        self._create_progress_section()
+        self._create_progress_section()  # type: ignore[no-untyped-call]
 
         # Results section
-        self._create_results_section()
+        self._create_results_section()  # type: ignore[no-untyped-call]
 
-    def _create_description_section(self):
+    def _create_description_section(self) -> None:
         """Create test description section."""
         desc_frame = ctk.CTkFrame(self.scrollable_frame)
         desc_frame.pack(fill="x", padx=5, pady=5)
@@ -164,7 +164,7 @@ class ExecutionPanel(ctk.CTkFrame):
         )
         desc_text.configure(state="disabled")
 
-    def _create_parameters_section(self):
+    def _create_parameters_section(self) -> None:
         """Create test parameters section."""
         self.params_frame = ctk.CTkFrame(self.scrollable_frame)
         self.params_frame.pack(fill="x", padx=5, pady=5)
@@ -272,8 +272,13 @@ class ExecutionPanel(ctk.CTkFrame):
             modality_menu.pack(fill="x", pady=2)
 
     def _create_parameter_row(
-        self, parent_frame, param_name: str, label: str, default_value, tooltip: str
-    ):
+        self,
+        parent_frame: Any,
+        param_name: str,
+        label: str,
+        default_value: Any,
+        tooltip: str,
+    ) -> None:
         """Create a parameter input row."""
         param_row = ctk.CTkFrame(parent_frame)
         param_row.pack(fill="x", padx=5, pady=2)
@@ -298,7 +303,7 @@ class ExecutionPanel(ctk.CTkFrame):
         entry.pack(side="left", padx=5)
         self.test_vars[param_name] = var
 
-    def _create_control_section(self):
+    def _create_control_section(self) -> None:
         """Create control buttons section."""
         control_frame = ctk.CTkFrame(self.scrollable_frame)
         control_frame.pack(fill="x", padx=5, pady=5)
@@ -340,7 +345,7 @@ class ExecutionPanel(ctk.CTkFrame):
         )
         self.export_button.pack(side="left", padx=5, pady=5)
 
-    def _create_progress_section(self):
+    def _create_progress_section(self) -> None:
         """Create progress tracking section."""
         progress_frame = ctk.CTkFrame(self.scrollable_frame)
         progress_frame.pack(fill="x", padx=5, pady=5)
@@ -364,7 +369,7 @@ class ExecutionPanel(ctk.CTkFrame):
         self.progress_label = ctk.CTkLabel(progress_frame, text="Ready to run test")
         self.progress_label.pack(padx=10, pady=(0, 5))
 
-    def _create_results_section(self):
+    def _create_results_section(self) -> None:
         """Create results display section."""
         results_frame = ctk.CTkFrame(self.scrollable_frame)
         results_frame.pack(fill="both", expand=True, padx=5, pady=5)
@@ -391,10 +396,10 @@ class ExecutionPanel(ctk.CTkFrame):
         self.results_text.tag_configure("warning", foreground="#FF8C00")
         self.results_text.tag_configure("info", foreground="#4682B4")
 
-    def _create_tooltip(self, widget, text: str):
+    def _create_tooltip(self, widget: Any, text: str) -> None:
         """Create a tooltip for a widget."""
 
-        def on_enter(event):
+        def on_enter(event: Any) -> None:
             tooltip = ctk.CTkToplevel(widget)
             tooltip.wm_overrideredirect(True)
             tooltip.wm_geometry(f"+ {event.x_root + 10}+ {event.y_root + 10}")
@@ -406,7 +411,7 @@ class ExecutionPanel(ctk.CTkFrame):
 
             widget.tooltip = tooltip
 
-        def on_leave(event):
+        def on_leave(event: Any) -> None:
             if hasattr(widget, "tooltip"):
                 widget.tooltip.destroy()
                 del widget.tooltip
@@ -414,7 +419,7 @@ class ExecutionPanel(ctk.CTkFrame):
         widget.bind("<Enter>", on_enter)
         widget.bind("<Leave>", on_leave)
 
-    def _setup_test_parameters(self):
+    def _setup_test_parameters(self) -> None:
         """Setup test-specific parameters and validation."""
         # Test-specific parameter validation
         if self.test_name == "Clinical Biomarkers":
@@ -460,7 +465,7 @@ class ExecutionPanel(ctk.CTkFrame):
             # Store reference for later use
             self.test_vars["modality"] = modality_var
 
-    def _run_test(self):
+    def _run_test(self) -> None:
         """Run the falsification test in a separate thread."""
         if self.is_running:
             return
@@ -488,7 +493,7 @@ class ExecutionPanel(ctk.CTkFrame):
         self.current_thread = threading.Thread(target=self._test_worker, daemon=True)
         self.current_thread.start()
 
-    def _stop_test(self):
+    def _stop_test(self) -> None:
         """Stop the running test."""
         self.is_running = False
 
@@ -503,7 +508,7 @@ class ExecutionPanel(ctk.CTkFrame):
         if self.current_thread and self.current_thread.is_alive():
             self.current_thread.join(timeout=2.0)
 
-    def _reset_test(self):
+    def _reset_test(self) -> None:
         """Reset the test panel."""
         self.is_running = False
         self.test_results = None
@@ -586,7 +591,7 @@ class ExecutionPanel(ctk.CTkFrame):
             )
             return False
 
-    def _test_worker(self):
+    def _test_worker(self) -> None:
         """Worker thread for running tests."""
         try:
             self.log_callback(f"Starting {self.test_name} falsification test...")
@@ -602,7 +607,7 @@ class ExecutionPanel(ctk.CTkFrame):
             self._update_progress(0, total_operations, "Initializing test...")
 
             # Run the test
-            self.test_results = self.controller.run_test(**test_params)
+            self.test_results = self.controller.run_test(**test_params)  # type: ignore
 
             # Simulate progress updates (in real implementation, this would come from the test)
             for i in range(10):
@@ -684,7 +689,7 @@ class ExecutionPanel(ctk.CTkFrame):
         else:
             return int(n_trials * n_participants)
 
-    def _update_progress(self, completed: int, total: int, message: str):
+    def _update_progress(self, completed: int, total: int, message: str) -> None:
         """Update progress bar and label."""
         if total > 0:
             progress = completed / total
@@ -700,7 +705,7 @@ class ExecutionPanel(ctk.CTkFrame):
             if self.progress_callback:
                 self.progress_callback(progress, message)
 
-    def _display_results(self):
+    def _display_results(self) -> None:
         """Display test results in the results text widget."""
         if not self.test_results:
             return
@@ -766,7 +771,7 @@ class ExecutionPanel(ctk.CTkFrame):
             "info",
         )
 
-    def _display_error(self, error_message: str):
+    def _display_error(self, error_message: str) -> None:
         """Display error message in results."""
         self.results_text.insert(
             "end", f"=== {self.test_name} Test Error ===\n\n", "header"
@@ -778,7 +783,7 @@ class ExecutionPanel(ctk.CTkFrame):
             "info",
         )
 
-    def _export_results(self):
+    def _export_results(self) -> None:
         """Export test results to file."""
         if not self.test_results:
             messagebox.showwarning("No Results", "No test results to export")
@@ -808,7 +813,7 @@ class ExecutionPanel(ctk.CTkFrame):
         except Exception as e:
             messagebox.showerror("Export Error", f"Failed to export results: {e}")
 
-    def _export_json(self, file_path: str):
+    def _export_json(self, file_path: str) -> None:
         """Export results as JSON."""
         import json
 
@@ -830,7 +835,7 @@ class ExecutionPanel(ctk.CTkFrame):
         with open(file_path, "w") as f:
             json.dump(export_data, f, indent=2)
 
-    def _export_text(self, file_path: str):
+    def _export_text(self, file_path: str) -> None:
         """Export results as text."""
         with open(file_path, "w") as f:
             f.write(f"=== {self.test_name} Test Results ===\n")
@@ -843,7 +848,7 @@ class ExecutionPanel(ctk.CTkFrame):
             f.write("\nResults:\n")
             f.write(self.results_text.get("1.0", "end"))
 
-    def _reset_parameters(self):
+    def _reset_parameters(self) -> None:
         """Reset parameters to default values."""
         # Reset to default values
         defaults = {
@@ -860,7 +865,7 @@ class ExecutionPanel(ctk.CTkFrame):
             if param_name in self.test_vars:
                 self.test_vars[param_name].set(default_value)
 
-    def _default_log_callback(self, message: str):
+    def _default_log_callback(self, message: str) -> None:
         """Default log callback if none provided."""
         logger.info(f"[{self.test_name}] {message}")
 
@@ -895,7 +900,7 @@ class ExecutionPanel(ctk.CTkFrame):
 
 # Factory function for easy instantiation
 def create_test_execution_panel(
-    parent,
+    parent: Any,
     test_name: str,
     controller: Optional[MainApplicationController] = None,
     progress_callback: Optional[Callable] = None,

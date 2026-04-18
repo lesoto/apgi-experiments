@@ -372,11 +372,11 @@ class RestrictedUnpickler(pickle.Unpickler):
     Restricted unpickler that only allows safe types.
     """
 
-    def __init__(self, file, allowed_types: Set[Union[type, str]]):
+    def __init__(self, file: Any, allowed_types: Set[Union[type, str]]) -> None:
         super().__init__(file)
         self.allowed_types = allowed_types
 
-    def find_class(self, module, name):
+    def find_class(self, module: str, name: str) -> Any:
         """
         Override find_class to only allow whitelisted types.
         """

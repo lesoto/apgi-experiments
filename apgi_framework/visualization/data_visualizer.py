@@ -17,11 +17,11 @@ from typing import Any, Dict, List, Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-import plotly.offline as pyo
+import plotly.express as px  # type: ignore[import-untyped]
+import plotly.graph_objects as go  # type: ignore[import-untyped]
+import plotly.offline as pyo  # type: ignore[import-untyped]
 import seaborn as sns
-from plotly.subplots import make_subplots
+from plotly.subplots import make_subplots  # type: ignore[import-untyped]
 
 from ..config.constants import VisualizationConstants
 from ..exceptions import VisualizationError

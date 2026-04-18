@@ -38,7 +38,9 @@ except ImportError:
             """Mock performance metric logging."""
             self.logger.info(f"Performance Metric - {name}: {value} {unit}")
 
-    performance_logger: Any = MockAPGILogger()
+    # Use a different name to avoid redefinition
+    _apgi_logger_fallback: Any = MockAPGILogger()
+    apgi_logger = _apgi_logger_fallback  # type: ignore[misc]
 
     # Suppress matplotlib warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="matplotlib")

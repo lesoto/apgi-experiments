@@ -11,7 +11,7 @@ import tkinter as tk
 from datetime import datetime, timedelta
 from pathlib import Path
 from tkinter import messagebox, scrolledtext, ttk
-from typing import Optional
+from typing import Any, List, Optional
 
 # Setup logger
 logger = logging.getLogger(__name__)
@@ -35,20 +35,20 @@ except ImportError as e:
     if "DetectionTask" not in globals():
 
         class DetectionTask:  # type: ignore[no-redef]
-            def __init__(self, *args, **kwargs):
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
                 logger.warning(
                     "Using placeholder DetectionTask class - functionality limited"
                 )
                 self.task_id = kwargs.get("task_id", "placeholder")
                 self.n_trials = kwargs.get("n_trials", 0)
 
-            def run(self):
+            def run(self) -> bool:
                 logger.warning(
                     "Placeholder DetectionTask.run() called - no actual execution"
                 )
                 return False
 
-            def stop(self):
+            def stop(self) -> None:
                 logger.warning(
                     "Placeholder DetectionTask.stop() called - no actual stopping"
                 )
@@ -56,20 +56,20 @@ except ImportError as e:
     if "HeartbeatDetectionTask" not in globals():
 
         class HeartbeatDetectionTask:  # type: ignore[no-redef]
-            def __init__(self, *args, **kwargs):
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
                 logger.warning(
                     "Using placeholder HeartbeatDetectionTask class - functionality limited"
                 )
                 self.task_id = kwargs.get("task_id", "placeholder")
                 self.n_trials = kwargs.get("n_trials", 0)
 
-            def run(self):
+            def run(self) -> bool:
                 logger.warning(
                     "Placeholder HeartbeatDetectionTask.run() called - no actual execution"
                 )
                 return False
 
-            def stop(self):
+            def stop(self) -> None:
                 logger.warning(
                     "Placeholder HeartbeatDetectionTask.stop() called - no actual stopping"
                 )
@@ -77,20 +77,20 @@ except ImportError as e:
     if "DualModalityOddballTask" not in globals():
 
         class DualModalityOddballTask:  # type: ignore[no-redef]
-            def __init__(self, *args, **kwargs):
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
                 logger.warning(
                     "Using placeholder DualModalityOddballTask class - functionality limited"
                 )
                 self.task_id = kwargs.get("task_id", "placeholder")
                 self.n_trials = kwargs.get("n_trials", 0)
 
-            def run(self):
+            def run(self) -> bool:
                 logger.warning(
                     "Placeholder DualModalityOddballTask.run() called - no actual execution"
                 )
                 return False
 
-            def stop(self):
+            def stop(self) -> None:
                 logger.warning(
                     "Placeholder DualModalityOddballTask.stop() called - no actual stopping"
                 )
@@ -106,21 +106,21 @@ except ImportError:
     if "ParameterEstimationDAO" not in globals():
 
         class ParameterEstimationDAO:  # type: ignore[no-redef]
-            def __init__(self, db_path):
+            def __init__(self, db_path: str) -> None:
                 self.db_path = db_path
 
-            def list_sessions(self, limit=None):
+            def list_sessions(self, limit: Optional[int] = None) -> List[Any]:
                 """Return empty list for fallback implementation"""
                 return []
 
-            def get_session(self, session_id):
+            def get_session(self, session_id: str) -> Optional[Any]:
                 """Return None for fallback implementation"""
                 return None
 
-            def update_session(self, session_data):
+            def update_session(self, session_data: Any) -> None:
                 """No-op for fallback implementation"""
 
-            def save_session(self, session_data):
+            def save_session(self, session_data: Any) -> None:
                 """No-op for fallback implementation"""
 
 else:
@@ -134,7 +134,7 @@ except ImportError:
     if "SessionData" not in globals():
 
         class SessionData:  # type: ignore[no-redef]
-            def __init__(self):
+            def __init__(self) -> None:
                 self.session_id = ""
                 self.participant_id = ""
                 self.start_time = datetime.now()
@@ -159,13 +159,13 @@ except ImportError:
     if "SessionSetupManager" not in globals():
 
         class SessionSetupManager:  # type: ignore[no-redef]
-            def __init__(self, dao):
+            def __init__(self, dao: Any) -> None:
                 self.dao = dao
 
     if "ParticipantManager" not in globals():
 
         class ParticipantManager:  # type: ignore[no-redef]
-            def __init__(self, dao):
+            def __init__(self, dao: Any) -> None:
                 self.dao = dao
 
 else:
@@ -179,7 +179,7 @@ except ImportError:
     if "TaskParameterConfigurator" not in globals():
 
         class TaskParameterConfigurator:  # type: ignore[no-redef]
-            def __init__(self):
+            def __init__(self) -> None:
                 pass
 
 else:
@@ -216,10 +216,10 @@ class ParameterEstimationGUI:
         self.participant_manager = ParticipantManager(self.dao)
 
         # Task configuration with fallback implementation
-        self.task_configurator = TaskParameterConfigurator()
+        self.task_configurator = TaskParameterConfigurator()  # type: ignore[no-untyped-call]
 
         # Progress monitoring
-        self.progress_monitor = RealTimeProgressMonitor()
+        self.progress_monitor = RealTimeProgressMonitor()  # type: ignore[no-untyped-call]
 
         # Current session and tasks
         self.current_session: Optional[SessionData] = None
@@ -577,8 +577,8 @@ class ParameterEstimationGUI:
                         tk.END, f"{session_id[:8]}... - (Error loading details)"
                     )
 
-            def load_selected():
-                selection = session_listbox.curselection()
+            def load_selected() -> None:
+                selection = session_listbox.curselection()  # type: ignore[no-untyped-call]
                 if not selection:
                     messagebox.showwarning(
                         "No Selection", "Please select a session to load"
@@ -734,7 +734,7 @@ class ParameterEstimationGUI:
             self.task_thread.start()
 
             self._update_status("Running detection task...")
-            self.notebook.select(4)  # Switch to monitoring tab
+            self.notebook.select(4)  # type: ignore[no-untyped-call]  # Switch to monitoring tab
 
         except Exception as e:
             messagebox.showerror("Error", f"Failed to start detection task: {str(e)}")
@@ -790,7 +790,7 @@ class ParameterEstimationGUI:
             self.task_thread.start()
 
             self._update_status("Running heartbeat detection task...")
-            self.notebook.select(4)  # Switch to monitoring tab
+            self.notebook.select(4)  # type: ignore[no-untyped-call]  # Switch to monitoring tab
 
         except Exception as e:
             messagebox.showerror("Error", f"Failed to start heartbeat task: {str(e)}")
@@ -847,7 +847,7 @@ class ParameterEstimationGUI:
             self.task_thread.start()
 
             self._update_status("Running oddball task...")
-            self.notebook.select(4)  # Switch to monitoring tab
+            self.notebook.select(4)  # type: ignore[no-untyped-call]  # Switch to monitoring tab
 
         except Exception as e:
             messagebox.showerror("Error", f"Failed to start oddball task: {str(e)}")

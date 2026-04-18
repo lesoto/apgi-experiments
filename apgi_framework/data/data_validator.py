@@ -5,6 +5,7 @@ Provides comprehensive validation of experimental data, metadata,
 and storage integrity with automated quality assessment.
 """
 
+from __future__ import annotations
 import hashlib
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -271,6 +272,108 @@ class DataValidator:
             result["warnings"].extend(consciousness_result["warnings"])
         return result
 
+    def validate_numeric_array(self, data: Any) -> tuple[bool, list[str]]:
+        """
+        Validate that data is a numeric array without NaN or Inf.
+
+        Args:
+            data: Data to validate
+
+        Returns:
+            Tuple of (is_valid, list of errors)
+        """
+        errors = []
+        if not isinstance(data, (np.ndarray, list)):
+            errors.append("Data must be a numpy array or list")
+            return False, errors
+
+        arr = np.asanyarray(data)
+        if arr.size == 0:
+            errors.append("Array is empty")
+            return False, errors
+
+        if not np.issubdtype(arr.dtype, np.number):
+            errors.append("Array must be numeric")
+            return False, errors
+
+        if np.any(np.isnan(arr)):
+            errors.append("Array contains NaN values")
+
+        if np.any(np.isinf(arr)):
+            errors.append("Array contains infinity values")
+
+        return len(errors) == 0, errors
+
+    def validate_required_fields(
+        self, data: dict[str, Any], required_fields: list[str]
+    ) -> tuple[bool, list[str]]:
+        """
+        Validate that all required fields are present in data.
+
+        Args:
+            data: Data dictionary
+            required_fields: List of required field names
+
+        Returns:
+            Tuple of (is_valid, list of errors)
+        """
+        errors = []
+        for field in required_fields:
+            if field not in data:
+                errors.append(f"Missing required field: {field}")
+
+        return len(errors) == 0, errors
+
+    def validate_types(
+        self, data: dict[str, Any], type_schema: dict[str, type]
+    ) -> tuple[bool, list[str]]:
+        """
+        Validate data types based on a schema.
+
+        Args:
+            data: Data dictionary
+            type_schema: Dictionary mapping fields to expected types
+
+        Returns:
+            Tuple of (is_valid, list of errors)
+        """
+        errors = []
+        for field, expected_type in type_schema.items():
+            if field in data:
+                if not isinstance(data[field], expected_type):
+                    errors.append(
+                        f"Field {field} must be {expected_type.__name__}, "
+                        f"got {type(data[field]).__name__}"
+                    )
+
+        return len(errors) == 0, errors
+
+    def validate_ranges(
+        self, data: dict[str, Any], ranges: dict[str, tuple[float, float]]
+    ) -> tuple[bool, list[str]]:
+        """
+        Validate that values are within specified ranges.
+
+        Args:
+            data: Data dictionary
+            ranges: Dictionary mapping fields to (min, max) tuples
+
+        Returns:
+            Tuple of (is_valid, list of errors)
+        """
+        errors = []
+        for field, (min_val, max_val) in ranges.items():
+            if field in data:
+                value = data[field]
+                if not isinstance(value, (int, float)):
+                    errors.append(f"Field {field} must be numeric")
+                elif not (min_val <= value <= max_val):
+                    errors.append(
+                        f"Field {field} ({value}) outside valid range [{min_val}, {max_val}]"
+                    )
+
+        return len(errors) == 0, errors
+
     def validate_data_content(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Validate data content and value ranges."""
         result: Dict[str, Any] = {"is_valid": True, "errors": [], "warnings": []}
@@ -350,7 +453,7 @@ class DataValidator:
 
         param_ranges = self.validation_rules["parameter_ranges"]
 
-        def validate_single_params(params: Dict[str, Any], index: str = ""):
+        def validate_single_params(params: Dict[str, Any], index: str = "") -> None:
             for param_name, (min_val, max_val) in param_ranges.items():
                 if param_name in params:
                     value = params[param_name]
@@ -380,7 +483,7 @@ class DataValidator:
 
         signature_ranges = self.validation_rules["signature_ranges"]
 
-        def validate_single_signatures(sigs: Dict[str, Any], index: str = ""):
+        def validate_single_signatures(sigs: Dict[str, Any], index: str = "") -> None:
             for sig_name, (min_val, max_val) in signature_ranges.items():
                 if sig_name in sigs:
                     value = sigs[sig_name]
@@ -410,7 +513,7 @@ class DataValidator:
 
         consciousness_ranges = self.validation_rules["consciousness_ranges"]
 
-        def validate_single_assessment(assess: Dict[str, Any], index: str = ""):
+        def validate_single_assessment(assess: Dict[str, Any], index: str = "") -> None:
             for assess_name, (min_val, max_val) in consciousness_ranges.items():
                 if assess_name in assess:
                     value = assess[assess_name]

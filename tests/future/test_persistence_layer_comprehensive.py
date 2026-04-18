@@ -24,19 +24,19 @@ import pickle
 import threading
 import time
 
-# Skip all tests in this module - API not yet fully implemented
-pytestmark = pytest.mark.skip(
-    reason="Future aspirational tests - API not yet implemented"
-)
-
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+# Skip all tests - persistence_layer module doesn't exist or API doesn't match
+pytestmark = pytest.mark.skip(
+    reason="persistence_layer module not yet implemented or API doesn't match"
+)
 
 try:
     from apgi_framework.data.persistence_layer import PersistenceLayer
     from apgi_framework.exceptions import APGIFrameworkError
-except ImportError as e:
-    print(f"Import error (expected in aspirational tests): {e}")
+except ImportError:
+    pass
 
 
 class TestPersistenceLayerInit:
@@ -107,8 +107,7 @@ class TestPersistenceLayerBasicOperations:
     def persistence(self):
         """Fixture providing a persistence layer instance."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            config = {"data_directory": temp_dir}
-            yield PersistenceLayer(config)
+            yield PersistenceLayer(temp_dir)
 
     def test_save_experiment_data(self, persistence):
         """Test saving experiment data."""
@@ -192,8 +191,7 @@ class TestPersistenceLayerDataFormats:
     def persistence(self):
         """Fixture providing a persistence layer instance."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            config = {"data_directory": temp_dir}
-            yield PersistenceLayer(config)
+            yield PersistenceLayer(temp_dir)
 
     def test_save_json_format(self, persistence):
         """Test saving data in JSON format."""
@@ -259,8 +257,7 @@ class TestPersistenceLayerErrorHandling:
     def persistence(self):
         """Fixture providing a persistence layer instance."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            config = {"data_directory": temp_dir}
-            yield PersistenceLayer(config)
+            yield PersistenceLayer(temp_dir)
 
     def test_file_permission_error(self, persistence):
         """Test handling of file permission errors."""
@@ -328,10 +325,11 @@ class TestPersistenceLayerPerformance:
         with tempfile.TemporaryDirectory() as temp_dir:
             config = {
                 "data_directory": temp_dir,
-                "compression_level": "none",  # Disable for performance testing
-                "max_memory_usage": 1000000,  # 1GB limit
+                "max_file_size_mb": 10,
+                "backup_count": 3,
+                "retention_days": 7,
             }
-            yield PersistenceLayer(config)
+            yield PersistenceLayer(config["data_directory"])
 
     def test_large_dataset_save(self, persistence):
         """Test saving large datasets efficiently."""
@@ -398,8 +396,7 @@ class TestPersistenceLayerConcurrency:
     def persistence(self):
         """Fixture providing a persistence layer instance."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            config = {"data_directory": temp_dir}
-            yield PersistenceLayer(config)
+            yield PersistenceLayer(temp_dir)
 
     def test_concurrent_saves(self, persistence):
         """Test concurrent save operations."""
@@ -496,8 +493,7 @@ class TestPersistenceLayerDataIntegrity:
     def persistence(self):
         """Fixture providing a persistence layer instance."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            config = {"data_directory": temp_dir}
-            yield PersistenceLayer(config)
+            yield PersistenceLayer(temp_dir)
 
     def test_data_validation_on_save(self, persistence):
         """Test data validation before saving."""
@@ -619,8 +615,7 @@ class TestPersistenceLayerMaintenance:
     def persistence(self):
         """Fixture providing a persistence layer instance."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            config = {"data_directory": temp_dir}
-            yield PersistenceLayer(config)
+            yield PersistenceLayer(temp_dir)
 
     def test_cleanup_old_experiments(self, persistence):
         """Test cleanup of old experiments."""

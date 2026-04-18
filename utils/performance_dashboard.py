@@ -23,17 +23,17 @@ from typing import Any, Dict, List, Optional, Type, cast
 import socket
 
 try:
-    import dash
-    from dash import dcc, html
+    import dash  # type: ignore
+    from dash import dcc, html  # type: ignore
 except ImportError:
     dash = None
 
 # Try to import APGI components
 try:
-    from utils.interactive_dashboard import create_dashboard
+    from utils.interactive_dashboard import create_dashboard  # type: ignore
     from utils.logging_config import apgi_logger as loguru_logger
     from utils.performance_profiler import performance_profiler as real_profiler
-    from utils.static_dashboard_generator import StaticDashboardGenerator
+    from utils.static_dashboard_generator import StaticDashboardGenerator  # type: ignore
 except ImportError:
     # Fallback for standalone usage
     import logging
@@ -41,10 +41,10 @@ except ImportError:
     loguru_logger = logging.getLogger(__name__)  # type: ignore
 
     class DummyProfiler:
-        def get_current_metrics(self):
+        def get_current_metrics(self) -> List[Any]:
             return []
 
-        def get_performance_history(self):
+        def get_performance_history(self) -> List[Any]:
             return []
 
     real_profiler = DummyProfiler()  # type: ignore
@@ -674,9 +674,9 @@ class ComprehensivePerformanceDashboard:
 
         return recommendations
 
-    def setup_callbacks(self, app):
+    def setup_callbacks(self, app) -> None:
         """Setup dashboard callbacks."""
-        from dash.dependencies import Input, Output
+        from dash.dependencies import Input, Output  # type: ignore
 
         @app.callback(
             Output("cpu-chart", "figure"), [Input("interval-component", "n_intervals")]

@@ -16,7 +16,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Union
 
-import joblib
+import joblib  # type: ignore
 import numpy as np
 import pandas as pd
 
@@ -275,7 +275,7 @@ class CacheManager:
 
                 # Load and preprocess data to warm cache
                 try:
-                    from data_validation import DataPreprocessor
+                    from .data_validation import DataPreprocessor
 
                     preprocessor = DataPreprocessor()
                     df = preprocessor.load_data(source_path)
@@ -545,6 +545,11 @@ class DataCache:
 
         result: Optional[Dict[Any, Any]] = self.cache.get(cache_key)
         return result
+
+    def update_cache(self, data: Dict[str, Any]) -> None:
+        """Update cache with results data. (Stub for compatibility)"""
+        # Just a placeholder that can be mocked in tests
+        pass
 
     def cache_validation_results(
         self,

@@ -16,6 +16,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 import customtkinter as ctk
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTk
 
@@ -41,7 +42,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
     statistical summaries, comparison views, and export functionality.
     """
 
-    def __init__(self, parent, results_callback: Optional[Callable] = None):
+    def __init__(self, parent: Any, results_callback: Optional[Callable] = None):
         """
         Initialize the results visualization panel.
 
@@ -71,12 +72,12 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
         self.on_data_updated: Optional[Callable] = None
         self.on_export_requested: Optional[Callable] = None
 
-        self._create_widgets()
-        self._setup_matplotlib()
+        self._create_widgets()  # type: ignore[no-untyped-call]
+        self._setup_matplotlib()  # type: ignore[no-untyped-call]
 
         logger.info("ResultsVisualizationPanel initialized")
 
-    def _create_widgets(self):
+    def _create_widgets(self) -> None:
         """Create visualization widgets."""
         # Create scrollable frame
         self.scrollable_frame = ctk.CTkScrollableFrame(self)
@@ -91,7 +92,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
         # Visualization section
         self._create_visualization_section()
 
-    def _create_control_section(self):
+    def _create_control_section(self) -> None:
         """Create control buttons and view selector."""
         control_frame = ctk.CTkFrame(self.scrollable_frame)
         control_frame.pack(fill="x", padx=5, pady=5)
@@ -150,7 +151,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
             command=lambda choice: self._change_view_mode(choice)
         )
 
-    def _create_summary_section(self):
+    def _create_summary_section(self) -> None:
         """Create summary statistics section."""
         summary_frame = ctk.CTkFrame(self.scrollable_frame)
         summary_frame.pack(fill="x", padx=5, pady=5)
@@ -194,7 +195,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
 
         self._update_summary_text()
 
-    def _create_visualization_section(self):
+    def _create_visualization_section(self) -> None:
         """Create matplotlib visualization section."""
         viz_frame = ctk.CTkFrame(self.scrollable_frame)
         viz_frame.pack(fill="both", expand=True, padx=5, pady=5)
@@ -213,7 +214,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
         # Initialize plots
         self._setup_matplotlib()
 
-    def _setup_matplotlib(self):
+    def _setup_matplotlib(self) -> None:
         """Setup matplotlib figure and axes."""
         # Create figure with better layout
         self.fig = plt.figure(figsize=(14, 9))
@@ -240,21 +241,21 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
 
         # Create canvas
         if hasattr(self, "canvas"):
-            self.canvas.get_tk_widget().destroy()
+            self.canvas.get_tk_widget().destroy()  # type: ignore[attr-defined, has-type]
 
-        self.canvas = FigureCanvasTk(self.fig, self.fig_container)
-        self.canvas.get_tk_widget().pack(fill="both", expand=True)
+        self.canvas = FigureCanvasTk(self.fig, self.fig_container)  # type: ignore[no-untyped-call]
+        self.canvas.get_tk_widget().pack(fill="both", expand=True)  # type: ignore[no-untyped-call]
 
         # Initialize empty plots
         self._update_plots()
 
-    def _change_view_mode(self, view_mode: str):
+    def _change_view_mode(self, view_mode: str) -> None:
         """Change visualization view mode."""
         self.current_view_mode = view_mode
         self._update_plots()
         logger.info(f"Changed view mode to: {view_mode}")
 
-    def _show_comparison_view(self):
+    def _show_comparison_view(self) -> None:
         """Show comparison view for multiple test runs."""
         if len(self.test_run_history) < 2:
             messagebox.showinfo(
@@ -267,7 +268,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
         self.view_mode_var.set("Comparison")
         self._change_view_mode("Comparison")
 
-    def _clear_data(self):
+    def _clear_data(self) -> None:
         """Clear all results data."""
         if messagebox.askyesno(
             "Clear Data", "Clear all visualization data? This cannot be undone."
@@ -283,7 +284,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
 
             logger.info("Visualization data cleared")
 
-    def _update_plots(self):
+    def _update_plots(self) -> None:
         """Update all visualization plots based on current view mode."""
         # Clear all axes
         for ax in [self.ax1, self.ax2, self.ax3, self.ax4]:
@@ -308,7 +309,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
         # Refresh canvas
         self.canvas.draw()
 
-    def _show_empty_plots(self):
+    def _show_empty_plots(self) -> None:
         """Show empty plots with instructions."""
         empty_message = "No data available\nRun tests to see results"
 
@@ -335,7 +336,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
             ]
             ax.set_title(titles[i], fontweight="bold")
 
-    def _show_overview_plots(self):
+    def _show_overview_plots(self) -> None:
         """Show overview visualization plots."""
         # Extract data
         test_types = [r.get("test_type", "Unknown") for r in self.results_data]
@@ -356,7 +357,9 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
         # Plot 4: Statistical power
         self._plot_statistical_power(powers)
 
-    def _plot_falsification_rates(self, test_types: List[str], falsified: List[bool]):
+    def _plot_falsification_rates(
+        self, test_types: List[str], falsified: List[bool]
+    ) -> None:
         """Plot falsification rates by test type."""
         unique_tests = sorted(list(set(test_types)))
         falsification_rates = []
@@ -401,7 +404,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
                 fontsize=8,
             )
 
-    def _plot_effect_sizes(self, effect_sizes: List[float]):
+    def _plot_effect_sizes(self, effect_sizes: List[float]) -> None:
         """Plot effect sizes distribution."""
         if effect_sizes:
             self.ax2.hist(
@@ -434,7 +437,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
 
         self.ax2.set_title("Effect Sizes Distribution", fontweight="bold")
 
-    def _plot_p_values(self, p_values: List[float]):
+    def _plot_p_values(self, p_values: List[float]) -> None:
         """Plot p-values distribution."""
         if p_values:
             # Create histogram with significance threshold
@@ -475,7 +478,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
 
         self.ax3.set_title("P-values Distribution", fontweight="bold")
 
-    def _plot_statistical_power(self, powers: List[float]):
+    def _plot_statistical_power(self, powers: List[float]) -> None:
         """Plot statistical power."""
         if powers:
             # Create histogram
@@ -516,7 +519,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
 
         self.ax4.set_title("Statistical Power Distribution", fontweight="bold")
 
-    def _show_statistical_details(self):
+    def _show_statistical_details(self) -> None:
         """Show detailed statistical analysis."""
         # Extract detailed statistics
         effect_sizes = [r.get("effect_size", 0) for r in self.results_data]
@@ -537,7 +540,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
         # Plot 4: Statistical power analysis
         self._plot_power_analysis()
 
-    def _show_time_series_plots(self):
+    def _show_time_series_plots(self) -> None:
         """Show time series analysis of test runs."""
         if not self.test_run_history:
             self._show_empty_plots()
@@ -558,7 +561,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
         self._plot_trend_analysis(timestamps, success_rates, falsification_rates)
         self._plot_run_comparison()
 
-    def _show_comparison_plots(self):
+    def _show_comparison_plots(self) -> None:
         """Show comparison plots for multiple runs."""
         if len(self.test_run_history) < 2:
             self._show_empty_plots()
@@ -579,7 +582,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
         self._plot_performance_trends()
         self._plot_statistical_significance_comparison()
 
-    def _show_neural_signature_plots(self):
+    def _show_neural_signature_plots(self) -> None:
         """Show neural signature specific visualizations."""
         # Extract neural data
         p3b_amplitudes = [r.get("p3b_amplitude", []) for r in self.results_data]
@@ -591,7 +594,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
         self._plot_neural_correlations()
         self._plot_signature_distributions()
 
-    def _update_summary_text(self):
+    def _update_summary_text(self) -> None:
         """Update summary statistics text."""
         self.summary_text.configure(state="normal")
         self.summary_text.delete("1.0", "end")
@@ -661,7 +664,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
 
         self.summary_text.configure(state="disabled")
 
-    def _export_results(self):
+    def _export_results(self) -> None:
         """Export visualization results to file."""
         try:
             file_path = filedialog.asksaveasfilename(
@@ -696,7 +699,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
             messagebox.showerror("Export Error", f"Failed to export results: {e}")
             logger.error(f"Failed to export results: {e}")
 
-    def _export_json(self, file_path: str):
+    def _export_json(self, file_path: str) -> None:
         """Export results as JSON."""
         export_data = {
             "export_timestamp": datetime.now().isoformat(),
@@ -709,11 +712,11 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
         with open(file_path, "w") as f:
             json.dump(export_data, f, indent=2, default=str)
 
-    def _export_image(self, file_path: str):
+    def _export_image(self, file_path: str) -> None:
         """Export current visualization as image."""
         self.fig.savefig(file_path, dpi=300, bbox_inches="tight")
 
-    def _export_csv(self, file_path: str):
+    def _export_csv(self, file_path: str) -> None:
         """Export results data as CSV."""
         import pandas as pd
 
@@ -750,7 +753,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
             "adequate_power_tests": sum(1 for p in powers if p >= 0.8),
         }
 
-    def add_results(self, test_name: str, results: Dict[str, Any]):
+    def add_results(self, test_name: str, results: Dict[str, Any]) -> None:
         """Add new test results to visualization."""
         # Add timestamp
         results["timestamp"] = datetime.now()
@@ -779,7 +782,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
 
         logger.info(f"Added results for {test_name} test")
 
-    def clear_results(self):
+    def clear_results(self) -> None:
         """Clear all results data."""
         self.results_data = []
         self.test_run_history = []
@@ -790,15 +793,15 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
         """Get current results data."""
         return self.results_data.copy()
 
-    def set_data_updated_callback(self, callback: Callable):
+    def set_data_updated_callback(self, callback: Callable[[Any], None]) -> None:
         """Set callback for data update events."""
         self.on_data_updated = callback
 
-    def set_export_requested_callback(self, callback: Callable):
+    def set_export_requested_callback(self, callback: Callable[[str], None]) -> None:
         """Set callback for export request events."""
         self.on_export_requested = callback
 
-    def refresh_visualization(self):
+    def refresh_visualization(self) -> None:
         """Force refresh of all visualizations."""
         self._update_plots()
         self._update_summary_text()
@@ -806,7 +809,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
     # Additional plotting methods for different view modes
     def _plot_effect_sizes_with_ci(
         self, effect_sizes: List[float], confidence_intervals: List[List[float]]
-    ):
+    ) -> None:
         """Plot effect sizes with confidence intervals."""
         if effect_sizes and confidence_intervals:
             x_pos = range(len(effect_sizes))
@@ -832,7 +835,9 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
                 "Effect Sizes with Confidence Intervals", fontweight="bold"
             )
 
-    def _plot_p_vs_effect_size(self, p_values: List[float], effect_sizes: List[float]):
+    def _plot_p_vs_effect_size(
+        self, p_values: List[float], effect_sizes: List[float]
+    ) -> None:
         """Plot p-values vs effect sizes scatter plot."""
         if p_values and effect_sizes:
             colors = [
@@ -853,7 +858,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
             self.ax2.set_title("P-value vs Effect Size", fontweight="bold")
             self.ax2.legend()
 
-    def _plot_ci_widths(self, confidence_intervals: List[List[float]]):
+    def _plot_ci_widths(self, confidence_intervals: List[List[float]]) -> None:
         """Plot confidence interval widths."""
         if confidence_intervals:
             ci_widths = [ci[1] - ci[0] for ci in confidence_intervals]
@@ -868,7 +873,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
             self.ax3.set_ylabel("Frequency")
             self.ax3.set_title("Confidence Interval Widths", fontweight="bold")
 
-    def _plot_power_analysis(self):
+    def _plot_power_analysis(self) -> None:
         """Plot statistical power analysis."""
         # Create power curve
         effect_sizes = np.linspace(0.1, 2.0, 50)
@@ -886,11 +891,13 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
         self.ax4.grid(True, alpha=0.3)
 
     def _plot_3d_phase_portrait(
-        self, x_data, y_data, z_data, title="3D Phase Portrait"
-    ):
+        self,
+        x_data: List[float],
+        y_data: List[float],
+        z_data: List[float],
+        title: str = "3D Phase Portrait",
+    ) -> Optional[Figure]:
         """Plot 3D phase portrait for advanced visualization."""
-        from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
-
         # Create 3D axes
         fig = plt.figure(figsize=(10, 8))
         ax = fig.add_subplot(111, projection="3d")
@@ -916,7 +923,9 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
 
         return fig
 
-    def _plot_cross_spectral_analysis(self, signal1, signal2, fs=1000):
+    def _plot_cross_spectral_analysis(
+        self, signal1: List[float], signal2: List[float], fs: int = 1000
+    ) -> Optional[Figure]:
         """Plot cross-spectral analysis between two signals."""
         from scipy import signal
 
@@ -948,7 +957,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
 
     def _plot_success_rate_timeline(
         self, timestamps: List[datetime], success_rates: List[float]
-    ):
+    ) -> None:
         """Plot success rate over time."""
         if timestamps and success_rates:
             # Convert timestamps to numbers for plotting
@@ -971,7 +980,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
 
     def _plot_falsification_timeline(
         self, timestamps: List[datetime], falsification_rates: List[float]
-    ):
+    ) -> None:
         """Plot falsification rate over time."""
         if timestamps and falsification_rates:
             time_nums = [(t - timestamps[0]).total_seconds() / 3600 for t in timestamps]
@@ -994,7 +1003,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
         timestamps: List[datetime],
         success_rates: List[float],
         falsification_rates: List[float],
-    ):
+    ) -> None:
         """Plot trend analysis of success and falsification rates."""
         if timestamps and success_rates and falsification_rates:
             time_nums = [(t - timestamps[0]).total_seconds() / 3600 for t in timestamps]
@@ -1044,7 +1053,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
             self.ax3.legend()
             self.ax3.grid(True, alpha=0.3)
 
-    def _plot_run_comparison(self):
+    def _plot_run_comparison(self) -> None:
         """Plot comparison of individual runs."""
         if self.test_run_history:
             run_names = [f"Run {i + 1}" for i in range(len(self.test_run_history))]
@@ -1084,7 +1093,9 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
             self.ax4.grid(True, alpha=0.3)
             self.ax4.set_ylim(0, 1)
 
-    def _plot_run_comparison_bar(self, run_names: List[str], metrics: List[str]):
+    def _plot_run_comparison_bar(
+        self, run_names: List[str], metrics: List[str]
+    ) -> None:
         """Plot bar comparison of runs across different metrics."""
         if run_names and metrics:
             # Extract metric values for each run
@@ -1131,7 +1142,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
             self.ax1.legend()
             self.ax1.grid(True, alpha=0.3)
 
-    def _plot_run_radar_comparison(self, run_names: List[str]):
+    def _plot_run_radar_comparison(self, run_names: List[str]) -> None:
         """Plot radar comparison of runs (simplified as bar plot)."""
         if run_names and len(run_names) >= 2:
             # Simplified: show average metrics for each run
@@ -1152,7 +1163,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
             self.ax2.set_title("Run Performance Radar (Simplified)", fontweight="bold")
             self.ax2.grid(True, alpha=0.3)
 
-    def _plot_performance_trends(self):
+    def _plot_performance_trends(self) -> None:
         """Plot performance trends across runs."""
         if self.test_run_history:
             run_indices = list(range(1, len(self.test_run_history) + 1))
@@ -1192,7 +1203,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
             self.ax3.legend()
             self.ax3.grid(True, alpha=0.3)
 
-    def _plot_statistical_significance_comparison(self):
+    def _plot_statistical_significance_comparison(self) -> None:
         """Plot statistical significance comparison across runs."""
         if self.test_run_history:
             run_names = [f"Run {i + 1}" for i in range(len(self.test_run_history))]
@@ -1218,7 +1229,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
             self.ax4.legend()
             self.ax4.grid(True, alpha=0.3)
 
-    def _plot_p3b_analysis(self, p3b_amplitudes: List[List[float]]):
+    def _plot_p3b_analysis(self, p3b_amplitudes: List[List[float]]) -> None:
         """Plot P3b amplitude analysis."""
         if p3b_amplitudes:
             # Flatten and plot distribution
@@ -1237,7 +1248,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
                 self.ax1.set_title("P3b Amplitude Distribution", fontweight="bold")
                 self.ax1.grid(True, alpha=0.3)
 
-    def _plot_gamma_analysis(self, gamma_powers: List[List[float]]):
+    def _plot_gamma_analysis(self, gamma_powers: List[List[float]]) -> None:
         """Plot gamma power analysis."""
         if gamma_powers:
             # Flatten and plot distribution
@@ -1256,7 +1267,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
                 self.ax2.set_title("Gamma Power Distribution", fontweight="bold")
                 self.ax2.grid(True, alpha=0.3)
 
-    def _plot_neural_correlations(self):
+    def _plot_neural_correlations(self) -> None:
         """Plot neural correlations."""
         if self.results_data:
             # Extract neural features for correlation
@@ -1288,7 +1299,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
                 self.ax3.set_title("Neural Feature Correlation", fontweight="bold")
                 self.ax3.grid(True, alpha=0.3)
 
-    def _plot_signature_distributions(self):
+    def _plot_signature_distributions(self) -> None:
         """Plot neural signature distributions."""
         if self.results_data:
             # Create mock neural signatures for visualization
@@ -1337,7 +1348,7 @@ class ResultsVisualizationPanel(ctk.CTkFrame):
 
 # Factory function for easy instantiation
 def create_results_visualization_panel(
-    parent, results_callback: Optional[Callable] = None
+    parent: Any, results_callback: Optional[Callable] = None
 ) -> ResultsVisualizationPanel:
     """
     Create a results visualization panel with default settings.

@@ -738,7 +738,7 @@ class StatisticalReportGenerator:
             report_dict = asdict(report)
 
             # Handle datetime serialization
-            def json_serializer(obj):
+            def json_serializer(obj: Any) -> str:
                 if isinstance(obj, datetime):
                     return obj.isoformat()
                 raise TypeError(f"Object of type {type(obj)} is not JSON serializable")

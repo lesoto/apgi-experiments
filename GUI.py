@@ -6788,7 +6788,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 # Try to load from example results
                 try:
                     # Run a quick example to generate data
-                    from examples.run_primary_falsification_test import (
+                    from examples.run_primary_falsification_test import (  # type: ignore[import-not-found, no-redef, import]
                         run_primary_falsification_test_basic,
                     )
 

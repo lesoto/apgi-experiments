@@ -230,12 +230,12 @@ class ConvergenceDiagnosticsCalculator:
         n_chains, n_samples = chains.shape
 
         # Compute autocorrelation for each chain
-        def autocorr(x, lag):
+        def autocorr(x: np.ndarray, lag: int) -> float:
             """Compute autocorrelation at given lag."""
-            c0 = np.var(x)
+            c0 = float(np.var(x))
             if c0 == 0:
-                return 0
-            c_lag = np.mean((x[:-lag] - np.mean(x)) * (x[lag:] - np.mean(x)))
+                return 0.0
+            c_lag = float(np.mean((x[:-lag] - np.mean(x)) * (x[lag:] - np.mean(x))))
             return c_lag / c0
 
         # Average autocorrelation across chains
@@ -478,7 +478,7 @@ class JointParameterFitter:
         chains: int = 4,
         iter: int = 2000,
         warmup: Optional[int] = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> FitResults:
         """
         Fit parameters for all subjects simultaneously.
@@ -570,7 +570,7 @@ class JointParameterFitter:
         # Create new optimizer with previous estimates as starting point
         from scipy.optimize import minimize
 
-        def objective(params):
+        def objective(params: np.ndarray) -> float:
             """Objective function to minimize."""
             # Reconstruct log-likelihood based on parameters
             # This is a simplified version - full implementation would need

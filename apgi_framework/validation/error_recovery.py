@@ -48,7 +48,7 @@ class RetryConfig:
         ]
 
 
-def with_retry(config: Optional[RetryConfig] = None):
+def with_retry(config: Optional[RetryConfig] = None) -> Any:
     """
     Decorator for automatic retry on transient failures.
 
@@ -63,7 +63,7 @@ def with_retry(config: Optional[RetryConfig] = None):
 
     def decorator(func: Callable) -> Callable:
         @wraps(func)
-        def wrapper(*args, **kwargs) -> Any:
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             last_exception = None
             delay = config.initial_delay
 
@@ -111,13 +111,13 @@ class ErrorRecoveryManager:
     Manages error recovery strategies and fallback mechanisms.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.error_log: List[Dict[str, Any]] = []
         self.recovery_strategies: Dict[
             Type[Exception], Callable[[Exception, Dict[str, Any]], Dict[str, Any]]
         ] = {}
 
-    def log_error(self, error: Exception, context: Dict[str, Any]):
+    def log_error(self, error: Exception, context: Dict[str, Any]) -> None:
         """
         Log error with context information.
 
@@ -136,7 +136,7 @@ class ErrorRecoveryManager:
 
     def register_recovery_strategy(
         self, error_type: Type[Exception], strategy: Callable
-    ):
+    ) -> None:
         """
         Register a recovery strategy for a specific error type.
 
@@ -210,7 +210,7 @@ class ErrorRecoveryManager:
             "last_error": self.error_log[-1]["timestamp"],
         }
 
-    def clear_error_log(self):
+    def clear_error_log(self) -> None:
         """Clear error log"""
         self.error_log.clear()
         logger.info("Error log cleared")
@@ -324,7 +324,7 @@ def recover_from_data_error(
 
 
 # Register default strategies
-def initialize_default_recovery_strategies():
+def initialize_default_recovery_strategies() -> None:
     """
     Initialize default recovery strategies for common error types.
 

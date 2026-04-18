@@ -15,8 +15,9 @@ import sys
 import threading
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional
 from apgi_framework.logging.standardized_logging import get_logger
+from subprocess import CompletedProcess
 
 logger = get_logger(__name__)
 
@@ -56,26 +57,26 @@ except ImportError as e:
 class TestRunnerGUI:
     """GUI for comprehensive test execution and monitoring."""
 
-    def __init__(self, root):
+    def __init__(self, root: Any) -> None:
         """Initialize the test runner GUI."""
         self.root = root
         self.root.title("APGI Framework - Comprehensive Test Runner")
         self.root.geometry("1200x800")
 
         # Test execution state
-        self.test_process = None
-        self.output_queue = queue.Queue()
+        self.test_process: Optional[subprocess.Popen] = None
+        self.output_queue: queue.Queue[str] = queue.Queue()
         self.is_running = False
-        self.runner = ComprehensiveTestRunner()
+        self.runner = ComprehensiveTestRunner()  # type: ignore[no-untyped-call]
 
         self.create_widgets()
         self.setup_layout()
 
-    def create_widgets(self):
+    def create_widgets(self) -> None:
         """Create GUI widgets."""
         # Main frame
         main_frame = ttk.Frame(self.root, padding="10")
-        main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        main_frame.grid(row=0, column=0, sticky=tk.NSEW)
 
         # Configure grid weights
         self.root.columnconfigure(0, weight=1)
@@ -95,9 +96,7 @@ class TestRunnerGUI:
         control_frame = ttk.LabelFrame(
             main_frame, text="Test Configuration", padding="10"
         )
-        control_frame.grid(
-            row=1, column=0, columnspan=3, pady=(0, 10), sticky=(tk.W, tk.E)
-        )
+        control_frame.grid(row=1, column=0, columnspan=3, pady=(0, 10), sticky=tk.EW)
         control_frame.columnconfigure(1, weight=1)
 
         # Test category selection
@@ -132,9 +131,7 @@ class TestRunnerGUI:
 
         # Control buttons
         button_frame = ttk.Frame(main_frame)
-        button_frame.grid(
-            row=2, column=0, columnspan=3, pady=(0, 10), sticky=(tk.W, tk.E)
-        )
+        button_frame.grid(row=2, column=0, columnspan=3, pady=(0, 10), sticky=tk.EW)
         button_frame.columnconfigure(1, weight=1)
 
         self.run_button = ttk.Button(
@@ -157,9 +154,7 @@ class TestRunnerGUI:
 
         # Progress frame
         progress_frame = ttk.Frame(main_frame)
-        progress_frame.grid(
-            row=3, column=0, columnspan=3, pady=(0, 10), sticky=(tk.W, tk.E)
-        )
+        progress_frame.grid(row=3, column=0, columnspan=3, pady=(0, 10), sticky=tk.EW)
         progress_frame.columnconfigure(0, weight=1)
 
         # Progress bar
@@ -167,7 +162,7 @@ class TestRunnerGUI:
         self.progress_bar = ttk.Progressbar(
             progress_frame, variable=self.progress_var, maximum=100
         )
-        self.progress_bar.grid(row=0, column=0, sticky=(tk.W, tk.E))
+        self.progress_bar.grid(row=0, column=0, sticky=tk.EW)
 
         # Status label
         self.status_label = ttk.Label(progress_frame, text="Ready to run tests")
@@ -175,22 +170,18 @@ class TestRunnerGUI:
 
         # Output text area
         output_frame = ttk.LabelFrame(main_frame, text="Test Output", padding="5")
-        output_frame.grid(
-            row=4, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S)
-        )
+        output_frame.grid(row=4, column=0, columnspan=3, sticky=tk.NSEW)
         output_frame.columnconfigure(0, weight=1)
         output_frame.rowconfigure(0, weight=1)
 
         self.output_text = scrolledtext.ScrolledText(
             output_frame, wrap=tk.WORD, height=20
         )
-        self.output_text.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        self.output_text.grid(row=0, column=0, sticky="nsew")
 
         # Results summary frame
         summary_frame = ttk.LabelFrame(main_frame, text="Test Summary", padding="5")
-        summary_frame.grid(
-            row=5, column=0, columnspan=3, pady=(10, 0), sticky=(tk.W, tk.E)
-        )
+        summary_frame.grid(row=5, column=0, columnspan=3, pady=(10, 0), sticky=tk.EW)
 
         # Summary labels
         self.summary_vars = {}
@@ -215,7 +206,7 @@ class TestRunnerGUI:
         # Configure grid weights for main frame
         main_frame.rowconfigure(4, weight=1)
 
-    def setup_layout(self):
+    def setup_layout(self) -> None:
         """Setup additional layout configurations."""
         # Configure tags for output coloring
         self.output_text.tag_configure("error", foreground="red")
@@ -223,7 +214,7 @@ class TestRunnerGUI:
         self.output_text.tag_configure("success", foreground="green")
         self.output_text.tag_configure("info", foreground="blue")
 
-    def run_tests(self):
+    def run_tests(self) -> None:
         """Run the test suite."""
         if self.is_running:
             return
@@ -243,18 +234,18 @@ class TestRunnerGUI:
         # Start output monitoring
         self.root.after(100, self._check_output)
 
-    def stop_tests(self):
+    def stop_tests(self) -> None:
         """Stop running tests."""
         if self.test_process and self.test_process.poll() is None:
             self.test_process.terminate()
             self.status_label.config(text="Tests stopped by user")
             self._finish_test_run()
 
-    def clear_output(self):
+    def clear_output(self) -> None:
         """Clear the output text area."""
         self.output_text.delete(1.0, tk.END)
 
-    def save_results(self):
+    def save_results(self) -> None:
         """Save test results to file."""
         if not hasattr(self, "last_results"):
             messagebox.showwarning(
@@ -341,7 +332,7 @@ class TestRunnerGUI:
 
         self.output_text.see(tk.END)
 
-    def _finish_test_run(self):
+    def _finish_test_run(self) -> None:
         """Finish test run and reset UI."""
         self.is_running = False
         self.run_button.config(state="normal")
@@ -367,11 +358,16 @@ class TestRunnerGUI:
 class ComprehensiveTestRunner:
     """Comprehensive test runner with multiple execution modes."""
 
-    def __init__(self):
-        self.cli = APGIFrameworkCLI() if UTILS_AVAILABLE else None
-        self.test_utils = FrameworkTestUtils() if UTILS_AVAILABLE else None
+    def __init__(self) -> None:
+        self.cli = APGIFrameworkCLI() if UTILS_AVAILABLE else None  # type: ignore[no-untyped-call]
+        self.test_utils = FrameworkTestUtils() if UTILS_AVAILABLE else None  # type: ignore[no-untyped-call]
 
-    def run_pytest(self, args=None, capture_output=False, timeout=1800):
+    def run_pytest(
+        self,
+        args: Optional[List[str]] = None,
+        capture_output: bool = False,
+        timeout: int = 1800,
+    ) -> Any:
         """Run pytest with proper environment setup."""
         env = setup_python_path()
 
@@ -400,50 +396,46 @@ class ComprehensiveTestRunner:
                 )
                 return result
             else:
-                result = subprocess.run(cmd, env=env, cwd=project_root)
+                result = subprocess.run(
+                    cmd, env=env, cwd=project_root, capture_output=False, text=True
+                )
                 return result
         except KeyboardInterrupt:
             if not capture_output:
                 logger.info("\nTest execution interrupted by user")
             if capture_output:
-
-                class MockResult:
-                    def __init__(self):
-                        self.returncode = 130
-                        self.stdout = ""
-                        self.stderr = "Test execution interrupted by user"
-
-                return MockResult()
+                return self._create_mock_result(
+                    130, "Test execution interrupted by user"
+                )
             return 130
         except subprocess.TimeoutExpired:
             if not capture_output:
                 logger.info(f"\nTest execution timed out after {timeout} seconds")
             if capture_output:
-
-                class MockResult:
-                    def __init__(self):
-                        self.returncode = 124
-                        self.stdout = ""
-                        self.stderr = (
-                            f"Test execution timed out after {timeout} seconds"
-                        )
-
-                return MockResult()
+                return self._create_mock_result(
+                    124, f"Test execution timed out after {timeout} seconds"
+                )
             return 124
         except Exception as e:
             if not capture_output:
                 logger.info(f"Error running pytest: {e}")
             if capture_output:
-                error_msg = str(e)
-
-                class MockResult:
-                    def __init__(self):
-                        self.returncode = 1
-                        self.stdout = ""
-                        self.stderr = error_msg
-
-                return MockResult()
+                return self._create_mock_result(1, str(e))
             return 1
+
+    def _create_mock_result(
+        self, returncode: int, stderr: str
+    ) -> CompletedProcess[str]:
+        """Create a mock result object for error conditions."""
+
+        class MockResult(CompletedProcess[str]):
+            def __init__(self, rc: int, err: str):
+                self.returncode = rc
+                self.stdout = ""
+                self.stderr = err
+                self.args = []
+
+        return MockResult(returncode, stderr)  # type: ignore[no-untyped-call]
 
     def run_all_tests(
         self, verbose: bool = False, coverage: bool = False, parallel: bool = True
@@ -561,23 +553,23 @@ class ComprehensiveTestRunner:
             logger.info(f"❌ Error running {category} tests: {e}")
             return {"category": category, "error": str(e)}
 
-    def run_gui_tests(self, **kwargs) -> Dict[str, Any]:
+    def run_gui_tests(self, **kwargs: Any) -> Dict[str, Any]:
         """Run GUI-specific tests."""
         return self.run_category_tests("gui", **kwargs)
 
-    def run_unit_tests(self, **kwargs) -> Dict[str, Any]:
+    def run_unit_tests(self, **kwargs: Any) -> Dict[str, Any]:
         """Run unit tests."""
         return self.run_category_tests("unit", **kwargs)
 
-    def run_integration_tests(self, **kwargs) -> Dict[str, Any]:
+    def run_integration_tests(self, **kwargs: Any) -> Dict[str, Any]:
         """Run integration tests."""
         return self.run_category_tests("integration", **kwargs)
 
-    def run_performance_tests(self, **kwargs) -> Dict[str, Any]:
+    def run_performance_tests(self, **kwargs: Any) -> Dict[str, Any]:
         """Run performance tests."""
         return self.run_category_tests("performance", **kwargs)
 
-    def run_specific_test(self, test_path: str, **kwargs) -> Dict[str, Any]:
+    def run_specific_test(self, test_path: str, **kwargs: Any) -> Dict[str, Any]:
         """Run a specific test file or test function."""
         logger.info(f"🧪 Running Specific Test: {test_path}")
         logger.info("=" * 40)
@@ -612,7 +604,7 @@ class ComprehensiveTestRunner:
             logger.info(f"❌ Error running test {test_path}: {e}")
             return {"test_path": test_path, "error": str(e)}
 
-    def _parse_pytest_output(self, output: str, results: Dict[str, Any]):
+    def _parse_pytest_output(self, output: str, results: Dict[str, Any]) -> None:
         """Parse pytest output to extract test statistics."""
         try:
             lines = output.split("\n")
@@ -640,7 +632,7 @@ class ComprehensiveTestRunner:
             # If parsing fails, continue with default values
             pass
 
-    def _print_summary(self, results: Dict[str, Any]):
+    def _print_summary(self, results: Dict[str, Any]) -> None:
         """Print a formatted summary of test results."""
         logger.info("\n" + "=" * 50)
         logger.info("📊 TEST SUMMARY")
@@ -661,7 +653,7 @@ class ComprehensiveTestRunner:
         logger.info("=" * 50)
 
 
-def setup_python_path():
+def setup_python_path() -> Dict[str, str]:
     """Set up the Python path to include the project root."""
     # Get the project root directory
     project_root = Path(__file__).parent.parent.absolute()

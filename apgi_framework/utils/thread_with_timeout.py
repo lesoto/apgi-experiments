@@ -23,12 +23,12 @@ class ThreadWithTimeout(threading.Thread):
 
     def __init__(
         self,
-        target: Callable,
+        target: Callable[..., Any],
         timeout: Optional[float] = None,
-        on_timeout: Optional[Callable] = None,
-        *args,
-        **kwargs,
-    ):
+        on_timeout: Optional[Callable[[], None]] = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
         """
         Initialize thread with timeout support.
 
@@ -46,9 +46,9 @@ class ThreadWithTimeout(threading.Thread):
         self._timeout_event = threading.Event()
         self._completed = threading.Event()
         self._result = None
-        self._exception = None
+        self._exception: Optional[Exception] = None
 
-    def _run_with_timeout(self, *args, **kwargs):
+    def _run_with_timeout(self, *args: Any, **kwargs: Any) -> None:
         """Run target function with timeout monitoring."""
         if self._timeout is None:
             # No timeout, run normally
@@ -61,7 +61,7 @@ class ThreadWithTimeout(threading.Thread):
             return
 
         # Run with timeout monitoring
-        def timeout_monitor():
+        def timeout_monitor() -> None:
             if not self._timeout_event.wait(self._timeout):
                 # Timeout occurred
                 self._timeout_event.set()
@@ -118,12 +118,12 @@ class ThreadWithTimeout(threading.Thread):
 
 
 def run_with_timeout(
-    target: Callable,
+    target: Callable[..., Any],
     timeout: Optional[float] = None,
-    on_timeout: Optional[Callable] = None,
+    on_timeout: Optional[Callable[[], None]] = None,
     daemon: bool = True,
-    *args,
-    **kwargs,
+    *args: Any,
+    **kwargs: Any,
 ) -> ThreadWithTimeout:
     """
     Convenience function to run a function with timeout support.
@@ -154,13 +154,13 @@ def run_with_timeout(
 
 # Convenience function for GUI applications
 def run_experiment_with_timeout(
-    experiment_func: Callable,
+    experiment_func: Callable[..., Any],
     timeout: float = 300,  # Default 5 minutes
-    on_complete: Optional[Callable] = None,
-    on_error: Optional[Callable] = None,
-    on_timeout: Optional[Callable] = None,
-    *args,
-    **kwargs,
+    on_complete: Optional[Callable[[Any], None]] = None,
+    on_error: Optional[Callable[[Exception], None]] = None,
+    on_timeout: Optional[Callable[[], None]] = None,
+    *args: Any,
+    **kwargs: Any,
 ) -> ThreadWithTimeout:
     """
     Run experiment function with timeout support.
@@ -178,7 +178,7 @@ def run_experiment_with_timeout(
         ThreadWithTimeout instance
     """
 
-    def on_timeout_wrapper():
+    def on_timeout_wrapper() -> None:
         if on_timeout:
             on_timeout()
         if on_error:
@@ -200,7 +200,7 @@ def run_experiment_with_timeout(
     # Add completion callback
     if on_complete or on_error:
 
-        def check_completion():
+        def check_completion() -> None:
             try:
                 result = thread.get_result(timeout=timeout + 1)
                 if on_complete:

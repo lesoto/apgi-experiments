@@ -64,7 +64,7 @@ class InSystemHelpSystem:
     - Quick tips
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize in-system help system."""
         self.logger = logging.getLogger(__name__)
 

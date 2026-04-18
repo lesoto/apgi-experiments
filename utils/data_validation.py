@@ -794,7 +794,7 @@ class DataPreprocessor:
         self.preprocessing_steps.append(
             f"Missing data cleaned using {strategy} strategy"
         )
-        return df_clean
+        return df_clean  # type: ignore[no-any-return]
 
     def remove_outliers(
         self, df: pd.DataFrame, method: str = "iqr", threshold: float = 1.5
@@ -832,7 +832,7 @@ class DataPreprocessor:
         self.preprocessing_steps.append(
             f"Removed {outliers_removed} outliers using {method} method"
         )
-        return df_clean
+        return df_clean  # type: ignore[no-any-return]
 
     def filter_signals(
         self,
@@ -894,7 +894,7 @@ class DataPreprocessor:
                     df_filtered.loc[data.index, col] = filtered_data
 
         self.preprocessing_steps.append(f"Applied {filter_type} filter to {columns}")
-        return df_filtered
+        return df_filtered  # type: ignore[no-any-return]
 
     def normalize_data(
         self,
@@ -928,7 +928,7 @@ class DataPreprocessor:
                         df_normalized[col] = (data - median) / mad
 
         self.preprocessing_steps.append(f"Normalized {columns} using {method} method")
-        return df_normalized
+        return df_normalized  # type: ignore[no-any-return]
 
     def resample_data(
         self, df: pd.DataFrame, target_rate: float, time_column: str = "timestamp"
@@ -957,7 +957,7 @@ class DataPreprocessor:
             df_resampled = pd.concat([df_resampled, df_non_numeric], axis=1)
 
         self.preprocessing_steps.append(f"Resampled data to {target_rate} Hz")
-        return df_resampled.reset_index()
+        return df_resampled.reset_index()  # type: ignore[no-any-return]
 
     def save_processed_data(
         self,

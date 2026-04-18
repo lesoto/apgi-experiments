@@ -148,7 +148,9 @@ class DisorderClassification:
     using neural signatures and machine learning with cross-validation.
     """
 
-    def __init__(self, classifier_type: str = "random_forest", random_state: int = 42):
+    def __init__(
+        self, classifier_type: str = "random_forest", random_state: int = 42
+    ) -> None:
         """
         Initialize disorder classifier.
 
@@ -163,7 +165,7 @@ class DisorderClassification:
         self.is_trained = False
         self.feature_names = NeuralSignatureProfile.feature_names()
 
-    def _create_classifier(self):
+    def _create_classifier(self) -> Any:
         """Create classifier based on type."""
         if self.classifier_type == "random_forest":
             return RandomForestClassifier(

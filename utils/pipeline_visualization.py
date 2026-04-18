@@ -17,22 +17,24 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
-import networkx as nx
+import networkx as nx  # type: ignore[import-untyped]
 import numpy as np
 
 # APGI imports with fallback
 try:
-    from logging_config import apgi_logger
+    from ..logging.standardized_logging import get_logger  # type: ignore[import-not-found]
 except ImportError:
     import logging
 
     class MockAPGILogger:
-        def __init__(self):
+        def __init__(self) -> None:
             self.logger = logging.getLogger(__name__)
 
     # Use a different name to avoid conflicts
     _fallback_logger: Any = MockAPGILogger()
     apgi_logger = _fallback_logger
+else:
+    apgi_logger = get_logger(__name__)
 
 from matplotlib.patches import FancyBboxPatch
 

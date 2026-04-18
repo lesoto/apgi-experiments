@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional
 class SuiteGenerator:
     """Generator for test suites and coverage analysis."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the suite generator."""
         self.root_path = None
         self.include_patterns = ["*.py"]

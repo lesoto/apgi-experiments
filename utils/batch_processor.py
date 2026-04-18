@@ -19,7 +19,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
+from tqdm import tqdm  # type: ignore[import-untyped]
 
 # Add project root to Python path
 PROJECT_ROOT = Path(__file__).parent.parent

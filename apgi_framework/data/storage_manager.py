@@ -125,7 +125,7 @@ class StorageManager:
                     )
 
             # Invalidate stats cache
-            self._invalidate_stats_cache()
+            self._invalidate_stats_cache()  # type: ignore[no-untyped-call]
 
             return experiment_id
 
@@ -392,7 +392,7 @@ class StorageManager:
             )
 
             # Invalidate stats cache
-            self._invalidate_stats_cache()
+            self._invalidate_stats_cache()  # type: ignore[no-untyped-call]
 
             return True
 
@@ -708,7 +708,7 @@ class StorageManager:
         except (ValueError, TypeError, AttributeError):
             return "1.0.1"
 
-    def _invalidate_stats_cache(self):
+    def _invalidate_stats_cache(self) -> None:
         """Invalidate cached statistics."""
         self._stats_cache = None
         self._stats_cache_time = None
@@ -725,7 +725,7 @@ class StorageManager:
             self.persistence.flush_all()
 
             # Invalidate caches
-            self._invalidate_stats_cache()
+            self._invalidate_stats_cache()  # type: ignore[no-untyped-call]
 
             self.logger.info("Flushed all pending data operations")
             return True

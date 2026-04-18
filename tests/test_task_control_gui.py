@@ -40,7 +40,7 @@ class TestTaskControlGUIHeadless:
     def test_task_control_imports(self):
         """Test that task control module imports correctly."""
         try:
-            from apgi_framework.gui.task_control_gui import (
+            from apgi_framework.gui.task_control_gui import (  # type: ignore[import-not-found]
                 TaskControlGUI,
             )
 

@@ -97,7 +97,7 @@ class ExperimentalDataset:
     is_locked: bool = False
     lock_reason: str = ""
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Initialize dataset after creation."""
         if not self.metadata.experiment_id:
             self.metadata.experiment_id = str(uuid.uuid4())
@@ -181,7 +181,7 @@ class ParticipantData:
     metadata: Dict[str, Any] = field(default_factory=dict)
     conditions: List[str] = field(default_factory=list)
 
-    def complete_session(self, end_time: Optional[datetime] = None):
+    def complete_session(self, end_time: Optional[datetime] = None) -> None:
         """Mark session as complete."""
         self.end_time = end_time or datetime.now()
         self.completion_status = "complete"
@@ -233,18 +233,18 @@ class ExperimentData:
         self.participants.append(participant)
         self.n_participants = len(self.participants)
 
-    def start_experiment(self):
+    def start_experiment(self) -> None:
         """Mark experiment as started."""
         self.status = "running"
         self.started_at = datetime.now()
 
-    def complete_experiment(self):
+    def complete_experiment(self) -> None:
         """Mark experiment as completed."""
         self.status = "completed"
         self.completed_at = datetime.now()
         self._calculate_aggregate_metrics()
 
-    def _calculate_aggregate_metrics(self):
+    def _calculate_aggregate_metrics(self) -> None:
         """Calculate overall metrics from participant data."""
         if not self.participants:
             return

@@ -83,7 +83,7 @@ class TaskParameterConfigurator:
     Provides interface for adjusting adaptive algorithm and stimulus parameters.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize task parameter configurator."""
         self.detection_config: DetectionTaskConfig = DetectionTaskConfig()
         self.heartbeat_config: HeartbeatTaskConfig = HeartbeatTaskConfig()
@@ -95,7 +95,7 @@ class TaskParameterConfigurator:
         """Get detection task configuration."""
         return self.detection_config
 
-    def update_detection_config(self, **kwargs) -> None:
+    def update_detection_config(self, **kwargs: Any) -> None:
         """
         Update detection task configuration.
 
@@ -113,7 +113,7 @@ class TaskParameterConfigurator:
         """Get heartbeat task configuration."""
         return self.heartbeat_config
 
-    def update_heartbeat_config(self, **kwargs) -> None:
+    def update_heartbeat_config(self, **kwargs: Any) -> None:
         """
         Update heartbeat task configuration.
 
@@ -131,7 +131,7 @@ class TaskParameterConfigurator:
         """Get oddball task configuration."""
         return self.oddball_config
 
-    def update_oddball_config(self, **kwargs) -> None:
+    def update_oddball_config(self, **kwargs: Any) -> None:
         """
         Update oddball task configuration.
 
@@ -208,7 +208,7 @@ if __name__ == "__main__":
     from tkinter import messagebox, ttk
 
     class TaskConfigurationGUI:
-        def __init__(self):
+        def __init__(self) -> None:
             self.root = tk.Tk()
             self.root.title("Task Configuration")
             self.root.geometry("600x400")
@@ -241,7 +241,7 @@ if __name__ == "__main__":
                 side="right", padx=5
             )
 
-        def create_detection_tab(self, parent):
+        def create_detection_tab(self, parent: tk.Widget) -> None:
             config = DetectionTaskConfig()
             # Add configuration widgets for detection task
             ttk.Label(
@@ -253,7 +253,7 @@ if __name__ == "__main__":
             ).pack()
             ttk.Label(parent, text="Configuration loaded successfully").pack(pady=20)
 
-        def create_heartbeat_tab(self, parent):
+        def create_heartbeat_tab(self, parent: tk.Widget) -> None:
             config = HeartbeatTaskConfig()
             # Add configuration widgets for heartbeat task
             ttk.Label(
@@ -265,13 +265,13 @@ if __name__ == "__main__":
             ).pack()
             ttk.Label(parent, text="Configuration loaded successfully").pack(pady=20)
 
-        def save_config(self):
+        def save_config(self) -> None:
             messagebox.showinfo("Save", "Configuration saved successfully!")
 
-        def load_config(self):
+        def load_config(self) -> None:
             messagebox.showinfo("Load", "Configuration loaded successfully!")
 
-        def run(self):
+        def run(self) -> None:
             self.root.mainloop()
 
     # Launch GUI

@@ -7,7 +7,7 @@ of active inference principles and neural signatures of consciousness.
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, cast
 
 import numpy as np
 from scipy import stats
@@ -110,7 +110,7 @@ class ValidationResult:
 
     is_significant: bool = field(init=False)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.is_significant = self.p_value < self.significance_threshold
 
 
@@ -425,7 +425,7 @@ class CrossSpeciesValidator:
         scaled_features[:, 1] *= params.temporal_scaling  # Latency
         scaled_features[:, 2] *= params.frequency_scaling  # Frequency
 
-        return scaled_features
+        return cast(np.ndarray, scaled_features)
 
     def _compute_correlation(
         self, features1: np.ndarray, features2: np.ndarray

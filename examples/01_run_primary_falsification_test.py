@@ -8,6 +8,9 @@ The primary falsification criterion is the most decisive test of the APGI
 Framework: if we observe all neural signatures of ignition (P3b, gamma
 synchrony, BOLD activation, PCI) without any evidence of consciousness,
 the framework would be falsified.
+
+NOTE: These experiments use mock/simulated data for demonstration purposes.
+For actual scientific experiments, real empirical data would be required.
 """
 
 import sys

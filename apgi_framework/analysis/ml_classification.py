@@ -108,9 +108,9 @@ class ConsciousnessClassifier:
         self.scaler = StandardScaler()
         self.feature_names: Optional[List[str]] = None
 
-        self._initialize_model()
+        self._initialize_model()  # type: ignore[no-untyped-call]
 
-    def _initialize_model(self):
+    def _initialize_model(self) -> None:
         """Initialize the ML model based on selected algorithm."""
         if self.algorithm == "random_forest":
             self.model = RandomForestClassifier(
@@ -338,7 +338,7 @@ class ConsciousnessClassifier:
             probabilities=probabilities[:, 1],  # Probability of conscious state
         )
 
-    def _train_deep_model(self, X: np.ndarray, y: np.ndarray):
+    def _train_deep_model(self, X: np.ndarray, y: np.ndarray) -> None:
         """Train deep neural network model."""
         if not PYTORCH_AVAILABLE:
             raise ImportError("PyTorch required for deep learning")
@@ -419,7 +419,7 @@ if PYTORCH_AVAILABLE:
 
             self.network = nn.Sequential(*layers)
 
-        def forward(self, x):
+        def forward(self, x: Any) -> Any:
             """Forward pass."""
             return self.network(x)
 
@@ -428,7 +428,7 @@ else:
     class DeepConsciousnessNetDummy:
         """Dummy class when PyTorch is not available."""
 
-        def __init__(self, *args, **kwargs):
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
             raise ImportError("PyTorch required for DeepConsciousnessNet")
 
     # Alias for compatibility - use type: ignore to bypass assignment check

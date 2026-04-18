@@ -25,13 +25,10 @@ from . import reporting
 from . import validation
 from . import security
 from . import processing
-from .cache import CacheManager
 from .computation import IntensiveComputation
-from .network import NetworkManager
 from .collaboration import CollaborationManager
 from .notification import NotificationManager
 from .fusion import DataFusion
-from .optimization import ResourceOptimizer
 
 __all__ = [
     "APGIEquation",

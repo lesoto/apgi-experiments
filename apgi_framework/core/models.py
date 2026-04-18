@@ -81,7 +81,9 @@ class SomaticAgent:
 
         return modified_G, basic_G_extended
 
-    def update_somatic_marker(self, context: int, action: int, outcome_valence: float):
+    def update_somatic_marker(
+        self, context: int, action: int, outcome_valence: float
+    ) -> None:
         """
         Update somatic markers based on action outcome.
 
@@ -225,7 +227,7 @@ class PredictiveIgnitionNetwork:
 
         return predictions, errors, weighted_errors, ignited, ignition_prob
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset the network state."""
         self.global_activation = np.zeros(self.n_global_units)
 

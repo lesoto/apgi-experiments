@@ -5,8 +5,15 @@ Comprehensive GUI Launcher for APGI Framework
 This script provides a centralized launcher to access all GUI applications
 and tools
 in the APGI Framework, organized by category for easy navigation.
+
+Usage:
+    python GUI-Launcher.py              # Launch GUI
+    python GUI-Launcher.py --help       # Show help
+    python GUI-Launcher.py --version    # Show version
 """
 
+import argparse
+import os
 import subprocess
 import sys
 import threading
@@ -1011,8 +1018,67 @@ Missing Applications:
 
 def main():
     """Main entry point."""
-    launcher = ComprehensiveGUILauncher()
-    launcher.run()
+    parser = argparse.ArgumentParser(
+        description="APGI Framework GUI Launcher",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+    python GUI-Launcher.py              # Launch GUI window
+    python GUI-Launcher.py --list       # List available applications
+    python GUI-Launcher.py --version    # Show version
+    """,
+    )
+    parser.add_argument(
+        "--list",
+        action="store_true",
+        help="List all available GUI applications without launching GUI",
+    )
+    parser.add_argument(
+        "--version", action="store_true", help="Show version information"
+    )
+
+    args = parser.parse_args()
+
+    if args.version:
+        print("APGI Framework GUI Launcher v1.0")
+        print(f"Python version: {sys.version.split()[0]}")
+        return
+
+    # Check if we can display GUI (check for DISPLAY on Unix-like systems)
+    if sys.platform.startswith("linux") and not sys.platform.startswith("darwin"):
+        display = os.environ.get("DISPLAY")
+        if not display:
+            print("Error: No DISPLAY environment variable set.")
+            print("GUI applications require a display server.")
+            print("Use --list flag to see available applications without GUI.")
+            sys.exit(1)
+
+    # List mode
+    if args.list:
+        current_dir = Path(__file__).parent
+        launcher = ComprehensiveGUILauncher()
+        print("\nAvailable GUI Applications:")
+        print("=" * 60)
+        for category, apps in launcher.gui_apps.items():
+            print(f"\n{category}:")
+            for app in apps:
+                script_path = current_dir / app["file"]
+                status = "✓" if script_path.exists() else "✗"
+                print(f"  [{status}] {app['name']}")
+                print(f"      {app['file']}")
+        return
+
+    # Normal GUI mode
+    try:
+        print("Starting APGI Framework GUI Launcher...")
+        launcher = ComprehensiveGUILauncher()
+        launcher.run()
+    except Exception as e:
+        print(f"Error launching GUI: {e}")
+        import traceback
+
+        traceback.print_exc()
+        sys.exit(1)
 
 
 if __name__ == "__main__":

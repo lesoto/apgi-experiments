@@ -6,6 +6,8 @@ reporting, visualization, and dashboard capabilities for experimental data,
 results, and metadata.
 """
 
+from typing import Any, Dict, Optional
+
 # Import example data loading functionality
 
 from .dashboard import (
@@ -60,21 +62,22 @@ from .visualizer import APGIVisualizer, InteractiveVisualizer
 class DataProcessor:
     """Mock data processor for testing purposes."""
 
-    def __init__(self):
-        self.processed_data = {}
+    def __init__(self) -> None:
+        self.processed_data: Dict[str, Any] = {}
 
-    def process_data(self, raw_data):
+    def process_data(self, raw_data: Any) -> Dict[str, Any]:
         """Process raw experimental data."""
         data_id = f"processed_{hash(str(raw_data)) % 10000:04d}"
-        self.processed_data[data_id] = {
+        result: Dict[str, Any] = {
             "data_id": data_id,
             "processed": True,
             "raw_data": raw_data,
             "processing_timestamp": "2024-01-01T00:00:00Z",
         }
-        return self.processed_data[data_id]
+        self.processed_data[data_id] = result
+        return result
 
-    def get_processed_data(self, data_id):
+    def get_processed_data(self, data_id: str) -> Optional[Dict[str, Any]]:
         """Retrieve processed data by ID."""
 
         return self.processed_data.get(data_id)
@@ -83,14 +86,14 @@ class DataProcessor:
 class MultiModalProcessor:
     """Mock multi-modal processor for testing purposes."""
 
-    def __init__(self):
-        self.modalities = {}
+    def __init__(self) -> None:
+        self.modalities: Dict[str, Any] = {}
 
-    def add_modality(self, modality_name, data):
+    def add_modality(self, modality_name: str, data: Any) -> None:
         """Add a data modality."""
         self.modalities[modality_name] = data
 
-    def process_modalities(self):
+    def process_modalities(self) -> Dict[str, Any]:
         """Process all modalities together."""
         integrated_data = {
             "integrated": True,
@@ -99,7 +102,7 @@ class MultiModalProcessor:
         }
         return integrated_data
 
-    def get_modality_data(self, modality_name):
+    def get_modality_data(self, modality_name: str) -> Optional[Any]:
         """Get data for a specific modality."""
         return self.modalities.get(modality_name)
 

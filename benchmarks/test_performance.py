@@ -6,7 +6,7 @@ Tests critical performance paths and identifies regressions.
 import pytest
 
 try:
-    import pytest_benchmark  # noqa: F401
+    import pytest_benchmark  # type: ignore  # noqa: F401
 
     HAS_BENCHMARK = True
 except ImportError:

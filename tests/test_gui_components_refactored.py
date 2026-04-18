@@ -421,7 +421,7 @@ class TestFallbackFunctionality:
         """Test that fallback GUI initializes when components aren't available."""
         # Skip if the refactored GUI module doesn't exist
         try:
-            from apps.apgi_falsification_gui_refactored import APGIFalsificationGUI
+            from apps.apgi_falsification_gui_refactored import APGIFalsificationGUI  # type: ignore[import-not-found]
         except ImportError:
             pytest.skip("apgi_falsification_gui_refactored module not available")
 

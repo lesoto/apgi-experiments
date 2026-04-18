@@ -11,24 +11,24 @@ logger = get_logger("experiment")
 class BaseExperiment(ABC):
     """Base class for all experimental paradigms."""
 
-    def __init__(self, n_participants: int = 20):
+    def __init__(self, n_participants: int = 20) -> None:
         self.n_participants = n_participants
         self.data = pd.DataFrame()
         self.participant_data: Dict[int, Any] = {}
 
     @abstractmethod
-    def setup(self, **kwargs):
+    def setup(self, **kwargs: Any) -> None:
         """Set up the experimental parameters."""
 
     @abstractmethod
-    def run_trial(self, participant_id: int, trial_params: Dict):
+    def run_trial(self, participant_id: int, trial_params: Dict[str, Any]) -> None:
         """Run a single trial of the experiment."""
 
     @abstractmethod
-    def run_block(self, participant_id: int, block_params: Dict):
+    def run_block(self, participant_id: int, block_params: Dict[str, Any]) -> None:
         """Run a block of trials."""
 
-    def run_experiment(self, **kwargs):
+    def run_experiment(self, **kwargs: Any) -> pd.DataFrame:
         """Run the full experiment for all participants."""
         self.setup(**kwargs)
 
@@ -38,7 +38,7 @@ class BaseExperiment(ABC):
         return self._compile_data()
 
     @abstractmethod
-    def run_participant(self, participant_id: int):
+    def run_participant(self, participant_id: int) -> Dict[str, Any]:
         """Run the experiment for a single participant."""
 
     def _compile_data(self) -> pd.DataFrame:
@@ -57,7 +57,7 @@ class BaseExperiment(ABC):
             self.data = pd.DataFrame(all_data)
         return self.data
 
-    def save_data(self, filename: str):
+    def save_data(self, filename: str) -> None:
         """Save the experiment data to a file."""
         if not self.data.empty:
             self.data.to_csv(filename, index=False)

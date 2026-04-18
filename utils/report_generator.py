@@ -19,7 +19,7 @@ from jinja2 import Environment, FileSystemLoader
 
 # PDF generation
 try:
-    from weasyprint import CSS, HTML
+    from weasyprint import CSS, HTML  # type: ignore[import-untyped]
 
     WEASYPRINT_AVAILABLE = True
 except ImportError:

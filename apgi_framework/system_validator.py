@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import numpy as np
 
@@ -1565,7 +1565,7 @@ class SystemValidator:
 
     # Methods expected by the comprehensive test suite
 
-    def validate_system_config(self, config):
+    def validate_system_config(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """Validate system configuration."""
         if not config:
             raise APGIFrameworkError("Configuration cannot be empty")
@@ -1593,7 +1593,7 @@ class SystemValidator:
 
         return {"valid": len(errors) == 0, "errors": errors}
 
-    def validate_component_config(self, config):
+    def validate_component_config(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """Validate component configuration."""
         errors = []
 
@@ -1617,10 +1617,12 @@ class SystemValidator:
             "component_name": config.get("name", "unknown"),
         }
 
-    def validate_component_dependencies(self, components):
+    def validate_component_dependencies(
+        self, components: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Validate component dependencies."""
-        errors = []
-        warnings = []
+        errors: List[str] = []
+        warnings: List[str] = []
 
         for name, config in components.items():
             deps = config.get("dependencies", [])
@@ -1632,7 +1634,7 @@ class SystemValidator:
 
         return {"valid": len(errors) == 0, "errors": errors, "warnings": warnings}
 
-    def check_system_health(self):
+    def check_system_health(self) -> Dict[str, Any]:
         """Check overall system health."""
         try:
             import psutil
@@ -1671,7 +1673,7 @@ class SystemValidator:
                 "timestamp": time.time(),
             }
 
-    def check_component_health(self, components):
+    def check_component_health(self, components: Dict[str, Any]) -> Dict[str, Any]:
         """Check health of individual components."""
         health_status = {}
         healthy_count = 0
@@ -1695,7 +1697,9 @@ class SystemValidator:
 
         return health_status
 
-    def check_performance_metrics(self, performance_data):
+    def check_performance_metrics(
+        self, performance_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Check performance metrics against thresholds."""
         warnings = []
         status = "optimal"
@@ -1718,7 +1722,7 @@ class SystemValidator:
             ),
         }
 
-    def check_resource_availability(self, resources):
+    def check_resource_availability(self, resources: List[str]) -> Dict[str, Any]:
         """Check availability of required resources."""
         availability = {}
 
@@ -1735,11 +1739,13 @@ class SystemValidator:
 
         return availability
 
-    def check_version_compatibility(self, system_requirements, component_versions):
+    def check_version_compatibility(
+        self, system_requirements: Dict[str, Any], component_versions: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Check version compatibility."""
         import sys
 
-        compatibility = {
+        compatibility: Dict[str, Any] = {
             "python_compatible": True,
             "platform_compatible": True,
             "overall_compatible": True,
@@ -1760,12 +1766,14 @@ class SystemValidator:
 
         return compatibility
 
-    def check_component_version_conflicts(self, components):
+    def check_component_version_conflicts(
+        self, components: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Check for component version conflicts."""
-        conflicts = {"version_conflicts": [], "api_conflicts": []}
+        conflicts: Dict[str, List[Any]] = {"version_conflicts": [], "api_conflicts": []}
 
         # Group by version to detect conflicts
-        version_groups = {}
+        version_groups: Dict[str, List[Dict[str, Any]]] = {}
         for name, config in components.items():
             version = config.get("version", "unknown")
             api_version = config.get("api_version", "unknown")
@@ -1789,15 +1797,15 @@ class SystemValidator:
 
         return conflicts
 
-    def check_api_compatibility(self, api_specs):
+    def check_api_compatibility(self, api_specs: Dict[str, Any]) -> Dict[str, Any]:
         """Check API compatibility between components."""
-        compatible_methods = []
-        incompatible_methods = []
+        compatible_methods: List[str] = []
+        incompatible_methods: List[str] = []
 
         # Find common methods across all APIs
         if api_specs:
             all_methods = set()
-            method_counts = {}
+            method_counts: Dict[str, int] = {}
 
             for name, spec in api_specs.items():
                 methods = set(spec.get("methods", []))
@@ -1818,7 +1826,9 @@ class SystemValidator:
             "total_compatible": len(compatible_methods),
         }
 
-    def validate_dependency_resolution_order(self, dependency_graph):
+    def validate_dependency_resolution_order(
+        self, dependency_graph: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Validate dependency resolution order."""
         try:
             # Simple topological sort to check for circular dependencies
@@ -1826,7 +1836,7 @@ class SystemValidator:
             temp_visited = set()
             order = []
 
-            def visit(node):
+            def visit(node: str) -> None:
                 if node in temp_visited:
                     raise ValueError(f"Circular dependency detected involving {node}")
                 if node in visited:
@@ -1848,13 +1858,17 @@ class SystemValidator:
         except ValueError as e:
             return {"valid": False, "order": [], "circular_dependencies": [str(e)]}
 
-    def _report_validation_error(self, component, error_type, message):
+    def _report_validation_error(
+        self, component: str, error_type: str, message: str
+    ) -> None:
         """Report validation error (internal method)."""
         self.logger.error(f"Validation error in {component}: {error_type} - {message}")
 
-    def handle_system_degradation(self, scenarios):
+    def handle_system_degradation(
+        self, scenarios: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
         """Handle system degradation scenarios."""
-        degradation_status = {
+        degradation_status: Dict[str, Any] = {
             "active_degradations": [],
             "critical_issues": 0,
             "warning_issues": 0,
@@ -1870,7 +1884,11 @@ class SystemValidator:
 
         return degradation_status
 
-    def activate_fallback_system(self, primary_systems, fallback_systems):
+    def activate_fallback_system(
+        self,
+        primary_systems: List[Dict[str, Any]],
+        fallback_systems: List[Dict[str, Any]],
+    ) -> Dict[str, Any]:
         """Activate fallback systems when primary fail."""
         for primary in primary_systems:
             if not primary.get("available", True):
@@ -1884,7 +1902,9 @@ class SystemValidator:
 
         return {"active_system": None, "status": "no_fallback_needed"}
 
-    def recover_from_partial_failure(self, failed_components, working_components):
+    def recover_from_partial_failure(
+        self, failed_components: List[str], working_components: List[str]
+    ) -> Dict[str, Any]:
         """Recover from partial system failures."""
         recovery_result = {
             "recovery_strategy": "disable_failed",
@@ -1895,11 +1915,13 @@ class SystemValidator:
 
         return recovery_result
 
-    def handle_timeout(self, operation, timeout_seconds):
+    def handle_timeout(
+        self, operation: Callable[[], Any], timeout_seconds: int
+    ) -> Dict[str, Any]:
         """Handle operation timeout."""
         import signal
 
-        def timeout_handler(signum, frame):
+        def timeout_handler(signum: int, frame: Any) -> None:
             raise TimeoutError(f"Operation timed out after {timeout_seconds} seconds")
 
         # Set timeout

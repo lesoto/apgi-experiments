@@ -87,7 +87,7 @@ class EEGProcessor:
         # Filter state for real-time processing
         self.filter_state: Optional[Any] = None
 
-    def _design_filters(self):
+    def _design_filters(self) -> None:
         """Design Butterworth filters for EEG processing."""
         nyquist = self.sampling_rate / 2.0
 

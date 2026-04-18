@@ -44,7 +44,7 @@ class APGIVisualizer:
         # Set up plotting style
         self._setup_style(style)
 
-    def _setup_style(self, style: str):
+    def _setup_style(self, style: str) -> None:
         """Configure matplotlib and seaborn styles"""
 
         if style == "publication":
@@ -603,7 +603,7 @@ class InteractiveVisualizer:
     Provides interactive visualization capabilities for real-time analysis.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize interactive visualizer"""
         self.logger = logging.getLogger(__name__)
 

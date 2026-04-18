@@ -366,7 +366,7 @@ class PathManager:
         return temp_dir
 
     @contextmanager
-    def temp_file(self, suffix: str = "", prefix: str = "apgi_"):
+    def temp_file(self, suffix: str = "", prefix: str = "apgi_") -> Any:
         """
         Context manager for temporary file.
 
@@ -393,7 +393,7 @@ class PathManager:
                 temp_file_path.unlink()
 
     @contextmanager
-    def temp_dir_context(self, prefix: str = "apgi_temp_"):
+    def temp_dir_context(self, prefix: str = "apgi_temp_") -> Any:
         """
         Context manager for temporary directory.
 
@@ -559,7 +559,7 @@ def safe_filename(filename: str, max_length: int = 255) -> str:
 
 
 # Migration utilities for existing code
-def migrate_from_os_path():
+def migrate_from_os_path() -> Dict[str, str]:
     """
     Provide guidance for migrating from os.path to pathlib.
 

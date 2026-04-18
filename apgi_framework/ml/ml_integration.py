@@ -14,6 +14,7 @@ Features:
 - Model persistence and loading
 """
 
+from __future__ import annotations
 import warnings
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union, cast

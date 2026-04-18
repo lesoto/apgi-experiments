@@ -74,6 +74,7 @@ class EngineRegistry:
     """
 
     _instance: Optional["EngineRegistry"] = None
+    _initialized: bool = False
     _engines: Dict[str, EngineMetadata] = {}
     _instances: Dict[str, Any] = {}
 
@@ -84,7 +85,7 @@ class EngineRegistry:
             cls._instance._initialized = False
         return cls._instance
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the engine registry with default engines."""
         if self._initialized:
             return

@@ -6,7 +6,7 @@ implements the core falsification testing logic with proper result objects.
 """
 
 import logging
-from typing import Optional
+from typing import Any, Optional
 from datetime import datetime
 import numpy as np
 from scipy import stats
@@ -29,8 +29,8 @@ class FalsificationResult:
         statistical_power: Optional[float] = None,
         framework_falsified: Optional[bool] = None,
         confidence: Optional[float] = None,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         """
         Initialize falsification result.
 
@@ -60,7 +60,7 @@ class FalsificationResult:
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
         """Delegate attribute access to maintain compatibility."""
         # Handle common attribute access patterns
         if name in ["falsified", "framework_falsified"]:
@@ -76,7 +76,7 @@ class PrimaryFalsificationTest:
     without any evidence of consciousness, which would falsify the framework.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the primary falsification test."""
         self.logger = logging.getLogger(__name__)
         self.signature_thresholds = {

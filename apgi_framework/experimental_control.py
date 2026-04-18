@@ -608,13 +608,13 @@ class ParticipantSimulator:
 
         return responses
 
-    def _update_fatigue(self):
+    def _update_fatigue(self) -> None:
         """Update fatigue accumulation based on trial count and individual fatigue rate"""
         self.fatigue_accumulation = min(
             1.0, self.trial_count * self.profile.fatigue_rate * 0.001
         )
 
-    def _update_learning(self):
+    def _update_learning(self) -> None:
         """Update learning progress based on trial count and individual learning rate"""
         # Learning follows a logarithmic curve
         if self.trial_count > 0:
@@ -655,7 +655,7 @@ class ParticipantSimulator:
             "total_trials": len(responses),
         }
 
-    def reset_session(self):
+    def reset_session(self) -> None:
         """Reset simulator state for a new session"""
         self.trial_count = 0
         self.fatigue_accumulation = 0.0

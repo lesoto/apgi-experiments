@@ -13,7 +13,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 # Import clinical biomarkers components
 try:
-    from research.clinical_biomarkers.experiments.biomarker_analysis import (
+    from research.clinical_biomarkers.experiments.biomarker_analysis import (  # type: ignore[import-not-found]
         BiomarkerAnalyzer,
         BiomarkerCategory,
         BiomarkerFeature,

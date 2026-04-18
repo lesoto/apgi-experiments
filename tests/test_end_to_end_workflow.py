@@ -702,8 +702,8 @@ class TestPerformanceUnderRealisticConditions:
                 "timeout_seconds": 300,
             }
 
-            with patch("apgi_framework.network.NetworkManager") as mock_network:
-                with patch("apgi_framework.cache.DataCache") as mock_cache:
+            with patch("tests.fixtures.mock_network.NetworkManager") as mock_network:
+                with patch("tests.fixtures.mock_cache.DataCache") as mock_cache:
                     # Configure network mocks - use instance mocks
                     mock_network.return_value.execute_operations.return_value = {
                         "operations_completed": 3,

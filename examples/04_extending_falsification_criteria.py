@@ -9,8 +9,13 @@ falsification criteria and tests. This is useful for:
 - Developing new experimental paradigms
 
 This example shows the architecture and patterns for creating new tests.
+
+NOTE: These experiments use mock/simulated data for demonstration purposes.
+Random seeds are used to ensure reproducible but varied results across experiments.
+For actual scientific experiments, real empirical data would be required.
 """
 
+import hashlib  # noqa: F401 - used in wrapper functions for seed generation
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -90,11 +95,13 @@ class TemporalDynamicsFalsificationTest:
     dynamics (e.g., P3b before stimulus, gamma synchrony too brief).
     """
 
-    def __init__(self):
+    def __init__(self, random_seed: Optional[int] = None):
         """Initialize the temporal dynamics test."""
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.p3b_simulator = P3bSimulator()
-        self.gamma_simulator = GammaSimulator()
+        self.random_seed = random_seed
+        self.rng = np.random.RandomState(random_seed)
+        self.p3b_simulator = P3bSimulator(random_seed=random_seed)
+        self.gamma_simulator = GammaSimulator(random_seed=random_seed)
 
     def run_test(self, n_trials: int = 1000) -> CustomFalsificationResult:
         """
@@ -210,10 +217,12 @@ class CrossModalIntegrationTest:
     sensory modalities or can occur with isolated modality processing.
     """
 
-    def __init__(self):
+    def __init__(self, random_seed: Optional[int] = None):
         """Initialize the cross-modal integration test."""
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.bold_simulator = GammaSimulator()
+        self.random_seed = random_seed
+        self.rng = np.random.RandomState(random_seed)
+        self.bold_simulator = GammaSimulator(random_seed=random_seed)
 
     def run_test(self, n_trials: int = 1000) -> CustomFalsificationResult:
         """
@@ -332,10 +341,11 @@ class MetacognitiveCalibrationTest:
     or can occur with severely miscalibrated confidence judgments.
     """
 
-    def __init__(self):
+    def __init__(self, random_seed: Optional[int] = None):
         """Initialize the metacognitive calibration test."""
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.consciousness_simulator = ConsciousnessAssessmentSimulator()
+        self.random_seed = random_seed
+        self.consciousness_simulator = ConsciousnessAssessmentSimulator(random_seed)
 
     def run_test(self, n_trials: int = 1000) -> CustomFalsificationResult:
         """
@@ -460,7 +470,9 @@ def run_ai_benchmarking_experiment(**kwargs):
     Wrapper function for ai_benchmarking experiment.
     Maps to temporal dynamics falsification test.
     """
-    temporal_test = TemporalDynamicsFalsificationTest()
+    # Use experiment name to generate unique seed
+    seed = int(hashlib.sha256("ai_benchmarking".encode()).hexdigest(), 16) % (2**32)
+    temporal_test = TemporalDynamicsFalsificationTest(random_seed=seed)
     n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 1000))
     result = temporal_test.run_test(n_trials=n_trials)
     display_custom_test_result(result)
@@ -469,7 +481,8 @@ def run_ai_benchmarking_experiment(**kwargs):
 
 def run_change_blindness_experiment(**kwargs):
     """Wrapper for change_blindness experiment."""
-    temporal_test = TemporalDynamicsFalsificationTest()
+    seed = int(hashlib.sha256("change_blindness".encode()).hexdigest(), 16) % (2**32)
+    temporal_test = TemporalDynamicsFalsificationTest(random_seed=seed)
     n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 1000))
     result = temporal_test.run_test(n_trials=n_trials)
     display_custom_test_result(result)
@@ -478,7 +491,8 @@ def run_change_blindness_experiment(**kwargs):
 
 def run_simon_effect_experiment(**kwargs):
     """Wrapper for simon_effect experiment."""
-    crossmodal_test = CrossModalIntegrationTest()
+    seed = int(hashlib.sha256("simon_effect".encode()).hexdigest(), 16) % (2**32)
+    crossmodal_test = CrossModalIntegrationTest(random_seed=seed)
     n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 1000))
     result = crossmodal_test.run_test(n_trials=n_trials)
     display_custom_test_result(result)
@@ -487,7 +501,10 @@ def run_simon_effect_experiment(**kwargs):
 
 def run_inattentional_blindness_experiment(**kwargs):
     """Wrapper for inattentional_blindness experiment."""
-    crossmodal_test = CrossModalIntegrationTest()
+    seed = int(hashlib.sha256("inattentional_blindness".encode()).hexdigest(), 16) % (
+        2**32
+    )
+    crossmodal_test = CrossModalIntegrationTest(random_seed=seed)
     n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 1000))
     result = crossmodal_test.run_test(n_trials=n_trials)
     display_custom_test_result(result)
@@ -496,7 +513,8 @@ def run_inattentional_blindness_experiment(**kwargs):
 
 def run_drm_false_memory_experiment(**kwargs):
     """Wrapper for drm_false_memory experiment."""
-    metacog_test = MetacognitiveCalibrationTest()
+    seed = int(hashlib.sha256("drm_false_memory".encode()).hexdigest(), 16) % (2**32)
+    metacog_test = MetacognitiveCalibrationTest(random_seed=seed)
     n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 1000))
     result = metacog_test.run_test(n_trials=n_trials)
     display_custom_test_result(result)
@@ -505,7 +523,10 @@ def run_drm_false_memory_experiment(**kwargs):
 
 def run_multisensory_integration_experiment(**kwargs):
     """Wrapper for multisensory_integration experiment."""
-    metacog_test = MetacognitiveCalibrationTest()
+    seed = int(hashlib.sha256("multisensory_integration".encode()).hexdigest(), 16) % (
+        2**32
+    )
+    metacog_test = MetacognitiveCalibrationTest(random_seed=seed)
     n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 1000))
     result = metacog_test.run_test(n_trials=n_trials)
     display_custom_test_result(result)
@@ -514,7 +535,8 @@ def run_multisensory_integration_experiment(**kwargs):
 
 def run_virtual_navigation_experiment(**kwargs):
     """Wrapper for virtual_navigation experiment."""
-    temporal_test = TemporalDynamicsFalsificationTest()
+    seed = int(hashlib.sha256("virtual_navigation".encode()).hexdigest(), 16) % (2**32)
+    temporal_test = TemporalDynamicsFalsificationTest(random_seed=seed)
     n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 1000))
     result = temporal_test.run_test(n_trials=n_trials)
     display_custom_test_result(result)

@@ -434,7 +434,7 @@ class PsychometricFunction:
         """Extract threshold at target performance level."""
 
         # Find intensity that gives target performance
-        def objective(x):
+        def objective(x: float) -> float:
             if function_name == "cumulative_gaussian":
                 return float(
                     self.cumulative_gaussian(
@@ -469,7 +469,7 @@ class PsychometricFunction:
                     - target_performance
                 )
             else:
-                return (
+                return float(
                     self.cumulative_gaussian(
                         np.array([x]),
                         params["alpha"],
@@ -848,7 +848,7 @@ class ThresholdDetectionSystem:
         func = self.psychometric_functions[function_name]
 
         # Find intensity that gives target performance
-        def objective(x):
+        def objective(x: float) -> float:
             if function_name == "cumulative_gaussian":
                 result = float(
                     func.cumulative_gaussian(

@@ -56,7 +56,7 @@ class AIACCActivation:
     baseline_corrected: bool = True
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate activation parameters"""
         if not isinstance(self.region, AIACCRegion):
             raise ValidationError(f"Invalid AI/ACC region: {self.region}")
@@ -102,7 +102,7 @@ class GammaCoherence:
     duration: float = 0.0  # Duration of coherence (ms)
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate coherence parameters"""
         if not 0.0 <= self.plv <= 1.0:
             raise ValidationError(f"PLV must be between 0.0 and 1.0, got {self.plv}")
@@ -154,7 +154,7 @@ class EffectiveConnectivity:
     latency: Optional[float] = None  # Connection latency (ms)
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate connectivity parameters"""
         if not -1.0 <= self.directionality <= 1.0:
             raise ValidationError(
@@ -239,7 +239,7 @@ class AIACCValidator:
     and effective connectivity according to falsification criteria.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the AI/ACC validator with default thresholds"""
         self.validation_thresholds = {
             "bold_significance": 3.1,  # Z-score threshold for significant BOLD activation

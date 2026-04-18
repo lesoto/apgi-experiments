@@ -98,7 +98,7 @@ class SignatureValidator:
     falsification testing.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize signature validator with threshold parameters."""
         # Consciousness thresholds
         self.p3b_threshold = 5.0  # μV

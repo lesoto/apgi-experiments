@@ -167,7 +167,7 @@ class FrameworkTestUtils:
     coordination, and result analysis for the test enhancement system.
     """
 
-    def __init__(self, base_path: Optional[Union[str, Path]] = None):
+    def __init__(self, base_path: Optional[Union[str, Path]] = None) -> None:
         """
         Initialize TestUtilities.
 
@@ -178,7 +178,7 @@ class FrameworkTestUtils:
         self.logger = logging.getLogger(__name__)
 
         # Initialize AST analyzer
-        self.ast_analyzer = ASTAnalyzer()
+        self.ast_analyzer: Any = ASTAnalyzer()
 
         # Initialize file utils
         self.file_utils = FileUtils()
@@ -362,7 +362,7 @@ class FrameworkTestUtils:
         # Default to unit test
         return FrameworkRunCategory.UNIT
 
-    def _extract_test_dependencies(self, element) -> Set[str]:
+    def _extract_test_dependencies(self, element: Any) -> Set[str]:
         """Extract test dependencies from code element."""
         dependencies = set()
 
@@ -377,7 +377,7 @@ class FrameworkTestUtils:
 
         return dependencies
 
-    def _estimate_test_duration(self, element) -> float:
+    def _estimate_test_duration(self, element: Any) -> float:
         """Estimate test execution duration based on complexity."""
         base_duration = 0.1  # Base 100ms
 
@@ -400,7 +400,7 @@ class FrameworkTestUtils:
 
         return cast(float, base_duration * complexity_factor * type_factor)
 
-    def _extract_test_tags(self, element) -> Set[str]:
+    def _extract_test_tags(self, element: Any) -> Set[str]:
         """Extract test tags from decorators and docstring."""
         tags = set()
 
@@ -666,7 +666,7 @@ class FrameworkTestUtilities:
     This class provides utility methods for test execution, discovery, and management.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the test utilities."""
         self.logger = logging.getLogger(__name__)
 

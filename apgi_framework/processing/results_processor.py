@@ -488,7 +488,7 @@ class ResultsProcessor:
         total_values = 0
         missing_values = 0
 
-        def count_values(obj):
+        def count_values(obj: Any) -> None:
             nonlocal total_values, missing_values
             if isinstance(obj, dict):
                 for val in obj.values():
@@ -496,9 +496,9 @@ class ResultsProcessor:
             elif isinstance(obj, (list, np.ndarray)):
                 for val in obj:
                     count_values(val)
-            elif isinstance(val, (int, float)):
+            elif isinstance(obj, (int, float)):
                 total_values += 1
-                if pd.isna(val) or val is None:
+                if pd.isna(obj) or obj is None:
                     missing_values += 1
 
         count_values(data)
@@ -525,7 +525,7 @@ class ResultsProcessor:
         outlier_count = 0
         total_numeric = 0
 
-        def detect_outliers(obj):
+        def detect_outliers(obj: Any) -> None:
             nonlocal outlier_count, total_numeric
             if isinstance(obj, dict):
                 for value in obj.values():
@@ -589,7 +589,7 @@ class ResultsProcessor:
         # Convert to dict and handle numpy types
         result_dict = asdict(processed_result)
 
-        def convert_numpy(obj):
+        def convert_numpy(obj: Any) -> Any:
             if isinstance(obj, np.integer):
                 return int(obj)
             elif isinstance(obj, np.floating):

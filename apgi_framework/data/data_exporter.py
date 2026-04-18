@@ -5,13 +5,14 @@ This module provides multi-format data export capabilities and publication-quali
 plotting and figure generation for falsification test results.
 """
 
+from __future__ import annotations
 import csv
 import json
 import logging
 from dataclasses import asdict
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Any, List, Literal, Optional, Union
 
 import h5py
 import numpy as np
@@ -28,17 +29,21 @@ class DataExporter:
     Handles multi-format data export (CSV, JSON, HDF5) for experimental results.
     """
 
-    def __init__(self, output_dir: Optional[str] = None):
+    def __init__(
+        self, output_dir: str | None = None, config: dict[str, Any] | None = None
+    ):
         """
         Initialize the data exporter.
 
         Args:
             output_dir: Directory to save exported data (default: current directory)
+            config: Optional configuration dictionary
         """
         if output_dir is None:
             output_dir = "."
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True, parents=True)
+        self.config = config or {}
         self.logger = logging.getLogger(__name__)
 
     def export_falsification_results(
@@ -346,13 +351,23 @@ class DataExporter:
         self.logger.info(f"Exported data to {filepath}")
         return str(filepath)
 
-    def export_to_csv(self, data, filepath: Union[str, Path]) -> str:
+    def export_to_csv(
+        self,
+        data: Any,
+        filepath: Union[str, Path],
+        delimiter: str = ",",
+        compression: Optional[
+            Literal["infer", "gzip", "bz2", "zip", "xz", "zstd", "tar"]
+        ] = None,
+    ) -> str:
         """
         Export data to CSV file.
 
         Args:
             data: DataFrame or dict/list to export
             filepath: Path for output file
+            delimiter: CSV delimiter
+            compression: Compression format (None, 'gzip', 'zip')
 
         Returns:
             Path to exported file
@@ -372,9 +387,134 @@ class DataExporter:
         else:
             raise ValueError(f"Cannot export type {type(data)} to CSV")
 
-        df.to_csv(filepath, index=False)
+        df.to_csv(filepath, index=False, sep=delimiter, compression=compression)
         self.logger.info(f"Exported data to {filepath}")
         return str(filepath)
+
+    def export_to_excel(self, data: Any, filepath: Union[str, Path]) -> str:
+        """Export data to Excel file."""
+        import pandas as pd
+
+        filepath = Path(filepath)
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+
+        if isinstance(data, dict) and all(
+            isinstance(v, (pd.DataFrame, list)) for v in data.values()
+        ):
+            # Multiple sheets
+            with pd.ExcelWriter(filepath) as writer:
+                for sheet_name, sheet_data in data.items():
+                    df = (
+                        pd.DataFrame(sheet_data)
+                        if not isinstance(sheet_data, pd.DataFrame)
+                        else sheet_data
+                    )
+                    df.to_excel(writer, sheet_name=sheet_name, index=False)
+        else:
+            df = pd.DataFrame(data) if not isinstance(data, pd.DataFrame) else data
+            df.to_excel(filepath, index=False)
+
+        return str(filepath)
+
+    def export_to_parquet(self, data: Any, filepath: Union[str, Path]) -> str:
+        """Export data to Parquet file."""
+        import pandas as pd
+
+        filepath = Path(filepath)
+        df = pd.DataFrame(data) if not isinstance(data, pd.DataFrame) else data
+        df.to_parquet(filepath, index=False)
+        return str(filepath)
+
+    def export_to_hdf5(self, data: Any, filepath: Union[str, Path]) -> str:
+        """Export data to HDF5 file using h5py."""
+        import pandas as pd
+
+        filepath = Path(filepath)
+        df = pd.DataFrame(data) if not isinstance(data, pd.DataFrame) else data
+
+        with h5py.File(filepath, "w") as f:
+            group = f.create_group("data")
+            for column in df.columns:
+                values = df[column].values
+                if values.dtype == object:
+                    values = values.astype(str).astype(h5py.special_dtype(vlen=str))
+                group.create_dataset(column, data=values)
+
+        self.logger.info(f"Exported data to {filepath} using h5py")
+        return str(filepath)
+
+    def export_to_pickle(self, data: Any, filepath: Union[str, Path]) -> str:
+        """Export data to Pickle file."""
+        import pickle
+
+        filepath = Path(filepath)
+        with open(filepath, "wb") as f:
+            pickle.dump(data, f)
+        return str(filepath)
+
+    def export_to_numpy(self, data: Any, filepath: Union[str, Path]) -> str:
+        """Export data to Numpy file."""
+        filepath = Path(filepath)
+        np.save(filepath, data)
+        return str(filepath)
+
+    def batch_export(
+        self, datasets: list[tuple[str, Any]], format: str = "csv"
+    ) -> dict[str, str]:
+        """Export multiple datasets at once."""
+        results = {}
+        for filename, data in datasets:
+            results[filename] = getattr(self, f"export_to_{format}")(data, filename)
+        return results
+
+    def export_experiment_bundle(
+        self, experiment_data: dict[str, Any], filepath: Union[str, Path]
+    ) -> str:
+        """Export a complete experiment bundle as a zip file."""
+        import zipfile
+
+        filepath = Path(filepath)
+        with zipfile.ZipFile(filepath, "w") as zipf:
+            # For simplicity, just export everything inside as JSON
+            for key, data in experiment_data.items():
+                zipf.writestr(f"{key}.json", json.dumps(data, default=str))
+
+        return str(filepath)
+
+    def export_with_metadata(
+        self, data: Any, filepath: Union[str, Path], metadata: dict[str, Any]
+    ) -> str:
+        """Export data along with metadata."""
+        # For simplicity, combine them into one JSON or export separately
+        filepath = Path(filepath)
+        if filepath.suffix == ".json":
+            combined = {"data": data, "metadata": metadata}
+            return self.export_to_json(combined, filepath)
+        else:
+            # Export data normally and metadata as separate JSON
+            self.export_to_csv(data, filepath)
+            meta_path = filepath.with_suffix(".meta.json")
+            self.export_to_json(metadata, meta_path)
+            return str(filepath)
+
+    def generate_export_metadata(self, **kwargs: Any) -> dict[str, Any]:
+        """Generate metadata for an export."""
+        metadata = {
+            "created_at": datetime.now().isoformat(),
+            "timestamp": datetime.now().isoformat(),
+            "generator": "APGI DataExporter",
+        }
+        metadata.update(kwargs)
+        return metadata
+
+    def validate_export_path(self, filepath: Union[str, Path]) -> bool:
+        """Validate if the export path is valid."""
+        path = Path(filepath)
+        return path.parent.exists()
+
+    def validate_export_format(self, format: str) -> bool:
+        """Validate if the export format is supported."""
+        return format.lower() in self.get_supported_formats()
 
     def export_numpy(self, data: np.ndarray, filepath: Union[str, Path]) -> str:
         """

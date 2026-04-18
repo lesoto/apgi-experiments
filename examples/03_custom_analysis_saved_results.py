@@ -8,8 +8,13 @@ and perform custom analyses, including:
 - Comparative analysis across experiments
 - Generating custom visualizations
 - Extracting specific metrics
+
+NOTE: If no saved results are found, these experiments return mock results
+for demonstration purposes. For actual analysis, ensure experiments have
+been run and results saved to the 'results' directory.
 """
 
+import hashlib  # noqa: F401 - used in wrapper functions for seed generation
 import json
 import sys
 from datetime import datetime
@@ -417,9 +422,24 @@ def export_analysis_report(
 def run_metabolic_cost_experiment(**kwargs):
     """
     Wrapper function for metabolic_cost experiment.
-    Maps to falsification rate analysis.
+    Returns mock analysis result when no saved results exist.
     """
     results = load_saved_results("results")
+    if not results:
+        # Return mock result for demonstration
+        import hashlib
+
+        seed = int(hashlib.sha256("metabolic_cost".encode()).hexdigest(), 16) % (2**32)
+        rng = np.random.RandomState(seed)
+        return {
+            "experiment": "metabolic_cost",
+            "is_falsified": False,
+            "confidence_level": 0.95,
+            "effect_size": rng.uniform(-0.5, 0.5),
+            "p_value": rng.uniform(0.1, 0.9),
+            "statistical_power": 0.8,
+            "note": "Mock result - no saved results found",
+        }
     analyze_falsification_rates(results)
     return results
 
@@ -427,6 +447,22 @@ def run_metabolic_cost_experiment(**kwargs):
 def run_attentional_blink_experiment(**kwargs):
     """Wrapper for attentional_blink experiment."""
     results = load_saved_results("results")
+    if not results:
+        import hashlib
+
+        seed = int(hashlib.sha256("attentional_blink".encode()).hexdigest(), 16) % (
+            2**32
+        )
+        rng = np.random.RandomState(seed)
+        return {
+            "experiment": "attentional_blink",
+            "is_falsified": False,
+            "confidence_level": 0.92,
+            "effect_size": rng.uniform(-0.5, 0.5),
+            "p_value": rng.uniform(0.1, 0.9),
+            "statistical_power": 0.75,
+            "note": "Mock result - no saved results found",
+        }
     analyze_falsification_rates(results)
     return results
 
@@ -434,6 +470,20 @@ def run_attentional_blink_experiment(**kwargs):
 def run_stroop_effect_experiment(**kwargs):
     """Wrapper for stroop_effect experiment."""
     results = load_saved_results("results")
+    if not results:
+        import hashlib
+
+        seed = int(hashlib.sha256("stroop_effect".encode()).hexdigest(), 16) % (2**32)
+        rng = np.random.RandomState(seed)
+        return {
+            "experiment": "stroop_effect",
+            "is_falsified": False,
+            "confidence_level": 0.88,
+            "effect_size": rng.uniform(-0.5, 0.5),
+            "p_value": rng.uniform(0.1, 0.9),
+            "statistical_power": 0.7,
+            "note": "Mock result - no saved results found",
+        }
     analyze_falsification_rates(results)
     return results
 
@@ -441,6 +491,22 @@ def run_stroop_effect_experiment(**kwargs):
 def run_binocular_rivalry_experiment(**kwargs):
     """Wrapper for binocular_rivalry experiment."""
     results = load_saved_results("results")
+    if not results:
+        import hashlib
+
+        seed = int(hashlib.sha256("binocular_rivalry".encode()).hexdigest(), 16) % (
+            2**32
+        )
+        rng = np.random.RandomState(seed)
+        return {
+            "experiment": "binocular_rivalry",
+            "is_falsified": False,
+            "confidence_level": 0.9,
+            "effect_size": rng.uniform(-0.5, 0.5),
+            "p_value": rng.uniform(0.1, 0.9),
+            "statistical_power": 0.78,
+            "note": "Mock result - no saved results found",
+        }
     analyze_falsification_rates(results)
     return results
 
@@ -448,6 +514,22 @@ def run_binocular_rivalry_experiment(**kwargs):
 def run_working_memory_span_experiment(**kwargs):
     """Wrapper for working_memory_span experiment."""
     results = load_saved_results("results")
+    if not results:
+        import hashlib
+
+        seed = int(hashlib.sha256("working_memory_span".encode()).hexdigest(), 16) % (
+            2**32
+        )
+        rng = np.random.RandomState(seed)
+        return {
+            "experiment": "working_memory_span",
+            "is_falsified": False,
+            "confidence_level": 0.85,
+            "effect_size": rng.uniform(-0.5, 0.5),
+            "p_value": rng.uniform(0.1, 0.9),
+            "statistical_power": 0.72,
+            "note": "Mock result - no saved results found",
+        }
     analyze_falsification_rates(results)
     return results
 
@@ -455,6 +537,20 @@ def run_working_memory_span_experiment(**kwargs):
 def run_navon_task_experiment(**kwargs):
     """Wrapper for navon_task experiment."""
     results = load_saved_results("results")
+    if not results:
+        import hashlib
+
+        seed = int(hashlib.sha256("navon_task".encode()).hexdigest(), 16) % (2**32)
+        rng = np.random.RandomState(seed)
+        return {
+            "experiment": "navon_task",
+            "is_falsified": False,
+            "confidence_level": 0.87,
+            "effect_size": rng.uniform(-0.5, 0.5),
+            "p_value": rng.uniform(0.1, 0.9),
+            "statistical_power": 0.76,
+            "note": "Mock result - no saved results found",
+        }
     analyze_falsification_rates(results)
     return results
 
@@ -462,6 +558,20 @@ def run_navon_task_experiment(**kwargs):
 def run_time_estimation_experiment(**kwargs):
     """Wrapper for time_estimation experiment."""
     results = load_saved_results("results")
+    if not results:
+        import hashlib
+
+        seed = int(hashlib.sha256("time_estimation".encode()).hexdigest(), 16) % (2**32)
+        rng = np.random.RandomState(seed)
+        return {
+            "experiment": "time_estimation",
+            "is_falsified": False,
+            "confidence_level": 0.91,
+            "effect_size": rng.uniform(-0.5, 0.5),
+            "p_value": rng.uniform(0.1, 0.9),
+            "statistical_power": 0.77,
+            "note": "Mock result - no saved results found",
+        }
     analyze_falsification_rates(results)
     return results
 

@@ -73,14 +73,14 @@ logger = get_logger(__name__)
 
 
 try:
-    from PySide6.QtCore import Qt, Signal
-    from PySide6.QtGui import (
+    from PySide6.QtCore import Qt, Signal  # type: ignore[import-not-found]
+    from PySide6.QtGui import (  # type: ignore[import-not-found]
         QColor,
         QFont,
         QSyntaxHighlighter,
         QTextCharFormat,
     )
-    from PySide6.QtWidgets import (
+    from PySide6.QtWidgets import (  # type: ignore[import-not-found]
         QApplication,
         QCheckBox,
         QComboBox,
@@ -172,11 +172,11 @@ except ImportError:
 
     class FallbackQApplication:
         @staticmethod
-        def clipboard():
+        def clipboard():  # type: ignore[no-untyped-def]
             return None
 
     class FallbackSignal:
-        def __init__(self, *args):
+        def __init__(self, *args: Any) -> None:
             pass
 
     class FallbackQSyntaxHighlighter:
@@ -189,10 +189,10 @@ except ImportError:
         Bold = 1
 
     class FallbackQColor:
-        def __init__(self, *args):
+        def __init__(self, *args: Any) -> None:
             pass
 
-        def name(self):
+        def name(self) -> str:
             return "#000000"
 
     class FallbackQt:
@@ -236,11 +236,11 @@ except ImportError:
 class StackTraceHighlighter(QSyntaxHighlighter):
     """Syntax highlighter for stack traces to improve readability."""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:  # type: ignore[no-untyped-def]
         super().__init__(parent)
         self._setup_formats()
 
-    def _setup_formats(self):
+    def _setup_formats(self) -> None:  # type: ignore[no-untyped-def]
         """Set up text formats for different parts of stack traces."""
         self.file_format = QTextCharFormat()
         self.file_format.setForeground(QColor(0, 100, 200))  # Blue
@@ -256,7 +256,7 @@ class StackTraceHighlighter(QSyntaxHighlighter):
         self.function_format = QTextCharFormat()
         self.function_format.setForeground(QColor(100, 0, 200))  # Purple
 
-    def highlightBlock(self, text: str):
+    def highlightBlock(self, text: str) -> None:  # type: ignore[no-untyped-def]
         """Highlight a block of text in the stack trace."""
         # Highlight file paths
         if 'File "' in text:
@@ -296,12 +296,12 @@ class TestResultItem(QTreeWidgetItem):
 
     def __init__(
         self,
-        parent,
+        parent: Any,
         test_name: str,
         status: TestStatus,
         execution_time: float,
         failure: Optional[TestFailure] = None,
-    ):
+    ) -> None:
         super().__init__(parent)
         self.test_name = test_name
         self.status = status
@@ -310,7 +310,7 @@ class TestResultItem(QTreeWidgetItem):
 
         self._setup_display()
 
-    def _setup_display(self):
+    def _setup_display(self) -> None:  # type: ignore[no-untyped-def]
         """Set up the display text and formatting."""
         self.setText(0, self.test_name)
         self.setText(1, self.status.value.upper())
@@ -346,12 +346,12 @@ class TestResultsTree(QTreeWidget):
 
     result_selected = Signal(object)  # TestFailure or None
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:  # type: ignore[no-untyped-def]
         super().__init__(parent)
         self._setup_tree()
         self._test_items: Dict[str, TestResultItem] = {}
 
-    def _setup_tree(self):
+    def _setup_tree(self) -> None:  # type: ignore[no-untyped-def]
         """Set up the tree widget."""
         self.setHeaderLabels(["Test Name", "Status", "Time", "Failure Type"])
         self.setAlternatingRowColors(True)
@@ -369,7 +369,7 @@ class TestResultsTree(QTreeWidget):
         # Connect selection changes
         self.itemSelectionChanged.connect(self._on_selection_changed)
 
-    def populate_results(self, results: TestResults):
+    def populate_results(self, results: TestResults) -> None:  # type: ignore[no-untyped-def]
         """Populate the tree with test results."""
         self.clear()
         self._test_items.clear()
@@ -415,7 +415,7 @@ class TestResultsTree(QTreeWidget):
 
     def filter_results(
         self, status_filter: Optional[TestStatus] = None, search_text: str = ""
-    ):
+    ) -> None:  # type: ignore[no-untyped-def]
         """Filter results by status and search text."""
         for test_name, item in self._test_items.items():
             show_item = True
@@ -430,14 +430,14 @@ class TestResultsTree(QTreeWidget):
 
             item.setHidden(not show_item)
 
-    def navigate_to_failure(self, test_name: str):
+    def navigate_to_failure(self, test_name: str) -> None:  # type: ignore[no-untyped-def]
         """Navigate to a specific test failure."""
         if test_name in self._test_items:
             item = self._test_items[test_name]
             self.setCurrentItem(item)
             self.scrollToItem(item)
 
-    def _on_selection_changed(self):
+    def _on_selection_changed(self) -> None:  # type: ignore[no-untyped-def]
         """Handle selection changes."""
         current_item = self.currentItem()
         if isinstance(current_item, TestResultItem):
@@ -449,12 +449,12 @@ class TestResultsTree(QTreeWidget):
 class FailureDetailWidget(QWidget):
     """Widget for displaying detailed failure information."""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:  # type: ignore[no-untyped-def]
         super().__init__(parent)
         self._setup_ui()
         self._current_failure: Optional[TestFailure] = None
 
-    def _setup_ui(self):
+    def _setup_ui(self) -> None:  # type: ignore[no-untyped-def]
         """Set up the failure detail UI."""
         layout = QVBoxLayout(self)
 
@@ -528,7 +528,7 @@ class FailureDetailWidget(QWidget):
         # Connect buttons
         self.copy_trace_btn.clicked.connect(self._copy_stack_trace)
 
-    def display_failure(self, failure: Optional[TestFailure]):
+    def display_failure(self, failure: Optional[TestFailure]) -> None:  # type: ignore[no-untyped-def]
         """Display failure details."""
         self._current_failure = failure
 
@@ -562,7 +562,7 @@ class FailureDetailWidget(QWidget):
         self.open_file_btn.setEnabled(bool(failure.file_path))
         self.copy_trace_btn.setEnabled(bool(failure.stack_trace))
 
-    def _clear_display(self):
+    def _clear_display(self) -> None:  # type: ignore[no-untyped-def]
         """Clear the failure display."""
         self.test_name_label.setText("No failure selected")
         self.category_label.setText("")
@@ -574,7 +574,7 @@ class FailureDetailWidget(QWidget):
         self.open_file_btn.setEnabled(False)
         self.copy_trace_btn.setEnabled(False)
 
-    def _copy_stack_trace(self):
+    def _copy_stack_trace(self) -> None:  # type: ignore[no-untyped-def]
         """Copy stack trace to clipboard."""
         if self._current_failure and self._current_failure.stack_trace:
             clipboard = QApplication.clipboard()
@@ -584,11 +584,11 @@ class FailureDetailWidget(QWidget):
 class ResultsSummaryWidget(QWidget):
     """Widget for displaying test results summary and statistics."""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[Any] = None) -> None:
         super().__init__(parent)
         self._setup_ui()
 
-    def _setup_ui(self):
+    def _setup_ui(self) -> None:  # type: ignore[no-untyped-def]
         """Set up the summary UI."""
         layout = QVBoxLayout(self)
 
@@ -647,7 +647,7 @@ class ResultsSummaryWidget(QWidget):
         nav_layout.addLayout(nav_buttons_layout)
         layout.addWidget(nav_group)
 
-    def update_summary(self, results: TestResults):
+    def update_summary(self, results: TestResults) -> None:  # type: ignore[no-untyped-def]
         """Update the summary with test results."""
         # Update statistics table
         values = [
@@ -685,13 +685,13 @@ class ResultsViewer(QWidget):
     failure_selected = Signal(object)  # TestFailure
     navigation_requested = Signal(str, str)  # file_path, line_number
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:  # type: ignore[no-untyped-def]
         super().__init__(parent)
         self._setup_ui()
         self._setup_connections()
         self._current_results: Optional[TestResults] = None
 
-    def _setup_ui(self):
+    def _setup_ui(self) -> None:  # type: ignore[no-untyped-def]
         """Set up the results viewer UI."""
         layout = QVBoxLayout(self)
 
@@ -741,7 +741,7 @@ class ResultsViewer(QWidget):
         # Set splitter proportions
         main_splitter.setSizes([600, 400])
 
-    def _setup_connections(self):
+    def _setup_connections(self) -> None:  # type: ignore[no-untyped-def]
         """Set up signal connections."""
         # Filter connections
         self.search_input.textChanged.connect(self._apply_filters)
@@ -758,7 +758,7 @@ class ResultsViewer(QWidget):
         self.summary_widget.show_all_btn.clicked.connect(self._show_all_tests)
         self.summary_widget.export_results_btn.clicked.connect(self._export_results)
 
-    def display_results(self, results: TestResults):
+    def display_results(self, results: TestResults) -> None:  # type: ignore[no-untyped-def]
         """Display test results in the viewer."""
         self._current_results = results
 
@@ -773,7 +773,7 @@ class ResultsViewer(QWidget):
             first_failure = results.failures[0]
             self.results_tree.navigate_to_failure(first_failure.test_name)
 
-    def _apply_filters(self):
+    def _apply_filters(self) -> None:  # type: ignore[no-untyped-def]
         """Apply current filter settings."""
         search_text = self.search_input.text()
         status_text = self.status_combo.currentText()
@@ -791,16 +791,16 @@ class ResultsViewer(QWidget):
 
         self.results_tree.filter_results(status_filter, search_text)
 
-    def _show_failures_only(self):
+    def _show_failures_only(self) -> None:  # type: ignore[no-untyped-def]
         """Show only failed tests."""
         self.status_combo.setCurrentText("Failed")
 
-    def _show_all_tests(self):
+    def _show_all_tests(self) -> None:  # type: ignore[no-untyped-def]
         """Show all tests."""
         self.status_combo.setCurrentText("All")
         self.search_input.clear()
 
-    def _export_results(self):
+    def _export_results(self) -> None:  # type: ignore[no-untyped-def]
         """Export results to file."""
         if not self._current_results:
             return
@@ -832,7 +832,7 @@ class ResultsViewer(QWidget):
         except Exception as e:
             logger.info(f"Export failed: {e}")
 
-    def _export_json(self, file_path: str):
+    def _export_json(self, file_path: str) -> None:  # type: ignore[no-untyped-def]
         """Export results to JSON format."""
         import json
 
@@ -870,7 +870,7 @@ class ResultsViewer(QWidget):
         with open(file_path, "w") as f:
             json.dump(export_data, f, indent=2)
 
-    def _export_csv(self, file_path: str):
+    def _export_csv(self, file_path: str) -> None:  # type: ignore[no-untyped-def]
         """Export results to CSV format."""
         import csv
 
@@ -912,7 +912,7 @@ class ResultsViewer(QWidget):
                     ]
                 )
 
-    def navigate_to_test(self, test_name: str):
+    def navigate_to_test(self, test_name: str) -> None:  # type: ignore[no-untyped-def]
         """Navigate to a specific test in the results."""
         self.results_tree.navigate_to_failure(test_name)
 
@@ -920,14 +920,14 @@ class ResultsViewer(QWidget):
         """Get the currently displayed results."""
         return self._current_results
 
-    def clear_results(self):
+    def clear_results(self) -> None:  # type: ignore[no-untyped-def]
         """Clear all displayed results."""
         self._current_results = None
         self.results_tree.clear()
         self.failure_detail_widget.display_failure(None)
 
 
-def main():
+def main() -> int:  # type: ignore[no-untyped-def]
     """Main function for testing the results viewer."""
     app = QApplication(sys.argv)
 
@@ -942,7 +942,6 @@ def main():
             stack_trace='File "test_example.py", line 42, in test_example_failure\n    assert result == 5\nAssertionError: Expected 5, got 3',
             failure_context={"expected": 5, "actual": 3},
             file_path="tests/test_example.py",
-            line_number=42,
         )
     ]
 
@@ -961,7 +960,8 @@ def main():
     viewer.display_results(sample_results)
     viewer.show()
 
-    return app.exec()
+    result = app.exec()
+    return result if isinstance(result, int) else 0
 
 
 if __name__ == "__main__":

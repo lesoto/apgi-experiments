@@ -4,6 +4,7 @@ Persistence layer for the APGI Framework data management system.
 Provides unified interface for data storage using SQLite and HDF5 backends.
 """
 
+from __future__ import annotations
 import hashlib
 import json
 import logging
@@ -13,7 +14,7 @@ import shutil
 import sqlite3
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union, Callable
+from typing import Any, Callable, Dict, Iterator, List, Optional, Union
 
 import h5py
 import numpy as np
@@ -87,7 +88,7 @@ class PersistenceLayer:
                 f"Invalid experiment_id: {experiment_id}. Must contain only alphanumeric characters, underscores, and hyphens"
             )
 
-    def _init_sqlite(self):
+    def _init_sqlite(self) -> None:
         """Initialize SQLite database for metadata storage."""
         self.db_path = self.metadata_path / "experiments.db"
 
@@ -150,7 +151,7 @@ class PersistenceLayer:
 
             conn.commit()
 
-    def _init_hdf5(self):
+    def _init_hdf5(self) -> None:
         """Initialize HDF5 storage structure."""
         self.hdf5_path = self.data_path / "experiments.h5"
 
@@ -161,7 +162,7 @@ class PersistenceLayer:
                 f.attrs["version"] = "1.0.0"
                 f.attrs["description"] = "APGI Framework Experimental Data Storage"
 
-    def _init_postgresql(self):
+    def _init_postgresql(self) -> None:
         """Initialize PostgreSQL database for large-scale data storage."""
         try:
             # Import psycopg2 only when needed (BUG-015)
@@ -202,7 +203,7 @@ class PersistenceLayer:
             logger.warning(f"PostgreSQL unavailable, falling back to SQLite: {e}")
             self._init_sqlite()
 
-    def _create_postgresql_tables(self):
+    def _create_postgresql_tables(self) -> None:
         """Create necessary tables in PostgreSQL database."""
         if not self.postgresql_available or self._psycopg2 is None:
             return
@@ -330,7 +331,7 @@ class PersistenceLayer:
 
             return dataset.metadata.experiment_id
 
-        except Exception as e:
+        except (IOError, OSError, ValueError, KeyError, TypeError) as e:
             raise PersistenceError(f"Failed to store dataset: {str(e)}")
 
     def load_dataset(
@@ -385,7 +386,7 @@ class PersistenceLayer:
 
             return dataset
 
-        except Exception as e:
+        except (IOError, OSError, ValueError, KeyError, TypeError) as e:
             raise PersistenceError(f"Failed to load dataset {experiment_id}: {str(e)}")
 
     def store_data(
@@ -416,7 +417,7 @@ class PersistenceLayer:
                                 f.attrs[key] = json.dumps(value, default=str)
                 else:
                     raise PersistenceError(f"Unsupported data type: {type(data)}")
-        except Exception as e:
+        except (IOError, OSError, ValueError, TypeError) as e:
             raise PersistenceError(f"Failed to store data: {str(e)}")
 
     def _store_dataframe_hdf5(
@@ -453,7 +454,7 @@ class PersistenceLayer:
                 if dataset_name in f:
                     del f[dataset_name]
                 f.create_dataset(dataset_name, data=array)
-        except Exception as e:
+        except (IOError, OSError, ValueError) as e:
             raise PersistenceError(f"Failed to store numpy array: {str(e)}")
 
     def create_version(
@@ -471,7 +472,7 @@ class PersistenceLayer:
             # Attach experiment_id for compatibility with tests
             setattr(data_version, "experiment_id", experiment_id)
             return data_version
-        except Exception as e:
+        except (IOError, OSError, ValueError, TypeError) as e:
             raise PersistenceError(f"Failed to create version: {str(e)}")
 
     def list_versions(self, experiment_id: str) -> List[DataVersion]:
@@ -479,7 +480,7 @@ class PersistenceLayer:
         self._validate_experiment_id(experiment_id)
         try:
             return self._load_versions(experiment_id)
-        except Exception as e:
+        except (IOError, OSError, ValueError) as e:
             raise PersistenceError(f"Failed to list versions: {str(e)}")
 
     def get_version(
@@ -493,7 +494,7 @@ class PersistenceLayer:
                 if version.version_number == version_number:
                     return version
             return None
-        except Exception as e:
+        except (IOError, OSError, ValueError, AttributeError) as e:
             raise PersistenceError(f"Failed to get version: {str(e)}")
 
     def store_backup(self, experiment_id: str, backup_type: str = "full") -> BackupInfo:
@@ -537,7 +538,7 @@ class PersistenceLayer:
                 shutil.copy2(db_backup, self.db_path)
 
             return str(experiment_id)
-        except Exception as e:
+        except (IOError, OSError, ValueError, FileNotFoundError) as e:
             raise PersistenceError(f"Failed to restore backup: {str(e)}")
 
     def save_metadata(
@@ -581,7 +582,7 @@ class PersistenceLayer:
                 metadata_obj = metadata
 
             self._store_metadata(metadata_obj)
-        except Exception as e:
+        except (IOError, OSError, ValueError, TypeError) as e:
             raise PersistenceError(f"Failed to save metadata: {str(e)}")
 
     def get_metadata(self, experiment_id: str) -> Optional[ExperimentMetadata]:
@@ -607,7 +608,7 @@ class PersistenceLayer:
                         return ExperimentMetadata(**data)
                 return None
             return None
-        except Exception as e:
+        except (IOError, OSError, ValueError, KeyError) as e:
             raise PersistenceError(f"Failed to get metadata: {str(e)}")
 
     def update_metadata(self, experiment_id: str, metadata: Dict[str, Any]) -> None:
@@ -644,7 +645,7 @@ class PersistenceLayer:
                 }
             existing.update(metadata)
             self.save_metadata(experiment_id, existing)
-        except Exception as e:
+        except (IOError, OSError, ValueError, TypeError, AttributeError) as e:
             raise PersistenceError(f"Failed to update metadata: {str(e)}")
 
     def delete_experiment(self, experiment_id: str) -> None:
@@ -667,7 +668,7 @@ class PersistenceLayer:
                     "DELETE FROM experiments WHERE experiment_id = ?", (experiment_id,)
                 )
                 conn.commit()
-        except Exception as e:
+        except (IOError, OSError, sqlite3.Error) as e:
             raise PersistenceError(f"Failed to delete experiment: {str(e)}")
 
     def delete_version(self, version_id: str) -> None:
@@ -678,7 +679,7 @@ class PersistenceLayer:
             with sqlite3.connect(self.db_path) as conn:
                 conn.execute("DELETE FROM versions WHERE version_id = ?", (version_id,))
                 conn.commit()
-        except Exception as e:
+        except (IOError, OSError, sqlite3.Error) as e:
             raise PersistenceError(f"Failed to delete version: {str(e)}")
 
     def retrieve_data(
@@ -722,7 +723,7 @@ class PersistenceLayer:
                     )
         except PersistenceError:
             raise
-        except Exception as e:
+        except (IOError, OSError, ValueError, KeyError) as e:
             raise PersistenceError(f"Failed to retrieve data: {str(e)}")
 
     def retrieve_numpy_array(
@@ -739,7 +740,7 @@ class PersistenceLayer:
                 if dataset_name in f:
                     return f[dataset_name][:]  # type: ignore
                 return None
-        except Exception as e:
+        except (IOError, OSError, KeyError) as e:
             raise PersistenceError(f"Failed to retrieve numpy array: {str(e)}")
 
     def export_to_csv(self, experiment_id: str, file_path: str) -> None:
@@ -750,7 +751,7 @@ class PersistenceLayer:
             if dataset.data:
                 df = pd.DataFrame(dataset.data)
                 df.to_csv(file_path, index=False)
-        except Exception as e:
+        except (IOError, OSError, ValueError) as e:
             raise PersistenceError(f"Failed to export to CSV: {str(e)}")
 
     def export_to_json(self, experiment_id: str, file_path: str) -> None:
@@ -760,7 +761,7 @@ class PersistenceLayer:
             dataset = self.load_dataset(experiment_id)
             with open(file_path, "w") as f:
                 json.dump(dataset.data, f, indent=2, default=str)
-        except Exception as e:
+        except (IOError, OSError, ValueError, TypeError) as e:
             raise PersistenceError(f"Failed to export to JSON: {str(e)}")
 
     def import_from_csv(self, file_path: str, experiment_id: str) -> None:
@@ -771,7 +772,13 @@ class PersistenceLayer:
             self.store_data(
                 experiment_id, {str(k): v for k, v in df.to_dict("list").items()}
             )
-        except Exception as e:
+        except (
+            IOError,
+            OSError,
+            ValueError,
+            pd.errors.EmptyDataError,
+            pd.errors.ParserError,
+        ) as e:
             raise PersistenceError(f"Failed to import from CSV: {str(e)}")
 
     def list_backups(self, experiment_id: str) -> List[BackupInfo]:
@@ -779,7 +786,7 @@ class PersistenceLayer:
         self._validate_experiment_id(experiment_id)
         try:
             return self._load_backup_info(experiment_id)
-        except Exception as e:
+        except (IOError, OSError, ValueError) as e:
             raise PersistenceError(f"Failed to list backups: {str(e)}")
 
     def export_data(
@@ -799,7 +806,7 @@ class PersistenceLayer:
                 data.to_json(export_path, orient="records", indent=2)
             else:
                 raise PersistenceError(f"Unsupported export format: {format}")
-        except Exception as e:
+        except (IOError, OSError, ValueError, TypeError) as e:
             raise PersistenceError(f"Failed to export data: {str(e)}")
 
     def import_data(
@@ -817,7 +824,13 @@ class PersistenceLayer:
                 raise PersistenceError(f"Unsupported import format: {format}")
 
             self.store_data(experiment_id, data)
-        except Exception as e:
+        except (
+            IOError,
+            OSError,
+            ValueError,
+            pd.errors.EmptyDataError,
+            pd.errors.ParserError,
+        ) as e:
             raise PersistenceError(f"Failed to import data: {str(e)}")
 
     def get_storage_stats(self) -> Dict[str, Any]:
@@ -837,7 +850,7 @@ class PersistenceLayer:
                 "backend": self.backend,
                 "data_path": str(self.data_path),
             }
-        except Exception as e:
+        except (IOError, OSError) as e:
             raise PersistenceError(f"Failed to get storage stats: {str(e)}")
 
     def get_experiment_size(self, experiment_id: str) -> int:
@@ -848,17 +861,17 @@ class PersistenceLayer:
             if data_file.exists():
                 return data_file.stat().st_size
             return 0
-        except Exception as e:
+        except (IOError, OSError) as e:
             raise PersistenceError(f"Failed to get experiment size: {str(e)}")
 
-    def _store_metadata(self, metadata: ExperimentMetadata):
+    def _store_metadata(self, metadata: ExperimentMetadata) -> None:
         """Store experiment metadata in SQLite or PostgreSQL."""
         if self.backend == "postgresql":
             self._store_metadata_postgresql(metadata)
         else:
             self._store_metadata_sqlite(metadata)
 
-    def _store_metadata_sqlite(self, metadata: ExperimentMetadata):
+    def _store_metadata_sqlite(self, metadata: ExperimentMetadata) -> None:
         """Store experiment metadata in SQLite."""
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
@@ -892,7 +905,7 @@ class PersistenceLayer:
             )
             conn.commit()
 
-    def _store_metadata_postgresql(self, metadata: ExperimentMetadata):
+    def _store_metadata_postgresql(self, metadata: ExperimentMetadata) -> None:
         """Store experiment metadata in PostgreSQL."""
         if not self.postgresql_available or self._psycopg2 is None:
             return
@@ -1045,7 +1058,7 @@ class PersistenceLayer:
                     validation_status=row["validation_status"],
                 )
 
-    def _store_data_hdf5(self, dataset: ExperimentalDataset):
+    def _store_data_hdf5(self, dataset: ExperimentalDataset) -> None:
         """Store dataset in HDF5 format."""
         experiment_id = dataset.metadata.experiment_id
         self._validate_experiment_id(experiment_id)
@@ -1069,7 +1082,7 @@ class PersistenceLayer:
                     type_group = exp_group.create_group(data_type)
                     self._store_dict_hdf5(type_group, data_dict)
 
-    def _store_dict_hdf5(self, group: h5py.Group, data_dict: Dict[str, Any]):
+    def _store_dict_hdf5(self, group: h5py.Group, data_dict: Dict[str, Any]) -> None:
         """Recursively store dictionary data in HDF5."""
         for key, value in data_dict.items():
             if isinstance(value, np.ndarray):
@@ -1164,7 +1177,7 @@ class PersistenceLayer:
 
         return result
 
-    def _store_data_sqlite(self, dataset: ExperimentalDataset):
+    def _store_data_sqlite(self, dataset: ExperimentalDataset) -> None:
         """Store dataset in SQLite format (for smaller datasets)."""
         experiment_id = dataset.metadata.experiment_id
         self._validate_experiment_id(experiment_id)
@@ -1185,7 +1198,7 @@ class PersistenceLayer:
 
         safe_pickle_dump(data_to_store, data_file)
 
-    def _store_data_postgresql(self, dataset: ExperimentalDataset):
+    def _store_data_postgresql(self, dataset: ExperimentalDataset) -> None:
         """Store dataset in PostgreSQL format for large-scale data handling."""
         experiment_id = dataset.metadata.experiment_id
         self._validate_experiment_id(experiment_id)
@@ -1322,7 +1335,7 @@ class PersistenceLayer:
 
                 return result
 
-    def _store_version(self, experiment_id: str, version: DataVersion):
+    def _store_version(self, experiment_id: str, version: DataVersion) -> None:
         """Store version information."""
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
@@ -1506,7 +1519,7 @@ class PersistenceLayer:
 
             return backup_info
 
-        except Exception as e:
+        except (IOError, OSError, sqlite3.Error) as e:
             raise PersistenceError(
                 f"Failed to create backup for {experiment_id}: {str(e)}"
             )
@@ -1547,7 +1560,7 @@ class PersistenceLayer:
 
     def delete_experiment_with_backups(
         self, experiment_id: str, include_backups: bool = False
-    ):
+    ) -> None:
         """Delete experiment and optionally its backups."""
         try:
             # Delete from SQLite
@@ -1591,7 +1604,7 @@ class PersistenceLayer:
             if data_file.exists():
                 data_file.unlink()
 
-        except Exception as e:
+        except (IOError, OSError, sqlite3.Error) as e:
             raise PersistenceError(
                 f"Failed to delete experiment {experiment_id}: {str(e)}"
             )
@@ -1616,7 +1629,7 @@ class PersistenceLayer:
                 with h5py.File(self.hdf5_path, "a") as f:
                     f.flush()
 
-        except Exception as e:
+        except (IOError, OSError, sqlite3.Error) as e:
             raise PersistenceError(f"Failed to flush persistence layer: {str(e)}")
 
     def stream_dataset(
@@ -1624,7 +1637,7 @@ class PersistenceLayer:
         experiment_id: str,
         data_type: str = "processed_data",
         chunk_size: int = 1000,
-    ):
+    ) -> Iterator[Dict[str, Any]]:
         """
         Stream dataset data in chunks to handle large datasets efficiently.
 
@@ -1677,7 +1690,7 @@ class PersistenceLayer:
                         "is_last_chunk": chunk_end >= total_items,
                     }
 
-        except Exception as e:
+        except (IOError, OSError, KeyError, IndexError) as e:
             raise PersistenceError(
                 f"Failed to stream dataset {experiment_id}: {str(e)}"
             )
@@ -1732,7 +1745,7 @@ class PersistenceLayer:
 
             return info
 
-        except Exception as e:
+        except (IOError, OSError, ValueError, KeyError) as e:
             raise PersistenceError(
                 f"Failed to get dataset info for {experiment_id}: {str(e)}"
             )
@@ -1781,13 +1794,13 @@ class PersistenceLayer:
 
         return structure
 
-    def load_dataset_chunked(
+    def load_dataset_memory_aware(
         self,
         experiment_id: str,
         data_type: str = "processed_data",
         chunk_size: int = 1000,
         max_memory_mb: float = 500.0,
-    ):
+    ) -> Iterator[Dict[str, Any]]:
         """
         Load dataset with memory-aware chunking.
 
@@ -1806,7 +1819,7 @@ class PersistenceLayer:
 
         if data_info.get("estimated_size_mb", 0) > max_memory_mb:
             # Use streaming for large datasets
-            return self.stream_dataset(experiment_id, data_type, chunk_size)
+            yield from self.stream_dataset(experiment_id, data_type, chunk_size)
         else:
             # Load normally for smaller datasets
             dataset = self.load_dataset(experiment_id)
@@ -1827,7 +1840,7 @@ class PersistenceLayer:
         processor_func: Callable[[Any], Any],
         data_type: str = "processed_data",
         chunk_size: int = 1000,
-    ):
+    ) -> List[Any]:
         """
         Process large datasets in chunks to avoid memory issues.
 

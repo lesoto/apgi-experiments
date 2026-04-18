@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from tkinter import filedialog, messagebox
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -30,7 +30,25 @@ MainApplicationController: Optional[Any] = None
 APGIEquation: Optional[Any] = None
 PrecisionCalculator: Optional[Any] = None
 PredictionErrorProcessor: Optional[Any] = None
+SomaticMarkerEngine: Optional[Any] = None
+ThresholdManager: Optional[Any] = None
+APGIVisualizer: Optional[Any] = None
+IntegratedDataManager: Optional[Any] = None
+ReportGenerator: Optional[Any] = None
+ClinicalParameterExtractor: Optional[Any] = None
 DisorderClassification: Optional[Any] = None
+PrimaryFalsificationTest: Optional[Any] = None
+ConsciousnessWithoutIgnitionTest: Optional[Any] = None
+ThresholdInsensitivityTest: Optional[Any] = None
+SomaBiasTest: Optional[Any] = None
+BayesianParameterEstimator: Optional[Any] = None
+EffectSizeCalculator: Optional[Any] = None
+P3bSimulator: Optional[Any] = None
+GammaSimulator: Optional[Any] = None
+BOLDSimulator: Optional[Any] = None
+PCICalculator: Optional[Any] = None
+QuestPlusStaircase: Optional[Any] = None
+StimulusGenerator: Optional[Any] = None
 
 try:
     # Add project root to Python path
@@ -59,7 +77,6 @@ try:
     ExperimentalConfig = DataAPGIParameters  # Alias for compatibility
 
     # Data management - check what's available
-    IntegratedDataManager: Optional[Any] = None
     try:
         from apgi_framework.data.data_manager import (
             IntegratedDataManager as _IntegratedDataManager,
@@ -69,7 +86,6 @@ try:
     except ImportError:
         pass
 
-    ReportGenerator: Optional[Any] = None
     try:
         from apgi_framework.data.report_generator import (
             ReportGenerator as _ReportGenerator,
@@ -79,7 +95,6 @@ try:
     except ImportError:
         pass
 
-    APGIVisualizer: Optional[Any] = None
     try:
         from apgi_framework.data.visualizer import APGIVisualizer as _APGIVisualizer
 
@@ -88,48 +103,25 @@ try:
         pass
 
     # Falsification tests - use available classes
-    PrimaryFalsificationTest: Optional[Any] = None
     try:
-        from apgi_framework.falsification.primary_falsification_test import (
+        from apgi_framework.falsification import (
             PrimaryFalsificationTest as _PrimaryFalsificationTest,
+            ConsciousnessAssessment as _ConsciousnessAssessment,
+            ConsciousnessAssessmentSimulator as _ConsciousnessAssessmentSimulator,
         )
 
         PrimaryFalsificationTest = _PrimaryFalsificationTest
+        ConsciousnessAssessment = _ConsciousnessAssessment
+        ConsciousnessAssessmentSimulator = _ConsciousnessAssessmentSimulator
     except ImportError:
         pass
 
-    ConsciousnessWithoutIgnitionTest: Optional[Any] = None
-    try:
-        from apgi_framework.falsification.consciousness_without_ignition_test import (
-            ConsciousnessWithoutIgnitionTest as _ConsciousnessWithoutIgnitionTest,
-        )
-
-        ConsciousnessWithoutIgnitionTest = _ConsciousnessWithoutIgnitionTest
-    except ImportError:
-        pass
-
-    ThresholdInsensitivityTest: Optional[Any] = None
-    try:
-        from apgi_framework.falsification.threshold_insensitivity_test import (
-            ThresholdInsensitivityTest as _ThresholdInsensitivityTest,
-        )
-
-        ThresholdInsensitivityTest = _ThresholdInsensitivityTest
-    except ImportError:
-        pass
-
-    SomaBiasTest: Optional[Any] = None
-    try:
-        from apgi_framework.falsification.soma_bias_test import (
-            SomaBiasTest as _SomaBiasTest,
-        )
-
-        SomaBiasTest = _SomaBiasTest
-    except ImportError:
-        pass
+    # Fallback classes for falsification tests that don't exist as separate modules
+    ConsciousnessWithoutIgnitionTest = None
+    ThresholdInsensitivityTest = None
+    SomaBiasTest = None
 
     # Analysis modules - use available classes
-    BayesianParameterEstimator: Optional[Any] = None
     try:
         from apgi_framework.analysis.bayesian_models import HierarchicalBayesianModel
 
@@ -137,7 +129,6 @@ try:
     except ImportError:
         pass
 
-    EffectSizeCalculator: Optional[Any] = None
     try:
         from apgi_framework.analysis.effect_size_calculator import (
             EffectSizeCalculator as _EffectSizeCalculator,
@@ -157,7 +148,6 @@ try:
     except ImportError:
         pass
 
-    ClinicalParameterExtractor: Optional[Any] = None
     try:
         from apgi_framework.clinical.parameter_extraction import (
             ClinicalParameterExtractor,
@@ -166,7 +156,6 @@ try:
         pass
 
     # Neural simulators
-    P3bSimulator: Optional[Any] = None
     try:
         from apgi_framework.simulators.p3b_simulator import (
             P3bSimulator as _P3bSimulator,
@@ -176,7 +165,6 @@ try:
     except ImportError:
         pass
 
-    GammaSimulator: Optional[Any] = None
     try:
         from apgi_framework.simulators.gamma_simulator import (
             GammaSimulator as _GammaSimulator,
@@ -186,7 +174,6 @@ try:
     except ImportError:
         pass
 
-    BOLDSimulator: Optional[Any] = None
     try:
         from apgi_framework.simulators.bold_simulator import (
             BOLDSimulator as _BOLDSimulator,
@@ -196,7 +183,6 @@ try:
     except ImportError:
         pass
 
-    PCICalculator: Optional[Any] = None
     try:
         from apgi_framework.simulators.pci_calculator import (
             PCICalculator as _PCICalculator,
@@ -207,7 +193,6 @@ try:
         pass
 
     # Adaptive procedures - use available classes
-    QuestPlusStaircase: Optional[Any] = None
     try:
         from apgi_framework.adaptive.quest_plus_staircase import (
             QuestPlusStaircase as _QuestPlusStaircase,
@@ -217,7 +202,6 @@ try:
     except ImportError:
         pass
 
-    StimulusGenerator: Optional[Any] = None
     try:
         from apgi_framework.adaptive.stimulus_generators import (
             StimulusGenerator as _StimulusGenerator,
@@ -534,7 +518,7 @@ class APGIFrameworkGUI(ctk.CTk):
         ctk.set_default_color_theme("blue")
 
         # Initialize error handling and validation
-        self.logger = None
+        self.logger: Union[Any, logging.Logger] = logging.getLogger(__name__)
         self.error_handler = None
         self.config_validator = ConfigurationValidator()
 
@@ -569,7 +553,7 @@ class APGIFrameworkGUI(ctk.CTk):
         # Current results and system status
         self.current_results: Dict[str, Any] = {}
         self.system_status: Dict[str, Any] = {}
-        self.current_session_data = None
+        self.current_session_data: Optional[Dict[str, Any]] = None
 
         # Initialize variables
         self.data_folder = "data"
@@ -645,8 +629,9 @@ class APGIFrameworkGUI(ctk.CTk):
 
         if initialization_success:
             try:
-                self.main_controller = MainApplicationController()
-                self.log_to_console("✓ MainApplicationController initialized")
+                if MainApplicationController is not None:
+                    self.main_controller = MainApplicationController()  # type: ignore[misc]
+                    self.log_to_console("✓ MainApplicationController initialized")
             except Exception as e:
                 self.error_handler.handle_error(
                     e, "MainApplicationController Initialization", ErrorSeverity.HIGH
@@ -655,8 +640,9 @@ class APGIFrameworkGUI(ctk.CTk):
 
         if initialization_success:
             try:
-                self.cli_handler = APGIFrameworkCLI()
-                self.log_to_console("✓ APGIFrameworkCLI initialized")
+                if APGIFrameworkCLI is not None:
+                    self.cli_handler = APGIFrameworkCLI()  # type: ignore[misc]
+                    self.log_to_console("✓ APGIFrameworkCLI initialized")
             except Exception as e:
                 self.error_handler.handle_error(
                     e, "APGIFrameworkCLI Initialization", ErrorSeverity.MEDIUM
@@ -825,7 +811,7 @@ class APGIFrameworkGUI(ctk.CTk):
 
             self.logger = get_logger(
                 "apgi_framework_gui_template", log_file="apgi_framework_gui.log"
-            )
+            )  # type: ignore[assignment]
         except ImportError:
             # Fallback to basic logging
             logging.basicConfig(
@@ -837,7 +823,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 ],
             )
 
-            self.logger = logging.getLogger(__name__)
+            self.logger = logging.getLogger(__name__)  # type: ignore[assignment]
 
     def _update_system_status(self) -> None:
         """Update system status information."""
@@ -1770,7 +1756,7 @@ class APGIFrameworkGUI(ctk.CTk):
             messagebox.showerror("Error", f"Failed to run soma-bias test: {e}")
             self.update_status("Ready")
 
-    def run_batch_tests(self):
+    def run_batch_tests(self) -> None:
         """Run batch falsification tests using APGI framework."""
         self.log_to_console("Running Batch Falsification Tests...")
         self.update_status("Running Batch Tests...")
@@ -1801,7 +1787,7 @@ class APGIFrameworkGUI(ctk.CTk):
             ]
 
             # Run tests in sequence
-            def run_batch():
+            def run_batch() -> None:
                 batch_results = {}
 
                 for test_name, test_instance in tests:
@@ -1864,7 +1850,7 @@ class APGIFrameworkGUI(ctk.CTk):
 
         try:
             # Import the research experiment
-            from research.ai_benchmarking.experiments.experiment import (
+            from research.ai_benchmarking.experiments.experiment import (  # type: ignore[import-not-found]
                 run_ai_benchmarking_experiment,
             )
         except ImportError as e:
@@ -1927,7 +1913,7 @@ class APGIFrameworkGUI(ctk.CTk):
 
         try:
             # Import the research experiment
-            from research.interoceptive_gating.experiments.interoceptive_gating.experiment import (
+            from research.interoceptive_gating.experiments.interoceptive_gating.experiment import (  # type: ignore[import-not-found]
                 run_interoceptive_gating_experiment,
             )
         except ImportError as e:
@@ -2300,7 +2286,7 @@ class APGIFrameworkGUI(ctk.CTk):
                     metrics = self.current_results.get("metrics", {})
 
                     # Create effect size calculator
-                    effect_calculator = EffectSizeCalculator()
+                    effect_calculator = EffectSizeCalculator()  # type: ignore[misc]
 
                     # Calculate effect sizes
                     effect_sizes = effect_calculator.calculate_effect_sizes(
@@ -2908,9 +2894,11 @@ class APGIFrameworkGUI(ctk.CTk):
                                 "normal_neural_activity",
                                 "adequate_precision_weighting",
                             ],
-                            "clinical_recommendations": patient_profile.get(
+                            "clinical_recommendations": patient_profile.get(  # type: ignore[attr-defined]
                                 "treatment_response", {}
-                            ).get("optimal_interventions", []),
+                            ).get(
+                                "optimal_interventions", []
+                            ),
                             "follow_up_needed": False,
                         },
                     }
@@ -4964,10 +4952,11 @@ class APGIFrameworkGUI(ctk.CTk):
             # Save APGI parameters with error handling
             for param, entry in self.apgi_params.items():
                 try:
-                    config["apgi_parameters"][param] = float(entry.get())
+                    config["apgi_parameters"][param] = float(entry.get())  # type: ignore[index]
                 except (ValueError, AttributeError) as e:
-                    config["apgi_parameters"][param] = None
-                    self.logger.warning(f"Could not save parameter {param}: {e}")
+                    config["apgi_parameters"][param] = None  # type: ignore[index]
+                    if self.logger:
+                        self.logger.warning(f"Could not save parameter {param}: {e}")  # type: ignore[union-attr]
 
             # Save experimental setup parameters
             for param, entry in self.exp_setup_params.items():
@@ -4975,12 +4964,13 @@ class APGIFrameworkGUI(ctk.CTk):
                     value = entry.get()
                     # Try to convert to float if possible
                     try:
-                        config["experimental_setup"][param] = float(value)
+                        config["experimental_setup"][param] = float(value)  # type: ignore[index]
                     except ValueError:
-                        config["experimental_setup"][param] = value
+                        config["experimental_setup"][param] = value  # type: ignore[index]
                 except AttributeError as e:
-                    config["experimental_setup"][param] = None
-                    self.logger.warning(f"Could not save parameter {param}: {e}")
+                    config["experimental_setup"][param] = None  # type: ignore[index]
+                    if self.logger:
+                        self.logger.warning(f"Could not save parameter {param}: {e}")  # type: ignore[union-attr]
 
             # Save to file with proper error handling
             try:
@@ -5070,7 +5060,7 @@ class APGIFrameworkGUI(ctk.CTk):
                         self.current_session_data = json.load(f)
                     self.log_to_console(f"Test data loaded from {data_file}")
                     self.log_to_console(
-                        f"Data contains {len(self.current_session_data)} entries"
+                        f"Data contains {len(self.current_session_data) if self.current_session_data else 0} entries"
                     )
                     data_loaded = True
                     break
@@ -5083,7 +5073,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 # Try to load from example results
                 try:
                     # Run a quick example to generate data
-                    from examples.run_primary_falsification_test import (
+                    from examples.run_primary_falsification_test import (  # type: ignore[import-not-found]
                         run_primary_falsification_test_basic,
                     )
 
@@ -5102,7 +5092,7 @@ class APGIFrameworkGUI(ctk.CTk):
                                     else str(result)
                                 ),
                                 "source": "example_test",
-                            }
+                            }  # type: ignore[assignment]
                             self.after(0, self._on_data_loaded)
                         except Exception:
                             self.after(
@@ -5131,7 +5121,7 @@ class APGIFrameworkGUI(ctk.CTk):
                         "pci_value": np.random.uniform(0.3, 0.7),
                     },
                     "source": "sample_data",
-                }
+                }  # type: ignore[assignment]
                 self.log_to_console("Sample test data generated")
 
             self._on_data_loaded()
@@ -5145,7 +5135,7 @@ class APGIFrameworkGUI(ctk.CTk):
         self.log_to_console("Test data loaded successfully")
         if hasattr(self, "current_session_data"):
             # Display summary of loaded data
-            if "neural_signatures" in self.current_session_data:
+            if self.current_session_data and "neural_signatures" in self.current_session_data:  # type: ignore[operator]
                 signatures = self.current_session_data["neural_signatures"]
                 self.log_to_console("Neural signatures:")
                 for key, value in signatures.items():
@@ -5167,7 +5157,7 @@ class APGIFrameworkGUI(ctk.CTk):
 
         try:
             # Import actual analysis module
-            from core.analysis.surprise_dynamics import SurpriseDynamicsAnalyzer
+            from core.analysis.surprise_dynamics import SurpriseDynamicsAnalyzer  # type: ignore[attr-defined, import-not-found]
 
             # Check if we have current results to analyze
             if not self.current_results:

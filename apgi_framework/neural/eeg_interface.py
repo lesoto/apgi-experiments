@@ -51,7 +51,7 @@ class EEGConfig:
     artifact_threshold: float = 100.0  # microvolts
     enable_realtime_filtering: bool = True
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate configuration parameters."""
         if self.sampling_rate <= 0:
             raise ValueError("Sampling rate must be positive")
@@ -215,7 +215,7 @@ class EEGInterface:
         self.artifacts_detected = 0
         self.start_time: Optional[float] = None
 
-    def add_channels(self, channels: List[ChannelInfo]):
+    def add_channels(self, channels: List[ChannelInfo]) -> None:
         """
         Add channels to the montage.
 
@@ -229,7 +229,7 @@ class EEGInterface:
 
     def set_reference(
         self, reference_type: str, reference_channels: Optional[List[str]] = None
-    ):
+    ) -> None:
         """
         Configure reference scheme.
 
@@ -268,7 +268,7 @@ class EEGInterface:
             # (would need specific channel indices for mastoid, Cz, etc.)
             return data
 
-    def start_streaming(self, data_source: Optional[Callable] = None):
+    def start_streaming(self, data_source: Optional[Callable] = None) -> None:
         """
         Start real-time data streaming.
 
@@ -282,7 +282,7 @@ class EEGInterface:
         self.is_streaming = True
         self.start_time = time.time()
 
-        def stream_loop():
+        def stream_loop() -> None:
             """Internal streaming loop."""
             while self.is_streaming:
                 # Get data from source or simulate
@@ -318,13 +318,13 @@ class EEGInterface:
         self.stream_thread = threading.Thread(target=stream_loop, daemon=True)
         self.stream_thread.start()
 
-    def stop_streaming(self):
+    def stop_streaming(self) -> None:
         """Stop data streaming."""
         self.is_streaming = False
         if self.stream_thread:
             self.stream_thread.join(timeout=2.0)
 
-    def register_callback(self, callback: Callable):
+    def register_callback(self, callback: Callable) -> None:
         """
         Register callback for real-time data processing.
 
@@ -410,12 +410,12 @@ class EEGInterface:
             "duration_seconds": time.time() - self.start_time if self.start_time else 0,
         }
 
-    def clear_buffer(self):
+    def clear_buffer(self) -> None:
         """Clear data buffers."""
         self.buffer.clear()
         self.timestamp_buffer.clear()
 
-    def export_data(self, filename: str, format: str = "numpy"):
+    def export_data(self, filename: str, format: str = "numpy") -> None:
         """
         Export buffered data to file.
 

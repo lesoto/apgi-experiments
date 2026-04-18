@@ -431,7 +431,7 @@ class RecoveryAnalyzer:
         ground_truth_list: List[GroundTruthParameters],
         recovered_list: List[ParameterEstimates],
         save_path: Optional[str] = None,
-    ):
+    ) -> None:
         """
         Create recovery plots for all parameters.
 
@@ -496,8 +496,6 @@ class RecoveryAnalyzer:
 
         if save_path:
             plt.savefig(save_path, dpi=300, bbox_inches="tight")
-
-        return fig
 
 
 class ParameterRecoveryValidator:

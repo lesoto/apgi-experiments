@@ -16,20 +16,20 @@ from scipy.stats import zscore
 
 # Try to import numba for optimization
 try:
-    from numba import jit, prange
+    from numba import jit, prange  # type: ignore[import-untyped]
 
     NUMBA_AVAILABLE = True
 except ImportError:
     NUMBA_AVAILABLE = False
 
     # Fallback decorators that do nothing
-    def jit(*args, **kwargs):
-        def decorator(func):
+    def jit(*args: Any, **kwargs: Any) -> Any:
+        def decorator(func: Any) -> Any:
             return func
 
         return decorator
 
-    def prange(x):
+    def prange(x: int) -> range:
         return range(x)
 
 
@@ -43,7 +43,7 @@ class RPeakAlgorithm(Enum):
 
 
 @jit(nopython=True, cache=True)
-def _optimized_derivative(signal_data):
+def _optimized_derivative(signal_data: np.ndarray) -> np.ndarray:
     """Optimized derivative calculation using numba."""
     n = len(signal_data)
     derivative = np.zeros(n)
@@ -53,7 +53,7 @@ def _optimized_derivative(signal_data):
 
 
 @jit(nopython=True, cache=True)
-def _optimized_moving_average(signal_data, window_size):
+def _optimized_moving_average(signal_data: np.ndarray, window_size: int) -> np.ndarray:
     """Optimized moving average using cumulative sum."""
     n = len(signal_data)
     result = np.zeros(n)
@@ -70,7 +70,9 @@ def _optimized_moving_average(signal_data, window_size):
 
 
 @jit(nopython=True, cache=True)
-def _find_peaks_vectorized(signal_data, threshold, min_distance):
+def _find_peaks_vectorized(
+    signal_data: np.ndarray, threshold: float, min_distance: int
+) -> np.ndarray:
     """Vectorized peak finding using numba."""
     n = len(signal_data)
     peaks = []
@@ -91,7 +93,9 @@ def _find_peaks_vectorized(signal_data, threshold, min_distance):
 
 
 @jit(nopython=True, cache=True)
-def _filter_peaks_physiological(peak_times, min_interval):
+def _filter_peaks_physiological(
+    peak_times: np.ndarray, min_interval: float
+) -> np.ndarray:
     """Filter peaks based on physiological constraints."""
     if len(peak_times) <= 1:
         return peak_times

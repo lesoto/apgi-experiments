@@ -72,7 +72,7 @@ class PupillometryConfig:
     enable_luminance_correction: bool = True
     luminance_response_time: float = 0.3  # seconds (pupil light reflex latency)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate configuration parameters."""
         if self.sampling_rate <= 0:
             raise ValueError("Sampling rate must be positive")
@@ -263,7 +263,7 @@ class ArtifactInterpolator:
 
         if len(valid_indices) < 2:
             # Not enough valid points for interpolation
-            return result
+            return np.asarray(result)
 
         # Interpolate invalid points
         invalid_indices = np.where(mask)[0]
@@ -290,7 +290,7 @@ class ArtifactInterpolator:
                 # Use first valid value
                 result[idx] = data[right_valid[0]]
 
-        return result
+        return np.asarray(result)
 
     def interpolate_cubic(self, data: np.ndarray, mask: np.ndarray) -> np.ndarray:
         """
@@ -319,7 +319,7 @@ class ArtifactInterpolator:
         invalid_indices = np.where(mask)[0]
         result[invalid_indices] = cs(invalid_indices)
 
-        return result
+        return np.asarray(result)
 
     def interpolate(
         self, data: np.ndarray, mask: np.ndarray, method: str = "linear"
@@ -571,7 +571,7 @@ class PupillometryInterface:
         self.artifacts_detected = 0
         self.start_time: Optional[float] = None
 
-    def start_streaming(self, data_source: Optional[Callable] = None):
+    def start_streaming(self, data_source: Optional[Callable] = None) -> None:
         """
         Start real-time pupillometry data streaming.
 
@@ -585,7 +585,7 @@ class PupillometryInterface:
         self.is_streaming = True
         self.start_time = time.time()
 
-        def stream_loop():
+        def stream_loop() -> None:
             """Internal streaming loop."""
             while self.is_streaming:
                 # Get data from source or simulate
@@ -616,13 +616,13 @@ class PupillometryInterface:
         self.stream_thread = threading.Thread(target=stream_loop, daemon=True)
         self.stream_thread.start()
 
-    def stop_streaming(self):
+    def stop_streaming(self) -> None:
         """Stop data streaming."""
         self.is_streaming = False
         if self.stream_thread:
             self.stream_thread.join(timeout=2.0)
 
-    def register_callback(self, callback: Callable):
+    def register_callback(self, callback: Callable) -> None:
         """
         Register callback for real-time data processing.
 
@@ -799,11 +799,11 @@ class PupillometryInterface:
             "duration_seconds": time.time() - self.start_time if self.start_time else 0,
         }
 
-    def clear_buffer(self):
+    def clear_buffer(self) -> None:
         """Clear sample buffer."""
         self.sample_buffer.clear()
 
-    def export_data(self, filename: str, format: str = "numpy"):
+    def export_data(self, filename: str, format: str = "numpy") -> None:
         """
         Export pupillometry data to file.
 

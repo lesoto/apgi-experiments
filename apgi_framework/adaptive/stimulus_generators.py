@@ -735,7 +735,7 @@ class HeartbeatSynchronizer:
 
         logger.info(f"Initialized HeartbeatSynchronizer {synchronizer_id}")
 
-    def initialize(self, ecg_interface=None) -> bool:
+    def initialize(self, ecg_interface: Optional[Any] = None) -> bool:
         """Initialize cardiac monitoring."""
         try:
             self.ecg_interface = (

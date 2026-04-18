@@ -54,7 +54,7 @@ class ConsciousnessPattern:
     threshold_met: bool = False
     matched_patterns: List[Any] = None  # type: ignore
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.matched_patterns is None:
             self.matched_patterns = []
 
@@ -85,7 +85,7 @@ class ConsciousnessClassifier:
     - Phase transition characteristics
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize consciousness classifier."""
         self.logger = logging.getLogger(__name__)
 

@@ -104,7 +104,7 @@ class DeploymentManager:
             f"DeploymentManager initialized for {self.config.environment} environment"
         )
 
-    def _create_directories(self):
+    def _create_directories(self) -> None:
         """Create necessary directories."""
         for directory in [self.deploy_dir, self.backup_dir, self.log_dir]:
             directory.mkdir(parents=True, exist_ok=True)
@@ -189,7 +189,7 @@ class DeploymentManager:
                 "timestamp": datetime.now().isoformat(),
             }
 
-    def _create_backup(self):
+    def _create_backup(self) -> None:
         """Create backup of current deployment."""
         try:
             backup_name = f"backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
@@ -205,7 +205,7 @@ class DeploymentManager:
             self.logger.warning(f"Failed to create backup: {e}")
             self.backup_created = False
 
-    def _setup_environment(self):
+    def _setup_environment(self) -> None:
         """Setup deployment environment."""
         try:
             # Create virtual environment if it doesn't exist
@@ -233,7 +233,7 @@ class DeploymentManager:
         except Exception as e:
             raise DeploymentError(f"Environment setup failed: {e}")
 
-    def _install_dependencies(self):
+    def _install_dependencies(self) -> None:
         """Install application dependencies."""
         try:
             # Install requirements
@@ -269,7 +269,7 @@ class DeploymentManager:
         except Exception as e:
             raise DeploymentError(f"Dependency installation failed: {e}")
 
-    def _configure_services(self):
+    def _configure_services(self) -> None:
         """Configure deployment services."""
         try:
             # Create service configuration files
@@ -282,7 +282,7 @@ class DeploymentManager:
         except Exception as e:
             raise DeploymentError(f"Service configuration failed: {e}")
 
-    def _create_systemd_service(self):
+    def _create_systemd_service(self) -> None:
         """Create systemd service file for APGI dashboard."""
         if sys.platform != "linux":
             return  # Only create systemd services on Linux
@@ -310,7 +310,7 @@ WantedBy=multi-user.target
 
         self.logger.info("Systemd service file created")
 
-    def _create_nginx_config(self):
+    def _create_nginx_config(self) -> None:
         """Create nginx configuration for reverse proxy."""
         if not self.config.enable_ssl:
             return
@@ -355,7 +355,7 @@ server {{
 
         self.logger.info("Nginx configuration created")
 
-    def _create_environment_file(self):
+    def _create_environment_file(self) -> None:
         """Create environment file for configuration."""
         env_content = f"""# APGI Framework Environment Configuration
 APGI_ENVIRONMENT={self.config.environment}
@@ -374,7 +374,7 @@ APGI_ENABLE_MONITORING={self.config.enable_monitoring}
 
         self.logger.info("Environment file created")
 
-    def _deploy_application(self, source_path: Optional[str] = None):
+    def _deploy_application(self, source_path: Optional[str] = None) -> None:
         """Deploy application files."""
         try:
             source = Path(source_path) if source_path else Path.cwd()
@@ -400,7 +400,7 @@ APGI_ENABLE_MONITORING={self.config.enable_monitoring}
         except Exception as e:
             raise DeploymentError(f"Application deployment failed: {e}")
 
-    def _start_services(self):
+    def _start_services(self) -> None:
         """Start deployed services."""
         try:
             # Start dashboard service
@@ -416,7 +416,7 @@ APGI_ENABLE_MONITORING={self.config.enable_monitoring}
         except Exception as e:
             raise DeploymentError(f"Service startup failed: {e}")
 
-    def _start_dashboard_service(self):
+    def _start_dashboard_service(self) -> None:
         """Start dashboard service."""
         try:
             # Start dashboard in background
@@ -452,7 +452,7 @@ dashboard.start_dashboard()
         except Exception as e:
             raise DeploymentError(f"Dashboard service startup failed: {e}")
 
-    def _start_api_service(self):
+    def _start_api_service(self) -> None:
         """Start API service."""
         # Placeholder for API service startup
         self.logger.info("API service startup not implemented yet")
@@ -518,7 +518,7 @@ dashboard.start_dashboard()
 
         return status
 
-    def _cleanup_deployment(self):
+    def _cleanup_deployment(self) -> None:
         """Clean up after deployment."""
         try:
             # Clean up temporary files
@@ -623,7 +623,7 @@ dashboard.start_dashboard()
 
         return sorted(backups, key=lambda x: x["created"], reverse=True)
 
-    def cleanup_old_backups(self, keep_count: int = 5):
+    def cleanup_old_backups(self, keep_count: int = 5) -> None:
         """Clean up old backups, keeping only the most recent ones."""
         try:
             backups = self.list_backups()
@@ -657,7 +657,7 @@ def create_deployment_manager(
 
 
 # CLI interface for deployment
-def main():
+def main() -> None:
     """Command-line interface for deployment."""
     import argparse
 

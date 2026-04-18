@@ -23,82 +23,92 @@ logger = get_logger(__name__)
 # Try to import tkinter for GUI components
 try:
     import tkinter as tk
-    from tkinter import ttk
+    from tkinter import ttk, messagebox
 
     HAS_TKINTER = True
 except ImportError:
     HAS_TKINTER = False
+    messagebox = None  # type: ignore
 
     # Create dummy classes for headless environments
     class DummyTk:
         @staticmethod
-        def StringVar():
+        def StringVar() -> None:
             return None
 
+        class messagebox:
+            @staticmethod
+            def showinfo(title: str, message: str) -> None:
+                pass
+
+            @staticmethod
+            def showerror(title: str, message: str) -> None:
+                pass
+
         class Listbox:
-            def __init__(self, *args, **kwargs):
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
                 pass
 
-            def insert(self, *args):
+            def insert(self, *args: Any) -> None:
                 pass
 
-            def delete(self, *args):
+            def delete(self, *args: Any) -> None:
                 pass
 
-            def pack(self, *args, **kwargs):
+            def pack(self, *args: Any, **kwargs: Any) -> None:
                 pass
 
-            def itemconfig(self, *args):
+            def itemconfig(self, *args: Any) -> None:
                 pass
 
             size = 0
 
         class Toplevel:
-            def __init__(self, *args, **kwargs):
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
                 pass
 
-            def title(self, *args):
+            def title(self, *args: Any) -> None:
                 pass
 
-            def geometry(self, *args):
+            def geometry(self, *args: Any) -> None:
                 pass
 
         class Text:
-            def __init__(self, *args, **kwargs):
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
                 pass
 
-            def insert(self, *args):
+            def insert(self, *args: Any) -> None:
                 pass
 
-            def configure(self, *args):
+            def configure(self, *args: Any) -> None:
                 pass
 
-            def pack(self, *args, **kwargs):
+            def pack(self, *args: Any, **kwargs: Any) -> None:
                 pass
 
     class DummyTtk:
         @staticmethod
-        def LabelFrame(*args, **kwargs):
+        def LabelFrame(*args: Any, **kwargs: Any) -> None:
             return None
 
         @staticmethod
-        def Frame(*args, **kwargs):
+        def Frame(*args: Any, **kwargs: Any) -> None:
             return None
 
         @staticmethod
-        def Label(*args, **kwargs):
+        def Label(*args: Any, **kwargs: Any) -> None:
             return None
 
         @staticmethod
-        def Progressbar(*args, **kwargs):
+        def Progressbar(*args: Any, **kwargs: Any) -> None:
             return None
 
         @staticmethod
-        def Scrollbar(*args, **kwargs):
+        def Scrollbar(*args: Any, **kwargs: Any) -> None:
             return None
 
         @staticmethod
-        def Button(*args, **kwargs):
+        def Button(*args: Any, **kwargs: Any) -> None:
             return None
 
     tk = DummyTk  # type: ignore
@@ -152,7 +162,7 @@ class SystemMonitor:
         self.update_interval = update_interval
         self.history_size = history_size
         self.monitoring = False
-        self.monitor_thread = None
+        self.monitor_thread: Optional[threading.Thread] = None
 
         # Metrics history
         self.metrics_history: deque = deque(maxlen=history_size)
@@ -177,7 +187,7 @@ class SystemMonitor:
 
         self._lock = threading.Lock()
 
-    def start_monitoring(self):
+    def start_monitoring(self) -> None:
         """Start system monitoring."""
         if self.monitoring:
             return
@@ -187,14 +197,14 @@ class SystemMonitor:
         self.monitor_thread.start()
         logger.info("System monitoring started")
 
-    def stop_monitoring(self):
+    def stop_monitoring(self) -> None:
         """Stop system monitoring."""
         self.monitoring = False
         if self.monitor_thread:
             self.monitor_thread.join(timeout=2.0)
         logger.info("System monitoring stopped")
 
-    def add_alert_callback(self, callback: Callable[[PerformanceAlert], None]):
+    def add_alert_callback(self, callback: Callable[[PerformanceAlert], None]) -> None:
         """Add callback for performance alerts."""
         self.alert_callbacks.append(callback)
 
@@ -214,7 +224,7 @@ class SystemMonitor:
             cutoff_time = time.time() - (duration_minutes * 60)
             return [m for m in self.metrics_history if m.timestamp >= cutoff_time]
 
-    def _monitor_loop(self):
+    def _monitor_loop(self) -> None:
         """Main monitoring loop."""
         while self.monitoring:
             try:
@@ -294,7 +304,7 @@ class SystemMonitor:
             network_recv_mb=network_recv_mb,
         )
 
-    def _check_alerts(self, metrics: SystemMetrics):
+    def _check_alerts(self, metrics: SystemMetrics) -> None:
         """Check for performance alerts."""
         alerts = []
 
@@ -383,7 +393,7 @@ class SystemMonitor:
 class PerformanceMonitorGUI:
     """GUI component for real-time performance monitoring."""
 
-    def __init__(self, parent, monitor: Optional[SystemMonitor] = None):
+    def __init__(self, parent: Any, monitor: Optional[SystemMonitor] = None) -> None:
         self.parent = parent
         self.monitor = monitor or SystemMonitor()
         self.update_queue: queue.Queue = queue.Queue()
@@ -399,7 +409,7 @@ class PerformanceMonitorGUI:
         # Start GUI update loop
         self._schedule_update()
 
-    def _create_widgets(self):
+    def _create_widgets(self) -> None:
         """Create GUI widgets."""
         # Current metrics display
         metrics_frame = ttk.LabelFrame(self.frame, text="Current Metrics", padding=5)
@@ -467,12 +477,12 @@ class PerformanceMonitorGUI:
             side=tk.RIGHT
         )
 
-    def _schedule_update(self):
+    def _schedule_update(self) -> None:
         """Schedule GUI update."""
         self._update_display()
         self.parent.after(1000, self._schedule_update)  # Update every second
 
-    def _update_display(self):
+    def _update_display(self) -> None:
         """Update the display with current metrics."""
         metrics = self.monitor.get_current_metrics()
         if not metrics:
@@ -514,11 +524,11 @@ class PerformanceMonitorGUI:
         except queue.Empty:
             pass
 
-    def _on_alert(self, alert: PerformanceAlert):
+    def _on_alert(self, alert: PerformanceAlert) -> None:
         """Handle performance alert."""
         self.update_queue.put(alert)
 
-    def _add_alert_to_display(self, alert: PerformanceAlert):
+    def _add_alert_to_display(self, alert: PerformanceAlert) -> None:
         """Add alert to display."""
         timestamp_str = time.strftime("%H:%M:%S", time.localtime(alert.timestamp))
         alert_text = f"[{timestamp_str}] {alert.severity.upper()}: {alert.message}"
@@ -535,11 +545,11 @@ class PerformanceMonitorGUI:
         elif alert.severity == "warning":
             self.alert_listbox.itemconfig(0, {"fg": "orange"})
 
-    def _clear_alerts(self):
+    def _clear_alerts(self) -> None:
         """Clear all alerts from display."""
         self.alert_listbox.delete(0, tk.END)
 
-    def _show_details(self):
+    def _show_details(self) -> None:
         """Show detailed performance information."""
         details_window = tk.Toplevel(self.parent)
         details_window.title("Performance Details")
@@ -600,7 +610,7 @@ Profiler Statistics:
 
         text_widget.configure(state=tk.DISABLED)
 
-    def _export_data(self):
+    def _export_data(self) -> None:
         """Export performance data."""
         import json
         from tkinter import filedialog
@@ -626,26 +636,26 @@ Profiler Statistics:
                 with open(filename, "w") as f:
                     json.dump(export_data, f, indent=2)
 
-                tk.messagebox.showinfo(
+                messagebox.showinfo(
                     "Success", f"Performance data exported to {filename}"
                 )
 
             except Exception as e:
-                tk.messagebox.showerror("Error", f"Failed to export data: {str(e)}")
+                messagebox.showerror("Error", f"Failed to export data: {str(e)}")
 
-    def get_widget(self):
+    def get_widget(self) -> Any:
         """Get the main widget frame."""
         return self.frame
 
-    def pack(self, **kwargs):
+    def pack(self, **kwargs: Any) -> None:
         """Pack the widget."""
         self.frame.pack(**kwargs)
 
-    def grid(self, **kwargs):
+    def grid(self, **kwargs: Any) -> None:
         """Grid the widget."""
         self.frame.grid(**kwargs)
 
-    def destroy(self):
+    def destroy(self) -> None:
         """Clean up resources."""
         self.monitor.stop_monitoring()
 
@@ -663,7 +673,7 @@ def get_system_monitor() -> SystemMonitor:
 
 
 def create_performance_monitor_gui(
-    parent, monitor: Optional[SystemMonitor] = None
+    parent: Any, monitor: Optional[SystemMonitor] = None
 ) -> PerformanceMonitorGUI:
     """Create a performance monitor GUI component."""
     if not HAS_TKINTER:

@@ -186,7 +186,7 @@ class DataProcessor:
                     )
                     cleaned_data = cleaned_data[z_scores < 3]
 
-        return cleaned_data.reset_index(drop=True)
+        return cleaned_data.reset_index(drop=True)  # type: ignore[no-any-return]
 
     def normalize_data(
         self,
@@ -240,7 +240,7 @@ class DataProcessor:
                 if mad_val > 0:
                     normalized_data[col] = (normalized_data[col] - median_val) / mad_val
 
-        return normalized_data
+        return normalized_data  # type: ignore[no-any-return]
 
     def extract_features(
         self, data: pd.DataFrame, window_size: int = 100, overlap: float = 0.5

@@ -10,6 +10,10 @@ This is useful for:
 - Sensitivity analysis
 - Identifying boundary conditions
 - Generating comprehensive test reports
+
+NOTE: These experiments use mock/simulated data for demonstration purposes.
+Random seeds are varied per configuration to avoid identical results.
+For actual scientific experiments, real empirical data would be required.
 """
 
 import json
@@ -51,7 +55,7 @@ def batch_process_threshold_variations():
     results = []
 
     try:
-        for threshold in threshold_values:
+        for idx, threshold in enumerate(threshold_values):
             logger.info(f"\nTesting threshold = {threshold}")
             logger.info("-" * 40)
 
@@ -69,10 +73,11 @@ def batch_process_threshold_variations():
             )
 
             # Update output directory for this run
+            # Use unique random seed per threshold to avoid identical results
             controller.config_manager.update_experimental_config(
                 output_directory=(f"results/batch_threshold/threshold_{threshold}"),
                 n_trials=500,  # Fewer trials for batch processing
-                random_seed=42,
+                random_seed=42 + idx,  # Vary seed per threshold
             )
 
             # Run primary falsification test
@@ -393,11 +398,17 @@ def save_batch_results(results, batch_name):
 
 def run_probabilistic_category_learning_experiment(**kwargs):
     """Wrapper for probabilistic_category_learning experiment."""
+    n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 50))
+    if n_trials < 100:
+        return run_quick_batch_test(n_trials)
     return batch_process_threshold_variations()
 
 
 def run_posner_cueing_experiment(**kwargs):
     """Wrapper for posner_cueing experiment."""
+    n_trials = kwargs.get("n_trials_per_condition", kwargs.get("n_trials", 50))
+    if n_trials < 100:
+        return run_quick_batch_test(n_trials)
     return batch_process_threshold_variations()
 
 

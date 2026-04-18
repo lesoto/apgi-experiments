@@ -71,7 +71,12 @@ def test_pupillometry_interface() -> None:
     print(f"  - Raw diameters: {len(processed['raw_diameters'])} samples")
     print(f"  - Blinks detected: {np.sum(processed['blinks'])}")
     print(f"  - Artifacts detected: {np.sum(processed['artifacts'])}")
-    print(f"  - Baseline: {processed['baseline']:.3f} mm")
+    baseline_value = (
+        np.mean(processed["baseline"])
+        if isinstance(processed["baseline"], np.ndarray)
+        else processed["baseline"]
+    )
+    print(f"  - Baseline: {baseline_value:.3f} mm")
 
     # Get quality metrics
     quality = pupil_interface.get_quality_metrics()
@@ -166,8 +171,12 @@ def test_physiological_monitoring() -> None:
     if "heart_rate" in metrics:
         print(f"  - Heart rate: {metrics['heart_rate']:.1f} bpm")
         if "hrv" in metrics:
-            print(f"  - HRV SDNN: {metrics['hrv']['sdnn']:.2f} ms")
-            print(f"  - HRV RMSSD: {metrics['hrv']['rmssd']:.2f} ms")
+            hrv = metrics["hrv"]
+            if isinstance(hrv, dict):
+                print(f"  - HRV SDNN: {hrv.get('sdnn', 0):.2f} ms")
+                print(f"  - HRV RMSSD: {hrv.get('rmssd', 0):.2f} ms")
+            else:
+                print(f"  - HRV: {hrv:.2f} ms")
 
     if "scr_level" in metrics:
         print(f"  - SCR level: {metrics['scr_level']:.3f} μS")

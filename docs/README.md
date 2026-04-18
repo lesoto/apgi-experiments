@@ -28,7 +28,6 @@ The APGI Framework is a comprehensive research platform for consciousness studie
 - Neural dynamics analysis
 - Active inference modeling
 
-
 ### CLI Usage
 
 ```bash

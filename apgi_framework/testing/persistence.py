@@ -15,7 +15,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 from ..config import ConfigManager
 from ..logging.standardized_logging import get_logger
@@ -83,7 +83,7 @@ class TestResultPersistence:
         self._initialize_database()
 
     @contextmanager
-    def get_connection(self):
+    def get_connection(self) -> Iterator[sqlite3.Connection]:
         """Get database connection with proper error handling."""
         conn = None
         try:
@@ -97,7 +97,7 @@ class TestResultPersistence:
             if conn:
                 conn.close()
 
-    def _initialize_database(self):
+    def _initialize_database(self) -> None:
         """Initialize database tables."""
         with self.get_connection() as conn:
             # Create batch_executions table
@@ -267,7 +267,9 @@ class TestResultPersistence:
             self.logger.error(f"Failed to store batch results: {e}")
             raise
 
-    def _update_performance_metrics(self, conn, test_results: List[Any]):
+    def _update_performance_metrics(
+        self, conn: sqlite3.Connection, test_results: List[Any]
+    ) -> None:
         """Update performance metrics for trend analysis."""
         for result in test_results:
             test_name = result.test_name
@@ -619,7 +621,7 @@ Analysis Period: Last {days} days
             self.logger.error(f"Failed to generate performance report: {e}")
             return f"Error generating report: {e}"
 
-    def cleanup_old_records(self, days_to_keep: int = 90):
+    def cleanup_old_records(self, days_to_keep: int = 90) -> Tuple[int, int]:
         """Clean up old test execution records."""
         try:
             with self.get_connection() as conn:
@@ -648,7 +650,9 @@ Analysis Period: Last {days} days
             self.logger.error(f"Failed to cleanup old records: {e}")
             return 0, 0
 
-    def export_results(self, output_path: str, format: str = "json", days: int = 30):
+    def export_results(
+        self, output_path: str, format: str = "json", days: int = 30
+    ) -> None:
         """Export test results in various formats."""
         try:
             # Get recent data

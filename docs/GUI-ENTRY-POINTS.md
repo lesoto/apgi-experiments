@@ -45,7 +45,6 @@ This document describes the different GUI entry points and their intended use ca
 - **Researchers:** Use `GUI.py` for full-featured experiment management
 - **System Administrators:** Use `GUI-Launcher.py` to provide access to all interfaces
 
-
 ## File Organization
 
 The current structure has multiple entry points which can be confusing. Consider the following improvements:

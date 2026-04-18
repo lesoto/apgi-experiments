@@ -46,7 +46,7 @@ class BIDSExporter:
             "flip",
         ]
 
-    def _create_bids_structure(self):
+    def _create_bids_structure(self) -> None:
         """Create BIDS directory structure."""
         directories = [
             "sub-01",
@@ -205,7 +205,7 @@ class BIDSExporter:
 
     def _create_channels_tsv(
         self, channels: Optional[List[str]], output_dir: Path, filename: str
-    ):
+    ) -> None:
         """Create channels.tsv file."""
         if not channels:
             return
@@ -250,7 +250,7 @@ class BIDSExporter:
         metadata: Optional[Dict],
         output_dir: Path,
         filename: str,
-    ):
+    ) -> None:
         """Create EEG sidecar JSON file."""
         json_data = {
             "SamplingFrequency": sampling_rate,
@@ -336,7 +336,7 @@ class BIDSExporter:
         metadata: Optional[Dict],
         output_dir: Path,
         filename: str,
-    ):
+    ) -> None:
         """Create behavioral sidecar JSON file."""
         json_data = {
             "LongName": "Behavioral data",
@@ -441,7 +441,7 @@ class BIDSExporter:
         metadata: Optional[Dict],
         output_dir: Path,
         filename: str,
-    ):
+    ) -> None:
         """Create physiological sidecar JSON file."""
         json_data = {
             "SamplingFrequency": sampling_rate,

@@ -12,12 +12,12 @@ import numpy as np
 class ExperimentalParadigm:
     """Base class for experimental paradigms."""
 
-    def __init__(self, paradigm_id: str):
+    def __init__(self, paradigm_id: str) -> None:
         self.paradigm_id = paradigm_id
         self.parameters: Dict[str, Any] = {}
         self.results: list[Dict[str, Any]] = []
 
-    def setup(self, **kwargs):
+    def setup(self, **kwargs: Any) -> None:
         """Setup the experimental paradigm."""
         self.parameters.update(kwargs)
 
@@ -40,11 +40,11 @@ class ExperimentalParadigm:
 class ThresholdDetectionExperiment(ExperimentalParadigm):
     """Threshold detection experimental paradigm."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("threshold_detection")
         self.threshold = 0.5
 
-    def setup(self, threshold: float = 0.5, **kwargs):
+    def setup(self, threshold: float = 0.5, **kwargs: Any) -> None:
         """Setup threshold detection parameters."""
         super().setup(**kwargs)
         self.threshold = threshold
@@ -62,11 +62,11 @@ class ThresholdDetectionExperiment(ExperimentalParadigm):
 class ConsciousnessExperiment(ExperimentalParadigm):
     """Consciousness-related experimental paradigm."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("consciousness")
         self.consciousness_level = 0.5
 
-    def setup(self, consciousness_level: float = 0.5, **kwargs):
+    def setup(self, consciousness_level: float = 0.5, **kwargs: Any) -> None:
         """Setup consciousness experiment parameters."""
         super().setup(**kwargs)
         self.consciousness_level = consciousness_level
@@ -82,11 +82,11 @@ class ConsciousnessExperiment(ExperimentalParadigm):
 class SomaticMarkerExperiment(ExperimentalParadigm):
     """Somatic marker experimental paradigm."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("somatic_marker")
         self.somatic_gain = 1.0
 
-    def setup(self, somatic_gain: float = 1.0, **kwargs):
+    def setup(self, somatic_gain: float = 1.0, **kwargs: Any) -> None:
         """Setup somatic marker parameters."""
         super().setup(**kwargs)
         self.somatic_gain = somatic_gain
@@ -123,7 +123,7 @@ def get_experiment(experiment_type: str) -> ExperimentalParadigm:
 
 
 def run_standard_experiment(
-    experiment_type: str, trials: int = 100, **kwargs
+    experiment_type: str, trials: int = 100, **kwargs: Any
 ) -> Dict[str, Any]:
     """Run a standard experiment by type."""
     experiment = get_experiment(experiment_type)

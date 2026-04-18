@@ -86,7 +86,7 @@ class PhysiologicalConfig:
     enable_synchronization: bool = True
     sync_tolerance: float = 0.01  # seconds
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate configuration parameters."""
         if self.sampling_rate <= 0:
             raise ValueError("Sampling rate must be positive")
@@ -623,7 +623,7 @@ class PhysiologicalMonitoring:
 
     def start_streaming(
         self, data_sources: Optional[Dict[SignalType, Callable]] = None
-    ):
+    ) -> None:
         """
         Start real-time multi-modal physiological data streaming.
 
@@ -638,7 +638,7 @@ class PhysiologicalMonitoring:
         self.is_streaming = True
         self.start_time = time.time()
 
-        def stream_loop():
+        def stream_loop() -> None:
             """Internal streaming loop."""
             while self.is_streaming:
                 current_time = time.time()
@@ -803,13 +803,13 @@ class PhysiologicalMonitoring:
         self.stream_thread = threading.Thread(target=stream_loop, daemon=True)
         self.stream_thread.start()
 
-    def stop_streaming(self):
+    def stop_streaming(self) -> None:
         """Stop data streaming."""
         self.is_streaming = False
         if self.stream_thread:
             self.stream_thread.join(timeout=2.0)
 
-    def register_callback(self, callback: Callable):
+    def register_callback(self, callback: Callable) -> None:
         """
         Register callback for real-time data processing.
 
@@ -1005,7 +1005,7 @@ class PhysiologicalMonitoring:
             "duration_seconds": time.time() - self.start_time if self.start_time else 0,
         }
 
-    def clear_buffers(self):
+    def clear_buffers(self) -> None:
         """Clear all data buffers."""
         with self.sync_lock:
             self.ecg_buffer.clear()
@@ -1015,7 +1015,7 @@ class PhysiologicalMonitoring:
             self.bp_buffer.clear()
             self.sample_buffer.clear()
 
-    def export_data(self, filename: str, format: str = "numpy"):
+    def export_data(self, filename: str, format: str = "numpy") -> None:
         """
         Export physiological data to file.
 

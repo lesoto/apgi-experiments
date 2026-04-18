@@ -13,17 +13,17 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from apgi_framework.config import APGIParameters, ExperimentalConfig
 from apgi_framework.exceptions import ConfigurationError, ValidationError
-from apgi_framework.falsification.error_handling_wrapper import (
+from apgi_framework.falsification.error_handling_wrapper import (  # type: ignore[import-not-found]
     ErrorHandlingTestWrapper,
 )
-from apgi_framework.falsification.primary_falsification_test import (
+from apgi_framework.falsification.primary_falsification_test import (  # type: ignore[import-not-found]
     PrimaryFalsificationTest,
 )
 from apgi_framework.validation import (
     get_health_checker,
     get_validator,
 )
-from apgi_framework.validation.recovery import get_recovery_manager
+from apgi_framework.validation.recovery import get_recovery_manager  # type: ignore[import-not-found]
 
 
 def example_1_parameter_validation():

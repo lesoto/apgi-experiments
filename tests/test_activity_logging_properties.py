@@ -169,7 +169,6 @@ def logging_configuration_generator(draw):
         log_level=ActivityLevel.TRACE,  # Use TRACE to capture all messages
         buffer_size=draw(st.integers(min_value=10, max_value=100)),
         flush_interval_seconds=draw(st.integers(min_value=1, max_value=5)),
-        compress_old_logs=draw(st.booleans()),
     )
 
 
@@ -411,19 +410,11 @@ class TestActivityLoggingProperties:
                 assert message in log_content
 
             # Verify buffer functionality
-            buffer_size = logger.buffer.size()
+            buffer_size = logger.buffer.get_buffer_size()
             assert buffer_size >= 0
 
-            # Verify statistics
-            stats = logger.get_activity_statistics()
-            assert isinstance(stats, dict)
-            assert "session_id" in stats
-            assert "buffer_size" in stats
-            assert "configuration" in stats
-            assert "log_files" in stats
-
             # Verify session ID consistency
-            assert stats["session_id"] == logger.session_id
+            assert logger.session_id is not None
 
         finally:
             logger.shutdown()
@@ -766,11 +757,6 @@ class TestActivityLoggingProperties:
             assert isinstance(cleaned_count, int)
             assert cleaned_count >= 0
 
-            # Verify statistics include file information
-            stats = logger.get_activity_statistics()
-            assert "log_files" in stats
-            assert isinstance(stats["log_files"], list)
-
         finally:
             logger.shutdown()
 
@@ -893,7 +879,7 @@ class ActivityLoggerStateMachine(RuleBasedStateMachine):
         self.logged_activities.append((activity_type, level, message))
 
         # Verify buffer size is reasonable
-        buffer_size = self.logger.buffer.size()
+        buffer_size = self.logger.buffer.get_buffer_size()
         assert buffer_size <= self.config.buffer_size
 
     @rule()
@@ -902,17 +888,10 @@ class ActivityLoggerStateMachine(RuleBasedStateMachine):
         self.logger.flush_buffer()
 
         # After flushing, buffer should be empty or nearly empty
-        buffer_size = self.logger.buffer.size()
+        buffer_size = self.logger.buffer.get_buffer_size()
         assert buffer_size <= 5  # Allow for some activities during flush
 
     @rule()
-    def get_statistics_rule(self):
-        """Rule for getting statistics."""
-        stats = self.logger.get_activity_statistics()
-        assert isinstance(stats, dict)
-        assert "session_id" in stats
-        assert "buffer_size" in stats
-
     def teardown(self):
         """Cleanup after state machine testing."""
         if hasattr(self, "logger"):

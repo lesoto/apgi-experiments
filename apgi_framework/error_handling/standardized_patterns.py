@@ -16,17 +16,188 @@ Features:
 
 from typing import Any, Callable, Dict, List, Optional, Tuple, Type, cast
 from datetime import datetime
+from enum import Enum
 
 from ..exceptions import APGIFrameworkError
 from ..logging.standardized_logging import get_logger
-from .error_handler import (
-    ErrorCategory,
-    ErrorSeverity,
-    ErrorHandler,
-    format_user_message,
-    handle_error,
-    error_boundary,
-)
+
+
+class ErrorCategory(Enum):
+    """Error category classification."""
+
+    DATA = "DATA"
+    IMPORT = "IMPORT"
+    VALIDATION = "VALIDATION"
+    SIMULATION = "SIMULATION"
+    PROCESSING = "PROCESSING"
+    IO = "IO"
+    PERMISSION = "PERMISSION"
+    NETWORK = "NETWORK"
+    RUNTIME = "RUNTIME"
+    MEMORY = "MEMORY"
+    CONFIGURATION = "CONFIGURATION"
+    USER_INPUT = "USER_INPUT"
+    BACKUP = "BACKUP"
+    CACHE = "CACHE"
+    CRITICAL = "CRITICAL"
+    ANALYSIS = "ANALYSIS"
+
+
+class ErrorSeverity(Enum):
+    """Error severity levels."""
+
+    CRITICAL = "CRITICAL"
+    HIGH = "HIGH"
+    MEDIUM = "MEDIUM"
+    LOW = "LOW"
+
+
+class ErrorInfo:
+    """Error information container."""
+
+    def __init__(
+        self,
+        category: ErrorCategory,
+        severity: ErrorSeverity,
+        code: str,
+        details: str,
+        suggestions: Optional[List[str]] = None,
+        user_action: Optional[str] = None,
+        traceback: Optional[str] = None,
+        message: Optional[str] = None,
+        **kwargs: Any,
+    ):
+        self.category = category
+        self.severity = severity
+        self.code = code
+        self.details = details
+        self.suggestions = suggestions or []
+        self.user_action = user_action
+        self.traceback = traceback
+        self.message = message or details
+        self.extra = kwargs
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert error info to dictionary."""
+        return {
+            "category": self.category.value,
+            "severity": self.severity.value,
+            "code": self.code,
+            "details": self.details,
+            "suggestions": self.suggestions,
+            "user_action": self.user_action,
+            "traceback": self.traceback,
+            "message": self.message,
+            **self.extra,
+        }
+
+
+class ErrorHandler:
+    """Base error handler class."""
+
+    def __init__(self) -> None:
+        self.error_handlers: Dict[ErrorCategory, Callable[[ErrorInfo], None]] = {}
+        self.error_counts: Dict[str, int] = {}
+
+    def create_error(
+        self,
+        category: ErrorCategory,
+        severity: ErrorSeverity,
+        code: str,
+        details: Optional[str],
+        suggestions: Optional[List[str]] = None,
+        user_action: Optional[str] = None,
+        traceback: Optional[str] = None,
+        message: Optional[str] = None,
+        **kwargs: Any,
+    ) -> ErrorInfo:
+        """Create an error info object."""
+        return ErrorInfo(
+            category=category,
+            severity=severity,
+            code=code,
+            details=details or "",
+            suggestions=suggestions,
+            user_action=user_action,
+            traceback=traceback,
+            message=message or details or "",
+            **kwargs,
+        )
+
+    def register_handler(
+        self, category: ErrorCategory, handler: Callable[[ErrorInfo], None]
+    ) -> None:
+        """Register a custom error handler."""
+        self.error_handlers[category] = handler
+
+    def get_error_summary(self) -> Dict[str, Any]:
+        """Get error summary statistics."""
+        return {
+            "total_errors": sum(self.error_counts.values()),
+            "by_category": dict(self.error_counts),
+            "most_frequent": {},
+            "error_distribution": {},
+        }
+
+
+def format_user_message(error_info: ErrorInfo) -> str:
+    """Format error info into a user-friendly message."""
+    message = f"[{error_info.severity.value}] {error_info.category.value}: {error_info.message}"
+    if error_info.suggestions:
+        message += "\n\nSuggestions:\n" + "\n".join(
+            f"  - {s}" for s in error_info.suggestions
+        )
+    if error_info.user_action:
+        message += f"\n\nAction: {error_info.user_action}"
+    return message
+
+
+def handle_error(
+    category: ErrorCategory,
+    severity: ErrorSeverity,
+    code: str,
+    reraise: bool,
+    log_level: str,
+    message: str = "",
+    **context: Any,
+) -> Optional[APGIFrameworkError]:
+    """Handle error with given parameters."""
+    error = APGIFrameworkError(message or code, **context)
+    if reraise:
+        raise error
+    return error
+
+
+def error_boundary(
+    error_type: Type[Exception],
+    category: Any = "RUNTIME",
+    severity: Any = "MEDIUM",
+    code: str = "UNHANDLED_EXCEPTION",
+    reraise: bool = True,
+    log_level: str = "error",
+    include_traceback: bool = True,
+    error_message: str = "Operation failed",
+    default_return: Any = None,
+    max_retries: int = 3,
+    delay: float = 1.0,
+    backoff: float = 2.0,
+    exceptions: Tuple[Type[Exception], ...] = (Exception,),
+    context: Optional[Dict[str, Any]] = None,
+) -> Any:
+    """Error boundary decorator."""
+
+    def decorator(func: Callable) -> Callable:
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            try:
+                return func(*args, **kwargs)
+            except exceptions:
+                if reraise:
+                    raise
+                return default_return
+
+        return wrapper
+
+    return decorator
 
 
 class StandardizedErrorHandler:
@@ -37,7 +208,7 @@ class StandardizedErrorHandler:
     message formatting with automatic recovery suggestions.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the standardized error handler."""
         self.logger = get_logger(__name__)
         self.error_handler = ErrorHandler()
@@ -45,14 +216,14 @@ class StandardizedErrorHandler:
         # Error handling statistics
         self.error_counts: Dict[str, int] = {}
         self.last_errors: List[Dict[str, Any]] = []
-        self.error_patterns: Dict[str, Dict[str, Any]] = {}
+        self.error_patterns: Dict[str, Any] = {}
 
         # Initialize common error patterns
         self._init_error_patterns()
 
-    def _init_error_patterns(self):
+    def _init_error_patterns(self) -> None:
         """Initialize common error patterns."""
-        self.error_patterns = {
+        patterns = {
             "file_operations": {
                 "file_not_found": {
                     "category": ErrorCategory.IO,
@@ -213,6 +384,7 @@ class StandardizedErrorHandler:
                 },
             },
         }
+        self.error_patterns = patterns
 
     def categorize_error(
         self,
@@ -448,7 +620,7 @@ class StandardizedErrorHandler:
         }
 
     def register_error_handler(
-        self, category: ErrorCategory, handler: Callable[[Any], None]
+        self, category: Any, handler: Callable[[Any], None]
     ) -> None:
         """Register a custom error handler for a category."""
         self.error_handler.register_handler(category, handler)
@@ -456,13 +628,13 @@ class StandardizedErrorHandler:
     def safe_execute(
         self,
         func: Callable,
-        *args,
+        *args: Any,
         error_message: str = "Operation failed",
         default_return: Any = None,
         log_level: str = "error",
         include_traceback: bool = True,
         context: Optional[Dict[str, Any]] = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> Any:
         """
         Safely execute a function with comprehensive error handling.
@@ -581,15 +753,15 @@ class StandardizedErrorHandler:
 
 # Decorators for common error handling patterns
 def handle_errors(
-    category: ErrorCategory = ErrorCategory.RUNTIME,
-    severity: ErrorSeverity = ErrorSeverity.MEDIUM,
+    category: Any = "RUNTIME",
+    severity: Any = "MEDIUM",
     code: str = "UNHANDLED_EXCEPTION",
     reraise: bool = True,
     log_level: str = "error",
     include_traceback: bool = True,
-):
+) -> Callable[[Callable], Callable]:  # type: ignore[no-any-return]
     """Decorator for automatic error handling."""
-    return error_boundary(
+    return error_boundary(  # type: ignore[no-any-return]
         error_type=APGIFrameworkError,
         category=category,
         severity=severity,
@@ -606,9 +778,9 @@ def safe_execute(
     log_level: str = "error",
     include_traceback: bool = True,
     context: Optional[Dict[str, Any]] = None,
-):
+) -> Callable[[Callable], Callable]:  # type: ignore[no-any-return]
     """Decorator for safe function execution."""
-    return error_boundary(
+    return error_boundary(  # type: ignore[no-any-return]
         error_type=APGIFrameworkError,
         error_message=error_message,
         default_return=default_return,
@@ -624,9 +796,10 @@ def retry_on_error(
     backoff: float = 2.0,
     exceptions: Tuple[Type[Exception], ...] = (Exception,),
     context: Optional[Dict[str, Any]] = None,
-):
+) -> Callable[[Callable], Callable]:  # type: ignore[no-any-return]
     """Decorator for retrying with exponential backoff."""
-    return error_boundary(
+    return error_boundary(  # type: ignore[no-any-return]
+        error_type=APGIFrameworkError,
         max_retries=max_retries,
         delay=delay,
         backoff=backoff,
@@ -636,7 +809,7 @@ def retry_on_error(
 
 
 # Convenience functions for common error types
-def config_error(message: str, **context) -> APGIFrameworkError:
+def config_error(message: str, **context: Any) -> APGIFrameworkError:
     """Create a configuration error."""
     return cast(
         APGIFrameworkError,
@@ -651,7 +824,7 @@ def config_error(message: str, **context) -> APGIFrameworkError:
     )
 
 
-def validation_error(message: str, **context) -> APGIFrameworkError:
+def validation_error(message: str, **context: Any) -> APGIFrameworkError:
     """Create a validation error."""
     return cast(
         APGIFrameworkError,
@@ -666,7 +839,7 @@ def validation_error(message: str, **context) -> APGIFrameworkError:
     )
 
 
-def data_error(message: str, **context) -> APGIFrameworkError:
+def data_error(message: str, **context: Any) -> APGIFrameworkError:
     """Create a data error."""
     return cast(
         APGIFrameworkError,
@@ -681,7 +854,7 @@ def data_error(message: str, **context) -> APGIFrameworkError:
     )
 
 
-def io_error(message: str, **context) -> APGIFrameworkError:
+def io_error(message: str, **context: Any) -> APGIFrameworkError:
     """Create an I/O error."""
     return cast(
         APGIFrameworkError,
@@ -696,7 +869,7 @@ def io_error(message: str, **context) -> APGIFrameworkError:
     )
 
 
-def critical_error(message: str, **context) -> APGIFrameworkError:
+def critical_error(message: str, **context: Any) -> APGIFrameworkError:
     """Create a critical error."""
     return cast(
         APGIFrameworkError,
@@ -711,7 +884,7 @@ def critical_error(message: str, **context) -> APGIFrameworkError:
     )
 
 
-def user_error(message: str, **context) -> APGIFrameworkError:
+def user_error(message: str, **context: Any) -> APGIFrameworkError:
     """Create a user input error."""
     return cast(
         APGIFrameworkError,
@@ -749,7 +922,7 @@ def handle_error_with_context(
 
 
 def safe_execute_with_context(
-    func: Callable, context: Optional[Dict[str, Any]] = None, *args, **kwargs
+    func: Callable, context: Optional[Dict[str, Any]] = None, *args: Any, **kwargs: Any
 ) -> Any:
     """Safe execution with context (alias for global instance)."""
     return standard_error_handler.safe_execute(func, *args, **kwargs, context=context)

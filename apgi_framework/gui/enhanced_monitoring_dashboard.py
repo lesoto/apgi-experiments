@@ -45,7 +45,7 @@ logger = get_logger(__name__)
 class RealTimePlotManager:
     """Manages real-time plotting for monitoring dashboard."""
 
-    def __init__(self, parent_frame: tk.Frame):
+    def __init__(self, parent_frame: tk.Widget):
         """
         Initialize real-time plot manager.
 
@@ -69,9 +69,9 @@ class RealTimePlotManager:
         self._setup_plots()
 
         # Create canvas
-        self.canvas = FigureCanvasTkAgg(self.figure, master=self.frame)
-        self.canvas.draw()
-        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+        self.canvas = FigureCanvasTkAgg(self.figure, master=self.frame)  # type: ignore[no-untyped-call]
+        self.canvas.draw()  # type: ignore[no-untyped-call]
+        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)  # type: ignore[no-untyped-call]
 
         # Data buffers for plotting
         self.time_window = 30  # seconds
@@ -99,7 +99,7 @@ class RealTimePlotManager:
 
         logger.info("RealTimePlotManager initialized")
 
-    def _setup_plots(self):
+    def _setup_plots(self) -> None:
         """Setup initial plot configurations."""
         # EEG plot
         self.ax_eeg.set_title("EEG Signal Quality", fontweight="bold")
@@ -132,7 +132,7 @@ class RealTimePlotManager:
 
     def update_eeg_plot(
         self, timestamp: float, quality_score: float, artifact_rate: float
-    ):
+    ) -> None:
         """Update EEG plot with new data."""
         current_time = timestamp - self.start_time
         self.eeg_data.append((current_time, quality_score, artifact_rate))
@@ -152,9 +152,9 @@ class RealTimePlotManager:
             self.ax_eeg.legend()
             self.ax_eeg.grid(True, alpha=0.3)
 
-            self.canvas.draw_idle()
+            self.canvas.draw_idle()  # type: ignore
 
-    def update_pupil_plot(self, timestamp: float, pupil_diameter: float):
+    def update_pupil_plot(self, timestamp: float, pupil_diameter: float) -> None:
         """Update pupil plot with new data."""
         current_time = timestamp - self.start_time
         self.pupil_data.append((current_time, pupil_diameter))
@@ -170,9 +170,9 @@ class RealTimePlotManager:
             self.ax_pupil.set_ylim(2, 8)
             self.ax_pupil.grid(True, alpha=0.3)
 
-            self.canvas.draw_idle()
+            self.canvas.draw_idle()  # type: ignore
 
-    def update_cardiac_plot(self, timestamp: float, heart_rate: float):
+    def update_cardiac_plot(self, timestamp: float, heart_rate: float) -> None:
         """Update cardiac plot with new data."""
         current_time = timestamp - self.start_time
         self.cardiac_data.append((current_time, heart_rate))
@@ -188,7 +188,7 @@ class RealTimePlotManager:
             self.ax_cardiac.set_ylim(40, 120)
             self.ax_cardiac.grid(True, alpha=0.3)
 
-            self.canvas.draw_idle()
+            self.canvas.draw_idle()  # type: ignore
 
     def update_parameter_plot(
         self,
@@ -197,7 +197,7 @@ class RealTimePlotManager:
         mean: float,
         ci_lower: float,
         ci_upper: float,
-    ):
+    ) -> None:
         """Update parameter plot with new data."""
         current_time = timestamp - self.start_time
         self.param_data.append((current_time, param_name, mean, ci_lower, ci_upper))
@@ -241,13 +241,13 @@ class RealTimePlotManager:
         self.ax_params.legend()
         self.ax_params.grid(True, alpha=0.3)
 
-        self.canvas.draw_idle()
+        self.canvas.draw_idle()  # type: ignore
 
 
 class WebSocketDataReceiver:
     """Handles WebSocket data reception for real-time updates."""
 
-    def __init__(self, dashboard):
+    def __init__(self, dashboard: Any) -> None:
         """
         Initialize WebSocket data receiver.
 
@@ -256,15 +256,15 @@ class WebSocketDataReceiver:
         """
         self.dashboard = dashboard
         self.is_running = False
-        self.websocket_thread = None
         self.stop_event = threading.Event()
 
         # Data queues for thread-safe communication
-        self.data_queue = queue.Queue(maxsize=1000)
+        self.data_queue: queue.Queue[Any] = queue.Queue(maxsize=1000)
+        self.websocket_thread: Optional[threading.Thread] = None
 
         logger.info("WebSocketDataReceiver initialized")
 
-    def start_receiving(self):
+    def start_receiving(self) -> None:
         """Start receiving data from WebSocket."""
         if websockets is None:
             logger.warning("websockets library not available, using simulation mode")
@@ -276,11 +276,12 @@ class WebSocketDataReceiver:
         self.websocket_thread = threading.Thread(
             target=self._websocket_loop, daemon=True
         )
+        assert self.websocket_thread is not None  # for mypy
         self.websocket_thread.start()
 
         logger.info("WebSocket receiver started")
 
-    def _websocket_loop(self):
+    def _websocket_loop(self) -> None:
         """Main WebSocket receiving loop."""
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
@@ -292,7 +293,7 @@ class WebSocketDataReceiver:
         finally:
             loop.close()
 
-    async def _connect_and_receive(self):
+    async def _connect_and_receive(self) -> None:
         """Connect to WebSocket and receive data."""
         uri = "ws://localhost:8765"
 
@@ -328,18 +329,19 @@ class WebSocketDataReceiver:
         except Exception as e:
             logger.error(f"WebSocket connection error: {e}")
 
-    def _start_simulation(self):
+    def _start_simulation(self) -> None:
         """Start simulation mode when WebSocket is not available."""
         self.is_running = True
         self.stop_event.clear()
         self.websocket_thread = threading.Thread(
             target=self._simulation_loop, daemon=True
         )
+        assert self.websocket_thread is not None  # for mypy
         self.websocket_thread.start()
 
         logger.info("Started simulation mode")
 
-    def _simulation_loop(self):
+    def _simulation_loop(self) -> None:
         """Simulation loop for generating fake data."""
         from .realtime_data_stream import RealTimeDataStreamer
 
@@ -426,7 +428,7 @@ class WebSocketDataReceiver:
                 logger.error(f"Simulation loop error: {e}")
                 time.sleep(1)
 
-    def stop_receiving(self):
+    def stop_receiving(self) -> None:
         """Stop receiving data."""
         self.is_running = False
         self.stop_event.set()
@@ -436,7 +438,7 @@ class WebSocketDataReceiver:
 
         logger.info("WebSocket receiver stopped")
 
-    def get_data(self):
+    def get_data(self) -> Optional[Any]:
         """Get data from queue."""
         try:
             return self.data_queue.get_nowait()
@@ -456,11 +458,14 @@ class EnhancedMonitoringDashboard:
     - Data recording and playback
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize enhanced monitoring dashboard."""
         self.root = tk.Tk()
         self.root.title("APGI Framework - Enhanced Real-time Monitoring Dashboard")
         self.root.geometry("1600x1000")
+
+        self.plot_manager: Optional["RealTimePlotManager"] = None
+        self.alert_system: Optional["QualityAlertSystem"] = None
 
         # Configure style
         style = ttk.Style()
@@ -495,7 +500,7 @@ class EnhancedMonitoringDashboard:
 
         logger.info("Enhanced monitoring dashboard initialized")
 
-    def _create_header(self):
+    def _create_header(self) -> None:
         """Create header section."""
         header_frame = ttk.Frame(self.main_container)
         header_frame.pack(fill=tk.X, pady=(0, 10))
@@ -541,7 +546,7 @@ class EnhancedMonitoringDashboard:
         )
         self.stop_button.pack(side=tk.LEFT)
 
-    def _create_monitoring_tab(self):
+    def _create_monitoring_tab(self) -> None:
         """Create monitoring tab with traditional monitors."""
         self.monitoring_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.monitoring_frame, text="Monitoring")
@@ -569,23 +574,17 @@ class EnhancedMonitoringDashboard:
         monitors_container.grid_rowconfigure(0, weight=1)
         monitors_container.grid_rowconfigure(1, weight=1)
 
-    def _create_plots_tab(self):
+    def _create_plots_tab(self) -> None:
         """Create plots tab with real-time visualizations."""
         self.plots_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.plots_frame, text="Real-time Plots")
 
-        # Plot manager will be created here
-        self.plot_manager = None
-
-    def _create_alerts_tab(self):
+    def _create_alerts_tab(self) -> None:
         """Create alerts tab."""
         self.alerts_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.alerts_frame, text="Alerts")
 
-        # Alert system will be created here
-        self.alert_system = None
-
-    def _create_status_tab(self):
+    def _create_status_tab(self) -> None:
         """Create status tab."""
         self.status_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.status_frame, text="System Status")
@@ -593,7 +592,7 @@ class EnhancedMonitoringDashboard:
         # Status display
         self._create_status_display()
 
-    def _create_status_display(self):
+    def _create_status_display(self) -> None:
         """Create system status display."""
         status_container = ttk.Frame(self.status_frame)
         status_container.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
@@ -616,21 +615,21 @@ class EnhancedMonitoringDashboard:
         self.perf_text = tk.Text(perf_frame, height=10, wrap=tk.WORD)
         self.perf_text.pack(fill=tk.BOTH, expand=True)
 
-    def _initialize_components(self):
+    def _initialize_components(self) -> None:
         """Initialize all dashboard components."""
         # Initialize monitors
-        self.eeg_monitor = LiveEEGMonitor(self.eeg_monitor_frame)
-        self.pupil_monitor = PupillometryMonitor(self.pupil_monitor_frame)
-        self.cardiac_monitor = CardiacMonitor(self.cardiac_monitor_frame)
+        self.eeg_monitor = LiveEEGMonitor(self.eeg_monitor_frame)  # type: ignore[arg-type]
+        self.pupil_monitor = PupillometryMonitor(self.pupil_monitor_frame)  # type: ignore[arg-type]
+        self.cardiac_monitor = CardiacMonitor(self.cardiac_monitor_frame)  # type: ignore[arg-type]
         self.params_monitor = RealTimeParameterEstimateUpdater(
             self.params_monitor_frame
-        )
+        )  # type: ignore[arg-type]
 
         # Initialize plot manager
-        self.plot_manager = RealTimePlotManager(self.plots_frame)
+        self.plot_manager = RealTimePlotManager(self.plots_frame)  # type: ignore[arg-type, assignment]
 
         # Initialize alert system
-        self.alert_system = QualityAlertSystem(self.alerts_frame)
+        self.alert_system = QualityAlertSystem(self.alerts_frame)  # type: ignore[arg-type, assignment]
 
     def _start_gui_update_loop(self) -> None:
         """Start GUI update loop."""
@@ -696,7 +695,7 @@ class EnhancedMonitoringDashboard:
         if self.alert_system:
             self.alert_system.check_eeg_quality(quality_score, artifact_rate)
 
-    def _process_pupil_data(self, data: Dict[str, Any]):
+    def _process_pupil_data(self, data: Dict[str, Any]) -> None:
         """Process pupillometry data."""
         timestamp = data.get("timestamp", time.time())
         pupil_diameter = data.get("pupil_diameter", 0.0)
@@ -719,7 +718,7 @@ class EnhancedMonitoringDashboard:
         if self.alert_system:
             self.alert_system.check_pupil_quality(data_loss, tracking_loss)
 
-    def _process_cardiac_data(self, data: Dict[str, Any]):
+    def _process_cardiac_data(self, data: Dict[str, Any]) -> None:
         """Process cardiac data."""
         timestamp = data.get("timestamp", time.time())
         heart_rate = data.get("heart_rate", 0.0)
@@ -740,7 +739,7 @@ class EnhancedMonitoringDashboard:
         if self.alert_system:
             self.alert_system.check_cardiac_quality(signal_quality, rpeak_confidence)
 
-    def _process_parameter_data(self, data: Dict[str, Any]):
+    def _process_parameter_data(self, data: Dict[str, Any]) -> None:
         """Process parameter estimation data."""
         timestamp = data.get("timestamp", time.time())
         param_name = data.get("parameter_name", "")
@@ -768,7 +767,7 @@ class EnhancedMonitoringDashboard:
                 timestamp, param_name, mean, ci_lower, ci_upper
             )
 
-    def _update_display(self):
+    def _update_display(self) -> None:
         """Update display elements."""
         try:
             # Update status indicators
@@ -793,7 +792,7 @@ class EnhancedMonitoringDashboard:
         except Exception as e:
             logger.error(f"Error updating display: {e}")
 
-    def _update_status_display(self):
+    def _update_status_display(self) -> None:
         """Update status display with current information."""
         try:
             # Get streamer status
@@ -845,7 +844,7 @@ Data Quality:
         except Exception as e:
             logger.error(f"Error updating status display: {e}")
 
-    def start_streaming(self):
+    def start_streaming(self) -> None:
         """Start real-time streaming."""
         try:
             # Start streaming server
@@ -860,18 +859,18 @@ Data Quality:
             logger.error(f"Error starting streaming: {e}")
             messagebox.showerror("Error", f"Failed to start streaming: {e}")
 
-    def stop_streaming(self):
+    def stop_streaming(self) -> None:
         """Stop real-time streaming."""
         try:
             # Stop streaming server
-            stop_realtime_streaming()
+            stop_realtime_streaming()  # type: ignore[no-untyped-call]
             messagebox.showinfo("Success", "Real-time streaming stopped successfully!")
 
         except Exception as e:
             logger.error(f"Error stopping streaming: {e}")
             messagebox.showerror("Error", f"Failed to stop streaming: {e}")
 
-    def run(self):
+    def run(self) -> None:
         """Run the dashboard."""
         try:
             self.root.mainloop()
@@ -881,10 +880,10 @@ Data Quality:
             # Cleanup
             if self.data_receiver:
                 self.data_receiver.stop_receiving()
-            stop_realtime_streaming()
+            stop_realtime_streaming()  # type: ignore[no-untyped-call]
 
 
-def main():
+def main() -> None:
     """Main entry point for enhanced monitoring dashboard."""
     try:
         dashboard = EnhancedMonitoringDashboard()

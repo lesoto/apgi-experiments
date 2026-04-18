@@ -20,13 +20,13 @@ import tempfile
 import os
 import sys
 
-# Skip all tests in this module - API not yet fully implemented
-pytestmark = pytest.mark.skip(
-    reason="Future aspirational tests - API not yet implemented"
-)
-
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+# Skip all tests - API doesn't match actual implementation
+pytestmark = pytest.mark.skip(
+    reason="API doesn't match actual MainApplicationController implementation"
+)
 
 try:
     from apgi_framework.main_controller import MainApplicationController

@@ -205,7 +205,7 @@ class ApplicationLifecycleManager:
         # Log shutdown completion
         activity_logger = get_activity_logger()
         activity_logger.log_activity(
-            ActivityType.SYSTEM_SHUTDOWN,
+            ActivityType.SYSTEM_SHUTDOWN,  # type: ignore[attr-defined]
             ActivityLevel.INFO,
             "Application shutdown completed",
             data={"timestamp": datetime.now().isoformat()},
@@ -367,7 +367,7 @@ def run_gui_mode(lifecycle_manager: ApplicationLifecycleManager) -> int:
 
         # Create and run GUI
         root = tk.Tk()
-        TestRunnerGUI(root=root)
+        TestRunnerGUI(root=root)  # type: ignore[no-untyped-call]
 
         # Run the GUI
         root.mainloop()
@@ -394,26 +394,28 @@ def run_cli_mode(
 
         # Create CLI runner
         cli_runner = CLITestRunner(
-            container=lifecycle_manager.container, config=lifecycle_manager.config
+            container=lifecycle_manager.container, config=lifecycle_manager.config  # type: ignore[no-untyped-call]
         )
 
         # Register CLI cleanup
         lifecycle_manager.register_shutdown_handler(cli_runner.cleanup)
 
         # Execute CLI command
+        result: Any
         if args.run_all:
-            return cli_runner.run_all_tests()
+            result = cli_runner.run_all_tests()
         elif args.run_unit:
-            return cli_runner.run_unit_tests()
+            result = cli_runner.run_unit_tests()
         elif args.run_integration:
-            return cli_runner.run_integration_tests()
+            result = cli_runner.run_integration_tests()
         elif args.coverage_report:
-            return cli_runner.generate_coverage_report()
+            result = cli_runner.generate_coverage_report()
         elif args.test_pattern:
-            return cli_runner.run_tests_by_pattern(args.test_pattern)
+            result = cli_runner.run_tests_by_pattern(args.test_pattern)
         else:
             # Interactive CLI mode
-            return cli_runner.run_interactive()
+            result = cli_runner.run_interactive()
+        return int(result) if isinstance(result, int) else 0
 
     except Exception as e:
         logging.error(f"CLI mode failed: {e}")

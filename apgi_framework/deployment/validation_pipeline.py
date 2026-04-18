@@ -306,7 +306,7 @@ class ReliabilityTester:
     Tests reliability of parameter estimates with ICC > 0.75 target.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize reliability tester."""
         self.logger = logging.getLogger(__name__)
         self.target_icc = 0.75
@@ -397,7 +397,7 @@ class PredictiveValidityPipeline:
     Tests whether APGI parameters predict performance on independent tasks.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize predictive validity pipeline."""
         self.logger = logging.getLogger(__name__)
 
@@ -476,7 +476,7 @@ class PerformanceBenchmarker:
     Benchmarks critical operations to ensure real-time performance.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize performance benchmarker."""
         self.logger = logging.getLogger(__name__)
 
@@ -572,24 +572,24 @@ class PerformanceBenchmarker:
             threshold_ms=threshold,
         )
 
-    def _simulate_eeg_processing(self):
+    def _simulate_eeg_processing(self) -> None:
         """Simulate EEG processing."""
         data = np.random.randn(128, 1000)
         np.fft.fft(data, axis=1)
 
-    def _simulate_pupil_processing(self):
+    def _simulate_pupil_processing(self) -> None:
         """Simulate pupil processing."""
         # Data would be used for processing in real implementation
 
-    def _simulate_cardiac_processing(self):
+    def _simulate_cardiac_processing(self) -> None:
         """Simulate cardiac processing."""
         # Data would be used for R-peak detection in real implementation
 
-    def _simulate_parameter_update(self):
+    def _simulate_parameter_update(self) -> None:
         """Simulate parameter update."""
         # Matrix operations would be used for parameter estimation in real implementation
 
-    def _simulate_data_storage(self):
+    def _simulate_data_storage(self) -> None:
         """Simulate data storage."""
         # JSON serialization would be used for file storage in real implementation
 
@@ -609,7 +609,7 @@ class ComprehensiveValidationPipeline:
         self.logger = logging.getLogger(__name__)
 
         self.recovery_validator = ParameterRecoveryValidator(random_seed)
-        self.reliability_tester = ReliabilityTester()
+        self.reliability_tester = ReliabilityTester()  # type: ignore[no-untyped-call]
         self.validity_pipeline = PredictiveValidityPipeline()
         self.benchmarker = PerformanceBenchmarker()
 

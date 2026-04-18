@@ -95,7 +95,7 @@ class SystemRequirementsValidator:
     characteristics to ensure the system can run parameter estimation tasks.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize system requirements validator."""
         self.logger = logging.getLogger(__name__)
 
@@ -203,7 +203,7 @@ class SystemRequirementsValidator:
         requirements.append(ram_req)
 
         # CPU cores check
-        cpu_cores = psutil.cpu_count(logical=False) or psutil.cpu_count()
+        cpu_cores: Optional[int] = psutil.cpu_count(logical=False) or psutil.cpu_count()
         cpu_req = SystemRequirement(
             name="CPU Cores",
             description="Number of CPU cores",
@@ -212,13 +212,13 @@ class SystemRequirementsValidator:
             required_value=f"{self.min_cpu_cores} minimum, {self.rec_cpu_cores} recommended",
         )
 
-        if cpu_cores >= self.opt_cpu_cores:
+        if cpu_cores is not None and cpu_cores >= self.opt_cpu_cores:
             cpu_req.status = RequirementStatus.PASSED
             cpu_req.message = "Optimal CPU cores available"
-        elif cpu_cores >= self.rec_cpu_cores:
+        elif cpu_cores is not None and cpu_cores >= self.rec_cpu_cores:
             cpu_req.status = RequirementStatus.PASSED
             cpu_req.message = "Recommended CPU cores available"
-        elif cpu_cores >= self.min_cpu_cores:
+        elif cpu_cores is not None and cpu_cores >= self.min_cpu_cores:
             cpu_req.status = RequirementStatus.WARNING
             cpu_req.message = "Minimum CPU cores met, but more recommended"
         else:
@@ -395,12 +395,20 @@ class SystemRequirementsValidator:
             Tuple of (capable, message).
         """
         # Check CPU and memory
-        cpu_cores = psutil.cpu_count(logical=False) or psutil.cpu_count()
+        cpu_cores: Optional[int] = psutil.cpu_count(logical=False) or psutil.cpu_count()
         ram_gb = psutil.virtual_memory().total / (1024**3)
 
-        if cpu_cores >= self.rec_cpu_cores and ram_gb >= self.rec_ram_gb:
+        if (
+            cpu_cores is not None
+            and cpu_cores >= self.rec_cpu_cores
+            and ram_gb >= self.rec_ram_gb
+        ):
             return True, "System capable of real-time processing"
-        elif cpu_cores >= self.min_cpu_cores and ram_gb >= self.min_ram_gb:
+        elif (
+            cpu_cores is not None
+            and cpu_cores >= self.min_cpu_cores
+            and ram_gb >= self.min_ram_gb
+        ):
             return (
                 True,
                 "System may handle real-time processing with reduced performance",

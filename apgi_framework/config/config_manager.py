@@ -31,7 +31,7 @@ class APGIParameters:
     threshold: float = 3.5
     steepness: float = 2.0
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate parameter ranges."""
         # Import here to avoid circular dependency
         try:
@@ -162,7 +162,7 @@ class ExperimentalConfig:
     effect_size_threshold: float = 0.5
     power_threshold: float = 0.8
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate experimental configuration."""
         # Import here to avoid circular dependency
         try:
@@ -495,12 +495,12 @@ class ConfigManager:
                     )
                 if param_name == "threshold" and param_value <= 0:
                     raise ConfigurationError(
-                        f"Parameter '{section_name}.{param_name}' must be positive, "
+                        f"Parameter '{section_name}.{param_name}' must be greater than zero, "
                         f"but got {param_value}. Threshold values must be greater than zero."
                     )
 
     def _validate_apgi_parameter_range_with_warning(
-        self, param_name: str, value: float, logger
+        self, param_name: str, value: float, logger: Any
     ) -> None:
         """Validate APGI parameter ranges with warnings for edge cases."""
         recommended_ranges = {
@@ -529,7 +529,7 @@ class ConfigManager:
             )
 
     def _validate_experimental_parameter_range_with_warning(
-        self, param_name: str, value: float, logger
+        self, param_name: str, value: float, logger: Any
     ) -> None:
         """Validate experimental parameter ranges with warnings for edge cases."""
         recommended_ranges = {
@@ -548,7 +548,7 @@ class ConfigManager:
                 )
 
     def _validate_performance_parameter_range_with_warning(
-        self, param_name: str, value: float, logger
+        self, param_name: str, value: float, logger: Any
     ) -> None:
         """Validate performance threshold parameter ranges with warnings for edge cases."""
         recommended_ranges = {
@@ -567,7 +567,7 @@ class ConfigManager:
                 )
 
     def _validate_stimulus_parameter_range_with_warning(
-        self, param_name: str, value: float, logger
+        self, param_name: str, value: float, logger: Any
     ) -> None:
         """Validate stimulus parameter ranges with warnings for edge cases."""
         recommended_ranges = {
@@ -664,7 +664,7 @@ class ConfigManager:
         """Get falsification thresholds from experimental config."""
         return self.experimental_config
 
-    def update_apgi_parameters(self, **kwargs) -> None:
+    def update_apgi_parameters(self, **kwargs: Any) -> None:
         """Update APGI parameters.
 
         Args:
@@ -685,7 +685,7 @@ class ConfigManager:
             except Exception as e:
                 raise ConfigurationError(f"Failed to update APGI parameters: {e}")
 
-    def update_experimental_config(self, **kwargs) -> None:
+    def update_experimental_config(self, **kwargs: Any) -> None:
         """Update experimental configuration.
 
         Args:

@@ -13,21 +13,21 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 try:
-    import PySide6  # noqa: F401
+    import PySide6  # noqa: F401  # type: ignore[import-not-found]
 
     PYSIDE6_AVAILABLE = True
 except ImportError:
     PYSIDE6_AVAILABLE = False
 
 if PYSIDE6_AVAILABLE:
-    from PySide6.QtCore import (
+    from PySide6.QtCore import (  # type: ignore[import-not-found]
         QObject,
         QThread,
         QTimer,
         Signal,
         pyqtSignal,
     )
-    from PySide6.QtWidgets import QApplication
+    from PySide6.QtWidgets import QApplication  # type: ignore[import-not-found]
 else:
     # Fallback for environments without PySide6
     class QObject:  # type: ignore[no-redef]

@@ -264,7 +264,7 @@ class BodyVigilanceScaleAnalyzer:
     symptom questionnaires.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize Body Vigilance Scale analyzer."""
         self.scale_items = [
             "attention_to_body_sensations",
@@ -551,7 +551,7 @@ class PredictiveValidityFramework:
     Complete framework for testing predictive validity of APGI parameters.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize predictive validity framework."""
         self.emotional_task = EmotionalInterferenceTask()
         self.cpt_task = ContinuousPerformanceTask()

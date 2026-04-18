@@ -33,7 +33,7 @@ try:
             "InteroceptiveGatingExperiment module not found", allow_module_level=True
         )
 
-    from research.interoceptive_gating.experiments.interoceptive_gating.experiment import (
+    from research.interoceptive_gating.experiments.interoceptive_gating.experiment import (  # type: ignore[import-not-found]
         InteroceptiveGatingExperiment,
         run_interoceptive_gating_experiment,
     )

@@ -18,13 +18,13 @@ import os
 import sys
 import time
 
-# Skip all tests in this module - API not yet fully implemented
-pytestmark = pytest.mark.skip(
-    reason="Future aspirational tests - API not yet implemented"
-)
-
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+# Skip all tests - API doesn't match actual SystemValidator implementation
+pytestmark = pytest.mark.skip(
+    reason="API doesn't match actual SystemValidator implementation"
+)
 
 try:
     from apgi_framework.system_validator import SystemValidator
@@ -272,7 +272,7 @@ class TestSystemValidatorCompatibility:
     @pytest.fixture
     def validator(self):
         """Fixture providing a validator instance."""
-        config = {"validation_level": "strict"}
+        config = {"validation_level": "comprehensive"}
         return SystemValidator(config)
 
     def test_version_compatibility(self, validator):
@@ -441,7 +441,7 @@ class TestSystemValidatorPerformance:
     @pytest.fixture
     def validator(self):
         """Fixture providing a validator instance."""
-        config = {"validation_level": "performance"}
+        config = {"validation_level": "comprehensive"}
         return SystemValidator(config)
 
     def test_validation_performance(self, validator):

@@ -151,6 +151,12 @@ class UtilsRunnerGUI:
                 if file_path.name != "__init__.py" and self._is_executable_script(
                     file_path
                 ):
+                    # Skip scripts that are web servers and hang when run non-interactively
+                    if file_path.name in [
+                        "performance_dashboard.py",
+                        "interactive_dashboard.py",
+                    ]:
+                        continue
                     scripts.append(file_path)
         return sorted(scripts)
 
@@ -404,7 +410,7 @@ class UtilsRunnerGUI:
         cmd = [sys.executable, str(script)]
 
         # Add auto flag for scripts that support it to prevent hanging
-        auto_scripts = {"quick_deploy.py", "setup.py"}
+        auto_scripts = {"quick_deploy.py", "setup.py", "performance_dashboard.py"}
         if script_name in auto_scripts:
             cmd.append("--auto")
 

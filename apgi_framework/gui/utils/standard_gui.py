@@ -10,10 +10,10 @@ import os
 import sys
 import tkinter as tk
 import traceback
-from abc import ABC, abstractmethod
+from abc import ABC
 from pathlib import Path
 from tkinter import messagebox, ttk
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 # Try to import CustomTkinter, fallback to tkinter if not available
 try:
@@ -161,7 +161,9 @@ class StandardWindow(ABC):
             setup_global_error_handling(self.root)
         except ImportError:
             # Fallback to basic error handling
-            def handle_tk_error(exc, val, tb):
+            def handle_tk_error(
+                exc: type[BaseException], val: BaseException, tb: Any
+            ) -> None:
                 error_msg = f"An error occurred:\n\n{type(val).__name__}: {val}\n\n"
                 error_msg += "Please check the logs for more details."
                 messagebox.showerror("Error", error_msg)
@@ -202,7 +204,7 @@ class StandardWindow(ABC):
 class StandardMenuBar:
     """Standard menu bar for GUI applications."""
 
-    def __init__(self, root: tk.Tk, window_instance: StandardWindow):
+    def __init__(self, root: tk.Tk, window_instance: StandardWindow) -> None:
         """
         Create a standard menu bar.
 
@@ -269,23 +271,18 @@ class StandardMenuBar:
         self.root.bind("<Control-plus>", lambda e: self.zoom_in())
         self.root.bind("<Control-minus>", lambda e: self.zoom_out())
 
-    @abstractmethod
     def new_file(self) -> None:
         """Create new file (to be implemented by subclasses)."""
 
-    @abstractmethod
     def open_file(self) -> None:
         """Open file (to be implemented by subclasses)."""
 
-    @abstractmethod
     def save_file(self) -> None:
         """Save file (to be implemented by subclasses)."""
 
-    @abstractmethod
     def undo(self) -> None:
         """Undo action (to be implemented by subclasses)."""
 
-    @abstractmethod
     def redo(self) -> None:
         """Redo action (to be implemented by subclasses)."""
 
@@ -477,7 +474,9 @@ class PathManager:
             return path.absolute()
 
     @staticmethod
-    def safe_file_operation(operation: Callable, file_path: Path, *args, **kwargs):
+    def safe_file_operation(
+        operation: Callable, file_path: Path, *args: Any, **kwargs: Any
+    ) -> Any:
         """Safely perform file operations with error handling."""
         try:
             # Ensure parent directory exists
@@ -517,7 +516,7 @@ def create_standard_button_frame(parent: tk.Widget) -> ttk.Frame:
 
 
 def create_standard_button(
-    parent: tk.Widget, text: str, command: Callable, **kwargs
+    parent: tk.Widget, text: str, command: Callable, **kwargs: Any
 ) -> ttk.Button:
     """Create a standard styled button."""
     return ttk.Button(parent, text=text, command=command, **kwargs)

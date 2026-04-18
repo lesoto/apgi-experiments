@@ -77,7 +77,7 @@ class HistoryTracker:
         self.logger = logging.getLogger(__name__)
         self._init_database()
 
-    def _init_database(self):
+    def _init_database(self) -> None:
         """Initialize the test history database."""
         try:
             with sqlite3.connect(self.db_path) as conn:
@@ -117,7 +117,7 @@ class HistoryTracker:
         except Exception as e:
             self.logger.error(f"Failed to initialize test history database: {e}")
 
-    def record_execution(self, result: ExecutionResult):
+    def record_execution(self, result: ExecutionResult) -> None:
         """Record a test execution result."""
         try:
             history = ResultHistory(
@@ -309,15 +309,15 @@ class NotificationManager:
         self.history_tracker = HistoryTracker(db_path or ".ci/test_history.db")
         self.logger = logging.getLogger(__name__)
 
-    def add_channel(self, channel: NotificationChannel):
+    def add_channel(self, channel: NotificationChannel) -> None:
         """Add a notification channel."""
         self.channels.append(channel)
 
-    def remove_channel(self, channel_name: str):
+    def remove_channel(self, channel_name: str) -> None:
         """Remove a notification channel by name."""
         self.channels = [ch for ch in self.channels if ch.name != channel_name]
 
-    def notify_test_result(self, result: ExecutionResult):
+    def notify_test_result(self, result: ExecutionResult) -> None:
         """Send notifications based on test execution result."""
         # Record the execution in history
         self.history_tracker.record_execution(result)
@@ -550,7 +550,7 @@ class NotificationManager:
         channel: NotificationChannel,
         notification: TestFailureNotification,
         result: ExecutionResult,
-    ):
+    ) -> None:
         """Send notification through a specific channel."""
         if channel.type == "email":
             self._send_email_notification(channel, notification, result)
@@ -570,7 +570,7 @@ class NotificationManager:
         channel: NotificationChannel,
         notification: TestFailureNotification,
         result: ExecutionResult,
-    ):
+    ) -> None:
         """Send email notification."""
         config = channel.config
 
@@ -609,7 +609,7 @@ class NotificationManager:
         channel: NotificationChannel,
         notification: TestFailureNotification,
         result: ExecutionResult,
-    ):
+    ) -> None:
         """Send Slack notification."""
         config = channel.config
         webhook_url = config.get("webhook_url")
@@ -630,7 +630,7 @@ class NotificationManager:
         channel: NotificationChannel,
         notification: TestFailureNotification,
         result: ExecutionResult,
-    ):
+    ) -> None:
         """Send Microsoft Teams notification."""
         config = channel.config
         webhook_url = config.get("webhook_url")
@@ -651,7 +651,7 @@ class NotificationManager:
         channel: NotificationChannel,
         notification: TestFailureNotification,
         result: ExecutionResult,
-    ):
+    ) -> None:
         """Send generic webhook notification."""
         config = channel.config
         webhook_url = config.get("url")
@@ -678,7 +678,7 @@ class NotificationManager:
         channel: NotificationChannel,
         notification: TestFailureNotification,
         result: ExecutionResult,
-    ):
+    ) -> None:
         """Write notification to file."""
         config = channel.config
         file_path = Path(config.get("file_path", ".ci/notifications.log"))

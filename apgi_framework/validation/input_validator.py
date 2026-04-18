@@ -7,7 +7,7 @@ type checking, and user-friendly error messages.
 
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 from apgi_framework.logging.standardized_logging import get_logger
 
 logger = get_logger(__name__)
@@ -45,7 +45,7 @@ class InputValidator:
         r"delete\s+from",  # SQL injection
     ]
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize validator with compiled patterns."""
         self.compiled_patterns = [
             re.compile(pattern, re.IGNORECASE) for pattern in self.DANGEROUS_PATTERNS
@@ -343,7 +343,7 @@ class InputValidator:
         self,
         value: Any,
         field_name: str = "list",
-        item_validator=None,
+        item_validator: Optional[Callable[[Any], Any]] = None,
         min_length: int = 0,
         max_length: int = 100,
     ) -> List[Any]:
@@ -471,22 +471,22 @@ validator = InputValidator()
 
 
 # Convenience functions
-def validate_string(value: Any, field_name: str = "input", **kwargs) -> str:
+def validate_string(value: Any, field_name: str = "input", **kwargs: Any) -> str:
     """Convenience function for string validation."""
     return validator.validate_string(value, field_name, **kwargs)
 
 
-def validate_integer(value: Any, field_name: str = "input", **kwargs) -> int:
+def validate_integer(value: Any, field_name: str = "input", **kwargs: Any) -> int:
     """Convenience function for integer validation."""
     return validator.validate_integer(value, field_name, **kwargs)
 
 
-def validate_float(value: Any, field_name: str = "input", **kwargs) -> float:
+def validate_float(value: Any, field_name: str = "input", **kwargs: Any) -> float:
     """Convenience function for float validation."""
     return validator.validate_float(value, field_name, **kwargs)
 
 
-def validate_path(value: Any, field_name: str = "input", **kwargs) -> Path:
+def validate_path(value: Any, field_name: str = "input", **kwargs: Any) -> Path:
     """Convenience function for path validation."""
     return validator.validate_path(value, field_name, **kwargs)
 
@@ -501,7 +501,11 @@ def validate_choice(value: Any, choices: List[str], field_name: str = "choice") 
     return validator.validate_choice(value, choices, field_name)
 
 
-def safe_input(prompt: str, validator_func=None, **validator_kwargs) -> Any:
+def safe_input(
+    prompt: str,
+    validator_func: Optional[Callable[..., Any]] = None,
+    **validator_kwargs: Any,
+) -> Optional[Any]:
     """
     Safe input function with validation.
 

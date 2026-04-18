@@ -6,7 +6,7 @@ range checking, type validation, and helpful error messages.
 """
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
@@ -151,7 +151,7 @@ class ParameterValidator:
     def __init__(self) -> None:
         self.validation_history: List[ValidationResult] = []
 
-    def validate_apgi_parameters(self, **params) -> ValidationResult:
+    def validate_apgi_parameters(self, **params: Any) -> ValidationResult:
         """
         Validate APGI equation parameters.
 
@@ -262,7 +262,7 @@ class ParameterValidator:
         self.validation_history.append(result)
         return result
 
-    def validate_experimental_config(self, **config) -> ValidationResult:
+    def validate_experimental_config(self, **config: Any) -> ValidationResult:
         """
         Validate experimental configuration parameters.
 
@@ -349,7 +349,7 @@ class ParameterValidator:
         self.validation_history.append(result)
         return result
 
-    def validate_neural_thresholds(self, **thresholds) -> ValidationResult:
+    def validate_neural_thresholds(self, **thresholds: Any) -> ValidationResult:
         """
         Validate neural signature threshold parameters.
 
@@ -501,7 +501,7 @@ class ParameterValidator:
         self.validation_history.append(result)
         return result
 
-    def validate_statistical_parameters(self, **params) -> ValidationResult:
+    def validate_statistical_parameters(self, **params: Any) -> ValidationResult:
         """
         Validate statistical analysis parameters.
 
@@ -611,7 +611,7 @@ class ParameterValidator:
             suggestions=all_suggestions,
         )
 
-    def validate_retry_config(self, **config) -> ValidationResult:
+    def validate_retry_config(self, **config: Any) -> ValidationResult:
         """Validate retry configuration parameters."""
         errors = []
         for param_name, value in config.items():
@@ -631,7 +631,7 @@ class ParameterValidator:
         self.validation_history.append(result)
         return result
 
-    def validate_performance_thresholds(self, **config) -> ValidationResult:
+    def validate_performance_thresholds(self, **config: Any) -> ValidationResult:
         """Validate performance threshold parameters."""
         errors = []
         for param_name, value in config.items():
@@ -651,7 +651,7 @@ class ParameterValidator:
         self.validation_history.append(result)
         return result
 
-    def validate_stimulus_parameters(self, **config) -> ValidationResult:
+    def validate_stimulus_parameters(self, **config: Any) -> ValidationResult:
         """Validate stimulus generation parameters."""
         errors = []
         for param_name, value in config.items():

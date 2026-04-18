@@ -21,8 +21,8 @@ except ImportError:
     TKINTER_AVAILABLE = False
 
 try:
-    from dash.testing.application_runners import ThreadedRunner
-    from dash.testing.browser import Browser
+    from dash.testing.application_runners import ThreadedRunner  # type: ignore[import-untyped]
+    from dash.testing.browser import Browser  # type: ignore[import-untyped]
 
     DASH_AVAILABLE = True
 except ImportError:
@@ -458,7 +458,7 @@ def test_dash_interactive_dashboard():
         try:
             # Import the dashboard
             sys.path.append(str(Path(__file__).parent.parent.parent / "utils"))
-            from interactive_dashboard import create_dashboard_app
+            from interactive_dashboard import create_dashboard_app  # type: ignore[import-not-found]
 
             # Create and launch the app
             app = create_dashboard_app()

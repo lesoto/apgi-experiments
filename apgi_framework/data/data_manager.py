@@ -48,7 +48,7 @@ class IntegratedDataManager:
         self.report_generator = ReportGenerator(str(self.base_output_dir / "reports"))
         self.data_exporter = DataExporter(str(self.base_output_dir / "exports"))
         self.visualizer = APGIVisualizer(str(self.base_output_dir / "figures"))
-        self.interactive_visualizer = InteractiveVisualizer()
+        self.interactive_visualizer = InteractiveVisualizer()  # type: ignore[no-untyped-call]
 
         # Dashboard setup
         self.enable_dashboard = enable_dashboard
@@ -66,11 +66,12 @@ class IntegratedDataManager:
         # Active experiments tracking
         self.active_experiments: Dict[str, Any] = {}
 
-    def start_system(self):
+    def start_system(self) -> None:
         """Start the data management system"""
         try:
             if self.enable_dashboard:
-                self.dashboard.start_dashboard()
+                if self.dashboard is not None:
+                    self.dashboard.start_dashboard()
             else:
                 self.experiment_monitor.start_monitoring()
 
@@ -81,11 +82,12 @@ class IntegratedDataManager:
                 f"Failed to start data management system: {str(e)}"
             )
 
-    def stop_system(self):
+    def stop_system(self) -> None:
         """Stop the data management system"""
         try:
             if self.enable_dashboard:
-                self.dashboard.stop_dashboard()
+                if self.dashboard is not None:
+                    self.dashboard.stop_dashboard()
             else:
                 self.experiment_monitor.stop_monitoring()
 
@@ -141,7 +143,7 @@ class IntegratedDataManager:
         results: Optional[List[FalsificationResult]] = None,
         trials: Optional[List[ExperimentalTrial]] = None,
         current_trial: Optional[int] = None,
-    ):
+    ) -> None:
         """
         Update experiment data and notify monitoring systems.
 
@@ -175,7 +177,7 @@ class IntegratedDataManager:
         except Exception as e:
             raise DataManagementError(f"Failed to update experiment data: {str(e)}")
 
-    def complete_experiment(self, experiment_id: str):
+    def complete_experiment(self, experiment_id: str) -> None:
         """Mark experiment as completed"""
         try:
             if experiment_id in self.active_experiments:
@@ -394,7 +396,7 @@ class IntegratedDataManager:
             for exp_id in self.active_experiments.keys()
         }
 
-    def cleanup_experiment(self, experiment_id: str, keep_files: bool = True):
+    def cleanup_experiment(self, experiment_id: str, keep_files: bool = True) -> None:
         """
         Clean up experiment data and resources.
 

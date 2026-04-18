@@ -3,6 +3,7 @@ Command-line interface for deployment automation.
 """
 
 from pathlib import Path
+from typing import Any, Tuple
 
 import click
 
@@ -18,7 +19,7 @@ logger = get_logger(__name__)
     "--config", "-c", type=click.Path(exists=True), help="Deployment configuration file"
 )
 @click.pass_context
-def cli(ctx, config):
+def cli(ctx: Any, config: Any) -> None:
     """APGI Framework Deployment Automation CLI"""
     ctx.ensure_object(dict)
     ctx.obj["config_path"] = Path(config) if config else None
@@ -28,7 +29,7 @@ def cli(ctx, config):
 @cli.command()
 @click.option("--force", "-f", is_flag=True, help="Force redeployment")
 @click.pass_context
-def deploy(ctx, force):
+def deploy(ctx: Any, force: bool) -> None:
     """Deploy the application"""
     manager = ctx.obj["manager"]
 
@@ -51,7 +52,7 @@ def deploy(ctx, force):
 
 @cli.command()
 @click.pass_context
-def status(ctx):
+def status(ctx: Any) -> None:
     """Show deployment status"""
     manager = ctx.obj["manager"]
     status = manager.get_status()
@@ -79,7 +80,7 @@ def status(ctx):
 
 @cli.command()
 @click.pass_context
-def stop(ctx):
+def stop(ctx: Any) -> None:
     """Stop the deployment"""
     manager = ctx.obj["manager"]
 
@@ -100,7 +101,7 @@ def stop(ctx):
 @click.option("--port", "-p", multiple=True, help="Port mappings (host:container)")
 @click.option("--env", multiple=True, help="Environment variables (KEY=VALUE)")
 @click.pass_context
-def configure(ctx, environment, tag, port, env):
+def configure(ctx: Any, environment: str, tag: Any, port: Tuple, env: Tuple) -> None:
     """Configure deployment settings"""
     manager = ctx.obj["manager"]
 
@@ -139,7 +140,7 @@ def configure(ctx, environment, tag, port, env):
 
 @cli.command()
 @click.pass_context
-def validate(ctx):
+def validate(ctx: Any) -> None:
     """Validate deployment prerequisites"""
     manager = ctx.obj["manager"]
 
@@ -160,7 +161,7 @@ def validate(ctx):
 @cli.command()
 @click.option("--output", "-o", type=click.Path(), help="Output file for report")
 @click.pass_context
-def health(ctx, output):
+def health(ctx: Any, output: Any) -> None:
     """Perform detailed health check"""
     manager = ctx.obj["manager"]
 
@@ -183,7 +184,7 @@ def health(ctx, output):
 
 @cli.command()
 @click.pass_context
-def logs(ctx):
+def logs(ctx: Any) -> None:
     """Show deployment logs"""
     manager = ctx.obj["manager"]
 
@@ -201,7 +202,7 @@ def logs(ctx):
 
 @cli.command()
 @click.pass_context
-def history(ctx):
+def history(ctx: Any) -> None:
     """Show deployment history"""
     manager = ctx.obj["manager"]
 

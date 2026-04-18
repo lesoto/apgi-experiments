@@ -222,7 +222,7 @@ class ExperimentRegistryGUI:
         """Create all GUI widgets."""
         # Main container
         main_frame = ttk.Frame(self.root, padding="10")
-        main_frame.grid(row=0, column=0, sticky=tk.W + tk.E + tk.N + tk.S)
+        main_frame.grid(row=0, column=0, sticky="nsew")
 
         # Configure grid weights
         self.root.columnconfigure(0, weight=1)
@@ -238,7 +238,7 @@ class ExperimentRegistryGUI:
 
         # Left panel - Experiment list and controls
         left_frame = ttk.Frame(main_frame)
-        left_frame.grid(row=1, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), padx=(0, 10))
+        left_frame.grid(row=1, column=0, sticky="nsew", padx=(0, 10))  # type: ignore[arg-type]
 
         # Experiment list
         ttk.Label(left_frame, text="Experiments:", font=("Arial", 12, "bold")).grid(
@@ -247,7 +247,7 @@ class ExperimentRegistryGUI:
 
         # Listbox with scrollbar
         list_frame = ttk.Frame(left_frame)
-        list_frame.grid(row=1, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        list_frame.grid(row=1, column=0, sticky="nsew")  # type: ignore[arg-type]
 
         scrollbar = ttk.Scrollbar(list_frame)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
@@ -264,11 +264,11 @@ class ExperimentRegistryGUI:
         self.status_label = ttk.Label(
             left_frame, text="Select an experiment to view details", foreground="gray"
         )
-        self.status_label.grid(row=2, column=0, sticky=tk.W, pady=(10, 0))
+        self.status_label.grid(row=2, column=0, sticky=tk.W, pady=(10, 0))  # type: ignore[arg-type]
 
         # Right panel - Details and controls
         right_frame = ttk.Frame(main_frame)
-        right_frame.grid(row=1, column=1, sticky=(tk.W, tk.E, tk.N, tk.S))
+        right_frame.grid(row=1, column=1, sticky="nsew")  # type: ignore[arg-type]
         right_frame.columnconfigure(0, weight=1)
         right_frame.rowconfigure(1, weight=1)
 
@@ -276,30 +276,28 @@ class ExperimentRegistryGUI:
         details_frame = ttk.LabelFrame(
             right_frame, text="Experiment Details", padding="10"
         )
-        details_frame.grid(
-            row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 10)
-        )
+        details_frame.grid(row=0, column=0, sticky="nsew", pady=(0, 10))  # type: ignore[arg-type]
         details_frame.columnconfigure(0, weight=1)
         details_frame.rowconfigure(0, weight=1)
 
         self.details_text = scrolledtext.ScrolledText(
             details_frame, height=10, width=50, wrap=tk.WORD
         )
-        self.details_text.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        self.details_text.grid(row=0, column=0, sticky="nsew")
 
         # Parameters frame
         params_frame = ttk.LabelFrame(right_frame, text="Parameters", padding="10")
-        params_frame.grid(row=1, column=0, sticky=(tk.W, tk.E), pady=(0, 10))
+        params_frame.grid(row=1, column=0, sticky="ew", pady=(0, 10))  # type: ignore[arg-type]
 
         # Number of participants
         participants_label = ttk.Label(params_frame, text="Number of Participants:")
-        participants_label.grid(row=0, column=0, sticky=tk.W)
+        participants_label.grid(row=0, column=0, sticky=tk.W)  # type: ignore[arg-type]
         add_tooltip(participants_label, "n_participants")
 
         participants_spinbox = ttk.Spinbox(
             params_frame, from_=1, to=100, width=10, textvariable=self.n_participants
         )
-        participants_spinbox.grid(row=0, column=1, sticky=tk.W, padx=(10, 0))
+        participants_spinbox.grid(row=0, column=1, sticky=tk.W, padx=(10, 0))  # type: ignore[arg-type]
         add_tooltip(participants_spinbox, "n_participants")
 
         # Track for undo/redo
@@ -332,7 +330,7 @@ class ExperimentRegistryGUI:
             row=2, column=0, sticky=tk.W, pady=(5, 0)
         )
         file_frame = ttk.Frame(params_frame)
-        file_frame.grid(row=2, column=1, sticky=(tk.W, tk.E), padx=(10, 0), pady=(5, 0))
+        file_frame.grid(row=2, column=1, sticky="ew", padx=(10, 0), pady=(5, 0))
 
         file_entry = ttk.Entry(file_frame, textvariable=self.output_file, width=30)
         file_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
@@ -348,13 +346,11 @@ class ExperimentRegistryGUI:
             theme_label.grid(row=3, column=0, sticky=tk.W, pady=(20, 5))
 
             theme_selector = self.theme_manager.create_theme_selector(params_frame)
-            theme_selector.grid(
-                row=4, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5
-            )
+            theme_selector.grid(row=4, column=0, columnspan=2, sticky="ew", pady=5)
 
         # Control buttons
         button_frame = ttk.Frame(right_frame)
-        button_frame.grid(row=2, column=0, sticky=(tk.W, tk.E))
+        button_frame.grid(row=2, column=0, sticky="ew")
 
         self.run_button = ttk.Button(
             button_frame,
@@ -383,16 +379,14 @@ class ExperimentRegistryGUI:
 
         # Bottom panel - Output
         output_frame = ttk.LabelFrame(main_frame, text="Output Console", padding="10")
-        output_frame.grid(
-            row=2, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(10, 0)
-        )
+        output_frame.grid(row=2, column=0, columnspan=3, sticky="nsew", pady=(10, 0))  # type: ignore[arg-type]
         output_frame.columnconfigure(0, weight=1)
         output_frame.rowconfigure(0, weight=1)
 
         self.output_text = scrolledtext.ScrolledText(
             output_frame, height=15, width=100, wrap=tk.WORD
         )
-        self.output_text.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        self.output_text.grid(row=0, column=0, sticky="nsew")  # type: ignore[arg-type]
 
         # Progress bar
         self.progress_var = tk.DoubleVar()
@@ -403,9 +397,7 @@ class ExperimentRegistryGUI:
             length=400,
             mode="determinate",
         )
-        self.progress_bar.grid(
-            row=3, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(10, 0)
-        )
+        self.progress_bar.grid(row=3, column=0, columnspan=3, sticky="ew", pady=(10, 0))  # type: ignore[arg-type]
 
     def populate_experiment_list(self):
         """Populate the experiment list with all available experiments."""

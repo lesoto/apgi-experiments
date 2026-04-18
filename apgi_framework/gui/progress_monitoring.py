@@ -18,7 +18,7 @@ class RealTimeProgressMonitor:
     Tracks trial completion, timing, and provides progress updates.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize progress monitor."""
         self.current_task: Optional[str] = None
         self.total_trials: int = 0
@@ -184,7 +184,7 @@ if __name__ == "__main__":
             self.root.title("Progress Monitoring Demo")
             self.root.geometry("600x400")
 
-            self.monitor = RealTimeProgressMonitor()
+            self.monitor: RealTimeProgressMonitor = RealTimeProgressMonitor()
             self.setup_ui()
 
         def setup_ui(self) -> None:
