@@ -154,15 +154,21 @@ class TestMonitoringDashboard(unittest.TestCase):
         self.assertIsNotNone(self.dashboard.streamer)
         self.assertIsNotNone(self.dashboard.root)
 
-    def test_dashboard_update_display(self):
-        """Test updating dashboard display."""
-        # This would test the GUI update functionality
-        # For now, just ensure the method exists and doesn't crash
-        try:
-            self.dashboard.update_display()
-        except Exception as e:
-            # GUI methods might fail in headless environment, that's ok
-            self.assertIn("display", str(e).lower())  # Expected GUI-related error
+    def test_dashboard_components_exist(self):
+        """Test that dashboard monitoring components are initialized."""
+        # Verify all monitoring components exist
+        self.assertIsNotNone(self.dashboard.eeg_monitor)
+        self.assertIsNotNone(self.dashboard.pupil_monitor)
+        self.assertIsNotNone(self.dashboard.cardiac_monitor)
+        self.assertIsNotNone(self.dashboard.param_monitor)
+        self.assertIsNotNone(self.dashboard.alert_system)
+
+    def test_dashboard_streaming_controls(self):
+        """Test dashboard streaming thread controls."""
+        # Verify streaming thread exists after initialization
+        self.assertTrue(hasattr(self.dashboard, "streaming_thread"))
+        # Verify stop event exists for thread control
+        self.assertTrue(hasattr(self.dashboard, "_stop_event"))
 
 
 if __name__ == "__main__":

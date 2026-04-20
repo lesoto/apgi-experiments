@@ -96,7 +96,9 @@ class IntegratedDataManager:
         except Exception as e:
             self.logger.error(f"Error stopping data management system: {str(e)}")
 
-    def register_experiment(self, experiment_id: str, metadata: Dict[str, Any]) -> str:
+    def register_experiment(
+        self, experiment_id: str, metadata: Optional[Dict[str, Any]] = None
+    ) -> str:
         """
         Register a new experiment for tracking and management.
 
@@ -108,8 +110,12 @@ class IntegratedDataManager:
             Experiment ID
 
         Raises:
-            DataManagementError: If experiment is already registered
+            DataManagementError: If experiment is already registered or ID is invalid
         """
+        # Validate experiment_id
+        if not experiment_id:
+            raise DataManagementError("Experiment ID cannot be empty")
+
         # Check for duplicate experiment
         if experiment_id in self.active_experiments:
             raise DataManagementError(
@@ -118,11 +124,12 @@ class IntegratedDataManager:
 
         try:
             # Register with monitor
-            self.experiment_monitor.register_experiment(experiment_id, metadata)
+            self.experiment_monitor.register_experiment(experiment_id, metadata or {})
 
             # Track locally
             self.active_experiments[experiment_id] = {
-                "metadata": metadata,
+                "metadata": metadata or {},
+                "status": "registered",
                 "start_time": datetime.now(),
                 "results": [],
                 "trials": [],
@@ -177,10 +184,61 @@ class IntegratedDataManager:
         except Exception as e:
             raise DataManagementError(f"Failed to update experiment data: {str(e)}")
 
-    def complete_experiment(self, experiment_id: str) -> None:
+    def update_experiment_status(self, experiment_id: str, status: str) -> None:
+        """
+        Update experiment status.
+
+        Args:
+            experiment_id: Experiment identifier
+            status: New status (e.g., "pending", "running", "completed", "failed")
+
+        Raises:
+            DataManagementError: If experiment not found or update fails
+        """
+        try:
+            if experiment_id not in self.active_experiments:
+                raise ValueError(f"Experiment {experiment_id} not registered")
+
+            self.active_experiments[experiment_id]["status"] = status
+            self.logger.debug(
+                f"Updated status for experiment {experiment_id} to {status}"
+            )
+
+        except Exception as e:
+            raise DataManagementError(f"Failed to update experiment status: {str(e)}")
+
+    def update_experiment_progress(self, experiment_id: str, progress: int) -> None:
+        """
+        Update experiment progress percentage.
+
+        Args:
+            experiment_id: Experiment identifier
+            progress: Progress percentage (0-100)
+
+        Raises:
+            DataManagementError: If experiment not found or update fails
+        """
+        try:
+            if experiment_id not in self.active_experiments:
+                raise ValueError(f"Experiment {experiment_id} not registered")
+
+            self.active_experiments[experiment_id]["progress"] = progress
+            self.logger.debug(
+                f"Updated progress for experiment {experiment_id} to {progress}%"
+            )
+
+        except Exception as e:
+            raise DataManagementError(f"Failed to update experiment progress: {str(e)}")
+
+    def complete_experiment(
+        self, experiment_id: str, results: Optional[Dict[str, Any]] = None
+    ) -> None:
         """Mark experiment as completed"""
         try:
             if experiment_id in self.active_experiments:
+                self.active_experiments[experiment_id]["status"] = "completed"
+                if results:
+                    self.active_experiments[experiment_id]["results"] = results
                 self.experiment_monitor.complete_experiment(experiment_id)
                 self.logger.info(f"Completed experiment {experiment_id}")
 

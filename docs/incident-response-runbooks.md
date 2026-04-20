@@ -538,7 +538,7 @@ Posted: [Time] UTC
 ### Action Items
 
 | Item | Owner | Due Date | Priority
-|-----|-------|----------|--------
+|------|-------|----------|----------
 | [Description] | [Name] | [Date] | P1/P2
 
 ---

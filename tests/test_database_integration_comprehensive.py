@@ -215,7 +215,13 @@ class TestEnableDatabaseIntegration:
             "apgi_framework.data.database_integration.get_config_manager"
         ) as mock_get_config:
             mock_config = Mock()
-            mock_config.features = {}
+            mock_config.config = Mock()
+            mock_config.config.features = {}
+            mock_config.enable_feature = (
+                lambda feature_name: mock_config.config.features.update(
+                    {feature_name: True}
+                )
+            )
             mock_get_config.return_value = mock_config
 
             with patch(
@@ -227,7 +233,7 @@ class TestEnableDatabaseIntegration:
                 mock_storage = Mock()
                 result = enable_database_integration(mock_storage)
 
-                assert mock_config.features["database_integration"] is True
+                assert mock_config.config.features["database_integration"] is True
                 assert result == mock_handler
 
 

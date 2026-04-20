@@ -285,36 +285,48 @@ class TestValidateParameters:
         mock_logger.info.assert_any_call("❌ Parameters invalid")
         mock_exit.assert_called_once_with(1)
 
-    @patch("sys.exit")
+    @patch("apgi_framework.validation.diagnostics_cli.get_validator")
     @patch("apgi_framework.validation.diagnostics_cli.logger")
-    def test_validate_parameters_invalid_format(self, mock_logger, mock_exit):
+    def test_validate_parameters_invalid_format(self, mock_logger, mock_get_validator):
         """Test parameter validation with invalid format."""
+        mock_validator = MockValidator()
+        mock_get_validator.return_value = mock_validator
+
         # Mock args with invalid parameter format
         mock_args = MagicMock()
         mock_args.params = ["invalid_format"]
 
-        validate_parameters(mock_args)
+        # Validate parameters should raise SystemExit
+        with pytest.raises(SystemExit) as exc_info:
+            validate_parameters(mock_args)
+
+        assert exc_info.value.code == 1
 
         # Check that logger was called with expected messages
         mock_logger.info.assert_any_call(
             "Error: Invalid parameter format: invalid_format"
         )
         mock_logger.info.assert_any_call("Expected format: key=value")
-        mock_exit.assert_called_once_with(1)
 
-    @patch("sys.exit")
+    @patch("apgi_framework.validation.diagnostics_cli.get_validator")
     @patch("apgi_framework.validation.diagnostics_cli.logger")
-    def test_validate_parameters_no_params(self, mock_logger, mock_exit):
+    def test_validate_parameters_no_params(self, mock_logger, mock_get_validator):
         """Test parameter validation with no parameters."""
+        mock_validator = MockValidator()
+        mock_get_validator.return_value = mock_validator
+
         # Mock args with no parameters
         mock_args = MagicMock()
         mock_args.params = None
 
-        validate_parameters(mock_args)
+        # Validate parameters should raise SystemExit
+        with pytest.raises(SystemExit) as exc_info:
+            validate_parameters(mock_args)
+
+        assert exc_info.value.code == 1
 
         # Check that logger was called with the expected message
         mock_logger.info.assert_any_call("No parameters provided")
-        mock_exit.assert_called_once_with(1)
 
 
 class TestGetParameterInfo:

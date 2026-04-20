@@ -1654,11 +1654,12 @@ class ConsciousnessMeasurementValidator:
         type_2_performance = max(0, conf_acc_correlation)
 
         # Determine if metacognition is intact
-        thresholds = self.config["validity_thresholds"]
+        validity_thresholds = self.config["validity_thresholds"]
+        measurement_criteria = self.config["measurement_criteria"]
         is_intact = (
-            meta_d_prime >= thresholds["metacognitive_threshold"]
-            and conf_acc_correlation >= thresholds["confidence_accuracy_r"]
-            and calibration_score >= thresholds["calibration_threshold"]
+            meta_d_prime >= validity_thresholds["metacognitive_threshold"]
+            and conf_acc_correlation >= measurement_criteria["confidence_accuracy_r"]
+            and calibration_score >= validity_thresholds["calibration_threshold"]
         )
 
         assessment_details = {

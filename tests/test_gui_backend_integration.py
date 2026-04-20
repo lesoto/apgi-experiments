@@ -18,11 +18,28 @@ if IS_HEADLESS:
         "Headless environment - skipping all GUI tests", allow_module_level=True
     )
 
+# Detect tkinter availability
 TKINTER_AVAILABLE = False
-GUI_AVAILABLE = False
+try:
+    import tkinter as tk
+
+    # Test if tkinter can actually create windows
+    try:
+        test_root = tk.Tk()
+        test_root.withdraw()
+        test_root.destroy()
+        TKINTER_AVAILABLE = True
+    except tk.TclError:
+        TKINTER_AVAILABLE = False
+except ImportError:
+    TKINTER_AVAILABLE = False
+
+GUI_AVAILABLE = TKINTER_AVAILABLE  # GUI is available if tkinter works
 
 pytestmark = [
-    pytest.mark.skipif(not GUI_AVAILABLE, reason="GUI not available in headless mode"),
+    pytest.mark.skipif(
+        not GUI_AVAILABLE, reason="GUI not available - tkinter unavailable"
+    ),
     pytest.mark.integration,
 ]
 

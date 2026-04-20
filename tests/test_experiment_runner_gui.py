@@ -12,21 +12,20 @@ import pytest
 # Detect headless environment early
 IS_HEADLESS = os.environ.get("CI") == "true" or os.environ.get("DISPLAY") is None
 
-# Skip GUI tests entirely in headless environments
-if IS_HEADLESS:
-    pytest.skip(
-        "Headless environment - skipping all GUI tests", allow_module_level=True
-    )
+# Detect tkinter availability
+try:
+    import tkinter  # noqa: F401
 
-TKINTER_AVAILABLE = False
+    TKINTER_AVAILABLE = True
+except ImportError:
+    TKINTER_AVAILABLE = False
 
-# Skip all GUI tests - tkinter not available in headless testing
+# Skip GUI tests entirely in headless environments or if tkinter is not available
+if IS_HEADLESS or not TKINTER_AVAILABLE:
+    reason = "Headless environment" if IS_HEADLESS else "Tkinter not available"
+    pytest.skip(f"{reason} - skipping all GUI tests", allow_module_level=True)
+
 GUI_AVAILABLE = TKINTER_AVAILABLE
-
-pytestmark = [
-    pytest.mark.skipif(not GUI_AVAILABLE, reason="Tkinter not available"),
-    pytest.mark.skip(reason="GUI testing requires display - run manually"),
-]
 
 
 class TestExperimentRunnerGUI:

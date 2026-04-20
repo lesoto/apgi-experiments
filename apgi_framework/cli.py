@@ -2268,6 +2268,10 @@ Examples:
             if self.logger:
                 self.logger.error(f"Unexpected error: {e}")
             sys.exit(1)
+        except Exception as e:
+            if self.logger:
+                self.logger.error(f"Unexpected error: {e}")
+            sys.exit(1)
         finally:
             # Cleanup
             if self.controller:

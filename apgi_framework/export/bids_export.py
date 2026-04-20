@@ -19,12 +19,12 @@ logger = get_logger(__name__)
 class BIDSExporter:
     """Export APGI data to BIDS-compliant format."""
 
-    def __init__(self, bids_root: Union[str, Path]):
+    def __init__(self, bids_root: Union[str, Path] = "bids_dataset"):
         """
         Initialize BIDS exporter.
 
         Args:
-            bids_root: Root directory for BIDS dataset
+            bids_root: Root directory for BIDS dataset (default: "bids_dataset")
         """
         self.bids_root = Path(bids_root)
         self.bids_root.mkdir(parents=True, exist_ok=True)
@@ -76,16 +76,23 @@ class BIDSExporter:
                 f"Invalid characters in string (path traversal attempt): {string}"
             )
 
+        # Check for spaces (not allowed)
+        if " " in string:
+            raise ValueError(f"String contains spaces: {string}")
+
         # Remove invalid characters (only allow alphanumeric, underscore, hyphen)
         sanitized = re.sub(r"[^\w\-]", "_", string)
+
+        # Replace multiple hyphens with single
+        sanitized = re.sub(r"-+", "-", sanitized)
 
         # Replace multiple underscores with single
         sanitized = re.sub(r"_+", "_", sanitized)
 
-        # Remove leading/trailing underscores
-        sanitized = sanitized.strip("_")
+        # Remove leading/trailing hyphens and underscores
+        sanitized = sanitized.strip("_-")
 
-        # Ensure result is not empty and doesn't start with problematic patterns
+        # Ensure result is not empty
         if not sanitized:
             raise ValueError(f"String became empty after sanitization: {string}")
 
@@ -194,6 +201,9 @@ class BIDSExporter:
         """Export EEG data in SET format (simplified)."""
         # For simplicity, we'll export as CSV with proper BIDS structure
         csv_path = output_path.with_suffix(".csv")
+
+        # Ensure parent directory exists
+        csv_path.parent.mkdir(parents=True, exist_ok=True)
 
         df = pd.DataFrame(data.T, columns=channels)
         df.to_csv(csv_path, index=False)
@@ -656,6 +666,14 @@ def export_apgi_to_bids(
     )
 
     exported_files = {"dataset_description": dataset_desc}
+
+    # Create participants.tsv from subject IDs (empty list if no data)
+    participants = [
+        {"participant_id": sid.replace("sub-", "") if sid.startswith("sub-") else sid}
+        for sid in data.keys()
+    ]
+    participants_file = exporter.create_participants_tsv(participants)
+    exported_files["participants"] = participants_file
 
     # Export each data type
     for subject_id, subject_data in data.items():

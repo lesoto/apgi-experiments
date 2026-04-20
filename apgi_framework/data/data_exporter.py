@@ -43,6 +43,7 @@ class DataExporter:
             output_dir = "."
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True, parents=True)
+        self.export_dir = self.output_dir  # Alias for compatibility
         self.config = config or {}
         self.logger = logging.getLogger(__name__)
 
@@ -343,6 +344,9 @@ class DataExporter:
             Path to exported file
         """
         filepath = Path(filepath)
+        # Prepend output_dir if filepath is relative
+        if not filepath.is_absolute():
+            filepath = self.output_dir / filepath
         filepath.parent.mkdir(parents=True, exist_ok=True)
 
         with open(filepath, "w") as f:
@@ -375,6 +379,9 @@ class DataExporter:
         import pandas as pd
 
         filepath = Path(filepath)
+        # Prepend output_dir if filepath is relative
+        if not filepath.is_absolute():
+            filepath = self.output_dir / filepath
         filepath.parent.mkdir(parents=True, exist_ok=True)
 
         # Convert to DataFrame if needed

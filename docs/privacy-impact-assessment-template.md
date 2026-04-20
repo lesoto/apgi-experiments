@@ -15,14 +15,14 @@
 
 ### 1.1 Assessment Information
 
-| Field | Details |
-|-------|---------|
-| **Project/System Name** | |
-| **PIA Reference Number** | PIA-YYYY-NNN |
-| **Assessment Date** | |
-| **Assessment Lead** | |
-| **Department/Unit** | |
-| **Data Protection Officer** | |
+|Field|Details|
+|---|---|
+|**Project/System Name**||
+|**PIA Reference Number**|PIA-YYYY-NNN|
+|**Assessment Date**||
+|**Assessment Lead**||
+|**Department/Unit**||
+|**Data Protection Officer**||
 
 ### 1.2 Project Description
 
@@ -36,13 +36,13 @@
 
 **What personal data will be processed?**
 
-| Data Category | Description | Purpose | Legal Basis |
-|---------------|-------------|---------|-------------|
-| Participant Data | Names, contact info, demographics | Research participant management | Consent / Legitimate interest |
-| Experiment Data | Behavioral responses, physiological data | Scientific research | Consent |
-| Health Data | Medical history, cognitive assessments | Clinical biomarker analysis | Explicit consent |
-| Authentication Data | User credentials, access logs | Security and access control | Legitimate interest |
-| System Logs | IP addresses, timestamps, activity logs | Security monitoring, debugging | Legitimate interest |
+|Data Category|Description|Purpose|Legal Basis|
+|---|---|---|---|
+|Participant Data|Names, contact info, demographics|Research participant management|Consent / Legitimate interest|
+|Experiment Data|Behavioral responses, physiological data|Scientific research|Consent|
+|Health Data|Medical history, cognitive assessments|Clinical biomarker analysis|Explicit consent|
+|Authentication Data|User credentials, access logs|Security and access control|Legitimate interest|
+|System Logs|IP addresses, timestamps, activity logs|Security monitoring, debugging|Legitimate interest|
 
 ---
 
@@ -52,12 +52,12 @@
 
 **How is personal data collected?**
 
-| Source | Method | Data Types | Volume (approx.) |
-|--------|--------|------------|------------------|
-| Direct user input | Web forms, GUI | Contact info, preferences | |
-| Automated collection | Sensors, APIs | Physiological data, behavior | |
-| Third-party imports | Data imports | External datasets | |
-| System generation | Logs, analytics | Usage patterns, metadata |
+|Source|Method|Data Types|Volume (approx.)|
+|---|---|---|---|
+|Direct user input|Web forms, GUI|Contact info, preferences||
+|Automated collection|Sensors, APIs|Physiological data, behavior||
+|Third-party imports|Data imports|External datasets||
+|System generation|Logs, analytics|Usage patterns, metadata||
 
 ### 2.2 Data Flow Diagram
 
@@ -74,23 +74,23 @@
 
 **Where and how is data stored?**
 
-| Storage Type | Location | Encryption | Retention Period |
-|--------------|----------|------------|------------------|
-| Primary Database | [e.g., PostgreSQL on AWS] | At-rest: AES-256 | [Duration] |
-| File Storage | [e.g., Local/Cloud] | At-rest: AES-256 | [Duration] |
-| Backup Systems | [e.g., Offsite backup] | Encrypted | [Duration] |
-| Logs | [e.g., ELK Stack] | Transport: TLS 1.3 | [Duration] |
-| Cache | [e.g., Redis] | Memory-only | Session |
+|Storage Type|Location|Encryption|Retention Period|
+|---|---|---|---|
+|Primary Database|[e.g., PostgreSQL on AWS]|At-rest: AES-256|[Duration]|
+|File Storage|[e.g., Local/Cloud]|At-rest: AES-256|[Duration]|
+|Backup Systems|[e.g., Offsite backup]|Encrypted|[Duration]|
+|Logs|[e.g., ELK Stack]|Transport: TLS 1.3|[Duration]|
+|Cache|[e.g., Redis]|Memory-only|Session|
 
 ### 2.4 Data Sharing
 
 **Is data shared with third parties?**
 
-| Recipient | Purpose | Data Shared | Safeguards | Agreement Type |
-|-----------|---------|-------------|------------|----------------|
-| Cloud Provider | Infrastructure | All data | DPA, encryption | Data Processing Agreement |
-| Research Partners | Collaboration | Anonymized results | Data use agreement | Data Sharing Agreement |
-| Analytics Services | Monitoring | Aggregated metrics | Anonymization | Service Agreement |
+|Recipient|Purpose|Data Shared|Safeguards|Agreement Type|
+|---|---|---|---|---|
+|Cloud Provider|Infrastructure|All data|DPA, encryption|Data Processing Agreement|
+|Research Partners|Collaboration|Anonymized results|Data use agreement|Data Sharing Agreement|
+|Analytics Services|Monitoring|Aggregated metrics|Anonymization|Service Agreement|
 
 ---
 

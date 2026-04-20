@@ -150,6 +150,9 @@ class TestDeploymentValidatorBasic:
         )
         report.overall_passed = False
 
+        # Assign report to validator
+        self.validator.current_report = report
+
         summary = self.validator.generate_summary()
 
         assert "APGI Framework Deployment Validation Summary" in summary

@@ -50,135 +50,163 @@ class TestDeploymentValidator:
 
     def test_validate_deployment_success(self):
         """Test successful deployment validation."""
-        with patch.multiple(
-            "apgi_framework.deployment.deployment_validator.SystemRequirementsValidator",
-            "apgi_framework.deployment.installation_manager.InstallationManager",
-            "apgi_framework.deployment.hardware_configuration.HardwareConfigurationManager",
-        ) as (mock_sys_val, mock_install_mgr, mock_hw_mgr):
-            # Configure mocks to return success
-            mock_sys_val.return_value.validate_system.return_value = Mock(
-                can_run=True,
-                passed_count=5,
-                warning_count=1,
-                failed_count=0,
-                overall_status="pass",
-            )
-            mock_install_mgr.return_value.install_all_dependencies.return_value = Mock(
-                success=True,
-                installed_count=10,
-                failed_count=0,
-                skipped_count=2,
-                dependencies={},
-            )
-            mock_hw_mgr.return_value.list_available_configs.return_value = [
-                "eeg",
-                "pupil",
-            ]
-            mock_hw_mgr.return_value.devices = []
+        # Mock the validation phases directly
+        with patch.object(
+            self.validator,
+            "system_validator",
+            Mock(
+                validate_system=Mock(
+                    can_run=True,
+                    passed_count=5,
+                    warning_count=1,
+                    failed_count=0,
+                    overall_status="pass",
+                )
+            ),
+        ):
+            with patch.object(
+                self.validator,
+                "installation_manager",
+                Mock(
+                    install_all_dependencies=Mock(
+                        success=True,
+                        installed_count=10,
+                        failed_count=0,
+                        skipped_count=2,
+                        dependencies={},
+                    )
+                ),
+            ):
+                with patch.object(
+                    self.validator,
+                    "hardware_manager",
+                    Mock(
+                        list_available_configs=Mock(return_value=["eeg", "pupil"]),
+                        devices=[],
+                    ),
+                ):
+                    # Run validation
+                    report = self.validator.validate_deployment()
 
-            # Run validation
-            report = self.validator.validate_deployment()
-
-            # Verify results
-            assert report.overall_passed is True
-            assert report.passed_phases == 5  # All phases passed
-            assert report.failed_phases == 0
-            assert len(report.results) == 6  # 5 phases + performance tests
+                    # Verify results
+                    assert report.overall_passed is True
+                    assert report.passed_phases == 5  # All phases passed
+                    assert report.failed_phases == 0
+                    assert len(report.results) == 6  # 5 phases + performance tests
 
     def test_validate_deployment_with_optional_skip(self):
         """Test deployment validation with optional components skipped."""
-        with patch.multiple(
-            "apgi_framework.deployment.deployment_validator.SystemRequirementsValidator",
-            "apgi_framework.deployment.installation_manager.InstallationManager",
-            "apgi_framework.deployment.hardware_configuration.HardwareConfigurationManager",
-        ) as (mock_sys_val, mock_install_mgr, mock_hw_mgr):
-            # Configure mocks for mixed success
-            mock_sys_val.return_value.validate_system.return_value = Mock(
-                can_run=True,
-                passed_count=3,
-                warning_count=2,
-                failed_count=0,
-                overall_status="pass",
-            )
-            mock_install_mgr.return_value.install_all_dependencies.return_value = Mock(
-                success=False,  # Some dependencies failed
-                installed_count=8,
-                failed_count=2,
-                skipped_count=0,
-                dependencies={},
-            )
-
-            # Run validation with skip optional
-            report = self.validator.validate_deployment(skip_optional=True)
-
-            # Verify results
-            assert report.overall_passed is False  # Overall should fail
-            assert report.passed_phases == 3  # Only 3 phases passed
-            assert (
-                len(
-                    [
-                        r
-                        for r in report.results
-                        if r.phase == ValidationPhase.DEPENDENCIES
-                    ]
+        with patch.object(
+            self.validator,
+            "system_validator",
+            Mock(
+                validate_system=Mock(
+                    can_run=True,
+                    passed_count=3,
+                    warning_count=2,
+                    failed_count=0,
+                    overall_status="pass",
                 )
-                == 1
-            )
+            ),
+        ):
+            with patch.object(
+                self.validator,
+                "installation_manager",
+                Mock(
+                    install_all_dependencies=Mock(
+                        success=False,  # Some dependencies failed
+                        installed_count=8,
+                        failed_count=2,
+                        skipped_count=0,
+                        dependencies={},
+                    )
+                ),
+            ):
+                # Run validation with skip optional
+                report = self.validator.validate_deployment(skip_optional=True)
+
+                # Verify results
+                assert report.overall_passed is False  # Overall should fail
+                assert report.passed_phases == 3  # Only 3 phases passed
+                assert (
+                    len(
+                        [
+                            r
+                            for r in report.results
+                            if r.phase == ValidationPhase.DEPENDENCIES
+                        ]
+                    )
+                    == 1
+                )
 
     def test_validate_deployment_with_performance_tests(self):
         """Test deployment validation with performance tests enabled."""
-        with patch.multiple(
-            "apgi_framework.deployment.deployment_validator.SystemRequirementsValidator",
-            "apgi_framework.deployment.installation_manager.InstallationManager",
-            "apgi_framework.deployment.hardware_configuration.HardwareConfigurationManager",
-        ) as (mock_sys_val, mock_install_mgr, mock_hw_mgr):
-            # Configure mocks for success
-            mock_sys_val.return_value.validate_system.return_value = Mock(
-                can_run=True,
-                passed_count=4,
-                warning_count=0,
-                failed_count=0,
-                overall_status="pass",
-            )
-            mock_install_mgr.return_value.install_all_dependencies.return_value = Mock(
-                success=True,
-                installed_count=10,
-                failed_count=0,
-                skipped_count=0,
-                dependencies={},
-            )
-            mock_hw_mgr.return_value.list_available_configs.return_value = ["eeg"]
-            mock_hw_mgr.return_value.devices = ["device1"]
+        with patch.object(
+            self.validator,
+            "system_validator",
+            Mock(
+                validate_system=Mock(
+                    can_run=True,
+                    passed_count=4,
+                    warning_count=0,
+                    failed_count=0,
+                    overall_status="pass",
+                )
+            ),
+        ):
+            with patch.object(
+                self.validator,
+                "installation_manager",
+                Mock(
+                    install_all_dependencies=Mock(
+                        success=True,
+                        installed_count=10,
+                        failed_count=0,
+                        skipped_count=0,
+                        dependencies={},
+                    )
+                ),
+            ):
+                with patch.object(
+                    self.validator,
+                    "hardware_manager",
+                    Mock(
+                        list_available_configs=Mock(return_value=["eeg"]),
+                        devices=["device1"],
+                    ),
+                ):
+                    # Mock performance test timing
+                    with patch("time.time") as mock_time:
+                        mock_time.side_effect = [0.0, 0.5, 1.0]  # Fast operations
 
-            # Mock performance test timing
-            with patch("time.time") as mock_time:
-                mock_time.side_effect = [0.0, 0.5, 1.0]  # Fast operations
+                    report = self.validator.validate_deployment(
+                        run_performance_tests=True
+                    )
 
-            report = self.validator.validate_deployment(run_performance_tests=True)
-
-            # Verify performance test phase was included
-            performance_results = [
-                r
-                for r in report.results
-                if r.phase == ValidationPhase.PERFORMANCE_TESTS
-            ]
-            assert len(performance_results) == 1
-            assert performance_results[0].passed is True
+                    # Verify performance test phase was included
+                    performance_results = [
+                        r
+                        for r in report.results
+                        if r.phase == ValidationPhase.PERFORMANCE_TESTS
+                    ]
+                    assert len(performance_results) == 1
+                    assert performance_results[0].passed is True
 
     def test_validate_deployment_system_requirements_failure(self):
         """Test deployment validation with system requirements failure."""
-        with patch.multiple(
-            "apgi_framework.deployment.deployment_validator.SystemRequirementsValidator"
-        ) as mock_sys_val:
-            # Configure mock to return failure
-            mock_sys_val.return_value.validate_system.return_value = Mock(
-                can_run=False,
-                passed_count=2,
-                warning_count=0,
-                failed_count=3,
-                overall_status="fail",
-            )
-
+        with patch.object(
+            self.validator,
+            "system_validator",
+            Mock(
+                validate_system=Mock(
+                    can_run=False,
+                    passed_count=2,
+                    warning_count=0,
+                    failed_count=3,
+                    overall_status="fail",
+                )
+            ),
+        ):
             report = self.validator.validate_deployment()
 
             # Verify failure
@@ -191,18 +219,19 @@ class TestDeploymentValidator:
 
     def test_validate_deployment_dependency_failure(self):
         """Test deployment validation with dependency installation failure."""
-        with patch.multiple(
-            "apgi_framework.deployment.installation_manager.InstallationManager"
-        ) as mock_install_mgr:
-            # Configure mock to return failure
-            mock_install_mgr.return_value.install_all_dependencies.return_value = Mock(
-                success=False,
-                installed_count=5,
-                failed_count=3,
-                skipped_count=0,
-                dependencies={"numpy": {"error": "Version conflict"}},
-            )
-
+        with patch.object(
+            self.validator,
+            "installation_manager",
+            Mock(
+                install_all_dependencies=Mock(
+                    success=False,
+                    installed_count=5,
+                    failed_count=3,
+                    skipped_count=0,
+                    dependencies={"numpy": {"error": "Version conflict"}},
+                )
+            ),
+        ):
             report = self.validator.validate_deployment()
 
             # Verify failure
@@ -215,18 +244,21 @@ class TestDeploymentValidator:
 
     def test_validate_deployment_hardware_config(self):
         """Test hardware configuration validation."""
-        with patch.multiple(
-            "apgi_framework.deployment.hardware_configuration.HardwareConfigurationManager"
-        ) as mock_hw_mgr:
-            # Configure mock
-            mock_hw_mgr.return_value.list_available_configs.return_value = [
-                "eeg_32chan",
-                "eeg_64chan",
-                "pupil",
-                "cardiac",
-            ]
-            mock_hw_mgr.return_value.devices = ["eeg_device_1", "pupil_device_1"]
-
+        with patch.object(
+            self.validator,
+            "hardware_manager",
+            Mock(
+                list_available_configs=Mock(
+                    return_value=[
+                        "eeg_32chan",
+                        "eeg_64chan",
+                        "pupil",
+                        "cardiac",
+                    ]
+                ),
+                devices=["eeg_device_1", "pupil_device_1"],
+            ),
+        ):
             report = self.validator.validate_deployment()
 
             # Verify hardware validation phase
@@ -258,7 +290,7 @@ class TestDeploymentValidator:
         """Test functional test phase with import failures."""
         with patch("builtins.__import__") as mock_import:
             # Configure import mock - some fail
-            def import_side_effect(module_name):
+            def import_side_effect(module_name, *args, **kwargs):
                 if module_name in ["numpy", "pandas"]:
                     raise ImportError(f"Cannot import {module_name}")
                 return None

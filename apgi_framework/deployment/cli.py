@@ -2,14 +2,21 @@
 Command-line interface for deployment automation.
 """
 
+import sys
 from pathlib import Path
 from typing import Any, Tuple
 
 import click
 
-from ..logging.standardized_logging import get_logger
-
-from .automation_manager import DeploymentAutomationManager
+# Handle both module import and direct execution
+try:
+    from ..logging.standardized_logging import get_logger
+    from .automation_manager import DeploymentAutomationManager
+except ImportError:
+    # Add parent directory to path for direct execution
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+    from apgi_framework.logging.standardized_logging import get_logger
+    from apgi_framework.deployment.automation_manager import DeploymentAutomationManager
 
 logger = get_logger(__name__)
 
