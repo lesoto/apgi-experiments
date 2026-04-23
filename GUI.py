@@ -1403,7 +1403,9 @@ class APGIFrameworkGUI(ctk.CTk):
 
         # Initialize validation and error handling
         try:
-            self.config_validator = ConfigurationValidator()
+            self.config_validator: Optional[ConfigurationValidator] = (
+                ConfigurationValidator()
+            )
         except Exception as e:
             if self.logger:
                 self.logger.warning(f"Config validator initialization failed: {e}")
@@ -6967,8 +6969,6 @@ For detailed documentation, please refer to the user manual.
         """Execute a Python script."""
         # Check for known experiment scripts
         experiment_scripts = {
-            "tools/run_experiments.py": "Main experiment runner",
-            "run_experiments.py": "Main experiment runner (tools)",
             "examples/01_run_primary_falsification_test.py": "Primary falsification test example",
             "examples/02_batch_processing_configurations.py": "Batch processing example",
             "examples/03_custom_analysis_saved_results.py": "Custom analysis example",
@@ -6995,11 +6995,8 @@ For detailed documentation, please refer to the user manual.
         if script_name in self.get_python_files():
             script_path = str((ALLOWED_BASE_DIR / script_name).resolve())
         # Check tools directory
-        elif script_name.startswith("tools/") or script_name == "run_experiments.py":
-            if script_name == "run_experiments.py":
-                potential_paths = ["tools/run_experiments.py", script_name]
-            else:
-                potential_paths = [script_name]
+        elif script_name.startswith("tools/"):
+            potential_paths = [script_name]
 
             for potential_path in potential_paths:
                 full_path = ALLOWED_BASE_DIR / potential_path

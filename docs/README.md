@@ -201,7 +201,6 @@ https://github.com/apgi-research/apgi-framework
 - apps/apgi_falsification_gui.py - Falsification testing GUI (74KB)
 - apps/apgi_falsification_gui_refactored.py - Refactored falsification GUI
 - apps/gui_template.py - GUI template (241KB)
-- apps/gui_template_background.py - Background GUI template
 
 #### Framework GUI Components
 
@@ -228,7 +227,6 @@ https://github.com/apgi-research/apgi-framework
 #### CLI Tools
 
 - tools/run_tests.py - Test runner CLI
-- tools/run_experiments.py - Experiment runner CLI
 
 ### 🔧 Standalone Tools & Scripts
 
@@ -243,7 +241,6 @@ https://github.com/apgi-research/apgi-framework
 
 #### Analysis & Processing
 
-- tools/run_experiments.py - Experiment execution tool
 - examples/data_loader.py - Data loading utility
 - examples/coverage_collector_demo.py - Coverage collection demo
 
@@ -335,16 +332,6 @@ https://github.com/apgi-research/apgi-framework
    python GUI-Launcher.py
    ```
 
-6. **Run experiments via command line**
-
-   ```bash
-   # Run interoceptive gating experiment
-   python run_experiments.py interoceptive_gating --n_participants 10 --n_trials 50
-   
-   # Run AI benchmarking experiment
-   python run_experiments.py ai_benchmarking --n_episodes 100 --n_agents_per_type 3
-   ```
-
 ## Currently Implemented
 
 ### Core Models
@@ -378,20 +365,12 @@ https://github.com/apgi-research/apgi-framework
    - Grid world environment with food, obstacles, and predators
    - Performance metrics: survival time, energy efficiency, food consumption
 
-### Demonstration Scripts
-
-1. **APGI Model Demonstrations** (`run_experiments.py`)
-   - Threshold effects on ignition probability
-   - Somatic marker influence on decision making
-   - Precision parameter effects
-   - Dynamic threshold adaptation
-
-2. **GUI Interface** (`GUI-Launcher.py`)
+3. **GUI Interface** (`GUI-Launcher.py`)
    - Tkinter-based interface for running experiments
    - Parameter configuration and real-time logging
    - Supports all implemented experiments
 
-3. **Web Interface** (`../../apgi-web/APGI-Experiments.html`)
+4. **Web Interface** (`../../apgi-web/APGI-Experiments.html`)
    - Interactive web-based experiments and visualizations
    - Modern responsive design with real-time particle animations
    - Neural network visualizations and interactive parameter controls

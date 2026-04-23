@@ -85,14 +85,16 @@ class TestDeploymentValidator:
                         devices=[],
                     ),
                 ):
-                    # Run validation
-                    report = self.validator.validate_deployment()
+                    # Run validation with performance tests enabled
+                    report = self.validator.validate_deployment(
+                        run_performance_tests=True
+                    )
 
                     # Verify results
                     assert report.overall_passed is True
-                    assert report.passed_phases == 5  # All phases passed
+                    assert report.passed_phases == 6  # All phases passed
                     assert report.failed_phases == 0
-                    assert len(report.results) == 6  # 5 phases + performance tests
+                    assert len(report.results) == 6  # 6 phases
 
     def test_validate_deployment_with_optional_skip(self):
         """Test deployment validation with optional components skipped."""

@@ -323,13 +323,6 @@ class ComprehensiveGUILauncher:
                     "command": self.launch_tests_gui,
                 },
                 {
-                    "name": "GUI Template",
-                    "file": "apps/gui_template_background.py",
-                    "description": "Template for GUI development",
-                    "icon": "[Tools]",
-                    "command": self.launch_gui_template,
-                },
-                {
                     "name": "GUI Template (Main)",
                     "file": "apps/gui_template.py",
                     "description": "Main GUI template for development",
@@ -351,13 +344,6 @@ class ComprehensiveGUILauncher:
                     "description": "Run comprehensive test suite with GUI integration",
                     "icon": "[Test]",
                     "command": self.launch_test_runner,
-                },
-                {
-                    "name": "Experiment Runner (CLI)",
-                    "file": "run_experiments.py",
-                    "description": "Command-line experiment runner with all experiments",
-                    "icon": "[CLI]",
-                    "command": self.launch_experiment_runner_cli,
                 },
                 {
                     "name": "Framework CLI",
@@ -504,11 +490,22 @@ class ComprehensiveGUILauncher:
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
 
-        # Bind mouse wheel for scrolling
+        # Bind mouse wheel for scrolling (cross-platform)
         def _on_mousewheel(event):
-            canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+            if sys.platform == "darwin":
+                canvas.yview_scroll(int(-1 * event.delta), "units")
+            else:
+                canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+        def _on_mousewheel_linux(event):
+            if event.num == 4:
+                canvas.yview_scroll(-1, "units")
+            elif event.num == 5:
+                canvas.yview_scroll(1, "units")
 
         canvas.bind_all("<MouseWheel>", _on_mousewheel)
+        canvas.bind_all("<Button-4>", _on_mousewheel_linux)
+        canvas.bind_all("<Button-5>", _on_mousewheel_linux)
 
         # Bottom buttons
         self.create_bottom_buttons(main_container)
@@ -520,18 +517,27 @@ class ComprehensiveGUILauncher:
             fill=tk.BOTH, expand=True, pady=(UIConfig.BOTTOM_BUTTON_SPACING, 0)
         )
 
-        # Left side buttons (now occupies full width)
+        # Left side buttons
         left_frame = tk.Frame(bottom_frame, bg="#ecf0f1")
         left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        # Exit button (moved to left_frame)
+        # System Info button
+        info_button = ttk.Button(
+            left_frame,
+            text="System Info",
+            command=self.show_system_info,
+            style="Secondary.TButton",
+        )
+        info_button.pack(side=tk.LEFT, padx=(0, 12))
+
+        # Exit button
         exit_button = ttk.Button(
             left_frame,
             text="Exit",
             command=self.root.quit,
             style="Danger.TButton",
         )
-        exit_button.pack()
+        exit_button.pack(side=tk.LEFT)
 
     def create_application_sections(self, parent):
         """Create application sections for each category."""
@@ -734,10 +740,6 @@ class ComprehensiveGUILauncher:
         """Launch Utils GUI."""
         self.launch_python_script("Utils-GUI.py", "Utils GUI")
 
-    def launch_gui_template(self):
-        """Launch GUI Template."""
-        self.launch_python_script("apps/gui_template_background.py", "GUI Template")
-
     def launch_error_handling(self):
         """Launch Error Handling Demo."""
         self.launch_python_script(
@@ -776,10 +778,6 @@ class ComprehensiveGUILauncher:
     def launch_test_runner(self):
         """Launch Comprehensive Test Runner."""
         self.launch_python_script("run_tests.py", "Comprehensive Test Runner")
-
-    def launch_experiment_runner_cli(self):
-        """Launch Experiment Runner (CLI)."""
-        self.launch_python_script("run_experiments.py", "Experiment Runner (CLI)")
 
     def launch_framework_cli(self):
         """Launch Framework CLI."""
@@ -1031,6 +1029,7 @@ Examples:
     if args.list:
         current_dir = Path(__file__).parent
         launcher = ComprehensiveGUILauncher()
+        launcher.root.withdraw()  # Hide the GUI window in list mode
         print("\nAvailable GUI Applications:")
         print("=" * 60)
         for category, apps in launcher.gui_apps.items():
@@ -1040,6 +1039,7 @@ Examples:
                 status = "✓" if script_path.exists() else "✗"
                 print(f"  [{status}] {app['name']}")
                 print(f"      {app['file']}")
+        launcher.root.destroy()  # Clean up Tk resources
         return
 
     # Normal GUI mode

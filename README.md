@@ -83,42 +83,37 @@ python GUI-Launcher.py
 **Type**: Desktop GUI
 **Purpose**: Launcher application for GUI components
 
-### 4. Run Experiments Script (`run_experiments.py`)
-
-**Type**: Script
-**Purpose**: Batch experiment execution
-
-### 5. Run Tests Script (`run_tests.py`)
+### 4. Run Tests Script (`run_tests.py`)
 
 **Type**: Script
 **Purpose**: Test execution and reporting
 
-### 6. Tests GUI (`Tests-GUI.py`)
+### 5. Tests GUI (`Tests-GUI.py`)
 
 **Type**: Desktop GUI
 **Purpose**: GUI for running and monitoring tests
 
-### 7. Utils GUI (`Utils-GUI.py`)
+### 6. Utils GUI (`Utils-GUI.py`)
 
 **Type**: Desktop GUI
 **Purpose**: Utility interface for framework tools
 
-### 8. Quick Deploy Script (`quick_deploy.py`)
+### 7. Quick Deploy Script (`quick_deploy.py`)
 
 **Type**: Deployment script
 **Purpose**: One-click deployment for non-technical users
 
-### 9. Setup Script (`setup.sh`)
+### 8. Setup Script (`setup.sh`)
 
 **Type**: Installation script
 **Purpose**: Environment setup and dependency installation
 
-### 10. Deploy Script (`deploy.sh`)
+### 9. Deploy Script (`deploy.sh`)
 
 **Type**: Deployment script
 **Purpose**: Production deployment and configuration
 
-### 11. Falsification GUI (`apps/apgi_falsification_gui.py`)
+### 10. Falsification GUI (`apps/apgi_falsification_gui.py`)
 
 **Type**: Desktop GUI
 **Purpose**: Interface for falsification testing

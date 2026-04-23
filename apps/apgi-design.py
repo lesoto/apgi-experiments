@@ -458,7 +458,7 @@ class ThemeManager:
         },
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.current_theme: str = "dark"
 
     def get_theme(self, theme_name: Optional[str] = None) -> Dict:
