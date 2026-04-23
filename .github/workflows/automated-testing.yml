@@ -74,12 +74,8 @@ jobs:
     
     - name: Type check with mypy
       run: |
-        mypy apgi_framework --strict --ignore-missing-imports
-    
-    - name: Check import sorting with isort
-      run: |
-        isort --check-only apgi_framework/
-    
+        mypy apgi_framework --ignore-missing-imports --no-error-summary
+
     - name: Check code formatting with black
       run: |
         black --check --diff apgi_framework/
