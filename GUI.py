@@ -193,6 +193,7 @@ create_undo_redo_menu = _create_undo_redo_menu
 
 
 try:
+    # Core Framework Components
     from apgi_framework.cli import APGIFrameworkCLI
     from apgi_framework.config import ConfigManager
     from apgi_framework.core.equation import APGIEquation
@@ -205,26 +206,21 @@ try:
     from apgi_framework.data.visualizer import APGIVisualizer
     from apgi_framework.main_controller import MainApplicationController
 
+    # Falsification Tests
     try:
-        from apgi_framework.falsification import PrimaryFalsificationTest
+        from apgi_framework.falsification import (
+            ConsciousnessWithoutIgnitionTest,
+            PrimaryFalsificationTest,
+            SomaBiasTest,
+            ThresholdInsensitivityTest,
+        )
     except ImportError:
         PrimaryFalsificationTest = None  # type: ignore
-
-    try:
-        from apgi_framework.falsification import ConsciousnessWithoutIgnitionTest
-    except ImportError:
         ConsciousnessWithoutIgnitionTest = None  # type: ignore
-
-    try:
-        from apgi_framework.falsification import ThresholdInsensitivityTest
-    except ImportError:
         ThresholdInsensitivityTest = None  # type: ignore
+        SomaBiasTest = None  # type: ignore
 
-    try:
-        from apgi_framework.falsification import SomaBiasTest
-    except ImportError:
-        SomaBiasTest = None  # type: ignore[assignment,misc]
-
+    # Analysis and Modeling
     try:
         from apgi_framework.analysis.bayesian_models import HierarchicalBayesianModel
 
@@ -244,84 +240,76 @@ try:
     except ImportError:
         ParameterEstimation = None  # type: ignore
 
-    # Clinical applications - use available classes
+    # Clinical Applications
     try:
         from apgi_framework.clinical.disorder_classification import (
             DisorderClassification as DisorderClassifier,
         )
     except ImportError:
-        pass  # DisorderClassifier already set to None in except block above
+        DisorderClassifier = None  # type: ignore
 
     try:
         from apgi_framework.clinical.parameter_extraction import (
             ClinicalParameterExtractor,
         )
     except ImportError:
-        pass  # ClinicalParameterExtractor already set to None in except block above
+        ClinicalParameterExtractor = None  # type: ignore
 
-    # Neural simulators
-    from apgi_framework.simulators.bold_simulator import BOLDSimulator
-    from apgi_framework.simulators.gamma_simulator import GammaSimulator
-    from apgi_framework.simulators.p3b_simulator import P3bSimulator
-    from apgi_framework.simulators.pci_calculator import PCICalculator
+    # Neural Simulators
+    try:
+        from apgi_framework.simulators.bold_simulator import BOLDSimulator
+        from apgi_framework.simulators.gamma_simulator import GammaSimulator
+        from apgi_framework.simulators.p3b_simulator import P3bSimulator
+        from apgi_framework.simulators.pci_calculator import PCICalculator
+    except ImportError:
+        BOLDSimulator = None  # type: ignore
+        GammaSimulator = None  # type: ignore
+        P3bSimulator = None  # type: ignore
+        PCICalculator = None  # type: ignore
 
-    # Adaptive procedures - use available classes
+    # Adaptive Procedures and Stimulus Control
     try:
         from apgi_framework.adaptive.quest_plus_staircase import QuestPlusStaircase
+        from apgi_framework.adaptive.stimulus_generators import (
+            GaborPatchGenerator,
+            ToneGenerator,
+        )
     except ImportError:
-        pass  # QuestPlusStaircase already set to None in except block above
-
-    # StimulusGenerator already handled in the try-except block above
+        QuestPlusStaircase = None  # type: ignore
+        GaborPatchGenerator = None  # type: ignore
+        ToneGenerator = None  # type: ignore
 
 except ImportError as e:
+    # Use fallback logger for critical import failures
     try:
         from apgi_framework.logging.centralized_logging import get_logger
 
         logger = get_logger("gui_import")
-        logger.warning(f"Warning: Some APGI Framework modules not available: {e}")
+        logger.warning(f"Critical: Core APGI Framework modules not available: {e}")
     except ImportError:
         logger = logging.getLogger("gui_import")
-        logger.warning(f"Warning: Some APGI Framework modules not available: {e}")
-    # Fallback imports for basic functionality
-    try:
-        from apgi_framework import (
-            APGIEquation,
-            PrecisionCalculator,
-            PredictionErrorProcessor,
-        )
-        from apgi_framework.adaptive.quest_plus_staircase import QuestPlusStaircase
-        from apgi_framework.analysis.bayesian_models import (
-            HierarchicalBayesianModel as BayesianParameterEstimator,
-        )
-        from apgi_framework.cli import APGIFrameworkCLI
-        from apgi_framework.clinical.disorder_classification import (
-            DisorderClassification as DisorderClassifier,
-        )
-        from apgi_framework.config import (
-            ConfigManager,
-        )
-        from apgi_framework.data.data_manager import IntegratedDataManager
-    except ImportError as e2:
-        try:
-            from apgi_framework.logging.centralized_logging import get_logger
+        logger.warning(f"Critical: Core APGI Framework modules not available: {e}")
 
-            logger = get_logger("gui_import_error")
-            logger.error(f"Error: Even basic APGI Framework imports failed: {e2}")
-        except ImportError:
-            import logging
-
-            logger = logging.getLogger("gui_import_error")
-            logger.error(f"Error: Even basic APGI Framework imports failed: {e2}")
-        # Set all components to None for graceful degradation
-        ConfigManager = None  # type: ignore
-        APGIEquation = None  # type: ignore
-        PrecisionCalculator = None  # type: ignore
-        PredictionErrorProcessor = None  # type: ignore
-        APGIFrameworkCLI = None  # type: ignore
-        IntegratedDataManager = None  # type: ignore
-        BayesianParameterEstimator = None  # type: ignore
-        DisorderClassifier = None  # type: ignore
-        QuestPlusStaircase = None  # type: ignore
+    # Set all missing components to None for graceful degradation
+    # (Only those that might have failed the outer try block)
+    ConfigManager = None  # type: ignore
+    APGIEquation = None  # type: ignore
+    PrecisionCalculator = None  # type: ignore
+    PredictionErrorProcessor = None  # type: ignore
+    SomaticMarkerEngine = None  # type: ignore
+    ThresholdManager = None  # type: ignore
+    IntegratedDataManager = None  # type: ignore
+    ReportGenerator = None  # type: ignore
+    APGIVisualizer = None  # type: ignore
+    MainApplicationController = None  # type: ignore
+    APGIFrameworkCLI = None  # type: ignore
+    BOLDSimulator = None  # type: ignore
+    GammaSimulator = None  # type: ignore
+    P3bSimulator = None  # type: ignore
+    PCICalculator = None  # type: ignore
+    QuestPlusStaircase = None  # type: ignore
+    GaborPatchGenerator = None  # type: ignore
+    ToneGenerator = None  # type: ignore
 
 
 class ErrorSeverity(Enum):
@@ -1397,18 +1385,29 @@ class APGIFrameworkGUI(ctk.CTk):
         # Schedule next auto-save
         if self.autosave_enabled:
             self.autosave_id = self.after(self.autosave_interval, self._autosave_data)
-            self.widget_tracker = None
 
+    def _initialize_validation_and_theme(self) -> None:
+        """Initialize validation and theme manager."""
         # Initialize theme manager
         if THEME_AVAILABLE:
-            self.theme_manager = ThemeManager(self)
-            system_theme = get_system_theme_preference()
-            self.theme_manager.set_theme(system_theme)
+            try:
+                self.theme_manager = ThemeManager(self)
+                system_theme = get_system_theme_preference()
+                self.theme_manager.set_theme(system_theme)
+            except Exception as e:
+                if self.logger:
+                    self.logger.warning(f"Theme manager initialization failed: {e}")
+                self.theme_manager = None
         else:
             self.theme_manager = None
 
         # Initialize validation and error handling
-        self.config_validator = ConfigurationValidator()
+        try:
+            self.config_validator = ConfigurationValidator()
+        except Exception as e:
+            if self.logger:
+                self.logger.warning(f"Config validator initialization failed: {e}")
+            self.config_validator = None
 
     def _ensure_data_folders(self) -> None:
         """Create data folders if they don't exist."""
@@ -3691,7 +3690,7 @@ class APGIFrameworkGUI(ctk.CTk):
                             # Convert list to numpy array for compatibility
                             if isinstance(surprise_values, list):
                                 surprise_values = np.array(surprise_values)
-                            
+
                             ignition_results = (
                                 self.apgi_equation.calculate_ignition_probability(
                                     surprise=surprise_values,
@@ -3924,8 +3923,11 @@ class APGIFrameworkGUI(ctk.CTk):
                             }
                     elif hasattr(self.disorder_classifier, "classify_disorder"):
                         # Mock classifier - pass dict directly
-                        classification_results = self.disorder_classifier.classify_disorder(
-                            neural_profile=profile_data, classification_type="multiclass"
+                        classification_results = (
+                            self.disorder_classifier.classify_disorder(
+                                neural_profile=profile_data,
+                                classification_type="multiclass",
+                            )
                         )
                     else:
                         # Unknown classifier type - create fallback result

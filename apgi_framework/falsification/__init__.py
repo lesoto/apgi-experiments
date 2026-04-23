@@ -367,8 +367,8 @@ class ThresholdInsensitivityTest:
             r_dict = cast(Dict[str, Any], r)
             results_dict = cast(Dict[str, Any], r_dict["results"])
             falsification_rates.append(cast(float, results_dict["falsification_rate"]))
-        sensitivity = np.std(falsification_rates) / (
-            np.mean(falsification_rates) + 1e-8
+        sensitivity = float(
+            np.std(falsification_rates) / (np.mean(falsification_rates) + 1e-8)
         )
 
         # Determine if framework is falsified (too sensitive)

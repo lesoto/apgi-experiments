@@ -4,11 +4,20 @@ This directory contains comprehensive performance benchmarks for the APGI Framew
 
 ## Structure
 
-- `test_performance.py` - Main benchmark tests using pytest-benchmark
-- `profiling_utils.py` - Advanced profiling utilities and decorators
-- `conftest.py` - pytest configuration and fixtures
+- `test_performance.py` (454 lines) - Main benchmark tests using pytest-benchmark
+- `profiling_utils.py` (497 lines) - Advanced profiling utilities and decorators
+- `conftest.py` (27 lines) - pytest configuration and fixtures
+- `critical_path_profiling.py` - Critical path performance profiling
 
 ## Running Benchmarks
+
+### Prerequisites
+
+The benchmark system requires `pytest-benchmark` to be installed. If not available, the benchmark tests will be skipped.
+
+```bash
+pip install pytest-benchmark
+```
 
 ### Basic Benchmark Run
 
@@ -163,6 +172,7 @@ The benchmarks are integrated into the CI/CD pipeline:
 2. **Memory issues**: Reduce data sizes for memory-constrained environments
 3. **Timeouts**: Increase timeout limits for slow benchmarks
 4. **Inconsistent results**: Run multiple times and average
+5. **pytest-benchmark not available**: Install with `pip install pytest-benchmark`
 
 ### Debug Mode
 

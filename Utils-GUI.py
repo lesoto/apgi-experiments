@@ -8,9 +8,11 @@ with output display and error handling.
 """
 
 import json
+import shlex
 import subprocess
 import sys
 import threading
+import time
 import tkinter as tk
 from pathlib import Path
 from tkinter import scrolledtext, simpledialog, ttk
@@ -130,8 +132,6 @@ class UtilsRunnerGUI:
 
         if dialog:
             # Split arguments while respecting quotes
-            import shlex
-
             try:
                 return shlex.split(dialog)
             except ValueError:
@@ -402,8 +402,6 @@ class UtilsRunnerGUI:
             True if script started successfully, False if error occurred.
             When wait=True, returns True if script completed with return code 0.
         """
-        import time
-
         script_name = script.name
 
         # Prepare command
@@ -430,7 +428,6 @@ class UtilsRunnerGUI:
                 stderr=subprocess.STDOUT,
                 text=True,
                 bufsize=1,
-                universal_newlines=True,
                 cwd=self.utils_dir.parent if self.utils_dir else Path.cwd(),
             )
 

@@ -37,18 +37,16 @@ StimulusGenerator: Any = None
 
 try:
     from apgi_framework.adaptive.stimulus_generators import (
-        StimulusGenerator as ImportedStimulusGenerator,
+        GaborPatchGenerator as ImportedStimulusGenerator,
     )
     from apgi_framework.analysis.analysis_engine import (
         AnalysisEngine as ImportedAnalysisEngine,
     )
     from apgi_framework.core.data_models import ExperimentalTrial
-
-    # APGIAgent class doesn't exist yet, skip import
-    # from apgi_framework.core.models.apgi_agent import APGIAgent as ImportedAPGIAgent
+    from apgi_framework.core.models import SomaticAgent as ImportedAPGIAgent
 
     # Use imported classes
-    # APGIAgent = ImportedAPGIAgent  # Class doesn't exist
+    APGIAgent = ImportedAPGIAgent
     AnalysisEngine = ImportedAnalysisEngine
     ExperimentData = ExperimentalTrial
     StimulusGenerator = ImportedStimulusGenerator
@@ -68,6 +66,9 @@ if not IMPORTS_SUCCESSFUL:
         def update(self, observation):
             return np.random.rand(10)
 
+        def decide(self, beliefs, context, surprise):
+            return 0, False, np.array([1.0, 2.0, 3.0])
+
     class FallbackAnalysisEngine:
         def __init__(self):
             pass
@@ -85,6 +86,12 @@ if not IMPORTS_SUCCESSFUL:
 
         def generate_stimulus(self, params):
             return np.random.rand(1000)
+
+        def initialize(self):
+            return True
+
+        def cleanup(self):
+            pass
 
     APGIAgent = FallbackAPGIAgent
     AnalysisEngine = FallbackAnalysisEngine
@@ -141,13 +148,16 @@ class TestAPGIAgentPerformance:
         self.observations = [
             np.random.rand(self.observation_size) for _ in range(self.n_iterations)
         ]
+        self.beliefs = np.random.rand(4)  # SomaticAgent expects beliefs
+        self.context = 0  # Default context
 
     def test_agent_update_performance(self, benchmark):
         """Benchmark agent update performance."""
 
         def agent_updates():
             for obs in self.observations:
-                self.agent.update(obs)
+                # SomaticAgent uses decide() method, not update()
+                self.agent.decide(self.beliefs, self.context, 1.0)
 
         result = benchmark(agent_updates)
         assert result is None
@@ -156,8 +166,7 @@ class TestAPGIAgentPerformance:
         """Profile agent updates to identify bottlenecks."""
 
         def single_update():
-            obs = np.random.rand(self.observation_size)
-            return self.agent.update(obs)
+            return self.agent.decide(self.beliefs, self.context, 1.0)
 
         result, profile_stats = profile_function(single_update)
 
@@ -181,7 +190,7 @@ class TestAPGIAgentPerformance:
 
         # Run many updates
         for obs in self.observations:
-            self.agent.update(obs)
+            self.agent.decide(self.beliefs, self.context, 1.0)
 
         # Take final memory snapshot
         snapshot2 = tracemalloc.take_snapshot()
@@ -223,17 +232,21 @@ class TestAnalysisEnginePerformance:
 
     def test_small_data_analysis(self, benchmark):
         """Benchmark analysis of small dataset."""
-        result = benchmark(self.engine.analyze_data, self.experiment_data_small)
+        # Convert numpy array to DataFrame for AnalysisEngine
+        df = pd.DataFrame(self.small_data)
+        result = benchmark(self.engine.analyze, df, "descriptive", generate_plots=False)
         assert result is not None
 
     def test_medium_data_analysis(self, benchmark):
         """Benchmark analysis of medium dataset."""
-        result = benchmark(self.engine.analyze_data, self.experiment_data_medium)
+        df = pd.DataFrame(self.medium_data)
+        result = benchmark(self.engine.analyze, df, "descriptive", generate_plots=False)
         assert result is not None
 
     def test_large_data_analysis(self, benchmark):
         """Benchmark analysis of large dataset."""
-        result = benchmark(self.engine.analyze_data, self.experiment_data_large)
+        df = pd.DataFrame(self.large_data)
+        result = benchmark(self.engine.analyze, df, "descriptive", generate_plots=False)
         assert result is not None
 
     def test_analysis_scaling(self):
@@ -243,10 +256,10 @@ class TestAnalysisEnginePerformance:
 
         for size in sizes:
             data = np.random.rand(size, 10)
-            exp_data = ExperimentData(data)
 
             with BenchmarkTimer(f"Analysis size {size}") as timer:
-                _ = self.engine.analyze_data(exp_data)
+                df = pd.DataFrame(data)
+                _ = self.engine.analyze(df, "descriptive", generate_plots=False)
 
             times.append(timer.end_time - timer.start_time)
 
@@ -276,17 +289,28 @@ class TestStimulusGeneratorPerformance:
     def setup_method(self):
         """Set up test data."""
         self.generator = StimulusGenerator()
+        self.generator.initialize()
         self.n_stimuli = 1000
 
-        # Different parameter configurations
-        self.simple_params = {"duration": 1.0, "frequency": 10}
-        self.complex_params = {
-            "duration": 5.0,
-            "frequency": 10,
-            "amplitude": 1.0,
-            "phase": 0.0,
-            "noise_level": 0.1,
-        }
+        # Different parameter configurations - use GaborParameters
+        from apgi_framework.adaptive.stimulus_generators import (
+            GaborParameters,
+        )
+
+        self.simple_params = GaborParameters(
+            intensity=0.5,
+            duration_ms=500.0,
+            contrast=0.5,
+            spatial_frequency=2.0,
+        )
+        self.complex_params = GaborParameters(
+            intensity=0.7,
+            duration_ms=1000.0,
+            contrast=0.7,
+            spatial_frequency=3.0,
+            orientation=45.0,
+            phase=0.5,
+        )
 
     def test_simple_stimulus_generation(self, benchmark):
         """Benchmark simple stimulus generation."""

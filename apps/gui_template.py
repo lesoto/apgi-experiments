@@ -1973,7 +1973,7 @@ class APGIFrameworkGUI(ctk.CTk):
 
         try:
             # Import from run_experiments
-            from run_experiments import experiment_threshold_effects
+            from run_experiments import experiment_threshold_effects  # type: ignore[import-not-found]
 
             # Run in separate thread
             def run_experiment():
@@ -2022,7 +2022,7 @@ class APGIFrameworkGUI(ctk.CTk):
 
         try:
             # Import from run_experiments
-            from run_experiments import experiment_somatic_markers
+            from run_experiments import experiment_somatic_markers  # type: ignore[import-not-found]
 
             # Get APGI parameters to use for somatic marker values
             somatic_gain = float(self.apgi_params["somatic_gain"].get())
@@ -2071,7 +2071,7 @@ class APGIFrameworkGUI(ctk.CTk):
 
         try:
             # Import from run_experiments
-            from run_experiments import experiment_precision_effects
+            from run_experiments import experiment_precision_effects  # type: ignore[import-not-found]
 
             # Get APGI parameters
             exteroceptive_precision = float(
@@ -2137,7 +2137,7 @@ class APGIFrameworkGUI(ctk.CTk):
 
         try:
             # Import from run_experiments
-            from run_experiments import experiment_dynamic_threshold
+            from run_experiments import experiment_dynamic_threshold  # type: ignore[import-not-found]
 
             # Get threshold parameter from GUI
             threshold = float(self.apgi_params["threshold"].get())

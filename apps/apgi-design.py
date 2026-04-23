@@ -102,7 +102,21 @@ APGI_RCPARAMS = {
     "grid.alpha": 0.4,
     "font.family": "sans-serif",
     "font.size": 10,
-    "mathtext.fontset": "cm",  # Computer Modern for equations
+}
+
+# UI Component specific colors (not Matplotlib rcParams)
+APGI_UI_COLORS = {
+    "session_dot.color": "#7F8C8D",
+    "session_dot.active_color": APGI_GREEN,
+    "warning.color": APGI_YELLOW,
+    "error.color": APGI_RED,
+}
+
+# Advanced Clinical Metadata
+CLINICAL_THRESHOLDS = {
+    "hypervigilance": {"precision": 0.85, "error": 2.0},
+    "crisis": {"signal_strength": 0.3},
+    "stress": {"error": 3.0, "neuromodulator": 1.5},
 }
 
 APGI_DIVERGING_CMAP = LinearSegmentedColormap.from_list(
@@ -216,37 +230,39 @@ def classify_system_state(
     neuromodulator: float,
 ) -> Tuple[int, str, str]:
     """
-    Classify the system state based on APGI parameters.
-
-    Returns:
-        (category: int, state_name: str, config_description: str)
+    Classify the system state based on APGI parameters and clinical metadata.
     """
-    # Clamp values to valid ranges
     st = max(0.0, min(10.0, signal_strength))
     bt = max(0.0, min(10.0, threshold))
     pi = max(0.0, min(1.0, precision))
     eps = max(0.0, min(5.0, prediction_error))
     beta = max(-3.0, min(3.0, neuromodulator))
 
-    # State classification logic
-    if st < 0.3:
-        return 8, "Pathological / Crisis", "System dysregulation detected"
-    elif eps > 3.0 and beta > 1.5:
-        return 5, "Stress / Arousal", "Sympathetic somatic bias active"
-    elif pi > 0.85 and st < bt:
-        return (
-            6,
-            "Anxiety / Hypervigilance",
-            "Hypersensitive precision, threshold mismatch",
-        )
-    elif eps > 2.5 and pi < 0.4:
+    # Check against clinical thresholds
+    if st < CLINICAL_THRESHOLDS["crisis"]["signal_strength"]:
+        return 8, "Pathological / Crisis", "Critical system dysregulation"
+
+    if (
+        pi > CLINICAL_THRESHOLDS["hypervigilance"]["precision"]
+        and eps > CLINICAL_THRESHOLDS["hypervigilance"]["error"]
+    ):
+        return 6, "Anxiety / Hypervigilance", "Pathological precision weighting"
+
+    if (
+        eps > CLINICAL_THRESHOLDS["stress"]["error"]
+        and beta > CLINICAL_THRESHOLDS["stress"]["neuromodulator"]
+    ):
+        return 5, "Stress / Arousal", "Sympathetic somatic bias dominant"
+
+    # Standard states
+    if eps > 2.5 and pi < 0.4:
         return 7, "Dissociation", "Precision suppressed, error uncoupled"
     elif st > bt + 1.5 and pi > 0.7:
-        return 2, "Heightened Awareness", f"SNR elevated ({st:.2f} > {bt:.1f})"
+        return 2, "Heightened Awareness", f"High SNR ({st:.2f} > {bt:.1f})"
     elif st > bt and 0.3 <= eps <= 1.5:
         return 1, "Optimal / Flow", f"Smooth ignition at {st:.2f}"
     else:
-        return 3, "Balanced / Regulated", "Default resting state nominal"
+        return 3, "Balanced / Regulated", "Homeostatic nominal state"
 
 
 # ============================================================================
@@ -443,7 +459,7 @@ class ThemeManager:
     }
 
     def __init__(self):
-        self.current_theme = "dark"
+        self.current_theme: str = "dark"
 
     def get_theme(self, theme_name: Optional[str] = None) -> Dict:
         """Get theme colors."""
@@ -536,7 +552,7 @@ class SessionDataManager:
             return deepcopy(self.parameter_history[-1])
         return None
 
-    def export_json(self, filepath: Optional[Path] = None) -> Path:
+    def export_json(self, filepath: Optional[Path] = None) -> Optional[Path]:
         """Export session data as JSON."""
         if filepath is None:
             filepath = self.session_dir / f"session_{self.session_id}.json"
@@ -557,6 +573,30 @@ class SessionDataManager:
         except Exception as e:
             logger.error(f"JSON export error: {e}")
             return None
+
+    def import_session(self, filepath: Path) -> bool:
+        """Import session data from a JSON file."""
+        try:
+            with open(filepath, "r") as f:
+                content = json.load(f)
+                if "data" in content:
+                    self.data_log = content["data"]
+                    # Reset parameter history to last imported state
+                    if self.data_log:
+                        last_frame = self.data_log[-1]
+                        self.parameter_history = [
+                            {
+                                "threshold": last_frame["threshold"],
+                                "precision": last_frame["precision"],
+                                "prediction_error": last_frame["prediction_error"],
+                                "neuromodulator": last_frame["neuromodulator"],
+                            }
+                        ]
+                    logger.info(f"Imported session from {filepath}")
+                    return True
+        except Exception as e:
+            logger.error(f"Import error: {e}")
+        return False
 
     def get_statistics(self) -> Dict:
         """Compute session statistics."""
@@ -887,7 +927,12 @@ class APGICanvas:
         rcparams["grid.alpha"] = theme["grid_alpha"]
         plt.rcParams.update(rcparams)
 
-        self.fig = Figure(figsize=(width, height), dpi=dpi, facecolor=theme["bg"])
+        self.fig = Figure(
+            figsize=(width, height),
+            dpi=dpi,
+            facecolor=theme["bg"],
+            constrained_layout=True,
+        )
         self.gs = GridSpec(2, 2, figure=self.fig, hspace=0.4, wspace=0.35)
 
         self.ax_radar = self.fig.add_subplot(self.gs[0, 0], projection="polar")
@@ -924,12 +969,15 @@ class APGICanvas:
             logger.error(f"Failed to export plot: {e}")
             return False
 
-    def update_plot(self, data: dict):
+    def update_plot(self, data: dict, history: Optional[List[Dict]] = None):
+        if history:
+            self.history = history
+
         self.ax_radar.cla()
         self.ax_traj.cla()
         self.ax_heat.cla()
 
-        # Normalize values for radar [0,1]
+        # Radar Plot
         radar_vals = [
             max(0.0, min(1.0, 1.0 - data["bt"] / 10.0)),
             data["pi"],
@@ -950,25 +998,61 @@ class APGICanvas:
         ign_events = [t[i] for i in ign_idx] if len(ign_idx) > 0 else None
         plot_sde_trajectory(self.ax_traj, t, S_t, B_t, ignition_events=ign_events)
 
-        # Correlation Heatmap (real calculation from parameter history)
+        # Correlation Heatmap
         corr_mat = self._calculate_correlation_matrix(data)
         plot_correlation_heatmap(self.ax_heat, corr_mat)
 
+        # Draw canvas (constrained_layout handles spacing)
+        self.canvas.draw()
+
     def _calculate_correlation_matrix(self, data: dict) -> np.ndarray:
-        """Calculate real correlation matrix from parameters."""
-        # Create parameter vectors for correlation calculation
-        # Using current parameters with small variations to simulate correlation
-        bt = np.array([data["bt"] + np.random.normal(0, 0.1) for _ in range(100)])
-        pi = np.array([data["pi"] + np.random.normal(0, 0.05) for _ in range(100)])
-        eps = np.array([data["eps"] + np.random.normal(0, 0.2) for _ in range(100)])
-        beta = np.array([data["beta"] + np.random.normal(0, 0.1) for _ in range(100)])
-        st = pi * np.abs(eps)
+        """Calculate real correlation matrix from parameter history if available."""
+        if hasattr(self, "history") and len(self.history) > 5:
+            # Use real history
+            bt = np.array([h["threshold"] for h in self.history])
+            pi = np.array([h["precision"] for h in self.history])
+            eps = np.array([h["prediction_error"] for h in self.history])
+            beta = np.array([h["neuromodulator"] for h in self.history])
+            st = np.array(
+                [
+                    h.get("signal_strength", pi[i] * abs(eps[i]))
+                    for i, h in enumerate(self.history)
+                ]
+            )
 
-        # Stack parameters and calculate correlation
+            # Ensure enough samples
+            if len(bt) < 100:
+                # Pad with small noise to stabilize correlation
+                n_pad = 100 - len(bt)
+                bt = np.append(
+                    bt, [bt[-1] + np.random.normal(0, 0.01) for _ in range(n_pad)]
+                )
+                pi = np.append(
+                    pi, [pi[-1] + np.random.normal(0, 0.01) for _ in range(n_pad)]
+                )
+                eps = np.append(
+                    eps, [eps[-1] + np.random.normal(0, 0.01) for _ in range(n_pad)]
+                )
+                beta = np.append(
+                    beta, [beta[-1] + np.random.normal(0, 0.01) for _ in range(n_pad)]
+                )
+                st = np.append(
+                    st, [st[-1] + np.random.normal(0, 0.01) for _ in range(n_pad)]
+                )
+        else:
+            # Initial dummy simulation
+            bt = np.array([data["bt"] + np.random.normal(0, 0.1) for _ in range(100)])
+            pi = np.array([data["pi"] + np.random.normal(0, 0.05) for _ in range(100)])
+            eps = np.array([data["eps"] + np.random.normal(0, 0.2) for _ in range(100)])
+            beta = np.array(
+                [data["beta"] + np.random.normal(0, 0.1) for _ in range(100)]
+            )
+            st = pi * np.abs(eps)
+
         params = np.column_stack([bt, pi, eps, beta, st])
-        corr_mat = np.corrcoef(params.T)
-
-        return corr_mat
+        # Add epsilon to prevent constant values causing NaNs in correlation
+        params += np.random.normal(0, 1e-6, params.shape)
+        return np.corrcoef(params.T)
 
         self.fig.text(
             0.01,
@@ -1112,57 +1196,49 @@ class APGIControlPanel(tk.Frame):
         btn_frame = tk.Frame(self, bg=theme["bg"])
         btn_frame.pack(fill=tk.X, pady=5)
 
+        # Button style configuration - high contrast for visibility on dark bg
+        btn_style = {
+            "bg": APGI_LIGHT_BG,  # White/light background for contrast
+            "fg": APGI_LIGHT_FG,  # Dark text for readability
+            "font": sans_font,
+            "activebackground": APGI_BLUE,
+            "activeforeground": "white",
+            "relief": tk.RAISED,
+            "borderwidth": 2,
+            "padx": 8,
+            "pady": 4,
+            "cursor": "hand2",
+        }
+
+        # Import Session
+        import_btn = tk.Button(
+            btn_frame, text="Import", command=self._import_data, **btn_style
+        )
+        import_btn.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
+
         # Export Session
         export_btn = tk.Button(
-            btn_frame,
-            text="Export",
-            bg="#3A4B62",
-            fg=theme["fg"],
-            font=sans_font,
-            activebackground=APGI_BLUE,
-            activeforeground="white",
-            command=self._export_data,
+            btn_frame, text="Export", command=self._export_data, **btn_style
         )
-        export_btn.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 2))
+        export_btn.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
 
         # Statistics
         stats_btn = tk.Button(
-            btn_frame,
-            text="Stats",
-            bg="#3A4B62",
-            fg=theme["fg"],
-            font=sans_font,
-            activebackground=APGI_GREEN,
-            activeforeground="white",
-            command=self._show_statistics,
+            btn_frame, text="Stats", command=self._show_statistics, **btn_style
         )
         stats_btn.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
 
         # Pause/Resume
         self.pause_btn = tk.Button(
-            btn_frame,
-            text="Pause",
-            bg="#3A4B62",
-            fg=theme["fg"],
-            font=sans_font,
-            activebackground=APGI_YELLOW,
-            activeforeground="black",
-            command=self._toggle_pause,
+            btn_frame, text="Pause", command=self._toggle_pause, **btn_style
         )
         self.pause_btn.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
 
         # Reset
         reset_btn = tk.Button(
-            btn_frame,
-            text="Reset",
-            bg="#3A4B62",
-            fg=theme["fg"],
-            font=sans_font,
-            activebackground=APGI_RED,
-            activeforeground="white",
-            command=self._reset_params,
+            btn_frame, text="Reset", command=self._reset_params, **btn_style
         )
-        reset_btn.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(2, 0))
+        reset_btn.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
 
         # Second button row
         btn_frame2 = tk.Frame(self, bg=theme["bg"])
@@ -1170,55 +1246,27 @@ class APGIControlPanel(tk.Frame):
 
         # Export PNG
         png_btn = tk.Button(
-            btn_frame2,
-            text="Export PNG",
-            bg="#3A4B62",
-            fg=theme["fg"],
-            font=sans_font,
-            activebackground=APGI_PURPLE,
-            activeforeground="white",
-            command=self._export_png,
+            btn_frame2, text="PNG Export", command=self._export_png, **btn_style
         )
-        png_btn.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 2))
+        png_btn.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
 
         # Undo
         undo_btn = tk.Button(
-            btn_frame2,
-            text="Undo",
-            bg="#3A4B62",
-            fg=theme["fg"],
-            font=sans_font,
-            activebackground=APGI_ACCENT,
-            activeforeground="white",
-            command=self._undo_last,
+            btn_frame2, text="Undo", command=self._undo_last, **btn_style
         )
         undo_btn.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
 
         # Theme Toggle
         theme_btn = tk.Button(
-            btn_frame2,
-            text="Theme",
-            bg="#3A4B62",
-            fg=theme["fg"],
-            font=sans_font,
-            activebackground=APGI_BLUE,
-            activeforeground="white",
-            command=self._toggle_theme,
+            btn_frame2, text="Theme", command=self._toggle_theme, **btn_style
         )
         theme_btn.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
 
         # Help
         help_btn = tk.Button(
-            btn_frame2,
-            text="Help",
-            bg="#3A4B62",
-            fg=theme["fg"],
-            font=sans_font,
-            activebackground=APGI_GREEN,
-            activeforeground="white",
-            command=self._show_help,
+            btn_frame2, text="Help", command=self._show_help, **btn_style
         )
-        help_btn.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(2, 0))
+        help_btn.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
 
     def _on_slider_change(self, name, value):
         self.params[name] = value
@@ -1341,6 +1389,30 @@ For more information, see the APGI documentation.
 """
         messagebox.showinfo("Help", help_text)
 
+    def _import_data(self):
+        """Import session data from file."""
+        if not self.session_manager:
+            return
+
+        filepath = filedialog.askopenfilename(
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+        )
+        if filepath:
+            if self.session_manager.import_session(Path(filepath)):
+                messagebox.showinfo("Import", "Session data imported successfully.")
+                # Update to the last state of the imported data
+                if self.session_manager.parameter_history:
+                    last_params = self.session_manager.parameter_history[-1]
+                    self.params = last_params.copy()
+                    for name, value in self.params.items():
+                        if name in self.sliders:
+                            self.sliders[name].set_value(value)
+                    self._update_state()
+                    if self.update_callback:
+                        self.update_callback(self.params.copy())
+            else:
+                messagebox.showerror("Import", "Failed to import session data.")
+
     def _export_data(self):
         """Export session data to file."""
         if not self.session_manager:
@@ -1356,6 +1428,7 @@ For more information, see the APGI documentation.
             ],
         )
         if filepath:
+            result = None
             if filepath.endswith(".json"):
                 result = self.session_manager.export_json(Path(filepath))
             else:
@@ -1550,9 +1623,12 @@ class APGIMainWindow:
             "pi": self.control_panel.params["precision"],
             "eps": self.control_panel.params["prediction_error"],
             "beta": self.control_panel.params["neuromodulator"],
-            "t": np.linspace(0, 10, 100),
+            "t": np.linspace(max(0, self.session_time - 10), self.session_time, 100),
         }
-        self.canvas_widget.update_plot(p)
+
+        # Use real data log for history if available
+        history = self.session_manager.data_log if self.session_manager else None
+        self.canvas_widget.update_plot(p, history=history)
 
         # Schedule next update (10Hz = 100ms)
         self.root.after(100, self._animate_data)
