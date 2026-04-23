@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional
 class SuiteGenerator:
     """Generator for test suites and coverage analysis."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the suite generator."""
         self.root_path = None
         self.include_patterns = ["*.py"]
@@ -25,8 +25,8 @@ class SuiteGenerator:
         exclude_patterns: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """Analyze codebase for test coverage gaps."""
-        from pathlib import Path
         import ast
+        from pathlib import Path
 
         root = Path(root_path or ".")
         include_patterns = include_patterns or self.include_patterns

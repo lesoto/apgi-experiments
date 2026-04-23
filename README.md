@@ -56,15 +56,11 @@ pytest -m "gui"
 ```bash
 # Launch main GUI
 python GUI-Launcher.py
-
-# Experiment registry
-python GUI-Experiment-Registry.py
 ```
 
 ## Project Structure
 
 - `apgi_framework/` - Core framework modules
-- `apgi_gui/` - GUI components
 - `tests/` - Comprehensive test suite
 - `examples/` - Usage examples
 - `docs/` - Documentation
@@ -87,57 +83,47 @@ python GUI-Experiment-Registry.py
 **Type**: Desktop GUI
 **Purpose**: Launcher application for GUI components
 
-### 4. Experiment Registry GUI (`GUI-Experiment-Registry.py`)
-
-**Type**: Desktop GUI
-**Purpose**: Interface for managing experiment registry
-
-### 5. GUI Application (`apgi_gui/app.py`)
-
-**Type**: Desktop GUI
-**Purpose**: Alternative GUI application
-
-### 6. Run Experiments Script (`run_experiments.py`)
+### 4. Run Experiments Script (`run_experiments.py`)
 
 **Type**: Script
 **Purpose**: Batch experiment execution
 
-### 7. Run Tests Script (`run_tests.py`)
+### 5. Run Tests Script (`run_tests.py`)
 
 **Type**: Script
 **Purpose**: Test execution and reporting
 
-### 8. Tests GUI (`Tests-GUI.py`)
+### 6. Tests GUI (`Tests-GUI.py`)
 
 **Type**: Desktop GUI
 **Purpose**: GUI for running and monitoring tests
 
-### 9. Utils GUI (`Utils-GUI.py`)
+### 7. Utils GUI (`Utils-GUI.py`)
 
 **Type**: Desktop GUI
 **Purpose**: Utility interface for framework tools
 
-### 10. Quick Deploy Script (`quick_deploy.py`)
+### 8. Quick Deploy Script (`quick_deploy.py`)
 
 **Type**: Deployment script
 **Purpose**: One-click deployment for non-technical users
 
-### 11. Setup Script (`setup.sh`)
+### 9. Setup Script (`setup.sh`)
 
 **Type**: Installation script
 **Purpose**: Environment setup and dependency installation
 
-### 12. Deploy Script (`deploy.sh`)
+### 10. Deploy Script (`deploy.sh`)
 
 **Type**: Deployment script
 **Purpose**: Production deployment and configuration
 
-### 14. Falsification GUI (`apps/apgi_falsification_gui.py`)
+### 11. Falsification GUI (`apps/apgi_falsification_gui.py`)
 
 **Type**: Desktop GUI
 **Purpose**: Interface for falsification testing
 
-### 15. Real-time Monitoring Dashboard (`apgi_framework/gui/monitoring_dashboard.py`)
+### 12. Real-time Monitoring Dashboard (`apgi_framework/gui/monitoring_dashboard.py`)
 
 **Type**: Desktop GUI
 **Purpose**: Live monitoring of EEG, pupillometry, cardiac signals

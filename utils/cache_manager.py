@@ -16,7 +16,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Union
 
-import joblib
+import joblib  # type: ignore
 import numpy as np
 import pandas as pd
 
@@ -45,7 +45,7 @@ class CacheManager:
         if self.metadata_file.exists():
             try:
                 with open(self.metadata_file, "r") as f:
-                    return json.load(f)
+                    return dict(json.load(f))
             except (json.JSONDecodeError, FileNotFoundError, PermissionError) as e:
                 print(f"Error loading cache metadata: {type(e).__name__}: {e}")
                 return {}
@@ -275,7 +275,7 @@ class CacheManager:
 
                 # Load and preprocess data to warm cache
                 try:
-                    from data_validation import DataPreprocessor
+                    from .data_validation import DataPreprocessor
 
                     preprocessor = DataPreprocessor()
                     df = preprocessor.load_data(source_path)
@@ -514,7 +514,8 @@ class DataCache:
             "file_mtime": file_mtime,
         }
 
-        return self.cache.get(cache_key)
+        result: Optional[pd.DataFrame] = self.cache.get(cache_key)
+        return result
 
     def cache_simulation_results(
         self,
@@ -542,7 +543,13 @@ class DataCache:
             "simulation_config": simulation_config,
         }
 
-        return self.cache.get(cache_key)
+        result: Optional[Dict[Any, Any]] = self.cache.get(cache_key)
+        return result
+
+    def update_cache(self, data: Dict[str, Any]) -> None:
+        """Update cache with results data. (Stub for compatibility)"""
+        # Just a placeholder that can be mocked in tests
+        pass
 
     def cache_validation_results(
         self,
@@ -570,7 +577,8 @@ class DataCache:
             "config": validation_config,
         }
 
-        return self.cache.get(cache_key)
+        result: Optional[Dict[Any, Any]] = self.cache.get(cache_key)
+        return result
 
 
 def main():

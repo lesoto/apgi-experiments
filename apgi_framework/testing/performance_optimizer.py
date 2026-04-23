@@ -8,7 +8,6 @@ performance benchmarking, and execution optimization for the APGI framework.
 import hashlib
 import json
 import os
-import pickle
 import sqlite3
 import threading
 import time
@@ -20,7 +19,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, cast
 
 from ..logging.standardized_logging import get_logger
-from ..security.secure_pickle import RestrictedUnpickler, SecurePickleValidator
+from ..utils.serialization import deserialize_json, serialize_json
 from .batch_runner import BatchExecutionSummary, BatchTestRunner, TestResult
 
 logger = get_logger(__name__)
@@ -80,13 +79,18 @@ class ResultCache:
         self._memory_cache: Dict[str, CacheEntry] = {}
         self._cache_lock = threading.Lock()
 
+        # File hash cache with mtime tracking for incremental updates
+        self._file_hash_cache: Dict[str, Tuple[str, float]] = (
+            {}
+        )  # path -> (hash, mtime)
+        self._file_hash_lock = threading.Lock()
+
         logger.info(f"Test cache initialized at {self.cache_dir}")
 
-    def _init_database(self):
+    def _init_database(self) -> None:
         """Initialize cache database."""
         with sqlite3.connect(self.db_path) as conn:
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS cache_entries (
                     test_file TEXT PRIMARY KEY,
                     test_hash TEXT NOT NULL,
@@ -95,27 +99,40 @@ class ResultCache:
                     cached_at TIMESTAMP NOT NULL,
                     cache_hits INTEGER DEFAULT 0
                 )
-            """
-            )
+            """)
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE INDEX IF NOT EXISTS idx_cached_at ON cache_entries(cached_at)
-            """
-            )
+            """)
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE INDEX IF NOT EXISTS idx_test_hash ON cache_entries(test_hash)
-            """
-            )
+            """)
 
     def _calculate_file_hash(self, file_path: str) -> str:
-        """Calculate hash of a file."""
+        """Calculate hash of a file with mtime-based caching."""
         try:
+            # Get current mtime first
+            current_mtime = os.path.getmtime(file_path)
+
+            # Check if we have a cached hash for this file
+            with self._file_hash_lock:
+                if file_path in self._file_hash_cache:
+                    cached_hash, cached_mtime = self._file_hash_cache[file_path]
+                    # If file hasn't changed, return cached hash
+                    if current_mtime == cached_mtime:
+                        return cached_hash
+
+            # File changed or not cached - compute new hash
             with open(file_path, "rb") as f:
                 content = f.read()
-            return hashlib.sha256(content).hexdigest()
+            new_hash = hashlib.sha256(content).hexdigest()
+
+            # Update cache
+            with self._file_hash_lock:
+                self._file_hash_cache[file_path] = (new_hash, current_mtime)
+
+            return new_hash
         except Exception as e:
             logger.warning(f"Could not hash file {file_path}: {e}")
             return ""
@@ -146,14 +163,31 @@ class ResultCache:
         return dependencies
 
     def _calculate_dependency_hashes(self, test_file: str) -> Dict[str, str]:
-        """Calculate hashes for all test dependencies."""
+        """Calculate hashes for all test dependencies with parallel processing."""
         dependencies = self._get_test_dependencies(test_file)
-        hashes = {}
 
-        for dep_file in dependencies:
-            hashes[dep_file] = self._calculate_file_hash(dep_file)
-
-        return hashes
+        # Use thread pool for parallel hash computation on large dependency trees
+        if len(dependencies) > 10:
+            hashes = {}
+            with ThreadPoolExecutor(max_workers=4) as executor:
+                future_to_file = {
+                    executor.submit(self._calculate_file_hash, dep_file): dep_file
+                    for dep_file in dependencies
+                }
+                for future in as_completed(future_to_file):
+                    dep_file = future_to_file[future]
+                    try:
+                        hashes[dep_file] = future.result()
+                    except Exception as e:
+                        logger.warning(f"Failed to hash {dep_file}: {e}")
+                        hashes[dep_file] = ""
+            return hashes
+        else:
+            # For small dependency trees, use sequential processing
+            return {
+                dep_file: self._calculate_file_hash(dep_file)
+                for dep_file in dependencies
+            }
 
     def get_cached_result(self, test_file: str) -> Optional[TestResult]:
         """Get cached test result if valid."""
@@ -185,7 +219,7 @@ class ResultCache:
 
             return None
 
-    def cache_result(self, test_file: str, result: TestResult):
+    def cache_result(self, test_file: str, result: TestResult) -> None:
         """Cache a test result."""
         try:
             # Calculate hashes
@@ -242,7 +276,7 @@ class ResultCache:
             logger.warning(f"Error validating cache entry for {entry.test_file}: {e}")
             return False
 
-    def _save_to_database(self, entry: CacheEntry):
+    def _save_to_database(self, entry: CacheEntry) -> None:
         """Save cache entry to database."""
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
@@ -255,35 +289,24 @@ class ResultCache:
                     entry.test_file,
                     entry.test_hash,
                     json.dumps(entry.dependency_hashes),
-                    zlib.compress(pickle.dumps(entry.result)),
+                    zlib.compress(serialize_json(entry.result).encode("utf-8")),
                     entry.cached_at,
                     entry.cache_hits,
                 ),
             )
 
-    def _safe_load_pickle_data(self, compressed_data: bytes) -> Any:
-        """Safely load compressed pickle data using secure unpickling."""
-        import io
-
+    def _safe_load_json_data(self, compressed_data: bytes) -> Any:
+        """Safely load compressed JSON data."""
         try:
             # Decompress first
             decompressed_data = zlib.decompress(compressed_data)
 
-            # Create validator and check data
-            validator = SecurePickleValidator()
-            if not validator.validate_pickle_data(decompressed_data):
-                raise ValueError("Pickle data failed security validation")
-
-            # Use restricted unpickler
-            with io.BytesIO(decompressed_data) as data_stream:
-                unpickler = RestrictedUnpickler(
-                    data_stream, allowed_types=set(validator.ALLOWED_TYPES)
-                )
-                return unpickler.load()
+            # Deserialize JSON
+            return deserialize_json(decompressed_data.decode("utf-8"))
 
         except Exception as e:
-            logger.error(f"Failed to safely load pickle data: {e}")
-            raise ValueError(f"Unsafe or corrupted pickle data: {e}")
+            logger.error(f"Failed to safely load JSON data: {e}")
+            raise ValueError(f"Unsafe or corrupted JSON data: {e}")
 
     def _load_from_database(self, test_file: str) -> Optional[CacheEntry]:
         """Load cache entry from database."""
@@ -307,7 +330,7 @@ class ResultCache:
                     test_file=test_file,
                     test_hash=test_hash,
                     dependency_hashes=json.loads(dep_hashes_json),
-                    result=self._safe_load_pickle_data(result_data),
+                    result=self._safe_load_json_data(result_data),
                     cached_at=datetime.fromisoformat(cached_at),
                     cache_hits=cache_hits,
                 )
@@ -316,7 +339,7 @@ class ResultCache:
             logger.error(f"Error loading cache entry for {test_file}: {e}")
             return None
 
-    def _update_cache_hits(self, test_file: str, cache_hits: int):
+    def _update_cache_hits(self, test_file: str, cache_hits: int) -> None:
         """Update cache hit count in database."""
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
@@ -326,12 +349,12 @@ class ResultCache:
                 (cache_hits, test_file),
             )
 
-    def _remove_from_database(self, test_file: str):
+    def _remove_from_database(self, test_file: str) -> None:
         """Remove cache entry from database."""
         with sqlite3.connect(self.db_path) as conn:
             conn.execute("DELETE FROM cache_entries WHERE test_file = ?", (test_file,))
 
-    def clear_cache(self, older_than_hours: Optional[int] = None):
+    def clear_cache(self, older_than_hours: Optional[int] = None) -> None:
         """Clear cache entries."""
         with self._cache_lock:
             if older_than_hours is None:
@@ -369,12 +392,10 @@ class ResultCache:
             cursor = conn.execute("SELECT COUNT(*), SUM(cache_hits) FROM cache_entries")
             total_entries, total_hits = cursor.fetchone()
 
-            cursor = conn.execute(
-                """
+            cursor = conn.execute("""
                 SELECT COUNT(*) FROM cache_entries 
                 WHERE cached_at > datetime('now', '-24 hours')
-            """
-            )
+            """)
             recent_entries = cursor.fetchone()[0]
 
         return {
@@ -397,7 +418,7 @@ class ParallelExecutionOptimizer:
         # Load existing profiles
         self._load_profiles()
 
-    def _load_profiles(self):
+    def _load_profiles(self) -> None:
         """Load execution profiles from disk."""
         profiles_file = Path("test_execution_profiles.json")
         if profiles_file.exists():
@@ -418,7 +439,7 @@ class ParallelExecutionOptimizer:
             except Exception as e:
                 logger.error(f"Error loading execution profiles: {e}")
 
-    def _save_profiles(self):
+    def _save_profiles(self) -> None:
         """Save execution profiles to disk."""
         try:
             profiles_data = {}
@@ -435,7 +456,7 @@ class ParallelExecutionOptimizer:
 
     def update_profile(
         self, test_file: str, execution_time: float, memory_usage: float = 0.0
-    ):
+    ) -> None:
         """Update execution profile for a test."""
         with self._profiles_lock:
             if test_file in self.execution_profiles:
@@ -555,7 +576,7 @@ class ParallelExecutionOptimizer:
         cpu_usage: float,
         test_count: int,
         parallel_workers: int,
-    ):
+    ) -> None:
         """Add performance benchmark."""
         benchmark = PerformanceBenchmark(
             test_file=test_file,
@@ -632,7 +653,9 @@ class ParallelExecutionOptimizer:
 class PerformanceOptimizedTestRunner(BatchTestRunner):
     """Test runner with performance optimizations."""
 
-    def __init__(self, enable_caching: bool = True, enable_optimization: bool = True):
+    def __init__(
+        self, enable_caching: bool = True, enable_optimization: bool = True
+    ) -> None:
         super().__init__()
 
         self.enable_caching = enable_caching
@@ -651,7 +674,7 @@ class PerformanceOptimizedTestRunner(BatchTestRunner):
         test_selection: Optional[List[str]] = None,
         use_cache: bool = True,
         optimize_parallel: bool = True,
-        **kwargs,
+        **kwargs: Any,
     ) -> BatchExecutionSummary:
         """Run batch tests with performance optimizations."""
 
@@ -751,7 +774,7 @@ class PerformanceOptimizedTestRunner(BatchTestRunner):
         return summary
 
     def _run_optimized_parallel_tests(
-        self, test_batches: List[List[str]], **kwargs
+        self, test_batches: List[List[str]], **kwargs: Any
     ) -> List[TestResult]:
         """Run tests with optimized parallel batching."""
         all_results = []
@@ -787,11 +810,11 @@ class PerformanceOptimizedTestRunner(BatchTestRunner):
 
         return all_results
 
-    def _run_test_batch(self, test_files: List[str], timeout: int) -> List[TestResult]:
+    def _run_test_batch(self, batch: List[str], timeout: int) -> List[TestResult]:
         """Run a batch of tests sequentially."""
         results = []
 
-        for test_file in test_files:
+        for test_file in batch:
             if self._stop_execution:
                 break
 
@@ -823,9 +846,9 @@ class PerformanceOptimizedTestRunner(BatchTestRunner):
             report["cache_stats"] = self.cache.get_cache_stats()
 
         if self.optimizer:
-            report[
-                "regression_report"
-            ] = self.optimizer.get_performance_regression_report()
+            report["regression_report"] = (
+                self.optimizer.get_performance_regression_report()
+            )
             execution_profiles = [
                 {
                     "test_file": test_file,
@@ -840,7 +863,7 @@ class PerformanceOptimizedTestRunner(BatchTestRunner):
 
         return report
 
-    def clear_cache(self, older_than_hours: Optional[int] = None):
+    def clear_cache(self, older_than_hours: Optional[int] = None) -> None:
         """Clear performance cache."""
         if self.cache:
             self.cache.clear_cache(older_than_hours)
@@ -851,7 +874,7 @@ def run_performance_optimized_tests(
     test_selection: Optional[List[str]] = None,
     enable_caching: bool = True,
     enable_optimization: bool = True,
-    **kwargs,
+    **kwargs: Any,
 ) -> BatchExecutionSummary:
     """Run tests with performance optimizations."""
 

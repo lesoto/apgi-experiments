@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
-from scipy import stats  # type: ignore
+from scipy import stats
 
 from .bayesian_models import ParameterEstimates
 
@@ -45,11 +45,7 @@ class ValidityResult:
         sig = (
             "***"
             if self.p_value < 0.001
-            else "**"
-            if self.p_value < 0.01
-            else "*"
-            if self.p_value < 0.05
-            else "ns"
+            else "**" if self.p_value < 0.01 else "*" if self.p_value < 0.05 else "ns"
         )
         return (
             f"ValidityResult({self.parameter_name} → {self.task_name}: "
@@ -268,7 +264,7 @@ class BodyVigilanceScaleAnalyzer:
     symptom questionnaires.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize Body Vigilance Scale analyzer."""
         self.scale_items = [
             "attention_to_body_sensations",
@@ -310,7 +306,7 @@ class BodyVigilanceScaleAnalyzer:
             {k: float(v) for k, v in responses.items() if k in self.scale_items}
         )
 
-        return responses  # type: ignore
+        return responses
 
     def predict_from_beta(
         self, beta: float, baseline_bvs: float = 5.0, sensitivity: float = 3.0
@@ -555,7 +551,7 @@ class PredictiveValidityFramework:
     Complete framework for testing predictive validity of APGI parameters.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize predictive validity framework."""
         self.emotional_task = EmotionalInterferenceTask()
         self.cpt_task = ContinuousPerformanceTask()
@@ -644,9 +640,7 @@ class PredictiveValidityFramework:
                 else (
                     "**"
                     if result.p_value < 0.01
-                    else "*"
-                    if result.p_value < 0.05
-                    else "ns"
+                    else "*" if result.p_value < 0.05 else "ns"
                 )
             )
 

@@ -228,7 +228,7 @@ class ParameterVisualizationEngine:
     Creates plots for parameter distributions and credible intervals.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize visualization engine."""
         logger.info("ParameterVisualizationEngine initialized")
 
@@ -289,7 +289,7 @@ class ParameterVisualizationEngine:
             logger.error(f"Failed to create parameter plot: {e}")
 
     def _plot_parameter(
-        self, ax, title: str, mean: float, std: float, ci: tuple
+        self, ax: Any, title: str, mean: float, std: float, ci: tuple
     ) -> None:
         """Plot single parameter with credible interval."""
         import numpy as np
@@ -321,7 +321,7 @@ class DataQualitySummarizer:
     Provides comprehensive quality metrics for EEG, pupillometry, and cardiac data.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize data quality summarizer."""
         logger.info("DataQualitySummarizer initialized")
 
@@ -443,7 +443,9 @@ class DataExporter:
         logger.info(f"Exported {len(created_files)} CSV files to {output_dir}")
         return created_files
 
-    def _export_detection_trials_csv(self, trials, output_path: Path) -> None:
+    def _export_detection_trials_csv(
+        self, trials: List[Any], output_path: Path
+    ) -> None:
         """Export detection trials to CSV."""
         with open(output_path, "w", newline="") as f:
             writer = csv.writer(f)
@@ -493,7 +495,9 @@ class DataExporter:
                     ]
                 )
 
-    def _export_heartbeat_trials_csv(self, trials, output_path: Path) -> None:
+    def _export_heartbeat_trials_csv(
+        self, trials: List[Any], output_path: Path
+    ) -> None:
         """Export heartbeat trials to CSV."""
         with open(output_path, "w", newline="") as f:
             writer = csv.writer(f)
@@ -539,7 +543,7 @@ class DataExporter:
                     ]
                 )
 
-    def _export_oddball_trials_csv(self, trials, output_path: Path) -> None:
+    def _export_oddball_trials_csv(self, trials: List[Any], output_path: Path) -> None:
         """Export oddball trials to CSV."""
         with open(output_path, "w", newline="") as f:
             writer = csv.writer(f)
@@ -658,7 +662,7 @@ if __name__ == "__main__":
     from matplotlib.backends.backend_tkagg import FigureCanvasTk
 
     class ReportingVisualizationGUI:
-        def __init__(self):
+        def __init__(self) -> None:
             self.root = tk.Tk()
             self.root.title("Reporting & Visualization")
             self.root.geometry("1000x700")
@@ -691,7 +695,7 @@ if __name__ == "__main__":
             notebook.add(export_frame, text="Export Data")
             self.create_export_tab(export_frame)
 
-        def create_reports_tab(self, parent):
+        def create_reports_tab(self, parent: ttk.Frame) -> None:
             ttk.Label(parent, text="Session Reports", font=("Arial", 12, "bold")).pack(
                 pady=10
             )
@@ -720,15 +724,15 @@ if __name__ == "__main__":
                 side="left", padx=5
             )
 
-        def create_visualization_tab(self, parent):
+        def create_visualization_tab(self, parent: ttk.Frame) -> None:
             ttk.Label(
                 parent, text="Data Visualizations", font=("Arial", 12, "bold")
             ).pack(pady=10)
 
             # Create matplotlib figure
             self.fig, self.ax = plt.subplots(figsize=(10, 6))
-            self.canvas = FigureCanvasTk(self.fig, parent)
-            self.canvas.get_tk_widget().pack(fill="both", expand=True)
+            self.canvas = FigureCanvasTk(self.fig, parent)  # type: ignore[no-untyped-call]
+            self.canvas.get_tk_widget().pack(fill="both", expand=True)  # type: ignore[no-untyped-call]
 
             # Sample plot
             self.create_sample_plot()
@@ -743,7 +747,7 @@ if __name__ == "__main__":
                 side="left", padx=5
             )
 
-        def create_export_tab(self, parent):
+        def create_export_tab(self, parent: ttk.Frame) -> None:
             ttk.Label(parent, text="Export Data", font=("Arial", 12, "bold")).pack(
                 pady=10
             )
@@ -766,7 +770,7 @@ if __name__ == "__main__":
                 pady=20
             )
 
-        def load_session(self):
+        def load_session(self) -> None:
             session_id = self.session_entry.get()
             if session_id:
                 self.report_text.insert(tk.END, f"Loading session {session_id}...\n")
@@ -776,7 +780,7 @@ if __name__ == "__main__":
             else:
                 messagebox.showerror("Error", "Please enter a session ID")
 
-        def generate_report(self):
+        def generate_report(self) -> None:
             self.report_text.insert(tk.END, "Generating comprehensive report...\n")
             self.report_text.insert(tk.END, "Session Performance Metrics:\n")
             self.report_text.insert(tk.END, "- Completion Rate: 95%\n")
@@ -784,10 +788,10 @@ if __name__ == "__main__":
             self.report_text.insert(tk.END, "- Parameter Estimates: Converged\n\n")
             self.report_text.insert(tk.END, "Report generated successfully!\n")
 
-        def clear_report(self):
+        def clear_report(self) -> None:
             self.report_text.delete("1.0", tk.END)
 
-        def create_sample_plot(self):
+        def create_sample_plot(self) -> None:
             self.ax.clear()
             import numpy as np
 
@@ -801,7 +805,7 @@ if __name__ == "__main__":
             self.ax.grid(True, alpha=0.3)
             self.canvas.draw()
 
-        def save_plot(self):
+        def save_plot(self) -> None:
             file_path = filedialog.asksaveasfilename(
                 defaultextension=".png",
                 filetypes=[("PNG files", "*.png"), ("All files", "*.*")],
@@ -810,7 +814,7 @@ if __name__ == "__main__":
                 self.fig.savefig(file_path)
                 messagebox.showinfo("Success", f"Plot saved to {file_path}")
 
-        def export_data(self):
+        def export_data(self) -> None:
             format_type = self.export_format.get()
             file_path = filedialog.asksaveasfilename(
                 defaultextension=f".{format_type.lower()}",
@@ -824,7 +828,7 @@ if __name__ == "__main__":
                     "Success", f"Data exported to {file_path} in {format_type} format"
                 )
 
-        def run(self):
+        def run(self) -> None:
             self.root.mainloop()
 
     # Launch GUI

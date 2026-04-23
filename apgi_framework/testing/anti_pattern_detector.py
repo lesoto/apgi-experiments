@@ -109,20 +109,20 @@ class TestCodeAnalyzer(ast.NodeVisitor):
         self.imports: set[str] = set()
         self.global_variables: set[str] = set()
 
-    def visit_Import(self, node: ast.Import):
+    def visit_Import(self, node: ast.Import) -> None:
         """Visit import statements."""
         for alias in node.names:
             self.imports.add(alias.name)
         self.generic_visit(node)
 
-    def visit_ImportFrom(self, node: ast.ImportFrom):
+    def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
         """Visit from-import statements."""
         if node.module:
             for alias in node.names:
                 self.imports.add(f"{node.module}.{alias.name}")
         self.generic_visit(node)
 
-    def visit_FunctionDef(self, node: ast.FunctionDef):
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         """Visit function definitions."""
         old_function = self.current_function
         old_assertion_count = self.assertion_count
@@ -149,7 +149,7 @@ class TestCodeAnalyzer(ast.NodeVisitor):
         self.assertion_count = old_assertion_count
         self.function_complexity = old_complexity
 
-    def visit_ClassDef(self, node: ast.ClassDef):
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
         """Visit class definitions."""
         old_class = self.current_class
         self.current_class = node.name
@@ -161,12 +161,12 @@ class TestCodeAnalyzer(ast.NodeVisitor):
         self.generic_visit(node)
         self.current_class = old_class
 
-    def visit_Assert(self, node: ast.Assert):
+    def visit_Assert(self, node: ast.Assert) -> None:
         """Visit assert statements."""
         self.assertion_count += 1
         self.generic_visit(node)
 
-    def visit_Call(self, node: ast.Call):
+    def visit_Call(self, node: ast.Call) -> None:
         """Visit function calls."""
         # Check for problematic function calls
         if hasattr(node.func, "attr"):
@@ -189,7 +189,7 @@ class TestCodeAnalyzer(ast.NodeVisitor):
 
         self.generic_visit(node)
 
-    def visit_Try(self, node: ast.Try):
+    def visit_Try(self, node: ast.Try) -> None:
         """Visit try-except blocks."""
         # Check for overly broad exception handling
         for handler in node.handlers:
@@ -205,7 +205,7 @@ class TestCodeAnalyzer(ast.NodeVisitor):
 
         self.generic_visit(node)
 
-    def visit_Constant(self, node: ast.Constant):
+    def visit_Constant(self, node: ast.Constant) -> None:
         """Visit constant literals (including magic numbers)."""
         # Check for magic numbers (excluding common test values)
         if isinstance(node.value, (int, float)) and node.value not in [
@@ -225,7 +225,7 @@ class TestCodeAnalyzer(ast.NodeVisitor):
 
         self.generic_visit(node)
 
-    def _analyze_test_function(self, node: ast.FunctionDef):
+    def _analyze_test_function(self, node: ast.FunctionDef) -> None:
         """Analyze a test function for anti-patterns."""
         # Check for missing docstring
         if not ast.get_docstring(node):
@@ -266,7 +266,7 @@ class TestCodeAnalyzer(ast.NodeVisitor):
                 resource_req,
             )
 
-    def _analyze_test_class(self, node: ast.ClassDef):
+    def _analyze_test_class(self, node: ast.ClassDef) -> None:
         """Analyze a test class for anti-patterns."""
         # Check for shared state issues
         class_variables = []
@@ -352,7 +352,7 @@ class TestCodeAnalyzer(ast.NodeVisitor):
         node: ast.AST,
         message: str,
         resource_impact: Optional[ResourceRequirement] = None,
-    ):
+    ) -> None:
         """Add an anti-pattern to the results."""
         if hasattr(node, "lineno") and hasattr(node, "col_offset"):
             location = f"{self.filename}:{node.lineno}:{node.col_offset}"
@@ -498,7 +498,7 @@ class AntiPatternDetector:
     common anti-patterns, and suggests improvements.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger("anti_pattern_detector")
 
     def analyze_file(self, file_path: Path) -> List[AntiPattern]:
@@ -574,7 +574,7 @@ class AntiPatternDetector:
 
         return results
 
-    def _post_process_analysis(self, analyzer: TestCodeAnalyzer):
+    def _post_process_analysis(self, analyzer: TestCodeAnalyzer) -> None:
         """Post-process analysis results to add additional checks."""
         # Check for functions with no assertions
         for node in ast.walk(ast.parse(analyzer.source_code)):

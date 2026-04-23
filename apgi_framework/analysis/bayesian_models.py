@@ -16,10 +16,7 @@ import numpy as np
 
 # Import standardized logging and security
 from ..logging.standardized_logging import get_logger
-from ..security.secure_pickle import (
-    safe_pickle_dump,
-    safe_pickle_load,
-)
+from ..security.secure_pickle import safe_pickle_dump, safe_pickle_load
 
 # Initialize logger
 logger = get_logger(__name__)
@@ -105,7 +102,7 @@ class SurpriseAccumulator:
         self.surprise = 0.0
         self.history: List[float] = []
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset surprise accumulator to initial state."""
         self.surprise = 0.0
         self.history = []
@@ -126,9 +123,9 @@ class SurpriseAccumulator:
         Returns:
             Weighted prediction error
         """
-        extero_term = pi_e * np.abs(epsilon_e)
-        intero_term = beta * pi_i * np.abs(epsilon_i)
-        return extero_term + intero_term
+        extero_term = pi_e * float(np.abs(epsilon_e))
+        intero_term = beta * pi_i * float(np.abs(epsilon_i))
+        return float(extero_term + intero_term)
 
     def step(
         self, pi_e: float, epsilon_e: float, pi_i: float, epsilon_i: float, beta: float
@@ -278,7 +275,7 @@ class IgnitionProbabilityCalculator:
         ignition_indices = np.where(prob_trace >= probability_threshold)[0]
 
         if len(ignition_indices) > 0:
-            return ignition_indices[0] * dt
+            return float(ignition_indices[0] * dt)
         return None
 
 
@@ -337,7 +334,7 @@ class StanModelCompiler:
 
         # Compile new model
         try:
-            import pystan  # type: ignore
+            import pystan  # type: ignore[import-not-found]
 
             model = pystan.StanModel(model_code=model_code)
 
@@ -356,7 +353,7 @@ class StanModelCompiler:
                 "Install with: pip install pystan"
             )
 
-    def clear_cache(self):
+    def clear_cache(self) -> None:
         """Clear all cached compiled models."""
         for cache_file in self.cache_dir.glob("model_*.pkl"):
             cache_file.unlink()
@@ -527,7 +524,7 @@ class HierarchicalBayesianModel:
         }
         """
 
-    def compile_model(self, force_recompile: bool = False):
+    def compile_model(self, force_recompile: bool = False) -> None:
         """
         Compile the Stan model.
 
@@ -586,7 +583,7 @@ class HierarchicalBayesianModel:
         chains: int = 4,
         iter: int = 2000,
         warmup: Optional[int] = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> Any:
         """
         Fit the hierarchical Bayesian model.
@@ -607,7 +604,7 @@ class HierarchicalBayesianModel:
         if self.model is None:
             raise RuntimeError("Model compilation failed")
 
-        if warmup is None:
+        if warmup is None:  # type: ignore[unreachable]
             warmup = iter // 2
 
         self.fit_result = self.model.sampling(
@@ -634,7 +631,7 @@ class HierarchicalBayesianModel:
             raise ValueError("Model must be fit before extracting parameters")
 
         # Extract posterior samples
-        theta0_samples = self.fit_result.extract("theta0")["theta0"][:, subject_id]
+        theta0_samples = self.fit_result.extract("theta0")["theta0"][:, subject_id]  # type: ignore[unreachable]
         pi_i_samples = self.fit_result.extract("pi_i")["pi_i"][:, subject_id]
         beta_samples = self.fit_result.extract("beta")["beta"][:, subject_id]
 

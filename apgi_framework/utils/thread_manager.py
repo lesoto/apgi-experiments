@@ -1,11 +1,13 @@
 """Thread pool manager for APGI Framework to control resource usage."""
 
+from __future__ import annotations
+
 import concurrent.futures
 import logging
 import os
 import threading
 from contextlib import contextmanager
-from typing import Callable, Optional, Any
+from typing import Any, Callable, Optional, Set, cast
 
 logger = logging.getLogger(__name__)
 
@@ -16,14 +18,14 @@ class ThreadPoolManager:
     _instance = None
     _lock = threading.Lock()
 
-    def __new__(cls):
+    def __new__(cls) -> "ThreadPoolManager":
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:
                     cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self):
+    def __init__(self) -> None:
         if not hasattr(self, "_initialized"):
             self._initialized = True
             # Use environment variable or default to 8
@@ -32,11 +34,13 @@ class ThreadPoolManager:
                 max_workers=max_workers,
                 thread_name_prefix="apgi-worker",
             )
-            self._active_futures = set()
+            self._active_futures: Set[concurrent.futures.Future[Any]] = set()
             self._shutdown = False
             logger.info(f"ThreadPoolManager initialized with max_workers={max_workers}")
 
-    def submit(self, fn: Callable, *args, **kwargs) -> concurrent.futures.Future[Any]:
+    def submit(
+        self, fn: Callable, *args: Any, **kwargs: Any
+    ) -> concurrent.futures.Future[Any]:
         """Submit a task to the thread pool."""
         if self._shutdown:
             raise RuntimeError("ThreadPoolManager is shutting down")
@@ -46,14 +50,14 @@ class ThreadPoolManager:
         future.add_done_callback(self._active_futures.discard)
 
         logger.debug(f"Submitted task {fn.__name__} to thread pool")
-        return future  # type: concurrent.futures.Future[Any]
+        return cast(concurrent.futures.Future[Any], future)
 
     def submit_with_timeout(
         self,
         fn: Callable,
         timeout: Optional[float] = None,
-        *args,
-        **kwargs,
+        *args: Any,
+        **kwargs: Any,
     ) -> concurrent.futures.Future:
         """Submit a task with optional timeout."""
         if self._shutdown:
@@ -69,7 +73,7 @@ class ThreadPoolManager:
         future.add_done_callback(self._active_futures.discard)
 
         logger.debug(f"Submitted task {fn.__name__} with timeout {timeout}s")
-        return future  # type: concurrent.futures.Future[Any]
+        return cast(concurrent.futures.Future[Any], future)
 
     def _wrap_future_with_timeout(
         self, future: concurrent.futures.Future, timeout: float
@@ -80,7 +84,7 @@ class ThreadPoolManager:
         timeout_event = threading.Event()
         timeout_future: concurrent.futures.Future = concurrent.futures.Future()
 
-        def timeout_monitor():
+        def timeout_monitor() -> None:
             if not timeout_event.wait(timeout):
                 if not future.done():
                     future.cancel()
@@ -91,7 +95,7 @@ class ThreadPoolManager:
         monitor_thread = threading.Thread(target=timeout_monitor, daemon=True)
         monitor_thread.start()
 
-        def transfer_result(f):
+        def transfer_result(f: concurrent.futures.Future) -> None:
             timeout_event.set()
             if f.cancelled():
                 timeout_future.cancel()
@@ -109,15 +113,15 @@ class ThreadPoolManager:
         callback: Optional[Callable] = None,
         error_callback: Optional[Callable] = None,
         timeout: Optional[float] = None,
-        *args,
-        **kwargs,
+        *args: Any,
+        **kwargs: Any,
     ) -> concurrent.futures.Future:
         """Submit a task with optional success/error callbacks and timeout."""
         future = self.submit_with_timeout(fn, timeout, *args, **kwargs)
 
         if callback or error_callback:
 
-            def done_callback(fut: concurrent.futures.Future):
+            def done_callback(fut: concurrent.futures.Future) -> None:
                 try:
                     result = fut.result()
                     if callback:
@@ -159,6 +163,26 @@ class ThreadPoolManager:
         self.cancel_all()
         self._executor.shutdown(wait=wait)
 
+    def reconfigure_pool(self, max_workers: int) -> None:
+        """Reconfigure the thread pool with a new size."""
+        if self._shutdown:
+            raise RuntimeError("Cannot reconfigure shut down ThreadPoolManager")
+
+        logger.info(f"Reconfiguring thread pool to max_workers={max_workers}")
+
+        # Cancel pending tasks
+        self.cancel_all()
+
+        # Shutdown old executor
+        old_executor = self._executor
+        old_executor.shutdown(wait=False)
+
+        # Create new executor with new size
+        self._executor = concurrent.futures.ThreadPoolExecutor(
+            max_workers=max_workers,
+            thread_name_prefix="apgi-worker",
+        )
+
     @property
     def active_count(self) -> int:
         """Get the number of active tasks."""
@@ -171,11 +195,11 @@ class ThreadPoolManager:
 
 
 # Global instance
-thread_manager = ThreadPoolManager()
+thread_manager = ThreadPoolManager()  # type: ignore[no-untyped-call]
 
 
 @contextmanager
-def managed_thread_operation():
+def managed_thread_operation() -> Any:
     """Context manager for thread-safe operations."""
     try:
         yield thread_manager
@@ -192,8 +216,8 @@ def run_in_thread(
     callback: Optional[Callable] = None,
     error_callback: Optional[Callable] = None,
     timeout: Optional[float] = None,
-    *args,
-    **kwargs,
+    *args: Any,
+    **kwargs: Any,
 ) -> concurrent.futures.Future:
     """Convenience function to run a function in a managed thread."""
     return thread_manager.submit_with_callback(

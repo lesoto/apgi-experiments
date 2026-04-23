@@ -1,6 +1,6 @@
 # APGI Framework CLI Reference
 
-This document provides comprehensive reference for the APGI Framework command-line interface.
+This document provides comprehensive reference for the APGI Framework command-line interface (`apgi_framework/cli.py`, 2,369 lines).
 
 ## Table of Contents
 
@@ -8,412 +8,403 @@ This document provides comprehensive reference for the APGI Framework command-li
 2. [Command Overview](#command-overview)
 3. [Global Options](#global-options)
 4. [Test Commands](#test-commands)
-5. [Configuration Commands](#configuration-commands)
-6. [Workflow Commands](#workflow-commands)
-7. [Utility Commands](#utility-commands)
-8. [Examples](#examples)
-9. [Exit Codes](#exit-codes)
+5. [Test Result Management](#test-result-management)
+6. [Test Analysis](#test-analysis)
+7. [Test Coverage](#test-coverage)
+8. [Test Organization](#test-organization)
+9. [Configuration Commands](#configuration-commands)
+10. [System Commands](#system-commands)
+11. [Parameter Commands](#parameter-commands)
+12. [Examples](#examples)
+13. [Exit Codes](#exit-codes)
 
 ## Getting Started
 
-The APGI Framework provides several command-line entry points:
+The APGI Framework CLI is accessed via:
 
 ```bash
-# Main CLI interface
-python -m apgi_framework.cli
+# Run as a module
+python -m apgi_framework.cli [command] [options]
 
-# Test runner
-apgi-test
-
-# GUI launcher
-apgi-gui
-
-# Deployment tools
-apgi-deploy
+# Direct execution
+python apgi_framework/cli.py [command] [options]
 ```
 
 ## Command Overview
 
-### Main Commands
+### Available Commands
 
-|  Command  | Description |
-|  -------  | ----------- |
-
-|  `test`  | Run test suites and validation |
-|  `config`  | Manage configuration profiles |
-|  `workflow`  | Execute end-to-end workflows |
-|  `gui`  | Launch graphical interface |
-|  `deploy`  | Deployment and packaging tools |
-|  `validate`  | Data and system validation |
-|  `report`  | Generate reports and documentation |
+| Command | Description |
+|---------|-------------|
+| `run-test` | Run individual falsification tests |
+| `run-batch` | Run batch experiments |
+| `batch-test` | Advanced batch test execution |
+| `run-tests` | Enhanced test execution with GUI feature parity |
+| `test-results` | Manage test results |
+| `test-analysis` | Analyze test results and performance |
+| `test-coverage` | Analyze and generate test coverage |
+| `organize-tests` | Organize and categorize tests |
+| `generate-config` | Generate configuration files |
+| `validate-system` | Validate system components |
+| `status` | Show system status |
+| `set-params` | Set APGI parameters |
 
 ## Global Options
 
-All commands support these global options:
-
-|  Option  | Short |  Description  |
-|  ------  | ----- |  -----------  |
-
-|  `--help`  | `-h` |  Show help message  |
-|  `--verbose`  | `-v` |  Enable verbose output  |
-|  `--quiet`  | `-q` |  Suppress non-error output  |
-|  `--config`  | `-c` |  Specify configuration file  |
-|  `--log-level`  | `-l` |  Set logging level (DEBUG, INFO, WARNING, ERROR)  |
-|  `--output-dir`  | `-o` |  Specify output directory  |
-|  `--dry-run`  | |  Show what would be done without executing  |
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--help` | `-h` | Show help message |
+| `--verbose` | `-v` | Enable verbose output |
+| `--quiet` | `-q` | Suppress non-error output |
+| `--config` | `-c` | Specify configuration file |
+| `--log-level` | `-l` | Set logging level (DEBUG, INFO, WARNING, ERROR) |
+| `--output-dir` | `-o` | Specify output directory |
 
 ## Test Commands
 
-### Run Tests
+### Run Individual Test
 
 ```bash
-# Run all tests
-apgi-test run
+# Run primary falsification test
+python -m apgi_framework.cli run-test primary --trials 1000
 
-# Run specific test categories
-apgi-test run --category unit
-apgi-test run --category integration
-apgi-test run --category performance
+# Run consciousness without ignition test
+python -m apgi_framework.cli run-test consciousness-without-ignition --trials 1000
+
+# Run threshold insensitivity test
+python -m apgi_framework.cli run-test threshold-insensitivity
+
+# Run soma-bias test
+python -m apgi_framework.cli run-test soma-bias --participants 100
+```
+
+**Test Options:**
+
+| Option | Type | Range | Default | Description |
+|--------|------|-------|---------|-------------|
+| `--trials` | `-n` | 100-10000 | 1000 | Number of trials |
+| `--participants` | `-p` | 10-1000 | 100 | Number of participants |
+| `--seed` | | positive int | None | Random seed |
+| `--config` | `-c` | path | None | Configuration file |
+
+### Run Batch Tests
+
+```bash
+# Run all tests in batch
+python -m apgi_framework.cli run-batch --all-tests
+
+# Run specific tests in batch
+python -m apgi_framework.cli run-batch --tests primary soma-bias
+
+# Run in parallel (experimental)
+python -m apgi_framework.cli run-batch --tests primary --parallel
+```
+
+### Advanced Batch Test Execution
+
+```bash
+# Run specific test files
+python -m apgi_framework.cli batch-test --test-paths tests/test_core.py tests/test_cli.py
+
+# Run tests with specific markers
+python -m apgi_framework.cli batch-test --markers unit integration
+
+# Run with keywords filter
+python -m apgi_framework.cli batch-test --keywords "agent or cli"
+
+# Parallel execution with custom workers
+python -m apgi_framework.cli batch-test --parallel --max-workers 8 --timeout 600
+
+# Generate HTML report
+python -m apgi_framework.cli batch-test --report report.html
+```
+
+**Advanced Batch Options:**
+
+| Option | Type | Range | Default | Description |
+|--------|------|-------|---------|-------------|
+| `--test-paths` | | paths | None | Specific test file paths |
+| `--markers` | | unit, integration, research, core, slow, neural, behavioral | None | Test markers |
+| `--keywords` | | string | None | Keyword patterns |
+| `--parallel` | | flag | True | Run tests in parallel |
+| `--sequential` | | flag | False | Run tests sequentially |
+| `--max-workers` | | 1-64 | auto | Maximum parallel workers |
+| `--timeout` | | 1-3600 | 600 | Timeout per test (seconds) |
+| `--failfast` | | flag | False | Stop on first failure |
+| `--report` | | path | None | Output path for HTML report |
+
+### Enhanced Test Execution
+
+```bash
+# Run tests by category
+python -m apgi_framework.cli run-tests --categories unit integration
+
+# Run tests by module
+python -m apgi_framework.cli run-tests --modules core clinical neural
 
 # Run with coverage
-apgi-test run --coverage --coverage-report html
+python -m apgi_framework.cli run-tests --coverage --coverage-report html
 
-# Run specific test files
-apgi-test run tests/test_apgi_equations.py
-
-# Run with timeout
-apgi-test run --timeout 300
-
-# Run in parallel
-apgi-test run --parallel --workers 4
+# Quiet mode with progress bar
+python -m apgi_framework.cli run-tests --quiet --progress bar
 ```
 
-### Test Options
-
-|  Option  | Description |
-|  ------  | ----------- |
-
-|  `--category`  | Test category (unit, integration, gui, performance, research) |
-|  `--coverage`  | Enable coverage reporting |
-|  `--coverage-report`  | Coverage report format (html, xml, term) |
-|  `--timeout`  | Test timeout in seconds |
-|  `--parallel`  | Run tests in parallel |
-|  `--workers`  | Number of parallel workers |
-|  `--fail-fast`  | Stop on first failure |
-|  `--reruns`  | Number of times to retry failed tests |
-
-### List Tests
+## Test Result Management
 
 ```bash
-# List all available tests
-apgi-test list
+# List recent test results
+python -m apgi_framework.cli test-results --list
 
-# List tests by category
-apgi-test list --category unit
+# Show specific test result details
+python -m apgi_framework.cli test-results --show session_123.json
 
-# List test files
-apgi-test list --files
+# Re-run failed tests from previous run
+python -m apgi_framework.cli test-results --rerun-failed session_123.json
+
+# Clean old test results
+python -m apgi_framework.cli test-results --clean
 ```
 
-### Test Validation
+## Test Analysis
 
 ```bash
-# Validate test configuration
-apgi-test validate
+# Generate performance report for last 30 days
+python -m apgi_framework.cli test-analysis --performance-report --days 30
 
-# Check test dependencies
-apgi-test check-deps
+# Show performance trends
+python -m apgi_framework.cli test-analysis --trends --days 60
+
+# Analyze failure patterns
+python -m apgi_framework.cli test-analysis --failures --days 30
+
+# Export analysis results
+python -m apgi_framework.cli test-analysis --performance-report --export results.json --format json
+```
+
+## Test Coverage
+
+```bash
+# Analyze coverage gaps
+python -m apgi_framework.cli test-coverage --analyze
+
+# Generate missing tests
+python -m apgi_framework.cli test-coverage --generate
+
+# Generate coverage report
+python -m apgi_framework.cli test-coverage --report
+
+# Custom threshold and format
+python -m apgi_framework.cli test-coverage --report --threshold 85 --format html
+```
+
+**Coverage Options:**
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `--analyze` | flag | | Analyze test coverage gaps |
+| `--generate` | flag | | Generate missing tests |
+| `--report` | flag | | Generate coverage report |
+| `--output-dir` | path | `generated_tests` | Output directory for generated tests |
+| `--report-file` | path | `coverage_report.md` | Output file for report |
+| `--threshold` | 0-100 | 90.0 | Coverage threshold percentage |
+| `--format` | html, xml, json, text | html | Report format |
+| `--include-patterns` | paths | None | File patterns to include |
+| `--exclude-patterns` | paths | None | File patterns to exclude |
+
+## Test Organization
+
+```bash
+# Discover all tests
+python -m apgi_framework.cli organize-tests --discover
+
+# Categorize discovered tests
+python -m apgi_framework.cli organize-tests --categorize
+
+# List test categories
+python -m apgi_framework.cli organize-tests --list-categories
+
+# List test modules
+python -m apgi_framework.cli organize-tests --list-modules
+
+# List available tags
+python -m apgi_framework.cli organize-tests --list-tags
+
+# Export test tree to JSON
+python -m apgi_framework.cli organize-tests --export-tree test_tree.json
 ```
 
 ## Configuration Commands
 
-### Manage Configurations
+### Generate Configuration
 
 ```bash
-# List available configuration profiles
-apgi config list
+# Generate default configuration
+python -m apgi_framework.cli generate-config --output config.json
 
-# Create new configuration profile
-apgi config create my_profile --description "Custom profile"
+# Generate minimal configuration
+python -m apgi_framework.cli generate-config --template minimal --output minimal.json
 
-# Load configuration profile
-apgi config load my_profile
-
-# Save current configuration
-apgi config save my_profile
-
-# Delete configuration profile
-apgi config delete my_profile
-
-# Export configuration
-apgi config export config.yaml
-
-# Import configuration
-apgi config import config.yaml
+# Generate comprehensive configuration
+python -m apgi_framework.cli generate-config --template comprehensive --output full.json
 ```
 
-### Configuration Validation
+**Configuration Templates:**
+
+| Template | Description |
+|----------|-------------|
+| `default` | Standard APGI parameters (threshold=3.5, steepness=2.0, n_trials=1000) |
+| `minimal` | Minimal configuration for quick testing |
+| `comprehensive` | Full configuration with detailed logging and plots |
+
+**Default Configuration includes:**
+- APGI Parameters: extero_precision, intero_precision, extero_error, intero_error, somatic_gain, threshold, steepness
+- Experimental Config: n_trials, n_participants, random_seed, output_directory, log_level, p3b_threshold, gamma_plv_threshold, bold_z_threshold, pci_threshold, alpha_level, effect_size_threshold, power_threshold
+
+## System Commands
+
+### Validate System
 
 ```bash
-# Validate configuration file
-apgi config validate config.yaml
+# Basic system validation
+python -m apgi_framework.cli validate-system
 
-# Check configuration compatibility
-apgi config check-compat
+# Detailed validation results
+python -m apgi_framework.cli validate-system --detailed
 ```
 
-### Environment Management
+### Show Status
 
 ```bash
-# Show current environment settings
-apgi config env
-
-# Set environment variable
-apgi config env APGI_LOG_LEVEL DEBUG
-
-# Reset to defaults
-apgi config reset
+# Display system status
+python -m apgi_framework.cli status
 ```
 
-## Workflow Commands
+## Parameter Commands
 
-### Execute Workflows
+### Set Parameters
 
 ```bash
-# Run standard falsification workflow
-apgi workflow run-standard
+# Set threshold parameter
+python -m apgi_framework.cli set-params --threshold 3.5
 
-# Run quick validation workflow
-apgi workflow run-quick
+# Set multiple parameters
+python -m apgi_framework.cli set-params --extero-precision 2.0 --intero-precision 1.5 --threshold 4.0
 
-# Run custom workflow from config
-apgi workflow run config/workflow.yaml
-
-# Run parallel workflow
-apgi workflow run-parallel
-
-# Cancel running workflow
-apgi workflow cancel
+# Set steepness and somatic gain
+python -m apgi_framework.cli set-params --steepness 2.0 --somatic-gain 1.3
 ```
 
-### Workflow Management
+**Parameter Ranges:**
 
-```bash
-# List available workflows
-apgi workflow list
-
-# Show workflow status
-apgi workflow status
-
-# Get workflow history
-apgi workflow history
-
-# Clean workflow artifacts
-apgi workflow clean
-```
-
-### Workflow Options
-
-|  Option  | Description |
-|  ------  | ----------- |
-
-|  `--config`  | Workflow configuration file |
-|  `--output-dir`  | Output directory for results |
-|  `--parallel`  | Enable parallel execution |
-|  `--timeout`  | Workflow timeout in minutes |
-|  `--resume`  | Resume interrupted workflow |
-
-## Utility Commands
-
-### Data Management
-
-```bash
-# Validate dataset
-apgi validate data dataset.json
-
-# Check data integrity
-apgi validate integrity data.h5
-
-# Export data
-apgi data export --format csv dataset.json
-
-# Import data
-apgi data import --format json data.csv
-```
-
-### System Validation
-
-```bash
-# Run system health check
-apgi validate system
-
-# Check dependencies
-apgi validate deps
-
-# Validate installation
-apgi validate install
-```
-
-### Reporting
-
-```bash
-# Generate test report
-apgi report test --format html
-
-# Generate coverage report
-apgi report coverage --format xml
-
-# Generate system report
-apgi report system
-
-# Export documentation
-apgi report docs --format pdf
-```
-
-### Deployment
-
-```bash
-# Build package
-apgi deploy build
-
-# Create distribution
-apgi deploy dist
-
-# Install locally
-apgi deploy install
-
-# Check deployment readiness
-apgi deploy check
-```
+| Parameter | Range | Description |
+|-----------|-------|-------------|
+| `--extero-precision` | 0.001-1000 | Exteroceptive precision |
+| `--intero-precision` | 0.001-1000 | Interoceptive precision |
+| `--threshold` | 0.5-10.0 | Ignition threshold |
+| `--steepness` | 0.1-50.0 | Sigmoid steepness |
+| `--somatic-gain` | -10.0 to 10.0 | Somatic marker gain |
 
 ## Examples
 
 ### Basic Usage
 
 ```bash
-# Run all tests with coverage
-apgi-test run --coverage --coverage-report html
+# Run primary falsification test with 1000 trials
+python -m apgi_framework.cli run-test primary --trials 1000
 
-# Execute standard workflow
-apgi workflow run-standard --output-dir results/
+# Generate default configuration
+python -m apgi_framework.cli generate-config --output my_config.json
 
-# Launch GUI
-apgi gui
-
-# Validate configuration
-apgi config validate
+# Validate system
+python -m apgi_framework.cli validate-system
 ```
 
 ### Advanced Usage
 
 ```bash
-# Run performance tests in parallel
-apgi-test run --category performance --parallel --workers 8 --timeout 600
+# Run batch test with parallel execution and custom workers
+python -m apgi_framework.cli batch-test --test-paths tests/test_core.py --parallel --max-workers 8 --timeout 600
 
-# Create and run custom workflow
-apgi config create custom_profile
-apgi workflow run config/custom_workflow.yaml --config custom_profile
+# Run tests by category with coverage
+python -m apgi_framework.cli run-tests --categories unit integration --coverage --coverage-report html
 
-# Generate comprehensive report
-apgi report test --format html --output-dir reports/
-apgi report coverage --format xml
-apgi report system
+# Analyze test results with trends
+python -m apgi_framework.cli test-analysis --trends --days 60 --export trends.json
 ```
 
 ### CI/CD Integration
 
 ```bash
-# CI test run with JUnit output
-apgi-test run --junit-xml results.xml --coverage --coverage-xml
+# Run unit tests with JSON output
+python -m apgi_framework.cli batch-test --markers unit --report test_results.json
 
-# Deployment validation
-apgi validate system
-apgi validate deps
-apgi deploy check
+# Validate deployment readiness
+python -m apgi_framework.cli validate-system
 
-# Artifact generation
-apgi report test --format html
-apgi report coverage --format xml
+# Generate coverage report
+python -m apgi_framework.cli test-coverage --report --format xml
+
+# Re-run only failed tests from previous run
+python -m apgi_framework.cli test-results --rerun-failed test_results.json
+```
+
+### Research Workflows
+
+```bash
+# Run all falsification tests
+python -m apgi_framework.cli run-batch --all-tests
+
+# Run with specific parameters
+python -m apgi_framework.cli set-params --threshold 3.5 --steepness 2.0
+python -m apgi_framework.cli run-test primary --trials 5000 --participants 200
+
+# Analyze failure patterns over time
+python -m apgi_framework.cli test-analysis --failures --days 90
 ```
 
 ## Exit Codes
 
-|  Code  | Meaning |  Description  |
-| ------ |---------| ------------- |
+| Code | Meaning | Description |
+|------|---------|-------------|
+| 0 | Success | Command completed successfully |
+| 1 | General Error | Unspecified error occurred |
+| 2 | Invalid Usage | Invalid command-line arguments |
 
-|  0  | Success |  Command completed successfully  |
-|  1  | General Error |  Unspecified error occurred  |
-|  2  | Invalid Usage |  Invalid command-line arguments  |
-|  3  | Configuration Error |  Configuration file or settings invalid  |
-|  4  | Dependency Error |  Required dependencies missing  |
-|  5  | Test Failure |  One or more tests failed  |
-|  6  | Validation Error |  Data or system validation failed  |
-|  7  | Timeout |  Operation timed out  |
-|  8  | Interrupted |  Operation was interrupted  |
-|  9  | Permission Denied |  Insufficient permissions  |
+## Validation Functions
 
-## Environment Variables
+The CLI includes built-in validation for numeric arguments:
 
-|  Variable  | Description |  Default  |
-| ---------- |-------------| --------- |
-
-|  `APGI_CONFIG`  | Configuration file path |  `config/default.yaml`  |
-|  `APGI_LOG_LEVEL`  | Logging level |  `INFO`  |
-|  `APGI_OUTPUT_DIR`  | Output directory |  `output/`  |
-|  `APGI_DATA_DIR`  | Data directory |  `data/`  |
-|  `APGI_TEST_TIMEOUT`  | Test timeout (seconds) |  `300`  |
-|  `APGI_PARALLEL_WORKERS`  | Number of parallel workers |  `auto`  |
-
-## Configuration Files
-
-The CLI uses YAML configuration files with the following structure:
-
-```yaml
-# APGI CLI Configuration
-cli:
-  log_level: INFO
-  output_dir: output/
-  parallel_workers: 4
-  timeout: 300
-
-testing:
-  coverage: true
-  coverage_format: html
-  fail_fast: false
-  reruns: 0
-
-workflow:
-  default_config: config/workflow.yaml
-  parallel_execution: true
-  save_intermediate: true
-
-deployment:
-  build_dir: build/
-  dist_dir: dist/
-  package_name: apgi-framework
-```
+- `trials`: Must be between 100 and 10000
+- `participants`: Must be between 10 and 1000
+- `threshold`: Must be between 0.5 and 10.0
+- `max-workers`: Must be between 1 and 64
+- `timeout`: Must be between 1 and 3600 seconds
+- `days`: Must be between 1 and 365
+- `coverage-threshold`: Must be between 0 and 100
+- `precision`: Must be between 0.001 and 1000
+- `steepness`: Must be between 0.1 and 50.0
+- `somatic-gain`: Must be between -10.0 and 10.0
 
 ## Troubleshooting
 
 ### Common Issues
 
-**Command not found**: Ensure APGI is properly installed and in PATH
-**Import errors**: Check Python environment and dependencies
-**Permission errors**: Run with appropriate permissions
-**Timeout errors**: Increase timeout values or check system performance
+**Import errors**: Ensure APGI modules are properly installed (`pip install -e .`)
+**Permission errors**: Run with appropriate file system permissions
+**Timeout errors**: Increase timeout values for slow tests
 
 ### Getting Help
 
 ```bash
 # Show general help
-apgi --help
+python -m apgi_framework.cli --help
 
 # Show command-specific help
-apgi test --help
-apgi workflow --help
+python -m apgi_framework.cli run-test --help
+python -m apgi_framework.cli batch-test --help
 
 # Enable debug logging
-apgi --log-level DEBUG command
+python -m apgi_framework.cli --log-level DEBUG run-test primary
 ```
 
-For more detailed documentation, see the [User Guide](USER-GUIDE.md) and [API Reference](api/index.md).
+For more detailed documentation, see the [User Guide](USER-GUIDE.md).

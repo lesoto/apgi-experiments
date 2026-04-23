@@ -13,6 +13,7 @@ Usage:
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any, Optional
 
 
 # Error handling classes (fallback since error_handler module may not be available)
@@ -21,9 +22,15 @@ class APGIError(Exception):
 
 
 class ConfigurationError(APGIError):
-    def __init__(self, message=None, context=None):
+    def __init__(
+        self,
+        message: Optional[str] = None,
+        context: Optional[dict] = None,
+        suggestion: Optional[str] = None,
+    ):
         self.message = message or "Configuration error"
         self.context = context or {}
+        self.suggestion = suggestion
         super().__init__(self.message)
 
 
@@ -39,7 +46,9 @@ class ErrorSeverity:
     INFO = "INFO"
 
 
-def format_error_message(error, context=None, reason=None):
+def format_error_message(
+    error: Any, context: Optional[Any] = None, reason: Optional[str] = None
+) -> str:
     if reason:
         return f"{error}: {reason}"
     if context:
@@ -47,15 +56,15 @@ def format_error_message(error, context=None, reason=None):
     return str(error)
 
 
-def handle_error(error, context=None):
+def handle_error(error: Any, context: Optional[Any] = None) -> None:
     print(f"Error: {format_error_message(error, context)}")
 
 
-def safe_execute(func, *args, **kwargs):
+def safe_execute(func: Any, *args: Any, **kwargs: Any) -> Any:
     return func(*args, **kwargs)
 
 
-def run_command(command, description):
+def run_command(command: list, description: str) -> bool:
     """Run a command and handle errors gracefully."""
     print(f"\n📦 {description}...")
     try:
@@ -80,7 +89,7 @@ def run_command(command, description):
         return False
 
 
-def check_python_version():
+def check_python_version() -> bool:
     """Check if Python version is compatible."""
     version = sys.version_info
     if version.major < 3 or (version.major == 3 and version.minor < 8):
@@ -100,17 +109,12 @@ def check_python_version():
     return True
 
 
-def install_core_dependencies():
+def install_core_dependencies() -> bool:
     """Install core dependencies from requirements.txt."""
     requirements_path = Path(__file__).parent.parent / "requirements.txt"
 
     if not requirements_path.exists():
-        error = DataError(
-            message=format_error_message(
-                "file_not_found", file_path=str(requirements_path)
-            ),
-            suggestion="Ensure requirements.txt exists in the project root directory",
-        )
+        error = DataError(format_error_message("file_not_found"))
         print(f"❌ {error}")
         return False
 
@@ -185,7 +189,7 @@ def install_core_dependencies():
     return success
 
 
-def install_optional_dependencies():
+def install_optional_dependencies() -> None:
     """Install optional dependencies for enhanced functionality."""
     optional_packages = [
         "jupyter>=1.0.0",
@@ -208,7 +212,7 @@ def install_optional_dependencies():
         )
 
 
-def verify_installation():
+def verify_installation() -> bool:
     """Verify that critical dependencies are installed."""
     critical_packages = [
         "numpy",
@@ -228,14 +232,9 @@ def verify_installation():
     for package in critical_packages:
         try:
             __import__(package)
-            print(f"✅ {package}")
+            print(f" {package}")
         except ImportError:
-            error = ImportWarning(
-                message=format_error_message("missing_dependency", package=package),
-                package=package,
-                suggestion=f"Install with: pip install {package}",
-            )
-            print(f"❌ {package}")
+            print(f" {package}")
             failed.append(package)
 
     if failed:
@@ -251,7 +250,7 @@ def verify_installation():
         return True
 
 
-def main():
+def main() -> None:
     """Main installation function."""
     print("🧠 APGI Framework Dependency Installer")
     print("=" * 50)

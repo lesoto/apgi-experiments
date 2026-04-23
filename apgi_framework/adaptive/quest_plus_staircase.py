@@ -150,7 +150,7 @@ class QuestPlusStaircase:
             f"Initialized QUEST+ staircase for participant {participant_id}, task {task_id}"
         )
 
-    def _initialize_parameter_spaces(self):
+    def _initialize_parameter_spaces(self) -> None:
         """Initialize the parameter spaces for stimulus and psychometric function."""
         # Stimulus intensity space
         self.stimulus_space = np.linspace(
@@ -178,7 +178,7 @@ class QuestPlusStaircase:
             f"{len(self.threshold_space)} thresholds, {len(self.slope_space)} slopes"
         )
 
-    def _initialize_prior(self):
+    def _initialize_prior(self) -> None:
         """Initialize prior distribution over psychometric function parameters."""
         # Use provided priors or uniform distributions
         if self.parameters.threshold_prior is not None:
@@ -224,7 +224,7 @@ class QuestPlusStaircase:
             1 - self.parameters.guess_rate - self.parameters.lapse_rate
         ) * norm.cdf(z)
 
-        return np.clip(p_detect, 1e-10, 1 - 1e-10)  # Avoid numerical issues
+        return float(np.clip(p_detect, 1e-10, 1 - 1e-10))  # Avoid numerical issues
 
     def _likelihood(
         self, intensity: float, response: bool, threshold: float, slope: float

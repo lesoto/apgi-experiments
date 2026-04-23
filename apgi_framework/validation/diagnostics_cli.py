@@ -6,10 +6,20 @@ Command-line interface for running system health checks and diagnostics.
 
 import argparse
 import sys
+from pathlib import Path
 
-from ..config import get_config_manager
-from .parameter_validator import get_validator
-from .system_health import get_health_checker
+# Handle both module import and direct execution
+try:
+    from ..config import get_config_manager
+    from .parameter_validator import get_validator
+    from .system_health import get_health_checker
+except ImportError:
+    # Add parent directory to path for direct execution
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+    from apgi_framework.config import get_config_manager
+    from apgi_framework.validation.parameter_validator import get_validator
+    from apgi_framework.validation.system_health import get_health_checker
+
 from apgi_framework.logging.standardized_logging import get_logger
 
 logger = get_logger(__name__)
@@ -94,7 +104,7 @@ def validate_parameters(args: argparse.Namespace) -> None:
                 sys.exit(1)
 
     if not params:
-        logger.info("No parameters provided. Use --params key=value")
+        logger.info("No parameters provided")
         sys.exit(1)
 
     # Validate

@@ -23,9 +23,7 @@ try:
         RecoveryMetrics,
         RecoveryResults,
     )
-    from ..analysis.predictive_validity import (
-        ValidityResult,
-    )
+    from ..analysis.predictive_validity import ValidityResult
 except ImportError:
     logging.warning("Analysis modules not fully available for validation pipeline")
 
@@ -204,21 +202,31 @@ class ParameterRecoveryValidator:
     ) -> ParameterEstimates:
         """Recover parameters from synthetic data."""
         # Simplified parameter recovery (would use actual Bayesian fitting)
+        from ..analysis.bayesian_models import (
+            ParameterDistribution as BayesianParameterDistribution,
+        )
+
         return ParameterEstimates(
             participant_id="synthetic",
             session_id="recovery_test",
-            theta0_mean=data["theta0"],  # type: ignore
-            theta0_std=0.1,  # type: ignore
-            theta0_ci_lower=data["theta0"] - 0.2,  # type: ignore
-            theta0_ci_upper=data["theta0"] + 0.2,  # type: ignore
-            pi_i_mean=data["pi_i"],  # type: ignore
-            pi_i_std=0.15,  # type: ignore
-            pi_i_ci_lower=data["pi_i"] - 0.3,  # type: ignore
-            pi_i_ci_upper=data["pi_i"] + 0.3,  # type: ignore
-            beta_mean=data["beta"],  # type: ignore
-            beta_std=0.1,  # type: ignore
-            beta_ci_lower=data["beta"] - 0.2,  # type: ignore
-            beta_ci_upper=data["beta"] + 0.2,  # type: ignore
+            theta0=BayesianParameterDistribution(
+                mean=data["theta0"],
+                std=0.1,
+                credible_interval_95=(data["theta0"] - 0.2, data["theta0"] + 0.2),
+                posterior_samples=np.array([data["theta0"]]),
+            ),
+            pi_i=BayesianParameterDistribution(
+                mean=data["pi_i"],
+                std=0.15,
+                credible_interval_95=(data["pi_i"] - 0.3, data["pi_i"] + 0.3),
+                posterior_samples=np.array([data["pi_i"]]),
+            ),
+            beta=BayesianParameterDistribution(
+                mean=data["beta"],
+                std=0.1,
+                credible_interval_95=(data["beta"] - 0.2, data["beta"] + 0.2),
+                posterior_samples=np.array([data["beta"]]),
+            ),
         )
 
     def _calculate_recovery_metrics(
@@ -296,7 +304,7 @@ class ReliabilityTester:
     Tests reliability of parameter estimates with ICC > 0.75 target.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize reliability tester."""
         self.logger = logging.getLogger(__name__)
         self.target_icc = 0.75
@@ -361,21 +369,23 @@ class ReliabilityTester:
         """Calculate intraclass correlation coefficient."""
         # ICC(2,1) - two-way random effects, single measures
         n = len(test)
-        mean_test = np.mean(test)
-        mean_retest = np.mean(retest)
-        grand_mean = (mean_test + mean_retest) / 2
+        mean_test = float(np.mean(test))
+        mean_retest = float(np.mean(retest))
+        grand_mean = (mean_test + mean_retest) / 2.0
 
         # Between-subjects variance
         subject_means = (test + retest) / 2
-        bms = np.sum((subject_means - grand_mean) ** 2) * 2 / (n - 1)
+        bms = float(np.sum((subject_means - grand_mean) ** 2) * 2 / (n - 1))
 
         # Within-subjects variance
-        wms = np.sum((test - subject_means) ** 2 + (retest - subject_means) ** 2) / n
+        wms = float(
+            np.sum((test - subject_means) ** 2 + (retest - subject_means) ** 2) / n
+        )
 
         # ICC calculation
         icc = (bms - wms) / (bms + wms)
 
-        return max(0, min(1, icc))  # Bound between 0 and 1
+        return float(max(0.0, min(1.0, icc)))  # Bound between 0 and 1
 
 
 class PredictiveValidityPipeline:
@@ -385,7 +395,7 @@ class PredictiveValidityPipeline:
     Tests whether APGI parameters predict performance on independent tasks.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize predictive validity pipeline."""
         self.logger = logging.getLogger(__name__)
 
@@ -464,7 +474,7 @@ class PerformanceBenchmarker:
     Benchmarks critical operations to ensure real-time performance.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize performance benchmarker."""
         self.logger = logging.getLogger(__name__)
 
@@ -560,24 +570,24 @@ class PerformanceBenchmarker:
             threshold_ms=threshold,
         )
 
-    def _simulate_eeg_processing(self):
+    def _simulate_eeg_processing(self) -> None:
         """Simulate EEG processing."""
         data = np.random.randn(128, 1000)
         np.fft.fft(data, axis=1)
 
-    def _simulate_pupil_processing(self):
+    def _simulate_pupil_processing(self) -> None:
         """Simulate pupil processing."""
         # Data would be used for processing in real implementation
 
-    def _simulate_cardiac_processing(self):
+    def _simulate_cardiac_processing(self) -> None:
         """Simulate cardiac processing."""
         # Data would be used for R-peak detection in real implementation
 
-    def _simulate_parameter_update(self):
+    def _simulate_parameter_update(self) -> None:
         """Simulate parameter update."""
         # Matrix operations would be used for parameter estimation in real implementation
 
-    def _simulate_data_storage(self):
+    def _simulate_data_storage(self) -> None:
         """Simulate data storage."""
         # JSON serialization would be used for file storage in real implementation
 
@@ -597,7 +607,7 @@ class ComprehensiveValidationPipeline:
         self.logger = logging.getLogger(__name__)
 
         self.recovery_validator = ParameterRecoveryValidator(random_seed)
-        self.reliability_tester = ReliabilityTester()
+        self.reliability_tester = ReliabilityTester()  # type: ignore[no-untyped-call]
         self.validity_pipeline = PredictiveValidityPipeline()
         self.benchmarker = PerformanceBenchmarker()
 

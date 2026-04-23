@@ -4,15 +4,18 @@ Computation module for APGI Framework.
 This module provides intensive computation capabilities.
 """
 
+from typing import Any, Dict, List, Optional
+
+
 # Mock classes for testing
 class IntensiveComputation:
     """Mock intensive computation for testing purposes."""
 
-    def __init__(self):
-        self.computation_results = {}
-        self.current_computation = None
+    def __init__(self) -> None:
+        self.computation_results: Dict[str, Dict[str, Any]] = {}
+        self.current_computation: Optional[Dict[str, Any]] = None
 
-    def start_computation(self, computation_spec):
+    def start_computation(self, computation_spec: Any) -> Dict[str, Any]:
         """Start an intensive computation."""
         computation_id = f"comp_{hash(str(computation_spec)) % 10000:04d}"
         self.current_computation = {
@@ -24,7 +27,7 @@ class IntensiveComputation:
         }
         return self.current_computation
 
-    def update_progress(self, progress):
+    def update_progress(self, progress: float) -> None:
         """Update computation progress."""
         if self.current_computation:
             self.current_computation["progress"] = progress
@@ -32,23 +35,22 @@ class IntensiveComputation:
                 self.current_computation["status"] = "completed"
                 self.current_computation["end_time"] = "2024-01-01T01:00:00Z"
 
-    def get_result(self, computation_id):
+    def get_result(self, computation_id: str) -> Optional[Dict[str, Any]]:
         """Get computation result."""
-
         return self.computation_results.get(computation_id)
 
 
 class IntensiveCompute:
     """Mock intensive compute for testing purposes."""
 
-    def __init__(self):
-        self.compute_tasks = []
-        self.current_task = None
+    def __init__(self) -> None:
+        self.compute_tasks: List[Dict[str, Any]] = []
+        self.current_task: Optional[Dict[str, Any]] = None
 
-    def submit_task(self, task_spec):
+    def submit_task(self, task_spec: Any) -> Dict[str, Any]:
         """Submit a compute task."""
         task_id = f"task_{hash(str(task_spec)) % 10000:04d}"
-        task = {
+        task: Dict[str, Any] = {
             "task_id": task_id,
             "spec": task_spec,
             "status": "queued",
@@ -57,7 +59,7 @@ class IntensiveCompute:
         self.compute_tasks.append(task)
         return task
 
-    def start_task(self, task_id):
+    def start_task(self, task_id: str) -> None:
         """Start processing a task."""
         for task in self.compute_tasks:
             if task["task_id"] == task_id:
@@ -66,7 +68,7 @@ class IntensiveCompute:
                 self.current_task = task
                 break
 
-    def complete_task(self, task_id, result):
+    def complete_task(self, task_id: str, result: Any) -> None:
         """Complete a task with results."""
         for task in self.compute_tasks:
             if task["task_id"] == task_id:
@@ -77,7 +79,7 @@ class IntensiveCompute:
                     self.current_task = None
                 break
 
-    def get_task(self, task_id):
+    def get_task(self, task_id: str) -> Optional[Dict[str, Any]]:
         """Get task by ID."""
         for task in self.compute_tasks:
             if task["task_id"] == task_id:
@@ -88,13 +90,13 @@ class IntensiveCompute:
 class NetworkIntensiveOperation:
     """Mock network-intensive operation for testing purposes."""
 
-    def __init__(self):
-        self.network_operations = []
+    def __init__(self) -> None:
+        self.network_operations: List[Dict[str, Any]] = []
 
-    def start_operation(self, operation_spec):
+    def start_operation(self, operation_spec: Any) -> Dict[str, Any]:
         """Start a network-intensive operation."""
         operation_id = f"net_{hash(str(operation_spec)) % 10000:04d}"
-        operation = {
+        operation: Dict[str, Any] = {
             "operation_id": operation_id,
             "spec": operation_spec,
             "status": "running",
@@ -104,11 +106,11 @@ class NetworkIntensiveOperation:
         self.network_operations.append(operation)
         return operation
 
-    def update_transfer(self, bytes_transferred):
+    def update_transfer(self, bytes_transferred: int) -> None:
         """Update bytes transferred."""
         if self.network_operations:
             self.network_operations[-1]["bytes_transferred"] = bytes_transferred
 
-    def get_operations(self):
+    def get_operations(self) -> List[Dict[str, Any]]:
         """Get all network operations."""
         return self.network_operations

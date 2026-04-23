@@ -306,7 +306,7 @@ class ReplicationTracker:
         df = 2 * len(valid_p_values)
 
         # Combined p-value
-        combined_p = 1 - chi2.cdf(chi2_stat, df)
+        combined_p = float(1 - chi2.cdf(chi2_stat, df))
         return combined_p
 
     def _calculate_confidence_in_effect(
@@ -726,9 +726,7 @@ class PowerAnalyzer:
         effect_magnitude = (
             "small"
             if abs(effect_size) < 0.5
-            else "medium"
-            if abs(effect_size) < 0.8
-            else "large"
+            else "medium" if abs(effect_size) < 0.8 else "large"
         )
 
         return (

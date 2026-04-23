@@ -16,12 +16,11 @@ Features:
 
 import threading
 import time
-from typing import Dict, List, Optional, Any, Union
-
 import warnings
+from typing import Any, Dict, List, Optional, Union
 
 try:
-    from flask import Flask, render_template_string, jsonify
+    from flask import Flask, jsonify, render_template_string
     from flask_socketio import SocketIO, emit
 
     FLASK_AVAILABLE = True
@@ -32,8 +31,8 @@ except ImportError:
 # Plotly is used in the frontend HTML template, not in Python code
 PLOTLY_AVAILABLE = True  # Assume available for frontend
 
-from .monitoring_dashboard import QualityAlertSystem
 from ..logging.standardized_logging import get_logger
+from .monitoring_dashboard import QualityAlertSystem
 
 logger = get_logger(__name__)
 
@@ -86,50 +85,50 @@ class WebMonitoringDashboard:
 
         logger.info(f"WebMonitoringDashboard initialized on {host}:{port}")
 
-    def _setup_routes(self):
+    def _setup_routes(self) -> None:
         """Setup Flask routes."""
 
         @self.app.route("/")
-        def index():
+        def index() -> Any:
             """Serve the main dashboard page."""
             return render_template_string(self._get_dashboard_html())
 
         @self.app.route("/api/data")
-        def get_data():
+        def get_data() -> Any:
             """API endpoint to get current data."""
             return self.current_data
 
         @self.app.route("/api/experiments")
-        def get_experiments():
+        def get_experiments() -> Any:
             """API endpoint to get list of experiments."""
             return jsonify({"experiments": []})
 
         @self.app.route("/api/experiment/<experiment_id>")
-        def get_experiment(experiment_id):
+        def get_experiment(experiment_id: str) -> Any:
             """API endpoint to get experiment details."""
             return jsonify({"id": experiment_id, "name": "", "status": "not_found"})
 
         @self.app.route("/api/config")
-        def get_config():
+        def get_config() -> Any:
             """API endpoint to get configuration."""
             return jsonify({"config": self.current_data.get("parameters", {})})
 
-    def _setup_socket_handlers(self):
+    def _setup_socket_handlers(self) -> None:
         """Setup SocketIO event handlers."""
 
         @self.socketio.on("connect")
-        def handle_connect():
+        def handle_connect() -> None:
             """Handle client connection."""
             logger.info("Web client connected")
             emit("initial_data", self.current_data)
 
         @self.socketio.on("disconnect")
-        def handle_disconnect():
+        def handle_disconnect() -> None:
             """Handle client disconnection."""
             logger.info("Web client disconnected")
 
         @self.socketio.on("subscribe")
-        def handle_subscribe(data):
+        def handle_subscribe(data: Any) -> None:
             """Handle subscription requests."""
             streams = data.get("streams", [])
             logger.info(f"Client subscribed to streams: {streams}")
@@ -345,7 +344,7 @@ class WebMonitoringDashboard:
 </html>
         """
 
-    def update_eeg_data(self, data: Dict[str, Any]):
+    def update_eeg_data(self, data: Dict[str, Any]) -> None:
         """
         Update EEG data and broadcast to web clients.
 
@@ -363,7 +362,7 @@ class WebMonitoringDashboard:
                 data["quality_score"], data["artifact_rate"]
             )
 
-    def update_pupil_data(self, data: Dict[str, Any]):
+    def update_pupil_data(self, data: Dict[str, Any]) -> None:
         """
         Update pupillometry data and broadcast to web clients.
 
@@ -381,7 +380,7 @@ class WebMonitoringDashboard:
                 data["data_loss"], data["tracking_loss"]
             )
 
-    def update_cardiac_data(self, data: Dict[str, Any]):
+    def update_cardiac_data(self, data: Dict[str, Any]) -> None:
         """
         Update cardiac data and broadcast to web clients.
 
@@ -399,7 +398,7 @@ class WebMonitoringDashboard:
                 data["signal_quality"], data["rpeak_confidence"]
             )
 
-    def update_parameter_data(self, data: Dict[str, Any]):
+    def update_parameter_data(self, data: Dict[str, Any]) -> None:
         """
         Update parameter estimate data and broadcast to web clients.
 
@@ -441,7 +440,7 @@ class WebMonitoringDashboard:
             logger.error(f"Failed to start web dashboard server: {e}")
             return False
 
-    def stop_server(self):
+    def stop_server(self) -> None:
         """Stop the web server."""
         if hasattr(self, "server_thread"):
             logger.info("Stopping web dashboard server")

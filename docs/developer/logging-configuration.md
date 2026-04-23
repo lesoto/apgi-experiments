@@ -96,11 +96,12 @@ Create a `logging_config.json` file:
             "handlers": ["console", "file", "error_file"],
             "propagate": false
         },
-        "apgi_gui": {
+        "apgi_framework_gui": {
             "level": "INFO",
             "handlers": ["console", "file"],
             "propagate": false
         }
+
     },
     "root": {
         "level": "INFO",

@@ -63,7 +63,7 @@ class MemoryMonitor:
         self.memory_limit_mb = memory_limit_mb
         self.process = psutil.Process()
         self.monitoring = False
-        self.monitor_thread = None
+        self.monitor_thread: Optional[threading.Thread] = None
         self.memory_history: List[Dict[str, Any]] = []
         self.alert_callbacks: List[Callable[[PerformanceAlert], None]] = []
         self._lock = threading.Lock()
@@ -72,7 +72,7 @@ class MemoryMonitor:
         if not tracemalloc.is_tracing():
             tracemalloc.start()
 
-    def start_monitoring(self):
+    def start_monitoring(self) -> None:
         """Start memory monitoring."""
         if self.monitoring:
             return
@@ -82,7 +82,7 @@ class MemoryMonitor:
         self.monitor_thread.start()
         logger.info("Memory monitoring started")
 
-    def stop_monitoring(self):
+    def stop_monitoring(self) -> None:
         """Stop memory monitoring."""
         self.monitoring = False
         if self.monitor_thread:
@@ -117,11 +117,11 @@ class MemoryMonitor:
             tracemalloc_snapshot=snapshot,
         )
 
-    def add_alert_callback(self, callback: Callable[[PerformanceAlert], None]):
+    def add_alert_callback(self, callback: Callable[[PerformanceAlert], None]) -> None:
         """Add callback for memory alerts."""
         self.alert_callbacks.append(callback)
 
-    def _monitor_loop(self):
+    def _monitor_loop(self) -> None:
         """Memory monitoring loop."""
         while self.monitoring:
             try:
@@ -149,7 +149,7 @@ class MemoryMonitor:
                 logger.error(f"Error in memory monitoring loop: {e}")
                 time.sleep(1.0)
 
-    def _check_memory_alerts(self, stats: MemoryStats):
+    def _check_memory_alerts(self, stats: MemoryStats) -> None:
         """Check for memory-related alerts."""
         alerts = []
 
@@ -236,12 +236,12 @@ class MemoryEfficientTestRunner(BatchTestRunner):
         self,
         test_selection: Optional[List[str]] = None,
         resume_from_checkpoint: Optional[str] = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> BatchExecutionSummary:
         """Run batch tests with memory-efficient checkpointing."""
 
         # Start memory monitoring
-        self.memory_monitor.start_monitoring()
+        self.memory_monitor.start_monitoring()  # type: ignore[no-untyped-call]
 
         try:
             if resume_from_checkpoint:
@@ -249,10 +249,10 @@ class MemoryEfficientTestRunner(BatchTestRunner):
             else:
                 return self._run_with_checkpointing(test_selection, **kwargs)
         finally:
-            self.memory_monitor.stop_monitoring()
+            self.memory_monitor.stop_monitoring()  # type: ignore[no-untyped-call]
 
     def _run_with_checkpointing(
-        self, test_selection: Optional[List[str]], **kwargs
+        self, test_selection: Optional[List[str]], **kwargs: Any
     ) -> BatchExecutionSummary:
         """Run tests with periodic checkpointing."""
 
@@ -298,7 +298,7 @@ class MemoryEfficientTestRunner(BatchTestRunner):
 
             # Force garbage collection after each test
             if self.force_gc_after_test:
-                self._force_garbage_collection()
+                self._force_garbage_collection()  # type: ignore[no-untyped-call]
 
             # Create checkpoint periodically
             if (i + 1) % self.checkpoint_interval == 0:
@@ -325,7 +325,7 @@ class MemoryEfficientTestRunner(BatchTestRunner):
                     f"Memory limit exceeded: {current_stats.current_memory_mb:.1f}MB"
                 )
                 # Force more aggressive cleanup
-                self._aggressive_memory_cleanup()
+                self._aggressive_memory_cleanup()  # type: ignore[no-untyped-call]
 
         # Create final summary
         end_time = datetime.now()
@@ -388,7 +388,7 @@ class MemoryEfficientTestRunner(BatchTestRunner):
         test_results: List[Dict[str, Any]],
         next_test_index: int,
         execution_config: Dict[str, Any],
-    ):
+    ) -> None:
         """Create a checkpoint file."""
 
         checkpoint = MemoryCheckpoint(
@@ -396,9 +396,11 @@ class MemoryEfficientTestRunner(BatchTestRunner):
             timestamp=datetime.now(),
             completed_tests=completed_tests.copy(),
             failed_tests=failed_tests.copy(),
-            test_results=[asdict(r) for r in test_results if isinstance(r, TestResult)]
-            if test_results
-            else [],
+            test_results=(
+                [asdict(r) for r in test_results if isinstance(r, TestResult)]
+                if test_results
+                else []
+            ),
             memory_stats=asdict(self.memory_monitor.get_current_stats()),
             execution_config=execution_config,
             next_test_index=next_test_index,
@@ -421,7 +423,7 @@ class MemoryEfficientTestRunner(BatchTestRunner):
             logger.error(f"Failed to create checkpoint: {e}")
 
     def _resume_from_checkpoint(
-        self, checkpoint_file: str, **kwargs
+        self, checkpoint_file: str, **kwargs: Any
     ) -> BatchExecutionSummary:
         """Resume execution from a checkpoint."""
 
@@ -483,7 +485,7 @@ class MemoryEfficientTestRunner(BatchTestRunner):
 
                 # Force garbage collection
                 if self.force_gc_after_test:
-                    self._force_garbage_collection()
+                    self._force_garbage_collection()  # type: ignore[no-untyped-call]
 
                 # Create checkpoint periodically
                 if (i + 1) % self.checkpoint_interval == 0:
@@ -528,13 +530,13 @@ class MemoryEfficientTestRunner(BatchTestRunner):
             logger.error(f"Failed to resume from checkpoint: {e}")
             raise
 
-    def _force_garbage_collection(self):
+    def _force_garbage_collection(self) -> None:
         """Force garbage collection to free memory."""
         collected = gc.collect()
         if collected > 0:
             logger.debug(f"Garbage collection freed {collected} objects")
 
-    def _aggressive_memory_cleanup(self):
+    def _aggressive_memory_cleanup(self) -> None:
         """Perform aggressive memory cleanup."""
         logger.info("Performing aggressive memory cleanup")
 
@@ -565,16 +567,16 @@ class MemoryEfficientTestRunner(BatchTestRunner):
         except Exception as e:
             logger.debug(f"Error during cache cleanup: {e}")
 
-    def _handle_memory_alert(self, alert: PerformanceAlert):
+    def _handle_memory_alert(self, alert: PerformanceAlert) -> None:
         """Handle memory alerts."""
         self.memory_alerts.append(alert)
         logger.warning(f"Memory alert: {alert.message}")
 
         if alert.severity == "critical":
             # Perform immediate cleanup
-            self._aggressive_memory_cleanup()
+            self._aggressive_memory_cleanup()  # type: ignore[no-untyped-call]
 
-    def _cleanup_old_checkpoints(self, execution_id: str, keep_latest: int = 3):
+    def _cleanup_old_checkpoints(self, execution_id: str, keep_latest: int = 3) -> None:
         """Clean up old checkpoint files."""
         try:
             checkpoint_files = list(
@@ -590,7 +592,7 @@ class MemoryEfficientTestRunner(BatchTestRunner):
         except Exception as e:
             logger.error(f"Error cleaning up old checkpoints: {e}")
 
-    def _cleanup_checkpoints(self, execution_id: str):
+    def _cleanup_checkpoints(self, execution_id: str) -> None:
         """Clean up all checkpoint files for an execution."""
         try:
             checkpoint_files = list(
@@ -704,7 +706,7 @@ class MemoryEfficientTestRunner(BatchTestRunner):
 
 
 @contextmanager
-def memory_profiling_context(operation_name: str):
+def memory_profiling_context(operation_name: str) -> Any:
     """Context manager for memory profiling."""
     if not tracemalloc.is_tracing():
         tracemalloc.start()

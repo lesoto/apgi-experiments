@@ -55,7 +55,7 @@ except ImportError:
 
 # Check if pytest-xdist is available for parallel execution
 try:
-    import xdist  # noqa: F401
+    import xdist  # type: ignore  # noqa: F401
 
     HAS_PYTEST_XDIST = True
 except ImportError:

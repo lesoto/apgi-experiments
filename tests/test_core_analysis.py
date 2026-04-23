@@ -16,7 +16,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent / "core" / "analysis"))
 
 # Import specific function from threshold_phenomenon
-from threshold_phenomenon import ignition_probability
+from core.analysis.threshold_phenomenon import ignition_probability
 
 
 class TestSurpriseDynamics:

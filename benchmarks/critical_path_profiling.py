@@ -378,7 +378,7 @@ class CriticalPathProfiler:
         results["group2_means"] = np.mean(group2_data, axis=0)
 
         # T-tests (simplified)
-        from scipy import stats  # type: ignore
+        from scipy import stats
 
         t_stats = []
         p_values = []
@@ -424,8 +424,8 @@ class CriticalPathProfiler:
 
     def _simulate_ml_training(self, samples: int, features: int) -> Dict[str, float]:
         """Simulate machine learning training."""
-        from sklearn.ensemble import RandomForestClassifier  # type: ignore
-        from sklearn.model_selection import cross_val_score  # type: ignore
+        from sklearn.ensemble import RandomForestClassifier
+        from sklearn.model_selection import cross_val_score
 
         # Generate data
         X = np.random.randn(samples, features)
@@ -449,17 +449,18 @@ class CriticalPathProfiler:
     def _apply_filters(self, data: np.ndarray) -> np.ndarray:
         """Apply filters to data (simplified)."""
         # Simulate bandpass filter
-        from scipy import signal  # type: ignore
+        from scipy import signal
 
         b, a = signal.butter(4, [0.1, 40], btype="bandpass", fs=1000)
-        filtered = signal.filtfilt(b, a, data, axis=0)
+        filtered: np.ndarray = signal.filtfilt(b, a, data, axis=0)
         return filtered
 
     def _normalize_data(self, data: np.ndarray) -> np.ndarray:
         """Normalize data (z-score)."""
-        mean = np.mean(data, axis=0)
-        std = np.std(data, axis=0)
-        return (data - mean) / (std + 1e-8)
+        mean: np.ndarray = np.mean(data, axis=0)
+        std: np.ndarray = np.std(data, axis=0)
+        result: np.ndarray = (data - mean) / (std + 1e-8)
+        return result
 
     def _save_comprehensive_report(self, results: Dict[str, Dict[str, Any]]):
         """Save comprehensive profiling report."""

@@ -7,25 +7,25 @@ selection, and execution controls.
 
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 try:
-    import PySide6  # type: ignore[import]  # noqa: F401
+    import PySide6  # noqa: F401  # type: ignore[import-not-found]
 
     PYSIDE6_AVAILABLE = True
 except ImportError:
     PYSIDE6_AVAILABLE = False
 
 if PYSIDE6_AVAILABLE:
-    from PySide6.QtCore import (  # type: ignore[import]
+    from PySide6.QtCore import (  # type: ignore[import-not-found]
         Qt,
         QThread,
         QTimer,
         Signal,
         pyqtSignal,
     )
-    from PySide6.QtGui import QFont, QIcon, QPixmap  # type: ignore[import]
-    from PySide6.QtWidgets import (  # type: ignore[import]
+    from PySide6.QtGui import QFont, QIcon, QPixmap  # type: ignore[import-not-found]
+    from PySide6.QtWidgets import (  # type: ignore[import-not-found]
         QApplication,
         QCheckBox,
         QComboBox,
@@ -51,37 +51,37 @@ if PYSIDE6_AVAILABLE:
 else:
     # Fallback for environments without PySide6
     class QMainWindow:  # type: ignore[no-redef]
-        def __init__(self, parent=None):
+        def __init__(self, parent=None) -> None:
             pass
 
-        def setWindowTitle(self, title):
+        def setWindowTitle(self, title) -> None:
             pass
 
-        def setMinimumSize(self, width, height):
+        def setMinimumSize(self, width, height) -> None:
             pass
 
-        def setCentralWidget(self, widget):
+        def setCentralWidget(self, widget) -> None:
             pass
 
-        def show(self):
+        def show(self) -> None:
             pass
 
     class QWidget:  # type: ignore[no-redef]
-        def __init__(self, parent=None):
+        def __init__(self, parent=None) -> None:
             pass
 
-        def show(self):
+        def show(self) -> None:
             pass
 
     class Signal:  # type: ignore[no-redef]
-        def __init__(self, *args):
-            self._connected_slots = []
+        def __init__(self, *args) -> None:
+            self._connected_slots: List[Any] = []
 
-        def connect(self, slot):
+        def connect(self, slot) -> None:
             """Connect a slot to this signal."""
             self._connected_slots.append(slot)
 
-        def emit(self, *args):
+        def emit(self, *args) -> None:
             """Emit the signal with arguments."""
             for slot in self._connected_slots:
                 slot(*args)
@@ -89,247 +89,255 @@ else:
     class QTreeWidget:  # type: ignore[no-redef]
         ExtendedSelection = 3
 
-        def __init__(self, parent=None):
+        def __init__(self, parent=None) -> None:
             self.itemChanged = Signal()
-            self._children = []
+            self._children: List[Any] = []
 
-        def setHeaderLabels(self, labels):
+        def setHeaderLabels(self, labels) -> None:
             pass
 
-        def setSelectionMode(self, mode):
+        def setSelectionMode(self, mode) -> None:
             pass
 
-        def clear(self):
+        def clear(self) -> None:
             pass
 
-        def expandAll(self):
+        def expandAll(self) -> None:
             pass
 
-        def collapseAll(self):
+        def collapseAll(self) -> None:
             pass
 
-        def addChild(self, child):
+        def addChild(self, child) -> None:
             self._children.append(child)
 
-    class QTreeWidgetItemIterator:  # type: ignore[no-redef]
-        def __init__(self, tree):
+    class QTreeWidgetItemIterator:
+        def __init__(self, tree) -> None:
             self._tree = tree
             self._index = 0
 
-        def value(self):
+        def value(self) -> Any:
             # Simplified implementation
             return None
 
-        def __iadd__(self, other):
+        def __iadd__(self, other) -> "QTreeWidgetItemIterator":
             self._index += 1
             return self
 
     class QTreeWidgetItem:  # type: ignore[no-redef]
-        def __init__(self, parent=None, strings=None):
+        def __init__(self, parent=None, strings=None) -> None:
             self._parent = parent
-            self._strings = strings or []
-            self._children = []
+            self._strings: List[str] = strings or []
+            self._children: List[Any] = []
             self._check_state = 0
             self._flags = 0
             if parent:
                 parent.addChild(self)
 
-        def setFlags(self, flags):
+        def setFlags(self, flags) -> None:
             self._flags = flags
 
-        def flags(self):
+        def flags(self) -> int:
             return self._flags
 
-        def setCheckState(self, column, state):
+        def setCheckState(self, column, state) -> None:
             self._check_state = state
 
-        def checkState(self, column):
+        def checkState(self, column) -> int:
             return self._check_state
 
-        def setData(self, column, role, data):
+        def setData(self, column, role, data) -> None:
             pass
 
-        def data(self, column, role):
+        def data(self, column, role) -> Any:
             return None
 
-        def text(self, column):
+        def text(self, column: int) -> str:
             if column < len(self._strings):
                 return self._strings[column]
             return ""
 
-        def setText(self, column, text):
+        def setText(self, column, text) -> None:
             if column < len(self._strings):
                 self._strings[column] = text
             else:
                 self._strings.append(text)
 
-        def parent(self):
+        def parent(self) -> Any:
             return self._parent
 
-        def childCount(self):
+        def childCount(self) -> int:
             return len(self._children)
 
-        def child(self, index):
+        def child(self, index) -> Any:
             if 0 <= index < len(self._children):
                 return self._children[index]
             return None
 
-        def addChild(self, child):
+        def addChild(self, child) -> None:
             self._children.append(child)
 
     class QPushButton:  # type: ignore[no-redef]
-        def __init__(self, text=None, parent=None):
+        def __init__(
+            self, text: Optional[str] = None, parent: Optional[Any] = None
+        ) -> None:
             self.clicked = Signal()
 
-        def setStyleSheet(self, style):
+        def setStyleSheet(self, style: str) -> None:
             pass
 
-        def setEnabled(self, enabled):
+        def setEnabled(self, enabled: bool) -> None:
             pass
 
     class QLineEdit:  # type: ignore[no-redef]
-        def __init__(self, text=None, parent=None):
+        def __init__(
+            self, text: Optional[str] = None, parent: Optional[Any] = None
+        ) -> None:
             self.textChanged = Signal()
 
-        def setPlaceholderText(self, text):
+        def setPlaceholderText(self, text: str) -> None:
             pass
 
-        def text(self):
+        def text(self) -> str:
             return ""
 
     class QComboBox:  # type: ignore[no-redef]
-        def __init__(self, parent=None):
+        def __init__(self, parent: Optional[Any] = None) -> None:
             self.currentTextChanged = Signal()
 
-        def addItem(self, item):
+        def addItem(self, item: str) -> None:
             pass
 
-        def addItems(self, items):
+        def addItems(self, items: List[str]) -> None:
             pass
 
-        def currentText(self):
+        def currentText(self) -> str:
             return ""
 
-        def findText(self, text):
+        def findText(self, text: str) -> int:
             return -1
 
-        def setCurrentIndex(self, index):
+        def setCurrentIndex(self, index: int) -> None:
             pass
 
-        def clear(self):
+        def clear(self) -> None:
             pass
 
     class QCheckBox:  # type: ignore[no-redef]
-        def __init__(self, text=None, parent=None):
+        def __init__(
+            self, text: Optional[str] = None, parent: Optional[Any] = None
+        ) -> None:
             self.stateChanged = Signal()
 
-        def setChecked(self, checked):
+        def setChecked(self, checked: bool) -> None:
             pass
 
-        def isChecked(self):
+        def isChecked(self) -> bool:
             return False
 
-        def setText(self, text):
+        def setText(self, text: str) -> None:
             pass
 
     class QTextEdit:  # type: ignore[no-redef]
-        def __init__(self, parent=None):
+        def __init__(self, parent: Optional[Any] = None) -> None:
             pass
 
     class QProgressBar:  # type: ignore[no-redef]
-        def __init__(self, parent=None):
+        def __init__(self, parent: Optional[Any] = None) -> None:
             pass
 
-        def setVisible(self, visible):
+        def setVisible(self, visible: bool) -> None:
             pass
 
-        def setRange(self, min_val, max_val):
+        def setRange(self, min_val, max_val) -> None:
             pass
 
-        def setValue(self, value):
+        def setValue(self, value) -> None:
             pass
 
     class QLabel:  # type: ignore[no-redef]
-        def __init__(self, text=None, parent=None):
+        def __init__(
+            self, text: Optional[str] = None, parent: Optional[Any] = None
+        ) -> None:
             pass
 
-        def setText(self, text):
+        def setText(self, text: str) -> None:
             pass
 
     class QSpinBox:  # type: ignore[no-redef]
-        def __init__(self, parent=None):
+        def __init__(self, parent: Optional[Any] = None) -> None:
             pass
 
-        def setRange(self, min_val, max_val):
+        def setRange(self, min_val: int, max_val: int) -> None:
             pass
 
-        def setValue(self, value):
+        def setValue(self, value) -> None:
             pass
 
-        def value(self):
+        def value(self) -> int:
             return 0
 
     class QDoubleSpinBox:  # type: ignore[no-redef]
-        def __init__(self, parent=None):
+        def __init__(self, parent=None) -> None:
             pass
 
-        def setRange(self, min_val, max_val):
+        def setRange(self, min_val, max_val) -> None:
             pass
 
-        def setValue(self, value):
+        def setValue(self, value) -> None:
             pass
 
-        def setSuffix(self, suffix):
+        def setSuffix(self, suffix) -> None:
             pass
 
-        def value(self):
+        def value(self) -> float:
             return 0.0
 
     class QFrame:  # type: ignore[no-redef]
-        def __init__(self, parent=None):
+        def __init__(self, parent: Optional[Any] = None) -> None:
             pass
 
     class QScrollArea:  # type: ignore[no-redef]
-        def __init__(self, parent=None):
+        def __init__(self, parent: Optional[Any] = None) -> None:
             pass
 
-        def setWidget(self, widget):
+        def setWidget(self, widget: Any) -> None:
             pass
 
-        def setWidgetResizable(self, resizable):
+        def setWidgetResizable(self, resizable: bool) -> None:
             pass
 
-        def setMaximumWidth(self, width):
+        def setMaximumWidth(self, width: int) -> None:
             pass
 
     class QApplication:  # type: ignore[no-redef]
-        def __init__(self, *args):
+        def __init__(self, *args: Any) -> None:
             pass
 
-        def exec(self):
-            pass
+        def exec(self) -> int:
+            return 0
 
     class QVBoxLayout:  # type: ignore[no-redef]
-        def __init__(self, parent=None):
+        def __init__(self, parent: Optional[Any] = None) -> None:
             pass
 
-        def addWidget(self, widget):
+        def addWidget(self, widget: Any) -> None:
             pass
 
-        def addLayout(self, layout):
+        def addLayout(self, layout: Any) -> None:
             pass
 
     class QHBoxLayout:  # type: ignore[no-redef]
-        def __init__(self, parent=None):
+        def __init__(self, parent: Optional[Any] = None) -> None:
             pass
 
-        def addWidget(self, widget):
+        def addWidget(self, widget: Any) -> None:
             pass
 
-        def addLayout(self, layout):
+        def addLayout(self, layout: Any) -> None:
             pass
 
-        def addStretch(self):
+        def addStretch(self) -> None:
             pass
 
     pyqtSignal = Signal
@@ -1015,7 +1023,7 @@ class MainTestWindow(QMainWindow):
         self.test_execution_cancelled.emit()
         self._stop_execution()
 
-    def _start_execution(self):
+    def _start_execution(self) -> None:
         """Update UI for test execution start."""
         self.run_selected_btn.setEnabled(False)
         self.run_all_btn.setEnabled(False)
@@ -1024,7 +1032,7 @@ class MainTestWindow(QMainWindow):
         self.progress_bar.setRange(0, 0)  # Indeterminate progress
         self.status_label.setText("Running tests...")
 
-    def _stop_execution(self):
+    def _stop_execution(self) -> None:
         """Update UI for test execution stop."""
         self.run_selected_btn.setEnabled(True)
         self.run_all_btn.setEnabled(True)
@@ -1034,7 +1042,7 @@ class MainTestWindow(QMainWindow):
 
     def update_execution_progress(
         self, current: int, total: int, current_test: str = ""
-    ):
+    ) -> None:
         """Update execution progress."""
         if total > 0:
             self.progress_bar.setRange(0, total)
@@ -1046,11 +1054,11 @@ class MainTestWindow(QMainWindow):
 
     def update_test_result(
         self, test_name: str, status: str, execution_time: float = 0.0
-    ):
+    ) -> None:
         """Update a test result in the tree."""
         self.test_tree.update_test_status(test_name, status, execution_time)
 
-    def execution_completed(self, results: FrameworkResults):
+    def execution_completed(self, results: FrameworkResults) -> None:
         """Handle execution completion."""
         self._stop_execution()
 

@@ -12,7 +12,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import scipy.stats as stats
-from scipy.stats import t, ncf
+from scipy.stats import ncf, t
 
 
 class EffectSizeType(Enum):
@@ -441,15 +441,13 @@ class EffectSizeCalculator:
     ) -> Tuple[float, float]:
         """Calculate bootstrap confidence interval for Cohen's d."""
 
-        def cohens_d_func(data):
+        def cohens_d_func(data: Any) -> float:
             g1, g2 = data
             n1, n2 = len(g1), len(g2)
             m1, m2 = np.mean(g1), np.mean(g2)
             s1, s2 = np.std(g1, ddof=1), np.std(g2, ddof=1)
-            pooled_std = np.sqrt(
-                ((n1 - 1) * s1**2 + (n2 - 1) * s2**2) / (n1 + n2 - 2)
-            )
-            return (m1 - m2) / pooled_std
+            pooled_std = np.sqrt(((n1 - 1) * s1**2 + (n2 - 1) * s2**2) / (n1 + n2 - 2))
+            return float((m1 - m2) / pooled_std)
 
         bootstrap_result = self.bootstrap_confidence_interval(
             (group1, group2), cohens_d_func, confidence_level, method=method

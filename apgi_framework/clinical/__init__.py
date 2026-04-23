@@ -8,6 +8,8 @@ This module provides tools for:
 - Longitudinal tracking
 """
 
+from typing import Any, Dict, List, Optional
+
 from .disorder_classification import (
     ClassificationResult,
     DisorderClassification,
@@ -27,27 +29,28 @@ from .treatment_prediction import (
     TreatmentType,
 )
 
+
 # Mock classes for testing
 class PatientDataManager:
     """Mock patient data manager for testing purposes."""
 
-    def __init__(self):
-        self.patients = {}
+    def __init__(self) -> None:
+        self.patients: Dict[str, Any] = {}
 
-    def add_patient(self, patient_id, patient_data):
+    def add_patient(self, patient_id: str, patient_data: Dict[str, Any]) -> None:
         """Add a patient record."""
         self.patients[patient_id] = patient_data
 
-    def get_patient(self, patient_id):
+    def get_patient(self, patient_id: str) -> Optional[Dict[str, Any]]:
         """Get patient data by ID."""
         return self.patients.get(patient_id)
 
-    def update_patient(self, patient_id, updates):
+    def update_patient(self, patient_id: str, updates: Dict[str, Any]) -> None:
         """Update patient data."""
         if patient_id in self.patients:
             self.patients[patient_id].update(updates)
 
-    def list_patients(self):
+    def list_patients(self) -> List[str]:
         """List all patient IDs."""
 
         return list(self.patients.keys())
@@ -56,12 +59,11 @@ class PatientDataManager:
 class InterventionTracker:
     """Mock intervention tracker for testing purposes."""
 
-    def __init__(self):
-        self.interventions = {}
-        self.patient_interventions = {}
+    def __init__(self) -> None:
+        self.interventions: Dict[str, Dict[str, Any]] = {}
+        self.patient_interventions: Dict[str, List[str]] = {}
 
-    def add_intervention(self, intervention_data):
-        """Add an intervention record."""
+    def add_intervention(self, intervention_data: Dict[str, Any]) -> Dict[str, Any]:
         intervention_id = f"intervention_{hash(str(intervention_data)) % 10000:04d}"
         intervention = {
             "intervention_id": intervention_id,
@@ -80,7 +82,7 @@ class InterventionTracker:
 
         return intervention
 
-    def get_patient_interventions(self, patient_id):
+    def get_patient_interventions(self, patient_id: str) -> List[Dict[str, Any]]:
         """Get all interventions for a patient."""
         intervention_ids = self.patient_interventions.get(patient_id, [])
         return [
@@ -93,10 +95,10 @@ class InterventionTracker:
 class OutcomeAnalyzer:
     """Mock outcome analyzer for testing purposes."""
 
-    def __init__(self):
-        self.outcomes = {}
+    def __init__(self) -> None:
+        self.outcomes: Dict[str, Dict[str, Any]] = {}
 
-    def analyze_outcomes(self, outcome_data):
+    def analyze_outcomes(self, outcome_data: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze treatment outcomes."""
         analysis_id = f"analysis_{hash(str(outcome_data)) % 10000:04d}"
 
@@ -125,7 +127,7 @@ class OutcomeAnalyzer:
         self.outcomes[analysis_id] = result
         return result
 
-    def track_progress(self, intervention_data):
+    def track_progress(self, intervention_data: Dict[str, Any]) -> Dict[str, float]:
         """Track intervention progress."""
         sessions_completed = intervention_data.get("sessions_completed", 0)
         total_sessions = intervention_data.get("total_sessions", 36)

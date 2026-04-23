@@ -12,18 +12,18 @@ import logging
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 # Add the project root to Python path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
+from apgi_framework.logging.standardized_logging import get_logger
 from apgi_framework.testing.activity_logger import (
     ActivityLevel,
     ActivityType,
     get_activity_logger,
 )
-from apgi_framework.logging.standardized_logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -31,7 +31,7 @@ logger = get_logger(__name__)
 class CLITestRunner:
     """Command-line interface for test execution and management."""
 
-    def __init__(self, container, config):
+    def __init__(self, container: Any, config: Any) -> None:
         """Initialize CLI test runner with dependency container and configuration."""
         self.container = container
         self.config = config
@@ -43,13 +43,13 @@ class CLITestRunner:
         self.ci_integrator = container.get_ci_integrator()
         self.notification_manager = container.get_notification_manager()
 
-        self._start_time = None
-        self._test_results = {}
+        self._start_time: Optional[datetime] = None
+        self._test_results: Dict[str, Any] = {}
 
     def run_all_tests(self) -> int:
         """Run all tests in the project."""
         self.logger.info("Running all tests...")
-        self._start_time = datetime.now()
+        self._start_time = datetime.now()  # type: ignore[assignment]
 
         try:
             self.activity_logger.log_activity(
@@ -82,7 +82,11 @@ class CLITestRunner:
                     "total_tests": results.get("total_tests", 0),
                     "passed": results.get("passed", 0),
                     "failed": results.get("failed", 0),
-                    "duration": str(datetime.now() - self._start_time),
+                    "duration": (
+                        str(datetime.now() - self._start_time)
+                        if self._start_time
+                        else "unknown"
+                    ),
                 },
             )
 
@@ -101,7 +105,7 @@ class CLITestRunner:
     def run_unit_tests(self) -> int:
         """Run unit tests only."""
         self.logger.info("Running unit tests...")
-        self._start_time = datetime.now()
+        self._start_time = datetime.now()  # type: ignore[assignment]
 
         try:
             self.activity_logger.log_activity(
@@ -136,7 +140,7 @@ class CLITestRunner:
     def run_integration_tests(self) -> int:
         """Run integration tests only."""
         self.logger.info("Running integration tests...")
-        self._start_time = datetime.now()
+        self._start_time = datetime.now()  # type: ignore[assignment]
 
         try:
             self.activity_logger.log_activity(
@@ -174,7 +178,7 @@ class CLITestRunner:
     def run_tests_by_pattern(self, pattern: str) -> int:
         """Run tests matching a specific pattern."""
         self.logger.info(f"Running tests matching pattern: {pattern}")
-        self._start_time = datetime.now()
+        self._start_time = datetime.now()  # type: ignore[assignment]
 
         try:
             self.activity_logger.log_activity(
@@ -342,7 +346,7 @@ class CLITestRunner:
 
         return sorted(test_files)
 
-    def _generate_reports(self, results: Dict[str, Any], report_name: str):
+    def _generate_reports(self, results: Dict[str, Any], report_name: str) -> None:
         """Generate test execution reports."""
         try:
             # Create reports directory
@@ -384,7 +388,7 @@ class CLITestRunner:
         except Exception as e:
             self.logger.error(f"Error generating reports: {e}")
 
-    def _print_test_summary(self, results: Dict[str, Any]):
+    def _print_test_summary(self, results: Dict[str, Any]) -> None:
         """Print test execution summary to console."""
         logger.info("\n" + "=" * 50)
         logger.info("TEST EXECUTION SUMMARY")
@@ -431,7 +435,7 @@ class CLITestRunner:
             if len(failed_tests) > 10:
                 logger.info(f"  ... and {len(failed_tests) - 10} more failures")
 
-    def _print_coverage_summary(self, coverage_report: Dict[str, Any]):
+    def _print_coverage_summary(self, coverage_report: Dict[str, Any]) -> None:
         """Print coverage summary to console."""
         logger.info("\n" + "=" * 50)
         logger.info("COVERAGE REPORT SUMMARY")
@@ -462,7 +466,7 @@ class CLITestRunner:
 
         logger.info("=" * 50)
 
-    def _show_test_history(self):
+    def _show_test_history(self) -> None:
         """Show recent test execution history."""
         try:
             reports_dir = Path(self.config.project_root) / "test_reports"
@@ -519,7 +523,7 @@ class CLITestRunner:
         except Exception as e:
             logger.info(f"Error showing test history: {e}")
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Cleanup CLI runner resources."""
         try:
             self.logger.info("Cleaning up CLI runner...")

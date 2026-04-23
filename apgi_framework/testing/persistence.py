@@ -15,7 +15,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 from ..config import ConfigManager
 from ..logging.standardized_logging import get_logger
@@ -83,7 +83,7 @@ class TestResultPersistence:
         self._initialize_database()
 
     @contextmanager
-    def get_connection(self):
+    def get_connection(self) -> Iterator[sqlite3.Connection]:
         """Get database connection with proper error handling."""
         conn = None
         try:
@@ -97,12 +97,11 @@ class TestResultPersistence:
             if conn:
                 conn.close()
 
-    def _initialize_database(self):
+    def _initialize_database(self) -> None:
         """Initialize database tables."""
         with self.get_connection() as conn:
             # Create batch_executions table
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS batch_executions (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     batch_id TEXT UNIQUE NOT NULL,
@@ -117,12 +116,10 @@ class TestResultPersistence:
                     execution_metadata TEXT,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
-            """
-            )
+            """)
 
             # Create test_executions table
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS test_executions (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     test_name TEXT NOT NULL,
@@ -139,8 +136,7 @@ class TestResultPersistence:
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (batch_id) REFERENCES batch_executions (batch_id)
                 )
-            """
-            )
+            """)
 
             # Create indexes for better query performance
             conn.execute(
@@ -160,8 +156,7 @@ class TestResultPersistence:
             )
 
             # Create test_performance table for trend analysis
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS test_performance (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     test_name TEXT NOT NULL,
@@ -176,8 +171,7 @@ class TestResultPersistence:
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     UNIQUE(test_name, test_file)
                 )
-            """
-            )
+            """)
 
             conn.commit()
             self.logger.info(f"Database initialized at {self.db_path}")
@@ -273,7 +267,9 @@ class TestResultPersistence:
             self.logger.error(f"Failed to store batch results: {e}")
             raise
 
-    def _update_performance_metrics(self, conn, test_results: List[Any]):
+    def _update_performance_metrics(
+        self, conn: sqlite3.Connection, test_results: List[Any]
+    ) -> None:
         """Update performance metrics for trend analysis."""
         for result in test_results:
             test_name = result.test_name
@@ -378,9 +374,7 @@ class TestResultPersistence:
                 query = """
                     SELECT * FROM test_executions 
                     WHERE start_time >= datetime('now', '-{} days')
-                """.format(
-                    days
-                )
+                """.format(days)
 
                 params: List[Any] = []
                 if test_name:
@@ -486,9 +480,7 @@ class TestResultPersistence:
                     WHERE start_time >= datetime('now', '-{} days')
                     ORDER BY start_time DESC 
                     LIMIT ?
-                """.format(
-                        days
-                    ),
+                """.format(days),
                     (limit,),
                 )
 
@@ -512,8 +504,7 @@ class TestResultPersistence:
         try:
             with self.get_connection() as conn:
                 # Get failed tests
-                cursor = conn.execute(
-                    """
+                cursor = conn.execute("""
                     SELECT test_name, test_file, COUNT(*) as failure_count,
                            AVG(duration) as avg_duration,
                            GROUP_CONCAT(SUBSTR(error_message, 1, 100), ' | ') as error_patterns
@@ -522,16 +513,12 @@ class TestResultPersistence:
                     AND start_time >= datetime('now', '-{} days')
                     GROUP BY test_name, test_file
                     ORDER BY failure_count DESC
-                """.format(
-                        days
-                    )
-                )
+                """.format(days))
 
                 failed_tests = [dict(row) for row in cursor.fetchall()]
 
                 # Get failure rate by time of day
-                cursor = conn.execute(
-                    """
+                cursor = conn.execute("""
                     SELECT strftime('%H', start_time) as hour,
                            COUNT(*) as total_executions,
                            SUM(CASE WHEN status IN ('failed', 'error') THEN 1 ELSE 0 END) as failures
@@ -539,16 +526,12 @@ class TestResultPersistence:
                     WHERE start_time >= datetime('now', '-{} days')
                     GROUP BY hour
                     ORDER BY hour
-                """.format(
-                        days
-                    )
-                )
+                """.format(days))
 
                 failure_by_hour = [dict(row) for row in cursor.fetchall()]
 
                 # Get most common error messages
-                cursor = conn.execute(
-                    """
+                cursor = conn.execute("""
                     SELECT SUBSTR(error_message, 1, 200) as error_sample, COUNT(*) as count
                     FROM test_executions 
                     WHERE status IN ('failed', 'error') 
@@ -557,10 +540,7 @@ class TestResultPersistence:
                     GROUP BY SUBSTR(error_message, 1, 100)
                     ORDER BY count DESC
                     LIMIT 10
-                """.format(
-                        days
-                    )
-                )
+                """.format(days))
 
                 common_errors = [dict(row) for row in cursor.fetchall()]
 
@@ -641,30 +621,22 @@ Analysis Period: Last {days} days
             self.logger.error(f"Failed to generate performance report: {e}")
             return f"Error generating report: {e}"
 
-    def cleanup_old_records(self, days_to_keep: int = 90):
+    def cleanup_old_records(self, days_to_keep: int = 90) -> Tuple[int, int]:
         """Clean up old test execution records."""
         try:
             with self.get_connection() as conn:
                 # Delete old batch executions
-                cursor = conn.execute(
-                    """
+                cursor = conn.execute("""
                     DELETE FROM batch_executions 
                     WHERE start_time < datetime('now', '-{} days')
-                """.format(
-                        days_to_keep
-                    )
-                )
+                """.format(days_to_keep))
                 deleted_batches = cursor.rowcount
 
                 # Delete old test executions
-                cursor = conn.execute(
-                    """
+                cursor = conn.execute("""
                     DELETE FROM test_executions 
                     WHERE start_time < datetime('now', '-{} days')
-                """.format(
-                        days_to_keep
-                    )
-                )
+                """.format(days_to_keep))
                 deleted_tests = cursor.rowcount
 
                 conn.commit()
@@ -678,7 +650,9 @@ Analysis Period: Last {days} days
             self.logger.error(f"Failed to cleanup old records: {e}")
             return 0, 0
 
-    def export_results(self, output_path: str, format: str = "json", days: int = 30):
+    def export_results(
+        self, output_path: str, format: str = "json", days: int = 30
+    ) -> None:
         """Export test results in various formats."""
         try:
             # Get recent data

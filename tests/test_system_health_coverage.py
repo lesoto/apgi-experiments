@@ -12,7 +12,6 @@ from apgi_framework.validation.system_health import (
 from datetime import datetime
 from unittest.mock import patch
 
-
 # --- HealthCheckResult ---
 
 
@@ -119,12 +118,16 @@ class TestSystemHealthChecker:
                 "major": 3,
                 "minor": 7,
                 "micro": 0,
-                "__lt__": lambda self, other: (self.major, self.minor) < other[:2]
-                if isinstance(other, tuple)
-                else NotImplemented,
-                "__ge__": lambda self, other: (self.major, self.minor) >= other[:2]
-                if isinstance(other, tuple)
-                else NotImplemented,
+                "__lt__": lambda self, other: (
+                    (self.major, self.minor) < other[:2]
+                    if isinstance(other, tuple)
+                    else NotImplemented
+                ),
+                "__ge__": lambda self, other: (
+                    (self.major, self.minor) >= other[:2]
+                    if isinstance(other, tuple)
+                    else NotImplemented
+                ),
             },
         )()
         with patch("sys.version_info", mock_version):

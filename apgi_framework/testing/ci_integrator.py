@@ -47,7 +47,7 @@ class CIConfiguration:
     pre_commit_enabled: bool = True
     notification_channels: Optional[List[str]] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.critical_test_patterns is None:
             self.critical_test_patterns = [
                 "**/test_core_*.py",
@@ -366,7 +366,7 @@ class CIIntegrator:
         # Ensure required directories exist
         self._setup_directories()
 
-    def _setup_directories(self):
+    def _setup_directories(self) -> None:
         """Setup required directories for CI integration."""
         ci_dir = self.project_root / ".ci"
         ci_dir.mkdir(exist_ok=True)
@@ -705,7 +705,7 @@ class CIIntegrator:
             pipeline_context=self._get_pipeline_context(),
         )
 
-    def _generate_ci_reports(self, result: ExecutionResult, execution_id: str):
+    def _generate_ci_reports(self, result: ExecutionResult, execution_id: str) -> None:
         """Generate CI-specific reports."""
         reports_dir = self.project_root / ".ci" / "reports"
 

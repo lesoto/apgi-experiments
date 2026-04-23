@@ -10,7 +10,7 @@ The core equation is:
 """
 
 import logging
-from typing import TYPE_CHECKING, Optional, Union, Dict, Any
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 import numpy as np
 
@@ -183,6 +183,11 @@ class APGIEquation:
                 surprise = np.clip(surprise, 0, 10)
 
             sigmoid_input = steepness * (surprise - threshold)
+        else:
+            raise TypeError(
+                "surprise must be float, int, or np.ndarray, "
+                f"got {type(surprise).__name__}"
+            )
 
         # Apply numerical stability if enabled
         if self.numerical_stability:

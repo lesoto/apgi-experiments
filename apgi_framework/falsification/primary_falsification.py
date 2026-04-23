@@ -6,8 +6,9 @@ implements the core falsification testing logic with proper result objects.
 """
 
 import logging
-from typing import Optional
 from datetime import datetime
+from typing import Any, Optional
+
 import numpy as np
 from scipy import stats
 
@@ -29,8 +30,8 @@ class FalsificationResult:
         statistical_power: Optional[float] = None,
         framework_falsified: Optional[bool] = None,
         confidence: Optional[float] = None,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         """
         Initialize falsification result.
 
@@ -60,12 +61,12 @@ class FalsificationResult:
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
         """Delegate attribute access to maintain compatibility."""
         # Handle common attribute access patterns
         if name in ["falsified", "framework_falsified"]:
             return self.framework_falsified
-        return getattr(self, name, None)
+        return None
 
 
 class PrimaryFalsificationTest:
@@ -76,7 +77,7 @@ class PrimaryFalsificationTest:
     without any evidence of consciousness, which would falsify the framework.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the primary falsification test."""
         self.logger = logging.getLogger(__name__)
         self.signature_thresholds = {
@@ -176,6 +177,14 @@ class PrimaryFalsificationTest:
         )
         return result
 
+    def run_test(
+        self, n_trials: int = 1000, n_participants: int = 20
+    ) -> FalsificationResult:
+        """Alias for run_falsification_test to support batch test runner interface."""
+        return self.run_falsification_test(
+            n_trials=n_trials, n_participants=n_participants
+        )
+
     def _simulate_participant_trials(self, n_trials: int, participant_id: int) -> list:
         """Simulate trial data for a single participant."""
         trials = []
@@ -261,14 +270,12 @@ class PrimaryFalsificationTest:
             "ignition_without_consciousness_count": ignition_without_consciousness,
             "both_present_count": both_present,
             "both_absent_count": both_absent,
-            "consciousness_without_ignition_rate": consciousness_without_ignition
-            / total_trials
-            if total_trials > 0
-            else 0,
-            "ignition_without_consciousness_rate": ignition_without_consciousness
-            / total_trials
-            if total_trials > 0
-            else 0,
+            "consciousness_without_ignition_rate": (
+                consciousness_without_ignition / total_trials if total_trials > 0 else 0
+            ),
+            "ignition_without_consciousness_rate": (
+                ignition_without_consciousness / total_trials if total_trials > 0 else 0
+            ),
             "both_present_rate": both_present / total_trials if total_trials > 0 else 0,
             "both_absent_rate": both_absent / total_trials if total_trials > 0 else 0,
         }

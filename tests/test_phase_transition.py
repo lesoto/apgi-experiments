@@ -3,29 +3,7 @@ import pytest
 
 # Import the Phase Transition model
 try:
-    # Create a mock SomaticAgent class for testing
-    class SomaticAgent:
-        def __init__(self, n_states=4, n_actions=3, n_contexts=2):
-            self.n_states = n_states
-            self.n_actions = n_actions
-            self.n_contexts = n_contexts
-            self.somatic_markers = np.zeros((n_contexts, n_actions))
-
-        def expected_free_energy(self, beliefs, context=0):
-            # Mock implementation
-            G_modified = np.random.random(self.n_actions)
-            G_basic = np.random.random(self.n_actions)
-            return G_modified, G_basic
-
-        def update_somatic_marker(self, context, action, outcome):
-            # Simple update rule
-            self.somatic_markers[context, action] += 0.1 * outcome
-
-        def decide(self, beliefs, context=0, surprise=0.1):
-            # Simple decision making
-            action = np.random.randint(0, self.n_actions)
-            conscious = surprise > 1.0  # High surprise triggers conscious access
-            return action, conscious, {"surprise": surprise}
+    from apgi_framework.research.core_mechanisms.phase_transition import SomaticAgent
 
 except ImportError as e:
     pytest.skip(f"Could not import required modules: {e}", allow_module_level=True)

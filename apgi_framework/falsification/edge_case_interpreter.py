@@ -119,7 +119,7 @@ class EdgeCaseInterpreter:
     standard falsification criteria and provides framework boundary validation.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize edge case interpreter with predefined profiles"""
         self.edge_case_profiles = self._initialize_edge_case_profiles()
 
@@ -459,7 +459,7 @@ class EdgeCaseInterpreter:
 
             # Exponential decay based on distance
             normalized_distance = distance / range_size if range_size > 0 else distance
-            return max(0.0, np.exp(-normalized_distance))
+            return max(0.0, float(np.exp(-normalized_distance)))
 
     def _create_classification(
         self,

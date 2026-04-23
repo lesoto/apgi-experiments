@@ -9,12 +9,16 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
+import logging
+
 import numpy as np
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import StratifiedKFold, cross_val_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
+
+logger = logging.getLogger(__name__)
 
 
 class DisorderType(Enum):
@@ -148,7 +152,9 @@ class DisorderClassification:
     using neural signatures and machine learning with cross-validation.
     """
 
-    def __init__(self, classifier_type: str = "random_forest", random_state: int = 42):
+    def __init__(
+        self, classifier_type: str = "random_forest", random_state: int = 42
+    ) -> None:
         """
         Initialize disorder classifier.
 
@@ -163,7 +169,7 @@ class DisorderClassification:
         self.is_trained = False
         self.feature_names = NeuralSignatureProfile.feature_names()
 
-    def _create_classifier(self):
+    def _create_classifier(self) -> Any:
         """Create classifier based on type."""
         if self.classifier_type == "random_forest":
             return RandomForestClassifier(
@@ -509,6 +515,16 @@ class DisorderClassification:
         # Scale features
         X_scaled = self.scaler.fit_transform(X)
 
+        # Dynamic CV fold adjustment based on sample size
+        n_samples = len(profiles)
+        if n_samples < cv_folds:
+            adjusted_folds = max(2, n_samples)
+            logger.warning(
+                f"Insufficient samples ({n_samples}) for {cv_folds}-fold CV. "
+                f"Adjusting to {adjusted_folds}-fold CV."
+            )
+            cv_folds = adjusted_folds
+
         # Cross-validation
         cv = StratifiedKFold(
             n_splits=cv_folds, shuffle=True, random_state=self.random_state
@@ -533,26 +549,36 @@ class DisorderClassification:
             "cv_scores": cv_scores.tolist(),
             "n_samples": len(profiles),
             "n_features": X.shape[1],
-            "feature_importance": feature_importance
-            if feature_importance is not None
-            else {},
+            "feature_importance": (
+                feature_importance if feature_importance is not None else {}
+            ),
         }
 
-    def classify(self, profile: NeuralSignatureProfile) -> ClassificationResult:
+    def classify(
+        self,
+        profile: Optional[NeuralSignatureProfile] = None,
+        neural_profile: Optional[NeuralSignatureProfile] = None,
+    ) -> ClassificationResult:
         """
         Classify disorder from neural signature profile.
 
         Args:
-            profile: Neural signature profile
+            profile: Neural signature profile (primary parameter)
+            neural_profile: Alternative parameter name for backward compatibility
 
         Returns:
             ClassificationResult with prediction and confidence
         """
+        # Use whichever parameter was provided
+        effective_profile = profile if profile is not None else neural_profile
+        if effective_profile is None:
+            raise ValueError("Either profile or neural_profile must be provided")
+
         if not self.is_trained:
             raise ValueError("Classifier must be trained before classification")
 
         # Convert to feature vector
-        X = profile.to_feature_vector().reshape(1, -1)
+        X = effective_profile.to_feature_vector().reshape(1, -1)
         X_scaled = self.scaler.transform(X)
 
         # Predict
@@ -583,7 +609,7 @@ class DisorderClassification:
             confidence=confidence,
             probabilities=prob_dict,
             feature_importance=feature_importance,
-            neural_profile=profile,
+            neural_profile=effective_profile,
         )
 
     def evaluate(

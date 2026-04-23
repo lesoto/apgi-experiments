@@ -123,6 +123,9 @@ def mock_test_case(draw):
                 )
             )
         ),
+        module=draw(
+            st.text(alphabet="abcdefghijklmnopqrstuvwxyz_", min_size=5, max_size=20)
+        ),
         class_name=draw(st.one_of(st.none(), st.text(min_size=5, max_size=20))),
         method_name=draw(
             st.text(alphabet="abcdefghijklmnopqrstuvwxyz_", min_size=5, max_size=20)
@@ -172,6 +175,7 @@ class TestCLIGUIParityProperties:
             FrameworkTestCase(
                 name=f"test_{i}",
                 file_path=Path(f"test_file_{i}.py"),
+                module=f"test_module_{i}",
                 class_name=f"TestClass{i}",
                 method_name=f"test_method_{i}",
                 category=FrameworkRunCategory.UNIT,

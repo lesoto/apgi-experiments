@@ -74,8 +74,8 @@ jobs:
     
     - name: Type check with mypy
       run: |
-        mypy apgi_framework --ignore-missing-imports --no-strict-optional
-    
+        mypy apgi_framework --ignore-missing-imports --no-error-summary
+
     - name: Check code formatting with black
       run: |
         black --check --diff apgi_framework/

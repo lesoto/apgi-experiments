@@ -12,7 +12,7 @@ import shutil
 import sys
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import pytest
 from hypothesis import assume, given, settings
@@ -47,7 +47,7 @@ from apgi_framework.testing.main import ApplicationConfig, create_default_config
 @settings(max_examples=50, deadline=5000)
 def test_installation_completeness_property(
     project_root: str, create_dirs: bool, python_version: tuple
-):
+) -> None:
     """
     Property 31: Installation completeness
 
@@ -193,7 +193,7 @@ def test_configuration_validation_property(
     parallel_execution: bool,
     max_workers: int,
     coverage_threshold: float,
-):
+) -> None:
     """
     Property 32: Configuration validation
 
@@ -231,7 +231,7 @@ def test_configuration_validation_property(
             try:
                 app_config = ApplicationConfig(
                     mode=mode,
-                    project_root=temp_dir,
+                    project_root=str(temp_dir),
                     parallel_execution=parallel_execution,
                     max_workers=max_workers,
                     coverage_threshold=coverage_threshold,
@@ -289,7 +289,9 @@ def test_configuration_validation_property(
     )
 )
 @settings(max_examples=30, deadline=5000)
-def test_directory_structure_validation_property(project_structure: Dict[str, bool]):
+def test_directory_structure_validation_property(
+    project_structure: Dict[str, bool],
+) -> None:
     """
     Property: Directory structure validation should correctly identify
     required and optional directories regardless of additional structure.
@@ -344,14 +346,14 @@ class ConfigurationStateMachine(RuleBasedStateMachine):
     across different sequences of operations.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.temp_dir = None
-        self.config_file = None
-        self.current_config = None
+        self.temp_dir: str = ""
+        self.config_file: Path = Path(".")
+        self.current_config: Optional[ApplicationConfig] = None
 
     @initialize()
-    def setup(self):
+    def setup(self) -> None:
         """Initialize test environment."""
         self.temp_dir = tempfile.mkdtemp()
         self.config_file = Path(self.temp_dir) / "config.json"
@@ -364,55 +366,61 @@ class ConfigurationStateMachine(RuleBasedStateMachine):
             min_value=0.0, max_value=1.0, allow_nan=False, allow_infinity=False
         ),
     )
-    def update_config(self, mode: str, max_workers: int, coverage_threshold: float):
+    def update_config(
+        self, mode: str, max_workers: int, coverage_threshold: float
+    ) -> None:
         """Update configuration parameters."""
-        self.current_config.mode = mode
-        self.current_config.max_workers = max_workers
-        self.current_config.coverage_threshold = coverage_threshold
+        if self.current_config is not None:
+            self.current_config.mode = mode
+            self.current_config.max_workers = max_workers
+            self.current_config.coverage_threshold = coverage_threshold
 
     @rule()
-    def save_config(self):
+    def save_config(self) -> None:
         """Save configuration to file."""
-        config_dict = {
-            "mode": self.current_config.mode,
-            "project_root": self.current_config.project_root,
-            "max_workers": self.current_config.max_workers,
-            "coverage_threshold": self.current_config.coverage_threshold,
-            "parallel_execution": self.current_config.parallel_execution,
-        }
+        if self.current_config is not None and self.config_file is not None:
+            config_dict = {
+                "mode": self.current_config.mode,
+                "project_root": self.current_config.project_root,
+                "max_workers": self.current_config.max_workers,
+                "coverage_threshold": self.current_config.coverage_threshold,
+                "parallel_execution": self.current_config.parallel_execution,
+            }
 
-        with open(self.config_file, "w") as f:
-            json.dump(config_dict, f)
+            with open(str(self.config_file), "w") as f:
+                json.dump(config_dict, f)
 
     @rule()
-    def load_config(self):
+    def load_config(self) -> None:
         """Load configuration from file."""
-        if self.config_file.exists():
-            with open(self.config_file, "r") as f:
+        if self.config_file is not None and self.config_file.exists():
+            with open(str(self.config_file), "r") as f:
                 config_dict = json.load(f)
 
             # Update current config from loaded data
-            self.current_config.mode = config_dict.get("mode", "cli")
-            self.current_config.max_workers = config_dict.get("max_workers", 4)
-            self.current_config.coverage_threshold = config_dict.get(
-                "coverage_threshold", 0.8
-            )
+            if self.current_config is not None:
+                self.current_config.mode = config_dict.get("mode", "cli")
+                self.current_config.max_workers = config_dict.get("max_workers", 4)
+                self.current_config.coverage_threshold = config_dict.get(
+                    "coverage_threshold", 0.8
+                )
 
     @invariant()
-    def config_is_valid(self):
+    def config_is_valid(self) -> None:
         """Configuration should always be in a valid state."""
-        assert self.current_config.mode in [
-            "gui",
-            "cli",
-        ], f"Invalid mode: {self.current_config.mode}"
-        assert (
-            self.current_config.max_workers >= 1
-        ), f"Invalid max_workers: {self.current_config.max_workers}"
-        assert (
-            0.0 <= self.current_config.coverage_threshold <= 1.0
-        ), f"Invalid coverage_threshold: {self.current_config.coverage_threshold}"
+        if self.current_config is not None:
+            assert self.current_config.mode in [
+                "gui",
+                "cli",
+            ], f"Invalid mode: {self.current_config.mode}"
+            assert (
+                self.current_config.max_workers >= 1
+            ), f"Invalid max_workers: {self.current_config.max_workers}"
+            assert (
+                0.0 <= self.current_config.coverage_threshold <= 1.0
+            ), f"Invalid coverage_threshold: {self.current_config.coverage_threshold}"
 
-    def teardown(self):
+    def teardown(self) -> None:
         """Clean up test environment."""
         if self.temp_dir and Path(self.temp_dir).exists():
             shutil.rmtree(self.temp_dir)
@@ -437,7 +445,7 @@ TestConfigurationStateMachine = ConfigurationStateMachine.TestCase
     )
 )
 @settings(max_examples=20, deadline=3000)
-def test_dependency_validation_property(package_names: List[str]):
+def test_dependency_validation_property(package_names: List[str]) -> None:
     """
     Property: Dependency validation should correctly identify
     installed and missing packages.

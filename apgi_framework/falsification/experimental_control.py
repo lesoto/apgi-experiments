@@ -58,7 +58,7 @@ class MotorResponse:
     movement_precision: Optional[float] = None  # Movement precision for gestures
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate motor response parameters"""
         if not 0.0 <= self.accuracy <= 1.0:
             raise ValidationError(
@@ -114,7 +114,7 @@ class VerbalResponse:
     comprehension_accuracy: float  # Accuracy of comprehension (0.0-1.0)
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate verbal response parameters"""
         for attr_name in [
             "response_clarity",
@@ -175,7 +175,7 @@ class MetacognitiveAssessment:
     introspective_accuracy: float  # Accuracy of introspective reports
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate metacognitive assessment parameters"""
         if not -1.0 <= self.confidence_accuracy_correlation <= 1.0:
             raise ValidationError(
@@ -234,7 +234,7 @@ class TaskComprehension:
     rule_following_accuracy: float  # Accuracy in following task rules (0.0-1.0)
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate task comprehension parameters"""
         for attr_name in [
             "training_accuracy",
@@ -290,7 +290,7 @@ class StimulusValidation:
     supraliminal_threshold: float  # Threshold for supraliminal presentation
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate stimulus parameters"""
         for attr_name in [
             "stimulus_visibility",
@@ -370,7 +370,7 @@ class ExperimentalControlValidator:
     task comprehension, and stimulus presentation according to experimental requirements.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the experimental control validator with default thresholds"""
         self.validation_thresholds = {
             # Motor system thresholds
@@ -730,14 +730,14 @@ class ExperimentalControlValidator:
         self, motor_details: Dict, verbal_details: Dict
     ) -> float:
         """Calculate overall response quality score"""
-        motor_quality = motor_details.get("mean_accuracy", 0) * motor_details.get(
-            "mean_consistency", 0
+        motor_quality = float(motor_details.get("mean_accuracy", 0)) * float(
+            motor_details.get("mean_consistency", 0)
         )
-        verbal_quality = verbal_details.get("mean_clarity", 0) * verbal_details.get(
-            "mean_comprehension", 0
+        verbal_quality = float(verbal_details.get("mean_clarity", 0)) * float(
+            verbal_details.get("mean_comprehension", 0)
         )
 
-        return (motor_quality + verbal_quality) / 2.0
+        return float((motor_quality + verbal_quality) / 2.0)
 
     def _calculate_reliability_score(
         self,

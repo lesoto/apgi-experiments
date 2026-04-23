@@ -225,7 +225,7 @@ def extract_version_from_pyproject(pyproject_path: str = "pyproject.toml") -> st
         if not version:
             raise InstallerError("Version not found in pyproject.toml")
 
-        return version
+        return str(version)
     except ImportError:
         raise InstallerError("toml package not available for parsing pyproject.toml")
     except Exception as e:

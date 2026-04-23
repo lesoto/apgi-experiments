@@ -15,11 +15,11 @@ import time
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
-from tqdm import tqdm  # type: ignore
+from tqdm import tqdm  # type: ignore[import-untyped]
 
 # Add project root to Python path
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -29,50 +29,47 @@ try:
     from apgi_framework.security.secure_pickle import safe_pickle_dump
 except ImportError:
     # Fallback to regular pickle if secure_pickle not available
-    safe_pickle_dump = pickle.dump
+    def safe_pickle_dump(
+        obj: Any,
+        file_path: Union[str, Path],
+        create_checksum: bool = True,
+        protocol: int = 4,
+    ) -> None:
+        with open(file_path, "wb") as f:
+            pickle.dump(obj, f, protocol=protocol)
 
-# Load modules with hyphens using importlib with fallback
-try:
-    formal_model_spec = importlib.util.spec_from_file_location(
-        "SurpriseIgnitionSystem",
-        PROJECT_ROOT / "Falsification" / "Falsification-Protocol-4.py",
-    )
-    if formal_model_spec is not None and formal_model_spec.loader is not None:
-        formal_model_module = importlib.util.module_from_spec(formal_model_spec)
-        formal_model_spec.loader.exec_module(formal_model_module)
-        SurpriseIgnitionSystem = formal_model_module.SurpriseIgnitionSystem
-    else:
-        raise ImportError("Could not load SurpriseIgnitionSystem module")
-except (FileNotFoundError, ImportError, AttributeError) as e:
-    print(f"Warning: Could not load SurpriseIgnitionSystem: {e}")
 
-    # Create fallback class for testing
-    class SurpriseIgnitionSystemFallback:
-        def __init__(self):
-            pass
+# Create fallback class for batch processing simulations
+class SurpriseIgnitionSystem:
+    """Fallback SurpriseIgnitionSystem for batch processing."""
 
-        def simulate(self, duration, dt, input_generator):
-            # Return dummy data for testing
-            import numpy as np
+    def __init__(self):
+        pass
 
-            steps = int(duration / dt)
-            return {
-                "S": np.random.randn(steps),
-                "theta": np.random.randn(steps) * 0.1 + 0.5,
-                "B": np.random.randint(0, 2, steps),
-            }
+    def simulate(self, duration, dt, input_generator):
+        """Return dummy data for testing."""
+        import numpy as np
 
-    SurpriseIgnitionSystem = SurpriseIgnitionSystemFallback
+        steps = int(duration / dt)
+        return {
+            "S": np.random.randn(steps),
+            "theta": np.random.randn(steps) * 0.1 + 0.5,
+            "B": np.random.randint(0, 2, steps),
+        }
 
 
 try:
-    from apgi_framework.logging.standardized_logging import get_logger
+    from apgi_framework.logging.standardized_logging import get_logger, APGILogger
 
-    apgi_logger = get_logger(__name__)  # type: ignore
+    apgi_logger: APGILogger = get_logger(__name__)
 except ImportError:
     import logging
+    from typing import TYPE_CHECKING
 
-    apgi_logger = logging.getLogger(__name__)  # type: ignore
+    if TYPE_CHECKING:
+        apgi_logger: APGILogger = logging.getLogger(__name__)  # type: ignore
+    else:
+        apgi_logger = logging.getLogger(__name__)
 
 
 def load_validation_module(protocol):
@@ -352,8 +349,7 @@ class BatchProcessor:
             with open(output_path, "w") as f:
                 json.dump(job.result, f, indent=2, default=str)
         elif job.output_file and job.output_file.endswith(".pkl"):
-            with open(output_path, "wb") as f:
-                safe_pickle_dump(job.result, f)
+            safe_pickle_dump(job.result, output_path)
         elif job.output_file and job.output_file.endswith(".csv"):
             if isinstance(job.result, dict) and "results" in job.result:
                 # Save simulation results as CSV

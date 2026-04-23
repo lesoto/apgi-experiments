@@ -18,9 +18,10 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
+from apgi_framework.logging.standardized_logging import get_logger
+
 from .file_utils import FileUtils
 from .path_utils import get_path_manager
-from apgi_framework.logging.standardized_logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -140,7 +141,7 @@ class ColoredConsoleFormatter(logging.Formatter):
         "RESET": "\033[0m",  # Reset
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize colored formatter."""
         super().__init__()
 
@@ -212,7 +213,7 @@ class LoggingUtils:
         # Initialize root logger
         self._setup_root_logger()
 
-    def _setup_root_logger(self):
+    def _setup_root_logger(self) -> None:
         """Set up the root logger configuration."""
         root_logger = logging.getLogger()
         root_logger.setLevel(logging.DEBUG)
@@ -227,7 +228,7 @@ class LoggingUtils:
         # Add file handler
         self._add_file_handler(root_logger, "apgi_framework.log")
 
-    def _add_console_handler(self, logger: logging.Logger):
+    def _add_console_handler(self, logger: logging.Logger) -> None:
         """Add colored console handler to logger."""
         if "console" not in self._handlers:
             console_handler = logging.StreamHandler(sys.stdout)
@@ -237,7 +238,7 @@ class LoggingUtils:
 
         logger.addHandler(self._handlers["console"])
 
-    def _add_file_handler(self, logger: logging.Logger, filename: str):
+    def _add_file_handler(self, logger: logging.Logger, filename: str) -> None:
         """Add rotating file handler to logger."""
         handler_key = f"file_{filename}"
 
@@ -299,8 +300,8 @@ class LoggingUtils:
             return self._component_loggers[logger_name]
 
     def log_structured(
-        self, component: str, level: LogLevel, message: str, **extra_data
-    ):
+        self, component: str, level: LogLevel, message: str, **extra_data: Any
+    ) -> None:
         """
         Log structured message with extra data.
 
@@ -324,8 +325,8 @@ class LoggingUtils:
         status: str,
         duration: float,
         component: str = "test_execution",
-        **extra_data,
-    ):
+        **extra_data: Any,
+    ) -> None:
         """
         Log test execution with structured data.
 
@@ -352,8 +353,8 @@ class LoggingUtils:
         line_coverage: float,
         branch_coverage: float,
         component: str = "coverage",
-        **extra_data,
-    ):
+        **extra_data: Any,
+    ) -> None:
         """
         Log coverage data with structured information.
 
@@ -380,7 +381,7 @@ class LoggingUtils:
         error: Exception,
         context: Dict[str, Any],
         message: Optional[str] = None,
-    ):
+    ) -> None:
         """
         Log error with full context and traceback.
 
@@ -410,8 +411,8 @@ class LoggingUtils:
         operation: str,
         duration: float,
         component: str = "performance",
-        **extra_data,
-    ):
+        **extra_data: Any,
+    ) -> None:
         """
         Log performance metrics.
 
@@ -430,7 +431,7 @@ class LoggingUtils:
             **extra_data,
         )
 
-    def configure_logging(self, config: Dict[str, Any]):
+    def configure_logging(self, config: Dict[str, Any]) -> None:
         """
         Configure logging from configuration dictionary.
 
@@ -460,7 +461,7 @@ class LoggingUtils:
         # Reconfigure existing loggers
         self._reconfigure_loggers()
 
-    def _reconfigure_loggers(self):
+    def _reconfigure_loggers(self) -> None:
         """Reconfigure existing loggers with new settings."""
         with self._lock:
             # Clear existing handlers
@@ -646,7 +647,7 @@ class LoggingUtils:
 
 
 # Global logging utilities instance
-_logging_utils = None
+_logging_utils: Optional[LoggingUtils] = None
 _logging_lock = threading.Lock()
 
 
@@ -662,9 +663,12 @@ def get_logging_utils(base_log_dir: Optional[Union[str, Path]] = None) -> Loggin
     """
     global _logging_utils
     with _logging_lock:
-        if _logging_utils is None or base_log_dir is not None:
+        should_create = _logging_utils is None
+        if base_log_dir is not None:
+            should_create = True
+        if should_create:
             _logging_utils = LoggingUtils(base_log_dir)
-    return _logging_utils
+    return _logging_utils  # type: ignore[return-value]
 
 
 def get_component_logger(
@@ -684,14 +688,19 @@ def get_component_logger(
     return get_logging_utils().get_logger(component, log_file, level)
 
 
-def log_test_activity(test_name: str, status: str, duration: float, **extra_data):
+def log_test_activity(
+    test_name: str, status: str, duration: float, **extra_data: Any
+) -> None:
     """Convenience function to log test activity."""
     get_logging_utils().log_test_execution(test_name, status, duration, **extra_data)
 
 
 def log_coverage_info(
-    module: str, line_coverage: float, branch_coverage: float, **extra_data
-):
+    module: str,
+    line_coverage: float,
+    branch_coverage: float,
+    **extra_data: Any,
+) -> None:
     """Convenience function to log coverage information."""
     get_logging_utils().log_coverage_data(
         module, line_coverage, branch_coverage, **extra_data
@@ -703,7 +712,7 @@ def log_error(
     error: Exception,
     context: Dict[str, Any],
     message: Optional[str] = None,
-):
+) -> None:
     """Convenience function to log errors with context."""
     get_logging_utils().log_error_with_context(component, error, context, message)
 

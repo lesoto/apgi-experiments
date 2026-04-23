@@ -17,11 +17,13 @@ try:
 
     import numpy as np
     import websockets
+    from websockets.server import ServerConnection
 
     _websockets_available = True
 except ImportError:
     # Fallback for environments without websockets
     websockets = None  # type: ignore
+    ServerConnection = Any  # type: ignore
     _websockets_available = False
 
 from ..logging.standardized_logging import get_logger
@@ -110,7 +112,7 @@ class RealTimeDataStreamer:
         self.port = port
         self.clients: set = set()
         self.is_running = False
-        self.server = None
+        self.server: Optional[Any] = None
         self._loop = None  # Store event loop reference for cleanup
 
         # Data buffers for each stream type
@@ -130,13 +132,14 @@ class RealTimeDataStreamer:
 
         logger.info(f"Real-time data streamer initialized on {host}:{port}")
 
-    async def register_client(self, websocket, path):
+    async def register_client(self, websocket: ServerConnection, path: str) -> None:
         """Register new WebSocket client."""
         self.clients.add(websocket)
-        logger.info(f"Client connected: {websocket.remote_address}")
+        # websockets.ServerConnection doesn't have type stubs, use type ignore
+        logger.info(f"Client connected: {websocket.remote_address}")  # type: ignore[attr-defined]
 
         try:
-            await websocket.send(
+            await websocket.send(  # type: ignore[attr-defined]
                 json.dumps(
                     {
                         "type": "welcome",
@@ -147,21 +150,21 @@ class RealTimeDataStreamer:
             )
 
             # Keep connection alive and handle client messages
-            async for message in websocket:
+            async for message in websocket:  # type: ignore[attr-defined]
                 try:
                     data = json.loads(message)
                     await self.handle_client_message(websocket, data)
                 except json.JSONDecodeError:
-                    await websocket.send(
+                    await websocket.send(  # type: ignore[attr-defined]
                         json.dumps({"type": "error", "message": "Invalid JSON format"})
                     )
 
         except websockets.exceptions.ConnectionClosed:
-            logger.info(f"Client disconnected: {websocket.remote_address}")
+            logger.info(f"Client disconnected: {websocket.remote_address}")  # type: ignore[attr-defined]  # noqa: E501
         finally:
             self.clients.discard(websocket)
 
-    async def handle_client_message(self, websocket, data: Dict[str, Any]):
+    async def handle_client_message(self, websocket: Any, data: Dict[str, Any]) -> None:
         """Handle messages from clients."""
         message_type = data.get("type")
 
@@ -185,7 +188,7 @@ class RealTimeDataStreamer:
             }
             await websocket.send(json.dumps(status))
 
-    async def broadcast_data(self, data_type: str, data: Dict[str, Any]):
+    async def broadcast_data(self, data_type: str, data: Dict[str, Any]) -> None:
         """Broadcast data to all connected clients."""
         if not self.clients:
             return
@@ -211,7 +214,7 @@ class RealTimeDataStreamer:
         # Remove disconnected clients
         self.clients -= disconnected
 
-    def start_server(self):
+    def start_server(self) -> bool:
         """Start the WebSocket server."""
         if websockets is None:
             logger.error("websockets library not available")
@@ -238,7 +241,7 @@ class RealTimeDataStreamer:
             logger.error(f"Failed to start server: {e}")
             return False
 
-    def _run_server(self):
+    def _run_server(self) -> None:
         """Run the WebSocket server."""
         # Create new event loop for this thread
         loop = asyncio.new_event_loop()
@@ -246,7 +249,7 @@ class RealTimeDataStreamer:
 
         try:
             # Create server
-            server_coro = websockets.serve(self.register_client, self.host, self.port)
+            server_coro = websockets.serve(self.register_client, self.host, self.port)  # type: ignore[arg-type]
             self.server = loop.run_until_complete(server_coro)
 
             # Start streaming loop
@@ -264,7 +267,7 @@ class RealTimeDataStreamer:
                 loop.run_until_complete(self.server.wait_closed())
             loop.close()
 
-    async def _streaming_loop(self):
+    async def _streaming_loop(self) -> None:
         """Main streaming loop for data generation and broadcasting."""
         while not self._stop_event.is_set():
             try:
@@ -276,7 +279,7 @@ class RealTimeDataStreamer:
                 logger.error(f"Streaming loop error: {e}")
                 await asyncio.sleep(1)
 
-    async def _generate_and_broadcast_data(self):
+    async def _generate_and_broadcast_data(self) -> None:
         """Generate simulated data and broadcast to clients."""
         current_time = time.time()
 
@@ -434,7 +437,7 @@ class RealTimeDataStreamer:
             r_hat=r_hat,
         )
 
-    def stop_server(self):
+    def stop_server(self) -> None:
         """Stop the WebSocket server."""
         if not self.is_running:
             return
@@ -504,10 +507,11 @@ def get_streamer() -> RealTimeDataStreamer:
 def start_realtime_streaming() -> bool:
     """Start real-time streaming server."""
     streamer = get_streamer()
-    return streamer.start_server()
+    result = streamer.start_server()
+    return bool(result)
 
 
-def stop_realtime_streaming():
+def stop_realtime_streaming() -> None:
     """Stop real-time streaming server."""
     streamer = get_streamer()
     streamer.stop_server()

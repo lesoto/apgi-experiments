@@ -8,19 +8,22 @@ This module provides tools for:
 - Experimental design
 """
 
+from typing import Any, Dict, Optional
+
+from .core_mechanisms import experimental
 from .cross_species_validation import CrossSpeciesValidator
+from .threshold_detection_paradigm import ThresholdDetectionSystem
 
 
 # Mock classes for testing
 class HypothesisDesigner:
     """Mock hypothesis designer for testing purposes."""
 
-    def __init__(self):
-        self.design_id = None
+    def __init__(self) -> None:
+        self.design_id: Optional[str] = None
         self.design_valid = False
 
-    def create_design(self, hypothesis_data):
-        """Create a research design from hypothesis data."""
+    def create_design(self, hypothesis_data: Dict[str, Any]) -> Dict[str, Any]:
         self.design_id = f"research_{hash(str(hypothesis_data)) % 10000:04d}"
         self.design_valid = True
         return {
@@ -30,13 +33,14 @@ class HypothesisDesigner:
             "experiment_design": hypothesis_data.get("experiment_design", {}),
         }
 
-    def validate_design(self):
+    def validate_design(self) -> bool:
         """Validate the current design."""
         return self.design_valid
 
 
 __all__ = [
     "CrossSpeciesValidator",
-    "ThresholdDetectionParadigm",
+    "ThresholdDetectionSystem",
     "HypothesisDesigner",
+    "experimental",
 ]

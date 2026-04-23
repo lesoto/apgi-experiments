@@ -108,7 +108,7 @@ class GammaSynchronyAnalysis:
         # Apply filter
         gamma_data = signal.sosfiltfilt(sos, data, axis=-1)
 
-        return gamma_data
+        return np.asarray(gamma_data)
 
     def compute_hilbert_transform(
         self, data: np.ndarray
@@ -230,7 +230,7 @@ class GammaSynchronyAnalysis:
         # Phase lag is angle of cross-spectrum
         phase_lag = np.angle(csd)
 
-        return phase_lag
+        return np.asarray(phase_lag)
 
     def _compute_phase_locking_value(
         self, signal1: np.ndarray, signal2: np.ndarray

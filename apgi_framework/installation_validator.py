@@ -15,6 +15,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+
 from apgi_framework.logging.standardized_logging import get_logger
 
 logger = get_logger(__name__)
@@ -78,7 +79,7 @@ class InstallationValidator:
         )
         return not has_errors, self.results
 
-    def _validate_python_version(self):
+    def _validate_python_version(self) -> None:
         """Validate Python version requirements."""
         min_version = (3, 8)
         current_version = sys.version_info[:2]
@@ -104,7 +105,7 @@ class InstallationValidator:
                 )
             )
 
-    def _validate_platform(self):
+    def _validate_platform(self) -> None:
         """Validate platform compatibility."""
         current_platform = platform.system()
         supported_platforms = ["Windows", "Linux", "Darwin"]  # Darwin = macOS
@@ -131,7 +132,7 @@ class InstallationValidator:
                 )
             )
 
-    def _validate_disk_space(self):
+    def _validate_disk_space(self) -> None:
         """Validate available disk space."""
         try:
             import shutil
@@ -166,7 +167,7 @@ class InstallationValidator:
                 )
             )
 
-    def _validate_memory(self):
+    def _validate_memory(self) -> None:
         """Validate available memory."""
         try:
             import psutil
@@ -214,7 +215,7 @@ class InstallationValidator:
                 )
             )
 
-    def _validate_core_dependencies(self):
+    def _validate_core_dependencies(self) -> None:
         """Validate core Python dependencies."""
         core_dependencies = [
             ("numpy", "1.20.0"),
@@ -229,7 +230,7 @@ class InstallationValidator:
         for package, min_version in core_dependencies:
             self._check_package(package, min_version, required=True)
 
-    def _validate_optional_dependencies(self):
+    def _validate_optional_dependencies(self) -> None:
         """Validate optional dependencies."""
         optional_dependencies = [
             ("PySide6", "6.0", "GUI functionality"),
@@ -310,7 +311,7 @@ class InstallationValidator:
         self.results.append(result)
         return result
 
-    def _validate_framework_modules(self):
+    def _validate_framework_modules(self) -> None:
         """Validate core framework modules can be imported."""
         core_modules = [
             "apgi_framework",
@@ -340,7 +341,7 @@ class InstallationValidator:
                     )
                 )
 
-    def _validate_test_enhancement_modules(self):
+    def _validate_test_enhancement_modules(self) -> None:
         """Validate test enhancement modules can be imported."""
         test_modules = [
             "apgi_framework.testing",
@@ -369,7 +370,7 @@ class InstallationValidator:
                     )
                 )
 
-    def _validate_directory_structure(self):
+    def _validate_directory_structure(self) -> None:
         """Validate required directory structure."""
         required_dirs = ["apgi_framework", "tests", "logs", "config"]
 
@@ -424,7 +425,7 @@ class InstallationValidator:
                         )
                     )
 
-    def _validate_configuration_files(self):
+    def _validate_configuration_files(self) -> None:
         """Validate configuration files."""
         config_template = self.project_root / "config" / "test_config_template.json"
 
@@ -460,7 +461,7 @@ class InstallationValidator:
                 )
             )
 
-    def _validate_basic_functionality(self):
+    def _validate_basic_functionality(self) -> None:
         """Validate basic framework functionality."""
         try:
             # Test basic imports and instantiation
@@ -486,15 +487,16 @@ class InstallationValidator:
                 )
             )
 
-    def _validate_test_execution(self):
+    def _validate_test_execution(self) -> None:
         """Validate test execution capability."""
         try:
             # Try to run a simple test discovery
+            # Initialize with default config
+            from apgi_framework.config import ConfigManager
             from apgi_framework.testing.batch_runner import BatchTestRunner
 
-            BatchTestRunner(
-                project_root=str(self.project_root), parallel=False, max_workers=1
-            )
+            config = ConfigManager()
+            BatchTestRunner(config_manager=config)
 
             # Just test initialization, not actual test execution
             self.results.append(
@@ -515,7 +517,7 @@ class InstallationValidator:
                 )
             )
 
-    def _print_validation_summary(self):
+    def _print_validation_summary(self) -> None:
         """Print validation summary."""
         logger.info("\n" + "=" * 60)
         logger.info("VALIDATION SUMMARY")
@@ -558,7 +560,7 @@ class InstallationValidator:
                 "❌ Installation validation found errors that need to be addressed."
             )
 
-    def save_validation_report(self, output_file: str):
+    def save_validation_report(self, output_file: str) -> None:
         """Save validation report to file."""
         report_data = {
             "validation_timestamp": str(sys.version_info),
@@ -596,7 +598,7 @@ class InstallationValidator:
         logger.info(f"Validation report saved to: {output_file}")
 
 
-def main():
+def main() -> None:
     """Main entry point for installation validation."""
     import argparse
 

@@ -532,7 +532,7 @@ class StatisticalReportGenerator:
         except (ValueError, RuntimeError, AttributeError) as e:
             # Fallback approximation
             self.logger.warning(f"Power calculation failed: {e}. Using approximation.")
-            return min(1.0, (abs(effect_size) * np.sqrt(sample_size)) / 2.8)
+            return float(min(1.0, (abs(effect_size) * np.sqrt(sample_size)) / 2.8))
 
     def _generate_overall_conclusion(
         self,
@@ -738,7 +738,7 @@ class StatisticalReportGenerator:
             report_dict = asdict(report)
 
             # Handle datetime serialization
-            def json_serializer(obj):
+            def json_serializer(obj: Any) -> str:
                 if isinstance(obj, datetime):
                     return obj.isoformat()
                 raise TypeError(f"Object of type {type(obj)} is not JSON serializable")

@@ -4,18 +4,20 @@ Visualization module for APGI Framework.
 This module provides chart generation and data visualization capabilities.
 """
 
+from typing import Any, Dict, List, Optional
+
 
 # Mock classes for testing
 class ChartGenerator:
     """Mock chart generator for testing purposes."""
 
-    def __init__(self):
-        self.charts = {}
+    def __init__(self) -> None:
+        self.charts: Dict[str, Dict[str, Any]] = {}
 
-    def create_chart(self, chart_type, data):
+    def create_chart(self, chart_type: str, data: Any) -> Dict[str, Any]:
         """Create a chart from data."""
         chart_id = f"chart_{hash(str(data)) % 10000:04d}"
-        chart = {
+        chart: Dict[str, Any] = {
             "chart_id": chart_id,
             "type": chart_type,
             "data": data,
@@ -25,11 +27,11 @@ class ChartGenerator:
         self.charts[chart_id] = chart
         return chart
 
-    def get_chart(self, chart_id):
+    def get_chart(self, chart_id: str) -> Optional[Dict[str, Any]]:
         """Get chart by ID."""
         return self.charts.get(chart_id)
 
-    def list_charts(self):
+    def list_charts(self) -> List[str]:
         """List all chart IDs."""
         return list(self.charts.keys())
 

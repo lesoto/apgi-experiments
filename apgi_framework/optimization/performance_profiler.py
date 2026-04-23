@@ -65,7 +65,7 @@ class ProfileResult:
 class PerformanceProfiler:
     """Main performance profiler for APGI Framework."""
 
-    def __init__(self, enable_detailed_profiling: bool = False):
+    def __init__(self, enable_detailed_profiling: bool = False) -> None:
         self.enable_detailed_profiling = enable_detailed_profiling
         self.results: Dict[str, List[ProfileResult]] = defaultdict(list)
         self.active_profiles: Dict[str, Dict[str, Any]] = {}
@@ -74,7 +74,7 @@ class PerformanceProfiler:
         self._lock = threading.Lock()
 
     @contextmanager
-    def profile(self, operation_name: str, detailed: Optional[bool] = None):
+    def profile(self, operation_name: str, detailed: Optional[bool] = None) -> Any:
         """Context manager for profiling operations."""
         detailed = detailed if detailed is not None else self.enable_detailed_profiling
 
@@ -152,14 +152,14 @@ class PerformanceProfiler:
         *,
         name: Optional[str] = None,
         detailed: Optional[bool] = None,
-    ):
+    ) -> Callable[..., Any]:
         """Decorator for profiling functions."""
 
-        def decorator(f):
+        def decorator(f: Callable[..., Any]) -> Callable[..., Any]:
             operation_name = name or f.__name__
 
             @functools.wraps(f)
-            def wrapper(*args, **kwargs):
+            def wrapper(*args: Any, **kwargs: Any) -> Any:
                 with self.profile(operation_name, detailed):
                     return f(*args, **kwargs)
 
@@ -321,7 +321,7 @@ class PerformanceProfiler:
         sorted_recs = sorted(rec_counts.items(), key=lambda x: x[1], reverse=True)
         return [rec for rec, _ in sorted_recs[:3]]
 
-    def export_results(self, filepath: Union[str, Path]):
+    def export_results(self, filepath: Union[str, Path]) -> None:
         """Export profiling results to JSON file."""
         filepath = Path(filepath)
 
@@ -345,7 +345,7 @@ class PerformanceProfiler:
 
         logger.info(f"Exported profiling results to {filepath}")
 
-    def clear_results(self, operation_name: Optional[str] = None):
+    def clear_results(self, operation_name: Optional[str] = None) -> None:
         """Clear profiling results."""
         if operation_name:
             if operation_name in self.results:
@@ -357,22 +357,22 @@ class PerformanceProfiler:
 class MemoryMonitor:
     """Monitors memory usage during operations."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.process = psutil.Process()
-        self.peak_usage = 0
+        self.peak_usage: float = 0.0
         self.baseline_usage = self.get_current_usage()
 
     def get_current_usage(self) -> float:
         """Get current memory usage in MB."""
-        return self.process.memory_info().rss / 1024 / 1024
+        return float(self.process.memory_info().rss / 1024 / 1024)
 
     def get_peak_usage(self) -> float:
         """Get peak memory usage since last reset."""
         current = self.get_current_usage()
         self.peak_usage = max(self.peak_usage, current)
-        return self.peak_usage
+        return float(self.peak_usage)
 
-    def reset_peak(self):
+    def reset_peak(self) -> None:
         """Reset peak memory tracking."""
         self.peak_usage = self.get_current_usage()
 
@@ -380,13 +380,13 @@ class MemoryMonitor:
 class CPUMonitor:
     """Monitors CPU usage during operations."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.process = psutil.Process()
         self.monitoring = False
-        self.cpu_samples = deque(maxlen=100)
-        self.monitor_thread = None
+        self.cpu_samples: deque = deque(maxlen=100)
+        self.monitor_thread: Optional[threading.Thread] = None
 
-    def start_monitoring(self):
+    def start_monitoring(self) -> None:
         """Start CPU monitoring."""
         if self.monitoring:
             return
@@ -403,10 +403,10 @@ class CPUMonitor:
             self.monitor_thread.join(timeout=1.0)
 
         if self.cpu_samples:
-            return sum(self.cpu_samples) / len(self.cpu_samples)
+            return float(sum(self.cpu_samples) / len(self.cpu_samples))
         return 0.0
 
-    def _monitor_loop(self):
+    def _monitor_loop(self) -> None:
         """Internal monitoring loop."""
         while self.monitoring:
             try:
@@ -546,11 +546,11 @@ def get_profiler(enable_detailed: bool = False) -> PerformanceProfiler:
     return _global_profiler
 
 
-def profile_operation(name: str, detailed: bool = False):
+def profile_operation(name: str, detailed: bool = False) -> Callable[..., Any]:
     """Decorator for profiling operations."""
     return get_profiler().profile_function(name=name, detailed=detailed)
 
 
-def profile_context(name: str, detailed: bool = False):
+def profile_context(name: str, detailed: bool = False) -> Any:
     """Context manager for profiling code blocks."""
     return get_profiler().profile(name, detailed)

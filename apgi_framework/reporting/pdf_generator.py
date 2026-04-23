@@ -9,17 +9,18 @@ import datetime
 import io
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union, cast
 
 try:
-    from reportlab.lib import colors
-    from reportlab.lib.enums import TA_CENTER
-    from reportlab.lib.pagesizes import A4
-    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
-    from reportlab.lib.units import inch
+    from reportlab.lib import colors  # type: ignore
+    from reportlab.lib.enums import TA_CENTER  # type: ignore
+    from reportlab.lib.pagesizes import A4  # type: ignore
+    from reportlab.lib.styles import ParagraphStyle  # type: ignore
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib.units import inch  # type: ignore
+    from reportlab.platypus import KeepTogether  # type: ignore
     from reportlab.platypus import (
         Image,
-        KeepTogether,
         PageBreak,
         Paragraph,
         SimpleDocTemplate,
@@ -76,7 +77,7 @@ class PDFReportGenerator:
         self._setup_custom_styles()
         self.sections: List[ReportSection] = []
 
-    def _setup_custom_styles(self):
+    def _setup_custom_styles(self) -> None:
         """Setup custom paragraph styles."""
         # Title style
         self.styles.add(
@@ -150,7 +151,7 @@ class PDFReportGenerator:
         subtitle: Optional[str] = None,
         authors: Optional[List[str]] = None,
         date: Optional[str] = None,
-    ):
+    ) -> None:
         """Add a title page to the report."""
         title = title or self.config.title
         date = date or datetime.datetime.now().strftime("%B %d, %Y")
@@ -186,7 +187,7 @@ class PDFReportGenerator:
 
         self.sections.append(ReportSection("Title Page", content, page_break=True))
 
-    def add_table_of_contents(self):
+    def add_table_of_contents(self) -> None:
         """Add a table of contents (placeholder for now)."""
         content = []
         content.append(Paragraph("Table of Contents", self.styles["SectionHeader"]))
@@ -212,7 +213,7 @@ class PDFReportGenerator:
 
     def add_section(
         self, title: str, content_items: List[Any], page_break: bool = False
-    ):
+    ) -> None:
         """Add a section to the report."""
         content = []
         content.append(Paragraph(title, self.styles["SectionHeader"]))
@@ -240,7 +241,7 @@ class PDFReportGenerator:
 
         self.sections.append(ReportSection(title, content, page_break))
 
-    def add_experimental_results(self, results: Dict[str, Any]):
+    def add_experimental_results(self, results: Dict[str, Any]) -> None:
         """Add experimental results section."""
         content_items: List[Union[str, Dict[str, Any]]] = []
 
@@ -290,7 +291,7 @@ class PDFReportGenerator:
 
         self.add_section("Experimental Results", content_items)
 
-    def add_statistical_analysis(self, stats: Dict[str, Any]):
+    def add_statistical_analysis(self, stats: Dict[str, Any]) -> None:
         """Add statistical analysis section."""
         content_items: List[Union[str, Dict[str, Any]]] = []
 
@@ -332,8 +333,8 @@ class PDFReportGenerator:
         self.add_section("Statistical Analysis", content_items)
 
     def add_matplotlib_figure(
-        self, fig, title: Optional[str] = None, caption: Optional[str] = None
-    ):
+        self, fig: Any, title: Optional[str] = None, caption: Optional[str] = None
+    ) -> None:
         """Add a matplotlib figure to the report."""
         # Save figure to bytes
         img_buffer = io.BytesIO()
@@ -356,9 +357,9 @@ class PDFReportGenerator:
         if caption:
             content_items.append(f"<i>{caption}</i>")
 
-        return content_items
+        self.add_section("Figure", content_items)
 
-    def _create_table(self, table_info: Dict[str, Any]):
+    def _create_table(self, table_info: Dict[str, Any]) -> Any:
         """Create a ReportLab table."""
         data = table_info["data"]
         title = table_info.get("title", "")
@@ -391,7 +392,7 @@ class PDFReportGenerator:
 
         return KeepTogether(elements)
 
-    def _create_image(self, image_info: Dict[str, Any]):
+    def _create_image(self, image_info: Dict[str, Any]) -> Any:
         """Create a ReportLab image."""
         if "buffer" in image_info:
             # Image from buffer
@@ -427,7 +428,7 @@ class PDFReportGenerator:
 
         return KeepTogether(elements)
 
-    def _create_chart(self, chart_info: Dict[str, Any]):
+    def _create_chart(self, chart_info: Dict[str, Any]) -> Any:
         """Create a ReportLab chart (placeholder)."""
         # This is a simplified implementation
         # In practice, you'd create proper ReportLab charts
@@ -490,7 +491,7 @@ class PDFReportGenerator:
                 progress_callback(0, f"PDF generation failed: {str(e)}")
             return False
 
-    def clear_sections(self):
+    def clear_sections(self) -> None:
         """Clear all sections."""
         self.sections = []
 
@@ -498,7 +499,7 @@ class PDFReportGenerator:
 class APGIReportTemplate:
     """Pre-configured report template for APGI Framework results."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.generator = PDFReportGenerator()
 
     def create_experiment_report(
@@ -564,19 +565,19 @@ class APGIReportTemplate:
         if "figures" in experiment_data:
             for fig_name, fig_data in experiment_data["figures"].items():
                 if "matplotlib_fig" in fig_data:
-                    content_items = self.generator.add_matplotlib_figure(
+                    self.generator.add_matplotlib_figure(
                         fig_data["matplotlib_fig"],
                         title=fig_data.get("title", fig_name),
                         caption=fig_data.get("caption"),
                     )
-                    self.generator.add_section(f"Figure: {fig_name}", content_items)
 
         # Add conclusions
         if "conclusions" in experiment_data:
             self.generator.add_section("Conclusions", [experiment_data["conclusions"]])
 
         # Generate PDF
-        return self.generator.generate_pdf(output_path)
+        result = self.generator.generate_pdf(output_path)
+        return cast(bool, result)
 
 
 # Convenience functions

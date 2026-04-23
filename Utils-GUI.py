@@ -8,13 +8,15 @@ with output display and error handling.
 """
 
 import json
+import shlex
 import subprocess
 import sys
 import threading
+import time
 import tkinter as tk
 from pathlib import Path
 from tkinter import scrolledtext, simpledialog, ttk
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 
 class UtilsRunnerGUI:
@@ -87,7 +89,7 @@ class UtilsRunnerGUI:
         try:
             if config_path.exists():
                 with open(config_path, "r") as f:
-                    return json.load(f)  # type: ignore
+                    return cast(Dict[Any, Any], json.load(f))
             else:
                 # Create default config file
                 with open(config_path, "w") as f:
@@ -108,10 +110,10 @@ class UtilsRunnerGUI:
         """
         for category in self.config.get("script_categories", {}).values():
             if script_name in category.get("scripts", []):
-                return category.get(  # type: ignore
-                    "timeout", self.config["default_settings"]["timeout"]
+                return int(
+                    category.get("timeout", self.config["default_settings"]["timeout"])
                 )
-        return self.config["default_settings"]["timeout"]  # type: ignore
+        return int(self.config["default_settings"]["timeout"])
 
     def prompt_for_arguments(self, script_name: str) -> List[str]:
         """Prompt user for script arguments.
@@ -130,8 +132,6 @@ class UtilsRunnerGUI:
 
         if dialog:
             # Split arguments while respecting quotes
-            import shlex
-
             try:
                 return shlex.split(dialog)
             except ValueError:
@@ -151,6 +151,12 @@ class UtilsRunnerGUI:
                 if file_path.name != "__init__.py" and self._is_executable_script(
                     file_path
                 ):
+                    # Skip scripts that are web servers and hang when run non-interactively
+                    if file_path.name in [
+                        "performance_dashboard.py",
+                        "interactive_dashboard.py",
+                    ]:
+                        continue
                     scripts.append(file_path)
         return sorted(scripts)
 
@@ -318,7 +324,7 @@ class UtilsRunnerGUI:
         selection = self.scripts_listbox.curselection()
         if selection:
             index = selection[0]
-            return self.scripts[index]  # type: ignore
+            return cast(Optional[Path], self.scripts[index])
         return None
 
     def run_selected_script(self):
@@ -396,15 +402,13 @@ class UtilsRunnerGUI:
             True if script started successfully, False if error occurred.
             When wait=True, returns True if script completed with return code 0.
         """
-        import time
-
         script_name = script.name
 
         # Prepare command
         cmd = [sys.executable, str(script)]
 
         # Add auto flag for scripts that support it to prevent hanging
-        auto_scripts = {"quick_deploy.py", "setup.py"}
+        auto_scripts = {"quick_deploy.py", "setup.py", "performance_dashboard.py"}
         if script_name in auto_scripts:
             cmd.append("--auto")
 
@@ -424,7 +428,6 @@ class UtilsRunnerGUI:
                 stderr=subprocess.STDOUT,
                 text=True,
                 bufsize=1,
-                universal_newlines=True,
                 cwd=self.utils_dir.parent if self.utils_dir else Path.cwd(),
             )
 

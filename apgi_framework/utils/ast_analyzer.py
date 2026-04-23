@@ -11,7 +11,7 @@ import logging
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Union
+from typing import Dict, List, Optional, Set, Union, cast
 
 from .file_utils import FileUtils
 
@@ -81,7 +81,7 @@ class ASTAnalyzer:
     complexity metrics, and test-specific analysis.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize AST analyzer."""
         self.file_utils = FileUtils()
         self.logger = logging.getLogger(__name__)
@@ -104,7 +104,7 @@ class ASTAnalyzer:
             content = self.file_utils.safe_read_text(file_path)
             tree = ast.parse(content, filename=str(file_path))
             self.logger.debug(f"Successfully parsed {file_path}")
-            return tree
+            return cast(ast.AST, tree)
         except SyntaxError as e:
             self.logger.error(f"Syntax error in {file_path}: {e}")
             raise
@@ -126,11 +126,11 @@ class ASTAnalyzer:
         elements = []
 
         class ElementVisitor(ast.NodeVisitor):
-            def __init__(self, analyzer):
+            def __init__(self, analyzer: "ASTAnalyzer") -> None:
                 self.analyzer = analyzer
-                self.current_class = None
+                self.current_class: Optional[str] = None
 
-            def visit_ClassDef(self, node):
+            def visit_ClassDef(self, node: ast.ClassDef) -> None:
                 # Extract class information
                 element = self._create_element_from_class(node)
                 elements.append(element)
@@ -141,15 +141,15 @@ class ASTAnalyzer:
                 self.generic_visit(node)
                 self.current_class = old_class
 
-            def visit_FunctionDef(self, node):
+            def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
                 element = self._create_element_from_function(node)
                 elements.append(element)
 
-            def visit_AsyncFunctionDef(self, node):
+            def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
                 element = self._create_element_from_function(node, is_async=True)
                 elements.append(element)
 
-            def _create_element_from_class(self, node):
+            def _create_element_from_class(self, node: ast.ClassDef) -> CodeElement:
                 return CodeElement(
                     name=node.name,
                     node_type=NodeType.CLASS,
@@ -168,7 +168,11 @@ class ASTAnalyzer:
                     parent_class=None,
                 )
 
-            def _create_element_from_function(self, node, is_async=False):
+            def _create_element_from_function(
+                self,
+                node: Union[ast.FunctionDef, ast.AsyncFunctionDef],
+                is_async: bool = False,
+            ) -> CodeElement:
                 node_type = NodeType.ASYNC_FUNCTION if is_async else NodeType.FUNCTION
 
                 # Determine if it's a method and its type
@@ -278,7 +282,7 @@ class ASTAnalyzer:
         test_categories = []
 
         class TestVisitor(ast.NodeVisitor):
-            def visit_FunctionDef(self, node):
+            def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
                 if self._is_test_method(node):
                     test_methods.append(node.name)
                 elif self._is_setup_method(node):
@@ -297,7 +301,7 @@ class ASTAnalyzer:
 
                 self.generic_visit(node)
 
-            def visit_Call(self, node):
+            def visit_Call(self, node: ast.Call) -> None:
                 # Check for fixture usage
                 if isinstance(node.func, ast.Name):
                     if node.func.id in ["fixture", "pytest.fixture"]:
@@ -307,20 +311,20 @@ class ASTAnalyzer:
 
                 self.generic_visit(node)
 
-            def _is_test_method(self, node):
+            def _is_test_method(self, node: ast.FunctionDef) -> bool:
                 return node.name.startswith("test_") or any(
                     "test" in self._get_decorator_name(d).lower()
                     for d in node.decorator_list
                 )
 
-            def _is_setup_method(self, node):
+            def _is_setup_method(self, node: ast.FunctionDef) -> bool:
                 setup_names = ["setUp", "setup", "setup_method", "setup_class"]
                 return node.name in setup_names or any(
                     "setup" in self._get_decorator_name(d).lower()
                     for d in node.decorator_list
                 )
 
-            def _is_teardown_method(self, node):
+            def _is_teardown_method(self, node: ast.FunctionDef) -> bool:
                 teardown_names = [
                     "tearDown",
                     "teardown",
@@ -332,7 +336,7 @@ class ASTAnalyzer:
                     for d in node.decorator_list
                 )
 
-            def _count_assertions(self, node):
+            def _count_assertions(self, node: ast.FunctionDef) -> int:
                 count = 0
                 for child in ast.walk(node):
                     if isinstance(child, ast.Call):
@@ -344,7 +348,7 @@ class ASTAnalyzer:
                                 count += 1
                 return count
 
-            def _has_hypothesis_decorators(self, node):
+            def _has_hypothesis_decorators(self, node: ast.FunctionDef) -> bool:
                 for decorator in node.decorator_list:
                     decorator_name = self._get_decorator_name(decorator)
                     if (
@@ -354,7 +358,7 @@ class ASTAnalyzer:
                         return True
                 return False
 
-            def _get_decorator_name(self, decorator):
+            def _get_decorator_name(self, decorator: ast.expr) -> str:
                 if isinstance(decorator, ast.Name):
                     return decorator.id
                 elif isinstance(decorator, ast.Attribute):
@@ -495,7 +499,9 @@ class ASTAnalyzer:
 
         return dependencies
 
-    def _extract_parameters(self, func_node: ast.FunctionDef) -> List[str]:
+    def _extract_parameters(
+        self, func_node: Union[ast.FunctionDef, ast.AsyncFunctionDef]
+    ) -> List[str]:
         """Extract parameter names from function definition."""
         params = []
 
@@ -513,13 +519,15 @@ class ASTAnalyzer:
 
         return params
 
-    def _get_return_annotation(self, func_node: ast.FunctionDef) -> Optional[str]:
+    def _get_return_annotation(
+        self, func_node: Union[ast.FunctionDef, ast.AsyncFunctionDef]
+    ) -> Optional[str]:
         """Get return type annotation as string."""
         if func_node.returns:
             return ast.unparse(func_node.returns)
         return None
 
-    def _get_decorator_name(self, decorator) -> str:
+    def _get_decorator_name(self, decorator: ast.expr) -> str:
         """Get decorator name as string."""
         if isinstance(decorator, ast.Name):
             return decorator.id
@@ -531,7 +539,9 @@ class ASTAnalyzer:
             return self._get_decorator_name(decorator.func)
         return str(decorator)
 
-    def _is_test_function(self, func_node: ast.FunctionDef) -> bool:
+    def _is_test_function(
+        self, func_node: Union[ast.FunctionDef, ast.AsyncFunctionDef]
+    ) -> bool:
         """Check if function is a test function."""
         # Check name
         if func_node.name.startswith("test_"):
@@ -593,23 +603,23 @@ class ASTAnalyzer:
         # This is a simplified version - full cognitive complexity is more complex
 
         class CognitiveVisitor(ast.NodeVisitor):
-            def __init__(self):
+            def __init__(self) -> None:
                 self.complexity = 0
                 self.nesting = 0
 
-            def visit_If(self, node):
+            def visit_If(self, node: ast.If) -> None:
                 self.complexity += 1 + self.nesting
                 self.nesting += 1
                 self.generic_visit(node)
                 self.nesting -= 1
 
-            def visit_While(self, node):
+            def visit_While(self, node: ast.While) -> None:
                 self.complexity += 1 + self.nesting
                 self.nesting += 1
                 self.generic_visit(node)
                 self.nesting -= 1
 
-            def visit_For(self, node):
+            def visit_For(self, node: ast.For) -> None:
                 self.complexity += 1 + self.nesting
                 self.nesting += 1
                 self.generic_visit(node)
@@ -617,7 +627,7 @@ class ASTAnalyzer:
 
         visitor = CognitiveVisitor()
         visitor.visit(tree)
-        return visitor.complexity
+        return cast(int, visitor.complexity)
 
     def _calculate_maintainability_index(
         self, logical_lines: int, cyclomatic: int, total_lines: int

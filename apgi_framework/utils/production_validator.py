@@ -4,9 +4,9 @@ Production startup validation for APGI Framework.
 Ensures the application is configured safely before starting in production mode.
 """
 
-import os
 import logging
-from typing import Dict, List
+import os
+from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class ProductionValidator:
     """Validates configuration for production deployment."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.errors: List[str] = []
         self.warnings: List[str] = []
 
@@ -83,7 +83,7 @@ class ProductionValidator:
         # Check for database configuration
         if os.getenv("DATABASE_URL"):
             db_url = os.getenv("DATABASE_URL")
-            if "localhost" in db_url or "127.0.0.1" in db_url:
+            if db_url and ("localhost" in db_url or "127.0.0.1" in db_url):
                 self.warnings.append("Using localhost database in production")
 
         # Check for logging configuration
@@ -146,7 +146,7 @@ class ProductionValidator:
 
         return len(self.errors) == 0
 
-    def validate_web_interface_config(self, config) -> bool:
+    def validate_web_interface_config(self, config: Any) -> bool:
         """
         Validate web interface configuration.
 

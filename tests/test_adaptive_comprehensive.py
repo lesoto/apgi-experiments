@@ -3,7 +3,7 @@ Comprehensive tests for adaptive module components.
 
 This consolidates tests from:
 - test_adaptive_module.py (346 lines)
-- test_adaptive_module_simple.py (252 lines) 
+- test_adaptive_module_simple.py (252 lines)
 - test_adaptive_simple.py (188 lines)
 
 Total consolidated: ~800 lines with comprehensive coverage.

@@ -608,13 +608,13 @@ class ParticipantSimulator:
 
         return responses
 
-    def _update_fatigue(self):
+    def _update_fatigue(self) -> None:
         """Update fatigue accumulation based on trial count and individual fatigue rate"""
         self.fatigue_accumulation = min(
             1.0, self.trial_count * self.profile.fatigue_rate * 0.001
         )
 
-    def _update_learning(self):
+    def _update_learning(self) -> None:
         """Update learning progress based on trial count and individual learning rate"""
         # Learning follows a logarithmic curve
         if self.trial_count > 0:
@@ -655,7 +655,7 @@ class ParticipantSimulator:
             "total_trials": len(responses),
         }
 
-    def reset_session(self):
+    def reset_session(self) -> None:
         """Reset simulator state for a new session"""
         self.trial_count = 0
         self.fatigue_accumulation = 0.0
@@ -1654,11 +1654,12 @@ class ConsciousnessMeasurementValidator:
         type_2_performance = max(0, conf_acc_correlation)
 
         # Determine if metacognition is intact
-        thresholds = self.config["validity_thresholds"]
+        validity_thresholds = self.config["validity_thresholds"]
+        measurement_criteria = self.config["measurement_criteria"]
         is_intact = (
-            meta_d_prime >= thresholds["metacognitive_threshold"]
-            and conf_acc_correlation >= thresholds["confidence_accuracy_r"]
-            and calibration_score >= thresholds["calibration_threshold"]
+            meta_d_prime >= validity_thresholds["metacognitive_threshold"]
+            and conf_acc_correlation >= measurement_criteria["confidence_accuracy_r"]
+            and calibration_score >= validity_thresholds["calibration_threshold"]
         )
 
         assessment_details = {
@@ -2575,8 +2576,8 @@ class ExperimentalIntegrityChecker:
                     ],
                     timestamp=datetime.now(),
                 )
-                reports[
-                    f"error_{exp_data.get('experiment_id', 'unknown')}"
-                ] = error_report
+                reports[f"error_{exp_data.get('experiment_id', 'unknown')}"] = (
+                    error_report
+                )
 
         return reports

@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from tkinter import filedialog, messagebox
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -30,7 +30,25 @@ MainApplicationController: Optional[Any] = None
 APGIEquation: Optional[Any] = None
 PrecisionCalculator: Optional[Any] = None
 PredictionErrorProcessor: Optional[Any] = None
+SomaticMarkerEngine: Optional[Any] = None
+ThresholdManager: Optional[Any] = None
+APGIVisualizer: Optional[Any] = None
+IntegratedDataManager: Optional[Any] = None
+ReportGenerator: Optional[Any] = None
+ClinicalParameterExtractor: Optional[Any] = None
 DisorderClassification: Optional[Any] = None
+PrimaryFalsificationTest: Optional[Any] = None
+ConsciousnessWithoutIgnitionTest: Optional[Any] = None
+ThresholdInsensitivityTest: Optional[Any] = None
+SomaBiasTest: Optional[Any] = None
+BayesianParameterEstimator: Optional[Any] = None
+EffectSizeCalculator: Optional[Any] = None
+P3bSimulator: Optional[Any] = None
+GammaSimulator: Optional[Any] = None
+BOLDSimulator: Optional[Any] = None
+PCICalculator: Optional[Any] = None
+QuestPlusStaircase: Optional[Any] = None
+StimulusGenerator: Optional[Any] = None
 
 try:
     # Add project root to Python path
@@ -59,7 +77,6 @@ try:
     ExperimentalConfig = DataAPGIParameters  # Alias for compatibility
 
     # Data management - check what's available
-    IntegratedDataManager: Optional[Any] = None
     try:
         from apgi_framework.data.data_manager import (
             IntegratedDataManager as _IntegratedDataManager,
@@ -69,7 +86,6 @@ try:
     except ImportError:
         pass
 
-    ReportGenerator: Optional[Any] = None
     try:
         from apgi_framework.data.report_generator import (
             ReportGenerator as _ReportGenerator,
@@ -79,7 +95,6 @@ try:
     except ImportError:
         pass
 
-    APGIVisualizer: Optional[Any] = None
     try:
         from apgi_framework.data.visualizer import APGIVisualizer as _APGIVisualizer
 
@@ -88,48 +103,25 @@ try:
         pass
 
     # Falsification tests - use available classes
-    PrimaryFalsificationTest: Optional[Any] = None
     try:
-        from apgi_framework.falsification.primary_falsification_test import (
+        from apgi_framework.falsification import (
             PrimaryFalsificationTest as _PrimaryFalsificationTest,
+            ConsciousnessAssessment as _ConsciousnessAssessment,
+            ConsciousnessAssessmentSimulator as _ConsciousnessAssessmentSimulator,
         )
 
         PrimaryFalsificationTest = _PrimaryFalsificationTest
+        ConsciousnessAssessment = _ConsciousnessAssessment
+        ConsciousnessAssessmentSimulator = _ConsciousnessAssessmentSimulator
     except ImportError:
         pass
 
-    ConsciousnessWithoutIgnitionTest: Optional[Any] = None
-    try:
-        from apgi_framework.falsification.consciousness_without_ignition_test import (
-            ConsciousnessWithoutIgnitionTest as _ConsciousnessWithoutIgnitionTest,
-        )
-
-        ConsciousnessWithoutIgnitionTest = _ConsciousnessWithoutIgnitionTest
-    except ImportError:
-        pass
-
-    ThresholdInsensitivityTest: Optional[Any] = None
-    try:
-        from apgi_framework.falsification.threshold_insensitivity_test import (
-            ThresholdInsensitivityTest as _ThresholdInsensitivityTest,
-        )
-
-        ThresholdInsensitivityTest = _ThresholdInsensitivityTest
-    except ImportError:
-        pass
-
-    SomaBiasTest: Optional[Any] = None
-    try:
-        from apgi_framework.falsification.soma_bias_test import (
-            SomaBiasTest as _SomaBiasTest,
-        )
-
-        SomaBiasTest = _SomaBiasTest
-    except ImportError:
-        pass
+    # Fallback classes for falsification tests that don't exist as separate modules
+    ConsciousnessWithoutIgnitionTest = None
+    ThresholdInsensitivityTest = None
+    SomaBiasTest = None
 
     # Analysis modules - use available classes
-    BayesianParameterEstimator: Optional[Any] = None
     try:
         from apgi_framework.analysis.bayesian_models import HierarchicalBayesianModel
 
@@ -137,7 +129,6 @@ try:
     except ImportError:
         pass
 
-    EffectSizeCalculator: Optional[Any] = None
     try:
         from apgi_framework.analysis.effect_size_calculator import (
             EffectSizeCalculator as _EffectSizeCalculator,
@@ -157,7 +148,6 @@ try:
     except ImportError:
         pass
 
-    ClinicalParameterExtractor: Optional[Any] = None
     try:
         from apgi_framework.clinical.parameter_extraction import (
             ClinicalParameterExtractor,
@@ -166,7 +156,6 @@ try:
         pass
 
     # Neural simulators
-    P3bSimulator: Optional[Any] = None
     try:
         from apgi_framework.simulators.p3b_simulator import (
             P3bSimulator as _P3bSimulator,
@@ -176,7 +165,6 @@ try:
     except ImportError:
         pass
 
-    GammaSimulator: Optional[Any] = None
     try:
         from apgi_framework.simulators.gamma_simulator import (
             GammaSimulator as _GammaSimulator,
@@ -186,7 +174,6 @@ try:
     except ImportError:
         pass
 
-    BOLDSimulator: Optional[Any] = None
     try:
         from apgi_framework.simulators.bold_simulator import (
             BOLDSimulator as _BOLDSimulator,
@@ -196,7 +183,6 @@ try:
     except ImportError:
         pass
 
-    PCICalculator: Optional[Any] = None
     try:
         from apgi_framework.simulators.pci_calculator import (
             PCICalculator as _PCICalculator,
@@ -207,7 +193,6 @@ try:
         pass
 
     # Adaptive procedures - use available classes
-    QuestPlusStaircase: Optional[Any] = None
     try:
         from apgi_framework.adaptive.quest_plus_staircase import (
             QuestPlusStaircase as _QuestPlusStaircase,
@@ -217,7 +202,6 @@ try:
     except ImportError:
         pass
 
-    StimulusGenerator: Optional[Any] = None
     try:
         from apgi_framework.adaptive.stimulus_generators import (
             StimulusGenerator as _StimulusGenerator,
@@ -381,7 +365,7 @@ class ConfigurationValidator:
             # Check range
             if isinstance(converted_value, (int, float)):
                 if "min" in rules and converted_value < rules["min"]:
-                    return False, ValidationError(  # type: ignore
+                    return False, ValidationError(
                         field=param_name,
                         message=f"Value {converted_value} is below minimum {rules['min']}",
                         severity=ErrorSeverity.MEDIUM,
@@ -487,14 +471,14 @@ class GUIErrorHandler:
 
         messagebox.showerror(title, message)
 
-    def _handle_critical_error(self, error: Exception, context: str):
+    def _handle_critical_error(self, error: Exception, context: str) -> None:
         """Handle critical errors that may require application shutdown"""
         self.logger.critical(
             f"Critical error in {context}, application may be unstable"
         )
         # Could implement emergency save or cleanup here
 
-    def handle_validation_errors(self, errors: List[ValidationError]):
+    def handle_validation_errors(self, errors: List[ValidationError]) -> None:
         """Handle configuration validation errors"""
         if not errors:
             return
@@ -525,7 +509,7 @@ class GUIErrorHandler:
 
 
 class APGIFrameworkGUI(ctk.CTk):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.title("APGI Framework GUI - Comprehensive Testing System")
         self.geometry("2000x1200+50+50")
@@ -534,7 +518,7 @@ class APGIFrameworkGUI(ctk.CTk):
         ctk.set_default_color_theme("blue")
 
         # Initialize error handling and validation
-        self.logger = None
+        self.logger: Union[Any, logging.Logger] = logging.getLogger(__name__)
         self.error_handler = None
         self.config_validator = ConfigurationValidator()
 
@@ -567,15 +551,15 @@ class APGIFrameworkGUI(ctk.CTk):
         self.pci_calculator = None
 
         # Current results and system status
-        self.current_results = {}
-        self.system_status = {}
-        self.current_session_data = None
+        self.current_results: Dict[str, Any] = {}
+        self.system_status: Dict[str, Any] = {}
+        self.current_session_data: Optional[Dict[str, Any]] = None
 
         # Initialize variables
         self.data_folder = "data"
         self.results_folder = "results"
-        self.current_file = None
-        self.current_data = None
+        self.current_file: Optional[str] = None
+        self.current_data: Optional[pd.DataFrame] = None
 
         # Create data folders if they don't exist
         try:
@@ -614,7 +598,7 @@ class APGIFrameworkGUI(ctk.CTk):
         # Update system status
         self._update_system_status()
 
-    def _initialize_framework(self):
+    def _initialize_framework(self) -> None:
         """Initialize APGI Framework components with robust error handling."""
         if self.error_handler is None:
             print("Error: Error handler not initialized")
@@ -645,8 +629,9 @@ class APGIFrameworkGUI(ctk.CTk):
 
         if initialization_success:
             try:
-                self.main_controller = MainApplicationController()
-                self.log_to_console("✓ MainApplicationController initialized")
+                if MainApplicationController is not None:
+                    self.main_controller = MainApplicationController()  # type: ignore[misc]
+                    self.log_to_console("✓ MainApplicationController initialized")
             except Exception as e:
                 self.error_handler.handle_error(
                     e, "MainApplicationController Initialization", ErrorSeverity.HIGH
@@ -655,8 +640,9 @@ class APGIFrameworkGUI(ctk.CTk):
 
         if initialization_success:
             try:
-                self.cli_handler = APGIFrameworkCLI()
-                self.log_to_console("✓ APGIFrameworkCLI initialized")
+                if APGIFrameworkCLI is not None:
+                    self.cli_handler = APGIFrameworkCLI()  # type: ignore[misc]
+                    self.log_to_console("✓ APGIFrameworkCLI initialized")
             except Exception as e:
                 self.error_handler.handle_error(
                     e, "APGIFrameworkCLI Initialization", ErrorSeverity.MEDIUM
@@ -818,22 +804,28 @@ class APGIFrameworkGUI(ctk.CTk):
                 "⚠ APGI Framework initialization completed with some errors"
             )
 
-    def _setup_logging(self):
+    def _setup_logging(self) -> None:
         """Setup logging configuration."""
         try:
             from apgi_framework.logging.standardized_logging import get_logger
 
-            self.logger = get_logger("apgi_gui_template", log_file="apgi_gui.log")
+            self.logger = get_logger(
+                "apgi_framework_gui_template", log_file="apgi_framework_gui.log"
+            )  # type: ignore[assignment]
         except ImportError:
             # Fallback to basic logging
             logging.basicConfig(
                 level=logging.INFO,
                 format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-                handlers=[logging.FileHandler("apgi_gui.log"), logging.StreamHandler()],
+                handlers=[
+                    logging.FileHandler("apgi_framework_gui.log"),
+                    logging.StreamHandler(),
+                ],
             )
-            self.logger = logging.getLogger(__name__)
 
-    def _update_system_status(self):
+            self.logger = logging.getLogger(__name__)  # type: ignore[assignment]
+
+    def _update_system_status(self) -> None:
         """Update system status information."""
         try:
             if self.cli_handler:
@@ -850,7 +842,7 @@ class APGIFrameworkGUI(ctk.CTk):
             self.system_status = {"error": str(e)}
             self.log_to_console(f"Error updating system status: {e}")
 
-    def create_status_bar(self):
+    def create_status_bar(self) -> Any:
         """Create status bar at bottom of window."""
         status_bar = ctk.CTkFrame(self, height=30, fg_color="#e0e0e0")
         status_bar.grid(row=1, column=0, columnspan=2, sticky="ew", padx=0, pady=0)
@@ -1450,7 +1442,7 @@ class APGIFrameworkGUI(ctk.CTk):
             )
             self.update_status("Ready")
 
-    def _on_test_complete(self, test_name, results):
+    def _on_test_complete(self, test_name: str, results: Any) -> None:
         """Handle test completion callback."""
         self.log_to_console(f"{test_name} completed successfully")
         if hasattr(results, "__dict__"):
@@ -1463,7 +1455,7 @@ class APGIFrameworkGUI(ctk.CTk):
         messagebox.showinfo(test_name, f"{test_name} completed successfully.")
         self.update_status("Ready")
 
-    def _on_test_error(self, test_name, error_msg):
+    def _on_test_error(self, test_name: str, error_msg: str) -> None:
         """Handle test error callback."""
         self.log_to_console(f"Error in {test_name}: {error_msg}")
         messagebox.showerror(f"{test_name} Error", f"Test failed: {error_msg}")
@@ -1764,7 +1756,7 @@ class APGIFrameworkGUI(ctk.CTk):
             messagebox.showerror("Error", f"Failed to run soma-bias test: {e}")
             self.update_status("Ready")
 
-    def run_batch_tests(self):
+    def run_batch_tests(self) -> None:
         """Run batch falsification tests using APGI framework."""
         self.log_to_console("Running Batch Falsification Tests...")
         self.update_status("Running Batch Tests...")
@@ -1795,7 +1787,7 @@ class APGIFrameworkGUI(ctk.CTk):
             ]
 
             # Run tests in sequence
-            def run_batch():
+            def run_batch() -> None:
                 batch_results = {}
 
                 for test_name, test_instance in tests:
@@ -1858,70 +1850,61 @@ class APGIFrameworkGUI(ctk.CTk):
 
         try:
             # Import the research experiment
-            from research.ai_benchmarking.experiments.experiment import (
+            from research.ai_benchmarking.experiments.experiment import (  # type: ignore[import-not-found]
                 run_ai_benchmarking_experiment,
             )
-
-            # Get parameters from GUI
-            n_trials = int(self.exp_setup_params["n_trials"].get())
-            n_participants = int(self.exp_setup_params["n_participants"].get())
-
-            # Run in separate thread
-            def run_experiment():
-                try:
-                    self.log_to_console(
-                        "Starting AI benchmarking with agent comparison..."
-                    )
-
-                    # Run the experiment with GUI parameters
-                    experiment = run_ai_benchmarking_experiment(
-                        n_episodes=n_trials,
-                        n_agents_per_type=max(1, n_participants // 4),
-                        world_size=20,
-                        n_food=30,
-                        n_obstacles=20,
-                        n_predators=3,
-                        render=False,
-                        save_dir=f"data/ai_benchmarking/gui_run_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}",
-                    )
-
-                    # Store results
-                    self.current_results = {
-                        "test": "AI Benchmarking",
-                        "timestamp": datetime.datetime.now().isoformat(),
-                        "parameters": {
-                            "n_episodes": n_trials,
-                            "n_agents_per_type": max(1, n_participants // 4),
-                        },
-                        "results": (
-                            experiment.metrics_history
-                            if hasattr(experiment, "metrics_history")
-                            else []
-                        ),
-                        "summary": (
-                            experiment._compute_summary_statistics()
-                            if hasattr(experiment, "_compute_summary_statistics")
-                            else {}
-                        ),
-                    }
-
-                    self.after(0, self._on_test_complete, "AI Benchmarking", experiment)
-
-                except Exception as e:
-                    self.after(0, self._on_test_error, "AI Benchmarking", str(e))
-
-            threading.Thread(target=run_experiment, daemon=True).start()
-
         except ImportError as e:
-            self.log_to_console(f"AI Benchmarking experiment not available: {e}")
-            messagebox.showerror(
-                "Import Error", f"AI Benchmarking experiment not available: {e}"
-            )
-            self.update_status("Ready")
-        except Exception as e:
-            self.log_to_console(f"Error setting up AI benchmarking: {e}")
-            messagebox.showerror("Error", f"Failed to run AI benchmarking: {e}")
-            self.update_status("Ready")
+            self.log_to_console(f"AI benchmarking module not available: {e}")
+            self.update_status("AI Benchmarking module not available")
+            return
+
+        # Get parameters from GUI
+        n_trials = int(self.exp_setup_params["n_trials"].get())
+        n_participants = int(self.exp_setup_params["n_participants"].get())
+
+        # Run in separate thread
+        def run_experiment():
+            try:
+                self.log_to_console("Starting AI benchmarking with agent comparison...")
+
+                # Run the experiment with GUI parameters
+                experiment = run_ai_benchmarking_experiment(
+                    n_episodes=n_trials,
+                    n_agents_per_type=max(1, n_participants // 4),
+                    world_size=20,
+                    n_food=30,
+                    n_obstacles=20,
+                    n_predators=3,
+                    render=False,
+                    save_dir=f"data/ai_benchmarking/gui_run_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                )
+
+                # Store results
+                self.current_results = {
+                    "test": "AI Benchmarking",
+                    "timestamp": datetime.datetime.now().isoformat(),
+                    "parameters": {
+                        "n_episodes": n_trials,
+                        "n_agents_per_type": max(1, n_participants // 4),
+                    },
+                    "results": (
+                        experiment.metrics_history
+                        if hasattr(experiment, "metrics_history")
+                        else []
+                    ),
+                    "summary": (
+                        experiment._compute_summary_statistics()
+                        if hasattr(experiment, "_compute_summary_statistics")
+                        else {}
+                    ),
+                }
+
+                self.after(0, self._on_test_complete, "AI Benchmarking", experiment)
+
+            except Exception as e:
+                self.after(0, self._on_test_error, "AI Benchmarking", str(e))
+
+        threading.Thread(target=run_experiment, daemon=True).start()
 
     def run_interoceptive_gating_experiment(self):
         """Run interoceptive gating experiment from research module."""
@@ -1930,65 +1913,58 @@ class APGIFrameworkGUI(ctk.CTk):
 
         try:
             # Import the research experiment
-            from research.interoceptive_gating.experiments.interoceptive_gating.experiment import (
+            from research.interoceptive_gating.experiments.interoceptive_gating.experiment import (  # type: ignore[import-not-found]
                 run_interoceptive_gating_experiment,
             )
-
-            # Get parameters from GUI
-            n_trials = int(self.exp_setup_params["n_trials"].get())
-            n_participants = int(self.exp_setup_params["n_participants"].get())
-
-            # Run in separate thread
-            def run_experiment():
-                try:
-                    self.log_to_console("Starting interoceptive gating paradigm...")
-
-                    # Run the experiment with GUI parameters
-                    n_trials_per_condition = max(
-                        10, n_trials // 3
-                    )  # Divide among 3 conditions
-                    experiment = run_interoceptive_gating_experiment(
-                        n_participants=n_participants,
-                        n_trials_per_condition=n_trials_per_condition,
-                    )
-
-                    # Store results
-                    self.current_results = {
-                        "test": "Interoceptive Gating",
-                        "timestamp": datetime.datetime.now().isoformat(),
-                        "parameters": {
-                            "n_participants": n_participants,
-                            "n_trials_per_condition": n_trials_per_condition,
-                        },
-                        "results": (
-                            experiment.data.to_dict()
-                            if hasattr(experiment, "data") and not experiment.data.empty
-                            else {}
-                        ),
-                        "summary": (
-                            experiment.results if hasattr(experiment, "results") else {}
-                        ),
-                    }
-
-                    self.after(
-                        0, self._on_test_complete, "Interoceptive Gating", experiment
-                    )
-
-                except Exception as e:
-                    self.after(0, self._on_test_error, "Interoceptive Gating", str(e))
-
-            threading.Thread(target=run_experiment, daemon=True).start()
-
         except ImportError as e:
-            self.log_to_console(f"Interoceptive Gating experiment not available: {e}")
-            messagebox.showerror(
-                "Import Error", f"Interoceptive Gating experiment not available: {e}"
-            )
-            self.update_status("Ready")
-        except Exception as e:
-            self.log_to_console(f"Error setting up interoceptive gating: {e}")
-            messagebox.showerror("Error", f"Failed to run interoceptive gating: {e}")
-            self.update_status("Ready")
+            self.log_to_console(f"Interoceptive gating module not available: {e}")
+            self.update_status("Interoceptive gating module not available")
+            return
+
+        # Get parameters from GUI
+        n_trials = int(self.exp_setup_params["n_trials"].get())
+        n_participants = int(self.exp_setup_params["n_participants"].get())
+
+        # Run in separate thread
+        def run_experiment():
+            try:
+                self.log_to_console("Starting interoceptive gating paradigm...")
+
+                # Run the experiment with GUI parameters
+                n_trials_per_condition = max(
+                    10, n_trials // 3
+                )  # Divide among 3 conditions
+                experiment = run_interoceptive_gating_experiment(
+                    n_participants=n_participants,
+                    n_trials_per_condition=n_trials_per_condition,
+                )
+
+                # Store results
+                self.current_results = {
+                    "test": "Interoceptive Gating",
+                    "timestamp": datetime.datetime.now().isoformat(),
+                    "parameters": {
+                        "n_participants": n_participants,
+                        "n_trials_per_condition": n_trials_per_condition,
+                    },
+                    "results": (
+                        experiment.data.to_dict()
+                        if hasattr(experiment, "data") and not experiment.data.empty
+                        else {}
+                    ),
+                    "summary": (
+                        experiment.results if hasattr(experiment, "results") else {}
+                    ),
+                }
+
+                self.after(
+                    0, self._on_test_complete, "Interoceptive Gating", experiment
+                )
+
+            except Exception as e:
+                self.after(0, self._on_test_error, "Interoceptive Gating", str(e))
+
+        threading.Thread(target=run_experiment, daemon=True).start()
 
     def run_threshold_effects_experiment(self):
         """Run threshold effects experiment from run_experiments.py."""
@@ -1997,7 +1973,7 @@ class APGIFrameworkGUI(ctk.CTk):
 
         try:
             # Import from run_experiments
-            from run_experiments import experiment_threshold_effects
+            from run_experiments import experiment_threshold_effects  # type: ignore[import-not-found]
 
             # Run in separate thread
             def run_experiment():
@@ -2046,7 +2022,7 @@ class APGIFrameworkGUI(ctk.CTk):
 
         try:
             # Import from run_experiments
-            from run_experiments import experiment_somatic_markers
+            from run_experiments import experiment_somatic_markers  # type: ignore[import-not-found]
 
             # Get APGI parameters to use for somatic marker values
             somatic_gain = float(self.apgi_params["somatic_gain"].get())
@@ -2095,7 +2071,7 @@ class APGIFrameworkGUI(ctk.CTk):
 
         try:
             # Import from run_experiments
-            from run_experiments import experiment_precision_effects
+            from run_experiments import experiment_precision_effects  # type: ignore[import-not-found]
 
             # Get APGI parameters
             exteroceptive_precision = float(
@@ -2161,7 +2137,7 @@ class APGIFrameworkGUI(ctk.CTk):
 
         try:
             # Import from run_experiments
-            from run_experiments import experiment_dynamic_threshold
+            from run_experiments import experiment_dynamic_threshold  # type: ignore[import-not-found]
 
             # Get threshold parameter from GUI
             threshold = float(self.apgi_params["threshold"].get())
@@ -2281,7 +2257,7 @@ class APGIFrameworkGUI(ctk.CTk):
             messagebox.showerror("Error", f"Failed to run Bayesian estimation: {e}")
             self.update_status("Ready")
 
-    def run_effect_size_analysis(self):
+    def run_effect_size_analysis(self) -> None:
         """Run effect size analysis using APGI framework."""
         self.log_to_console("Running Effect Size Analysis...")
         self.update_status("Running Effect Size Analysis...")
@@ -2303,14 +2279,14 @@ class APGIFrameworkGUI(ctk.CTk):
             self.log_to_console("Effect Size: Calculating confidence intervals")
 
             # Run the analysis in a separate thread
-            def run_analysis():
+            def run_analysis() -> None:
                 try:
                     # Extract data from current results
                     analysis_data = self.current_results.get("results", {})
                     metrics = self.current_results.get("metrics", {})
 
                     # Create effect size calculator
-                    effect_calculator = EffectSizeCalculator()
+                    effect_calculator = EffectSizeCalculator()  # type: ignore[misc]
 
                     # Calculate effect sizes
                     effect_sizes = effect_calculator.calculate_effect_sizes(
@@ -2354,7 +2330,7 @@ class APGIFrameworkGUI(ctk.CTk):
             messagebox.showerror("Error", f"Failed to run effect size analysis: {e}")
             self.update_status("Ready")
 
-    def run_neural_signature_analysis(self):
+    def run_neural_signature_analysis(self) -> None:
         """Run neural signature analysis using APGI framework."""
         self.log_to_console("Running Neural Signature Analysis...")
         self.update_status("Running Neural Signature Analysis...")
@@ -2376,7 +2352,7 @@ class APGIFrameworkGUI(ctk.CTk):
             self.log_to_console("Neural: Identifying signature components")
 
             # Run the analysis in a separate thread
-            def run_analysis():
+            def run_analysis() -> None:
                 try:
                     # Extract data from current results
                     analysis_data = self.current_results.get("results", {})
@@ -2403,7 +2379,7 @@ class APGIFrameworkGUI(ctk.CTk):
                         pci_results = self.pci_calculator.calculate_pci(analysis_data)
 
                     # Combine neural signature results
-                    neural_signatures = {
+                    neural_signatures: Dict[str, Any] = {
                         "p3b": (
                             p3b_results.__dict__
                             if p3b_results and hasattr(p3b_results, "__dict__")
@@ -2463,7 +2439,7 @@ class APGIFrameworkGUI(ctk.CTk):
             )
             self.update_status("Ready")
 
-    def run_surprise_dynamics_analysis(self):
+    def run_surprise_dynamics_analysis(self) -> None:
         """Run surprise dynamics analysis using APGI framework."""
         self.log_to_console("Running Surprise Dynamics Analysis...")
         self.update_status("Running Surprise Dynamics Analysis...")
@@ -2595,7 +2571,7 @@ class APGIFrameworkGUI(ctk.CTk):
             )
             self.update_status("Ready")
 
-    def run_disorder_classification(self):
+    def run_disorder_classification(self) -> None:
         """Run disorder classification using APGI framework."""
         self.log_to_console("Running Disorder Classification...")
         self.update_status("Running Disorder Classification...")
@@ -2720,7 +2696,7 @@ class APGIFrameworkGUI(ctk.CTk):
             messagebox.showerror("Error", f"Failed to run disorder classification: {e}")
             self.update_status("Ready")
 
-    def run_clinical_parameter_extraction(self):
+    def run_clinical_parameter_extraction(self) -> None:
         """Run clinical parameter extraction using APGI framework."""
         self.log_to_console("Running Clinical Parameter Extraction...")
         self.update_status("Running Clinical Parameter Extraction...")
@@ -2825,7 +2801,7 @@ class APGIFrameworkGUI(ctk.CTk):
             )
             self.update_status("Ready")
 
-    def run_patient_profile_analysis(self):
+    def run_patient_profile_analysis(self) -> None:
         """Run patient profile analysis using APGI framework."""
         self.log_to_console("Running Patient Profile Analysis...")
         self.update_status("Running Patient Profile Analysis...")
@@ -2847,7 +2823,7 @@ class APGIFrameworkGUI(ctk.CTk):
             self.log_to_console("Clinical: Generating profile reports")
 
             # Run the analysis in a separate thread
-            def run_analysis():
+            def run_analysis() -> None:
                 try:
                     # Extract all available data from current results
                     profile_data = {
@@ -2918,9 +2894,11 @@ class APGIFrameworkGUI(ctk.CTk):
                                 "normal_neural_activity",
                                 "adequate_precision_weighting",
                             ],
-                            "clinical_recommendations": patient_profile[
-                                "treatment_response"
-                            ]["optimal_interventions"],
+                            "clinical_recommendations": patient_profile.get(  # type: ignore[attr-defined]
+                                "treatment_response", {}
+                            ).get(
+                                "optimal_interventions", []
+                            ),
                             "follow_up_needed": False,
                         },
                     }
@@ -2931,11 +2909,13 @@ class APGIFrameworkGUI(ctk.CTk):
                         "Patient Profile Analysis",
                         patient_profile,
                     )
+                    return
 
                 except Exception as e:
                     self.after(
                         0, self._on_test_error, "Patient Profile Analysis", str(e)
                     )
+                    return
 
             threading.Thread(target=run_analysis, daemon=True).start()
 
@@ -2946,7 +2926,7 @@ class APGIFrameworkGUI(ctk.CTk):
             )
             self.update_status("Ready")
 
-    def import_data(self):
+    def import_data(self) -> None:
         """Import data from file using APGI framework data manager."""
         try:
             file_path = filedialog.askopenfilename(
@@ -2966,7 +2946,7 @@ class APGIFrameworkGUI(ctk.CTk):
             self.update_status("Importing data...")
 
             # Import data in a separate thread
-            def import_thread():
+            def import_thread() -> None:
                 try:
                     if self.data_manager:
                         # Use APGI data manager to import
@@ -3038,7 +3018,7 @@ class APGIFrameworkGUI(ctk.CTk):
             messagebox.showerror("Import Error", f"Failed to import data: {e}")
             self.update_status("Ready")
 
-    def _on_import_complete(self, file_path, data):
+    def _on_import_complete(self, file_path: str, data: Any) -> None:
         """Handle successful data import."""
         self.log_to_console(f"Successfully imported data from {file_path}")
         if hasattr(data, "shape"):
@@ -3053,13 +3033,13 @@ class APGIFrameworkGUI(ctk.CTk):
         )
         self.update_status("Ready")
 
-    def _on_import_error(self, file_path, error_msg):
+    def _on_import_error(self, file_path: str, error_msg: str) -> None:
         """Handle data import error."""
         self.log_to_console(f"Error importing {file_path}: {error_msg}")
         messagebox.showerror("Import Error", f"Failed to import data: {error_msg}")
         self.update_status("Ready")
 
-    def export_data(self):
+    def export_data(self) -> None:
         """Export data to file using APGI framework data manager."""
         try:
             # Check if we have data to export
@@ -3088,7 +3068,7 @@ class APGIFrameworkGUI(ctk.CTk):
             self.update_status("Exporting data...")
 
             # Export data in a separate thread
-            def export_thread():
+            def export_thread() -> None:
                 try:
                     export_data = {
                         "results": self.current_results,
@@ -3165,11 +3145,13 @@ class APGIFrameworkGUI(ctk.CTk):
                                 json.dump(serializable_data, f, indent=2, default=str)
 
                     self.after(0, lambda: self._on_export_complete(file_path))
+                    return
 
                 except Exception:
                     self.after(
                         0, lambda: self._on_export_error(file_path, "Export failed")
                     )
+                    return
 
             threading.Thread(target=export_thread, daemon=True).start()
 
@@ -3178,7 +3160,7 @@ class APGIFrameworkGUI(ctk.CTk):
             messagebox.showerror("Export Error", f"Failed to setup export: {e}")
             self.update_status("Ready")
 
-    def _make_serializable(self, obj):
+    def _make_serializable(self, obj: Any) -> Any:
         """Convert objects to JSON-serializable format."""
         if hasattr(obj, "__dict__"):
             return self._make_serializable(obj.__dict__)
@@ -3195,11 +3177,11 @@ class APGIFrameworkGUI(ctk.CTk):
         else:
             return str(obj)
 
-    def _flatten_for_csv(self, data):
+    def _flatten_for_csv(self, data: Any) -> List[Dict[str, Any]]:
         """Flatten nested data for CSV export."""
 
-        def _flatten(obj, parent_key="", sep="_"):
-            items = []
+        def _flatten(obj: Any, parent_key: str = "", sep: str = "_") -> List[tuple]:
+            items: List[tuple] = []
             if isinstance(obj, dict):
                 for k, v in obj.items():
                     new_key = f"{parent_key}{sep}{k}" if parent_key else k
@@ -3219,7 +3201,7 @@ class APGIFrameworkGUI(ctk.CTk):
         # Convert to list of dicts for DataFrame
         return [flattened_dict]
 
-    def _on_export_complete(self, file_path):
+    def _on_export_complete(self, file_path: str) -> None:
         """Handle successful data export."""
         self.log_to_console(f"Successfully exported data to {file_path}")
         messagebox.showinfo(
@@ -3227,13 +3209,13 @@ class APGIFrameworkGUI(ctk.CTk):
         )
         self.update_status("Ready")
 
-    def _on_export_error(self, file_path, error_msg):
+    def _on_export_error(self, file_path: str, error_msg: str) -> None:
         """Handle data export error."""
         self.log_to_console(f"Error exporting to {file_path}: {error_msg}")
         messagebox.showerror("Export Error", f"Failed to export data: {error_msg}")
         self.update_status("Ready")
 
-    def validate_data(self):
+    def validate_data(self) -> None:
         """Validate current data using APGI framework data manager."""
         self.log_to_console("Validating data integrity...")
         self.update_status("Validating data...")
@@ -3249,9 +3231,9 @@ class APGIFrameworkGUI(ctk.CTk):
                 return
 
             # Run validation in a separate thread
-            def validate_thread():
+            def validate_thread() -> None:
                 try:
-                    validation_results = {
+                    validation_results: Dict[str, Any] = {
                         "timestamp": datetime.datetime.now().isoformat(),
                         "data_sources": [],
                         "validation_checks": {},
@@ -3321,9 +3303,11 @@ class APGIFrameworkGUI(ctk.CTk):
                     self.current_results["data_validation"] = validation_results
 
                     self.after(0, self._on_validation_complete, validation_results)
+                    return
 
                 except Exception as e:
                     self.after(0, self._on_validation_error, str(e))
+                    return
 
             threading.Thread(target=validate_thread, daemon=True).start()
 
@@ -3332,9 +3316,9 @@ class APGIFrameworkGUI(ctk.CTk):
             messagebox.showerror("Validation Error", f"Failed to validate data: {e}")
             self.update_status("Ready")
 
-    def _validate_results(self, results):
+    def _validate_results(self, results: Dict[str, Any]) -> Dict[str, List[str]]:
         """Validate results dictionary."""
-        validation = {"errors": [], "warnings": []}
+        validation: Dict[str, List[str]] = {"errors": [], "warnings": []}
 
         if not isinstance(results, dict):
             validation["errors"].append("Results should be a dictionary")
@@ -3355,9 +3339,9 @@ class APGIFrameworkGUI(ctk.CTk):
 
         return validation
 
-    def _validate_dataframe(self, data):
+    def _validate_dataframe(self, data: pd.DataFrame) -> Dict[str, List[str]]:
         """Validate DataFrame data."""
-        validation = {"errors": [], "warnings": []}
+        validation: Dict[str, List[str]] = {"errors": [], "warnings": []}
 
         if not isinstance(data, pd.DataFrame):
             validation["warnings"].append("Data is not a pandas DataFrame")
@@ -3384,7 +3368,7 @@ class APGIFrameworkGUI(ctk.CTk):
 
         return validation
 
-    def _on_validation_complete(self, validation_results):
+    def _on_validation_complete(self, validation_results: Dict[str, Any]) -> None:
         """Handle successful data validation."""
         self.log_to_console("Data validation completed")
         self.log_to_console(f"Overall status: {validation_results['overall_status']}")
@@ -3414,13 +3398,13 @@ class APGIFrameworkGUI(ctk.CTk):
 
         self.update_status("Ready")
 
-    def _on_validation_error(self, error_msg):
+    def _on_validation_error(self, error_msg: str) -> None:
         """Handle data validation error."""
         self.log_to_console(f"Error during validation: {error_msg}")
         messagebox.showerror("Validation Error", f"Data validation failed: {error_msg}")
         self.update_status("Ready")
 
-    def clean_data(self):
+    def clean_data(self) -> None:
         """Clean current data using APGI framework data manager."""
         self.log_to_console("Cleaning data...")
         self.update_status("Cleaning data...")
@@ -3436,9 +3420,9 @@ class APGIFrameworkGUI(ctk.CTk):
                 return
 
             # Run data cleaning in a separate thread
-            def clean_thread():
+            def clean_thread() -> None:
                 try:
-                    cleaning_results = {
+                    cleaning_results: Dict[str, Any] = {
                         "timestamp": datetime.datetime.now().isoformat(),
                         "operations_performed": [],
                         "issues_fixed": [],
@@ -3557,9 +3541,11 @@ class APGIFrameworkGUI(ctk.CTk):
                     self.current_results["data_cleaning"] = cleaning_results
 
                     self.after(0, self._on_cleaning_complete, cleaning_results)
+                    return
 
                 except Exception as e:
                     self.after(0, self._on_cleaning_error, str(e))
+                    return
 
             threading.Thread(target=clean_thread, daemon=True).start()
 
@@ -3590,7 +3576,7 @@ class APGIFrameworkGUI(ctk.CTk):
 
         return cleaned
 
-    def _on_cleaning_complete(self, cleaning_results):
+    def _on_cleaning_complete(self, cleaning_results: Dict[str, Any]) -> None:
         """Handle successful data cleaning."""
         self.log_to_console("Data cleaning completed")
 
@@ -3636,13 +3622,13 @@ class APGIFrameworkGUI(ctk.CTk):
         )
         self.update_status("Ready")
 
-    def _on_cleaning_error(self, error_msg):
+    def _on_cleaning_error(self, error_msg: str) -> None:
         """Handle data cleaning error."""
         self.log_to_console(f"Error during cleaning: {error_msg}")
         messagebox.showerror("Cleaning Error", f"Data cleaning failed: {error_msg}")
         self.update_status("Ready")
 
-    def validate_system(self):
+    def validate_system(self) -> None:
         """Validate system components."""
         self.log_to_console("Validating system components...")
         if self.system_status:
@@ -3653,13 +3639,13 @@ class APGIFrameworkGUI(ctk.CTk):
             "System Validation", "System validation completed successfully."
         )
 
-    def generate_report(self):
+    def generate_report(self) -> None:
         """Generate comprehensive report."""
         self.log_to_console("Generating comprehensive report...")
         self.log_to_console("Report generation completed successfully")
         messagebox.showinfo("Report", "Comprehensive report generated successfully.")
 
-    def show_system_status(self):
+    def show_system_status(self) -> None:
         """Display detailed system status."""
         status_text = "System Status:\n\n"
         if self.system_status:
@@ -3669,14 +3655,14 @@ class APGIFrameworkGUI(ctk.CTk):
             status_text = "System status not available"
         messagebox.showinfo("System Status", status_text)
 
-    def show_preferences(self):
+    def show_preferences(self) -> None:
         """Show preferences dialog."""
         self.log_to_console("Opening preferences...")
         messagebox.showinfo(
             "Preferences", "Preferences dialog would be displayed here."
         )
 
-    def plot_results(self):
+    def plot_results(self) -> None:
         """Plot experimental results using matplotlib and APGI framework visualizer."""
         try:
             # Check if we have results to plot
@@ -3768,7 +3754,7 @@ class APGIFrameworkGUI(ctk.CTk):
             messagebox.showerror("Plot Error", f"Error plotting results: {str(e)}")
             self.log_to_console(f"Error plotting results: {str(e)}")
 
-    def plot_neural_signatures(self):
+    def plot_neural_signatures(self) -> None:
         """Plot neural signatures using matplotlib and APGI framework visualizer."""
         try:
             # Check if we have neural signatures to plot
@@ -3786,7 +3772,7 @@ class APGIFrameworkGUI(ctk.CTk):
             self.update_status("Plotting neural signatures...")
 
             # Generate plots in a separate thread
-            def plot_thread():
+            def plot_thread() -> None:
                 try:
                     neural_data = self.current_results["neural_signatures"]
                     signatures = neural_data.get("signatures", {})
@@ -4023,9 +4009,11 @@ class APGIFrameworkGUI(ctk.CTk):
                     plt.show()
 
                     self.after(0, self._on_neural_plot_complete)
+                    return
 
                 except Exception as e:
                     self.after(0, self._on_plot_error, str(e))
+                    return
 
             threading.Thread(target=plot_thread, daemon=True).start()
 
@@ -4034,7 +4022,7 @@ class APGIFrameworkGUI(ctk.CTk):
             messagebox.showerror("Plot Error", f"Failed to plot neural signatures: {e}")
             self.update_status("Ready")
 
-    def _on_neural_plot_complete(self):
+    def _on_neural_plot_complete(self) -> None:
         """Handle successful neural signature plot generation."""
         self.log_to_console("Neural signature plots generated successfully")
         messagebox.showinfo(
@@ -4042,7 +4030,7 @@ class APGIFrameworkGUI(ctk.CTk):
         )
         self.update_status("Ready")
 
-    def plot_parameter_space(self):
+    def plot_parameter_space(self) -> None:
         """Plot parameter space using matplotlib and APGI framework visualizer."""
         try:
             # Check if we have parameters to plot
@@ -4057,7 +4045,7 @@ class APGIFrameworkGUI(ctk.CTk):
             self.update_status("Plotting parameter space...")
 
             # Generate plots in a separate thread
-            def plot_thread():
+            def plot_thread() -> None:
                 try:
                     parameters = self.current_results["parameters"]
 
@@ -4074,7 +4062,9 @@ class APGIFrameworkGUI(ctk.CTk):
                         param_values = list(parameters.values())
 
                         # Create color map
-                        colors = plt.cm.viridis(np.linspace(0, 1, len(param_names)))
+                        colors = plt.cm.get_cmap("viridis")(
+                            np.linspace(0, 1, len(param_names))
+                        )
                         bars = ax1.bar(param_names, param_values, color=colors)
                         ax1.set_title("APGI Parameter Values")
                         ax1.set_ylabel("Parameter Value")
@@ -4228,7 +4218,9 @@ class APGIFrameworkGUI(ctk.CTk):
                         bars = ax4.barh(
                             y_pos,
                             sensitivity_scores,
-                            color=plt.cm.plasma(np.linspace(0, 1, len(param_names))),
+                            color=plt.cm.get_cmap("plasma")(
+                                np.linspace(0, 1, len(param_names))
+                            ),
                         )
                         ax4.set_yticks(y_pos)
                         ax4.set_yticklabels(param_names)
@@ -4292,7 +4284,7 @@ class APGIFrameworkGUI(ctk.CTk):
             messagebox.showerror("Plot Error", f"Failed to plot parameter space: {e}")
             self.update_status("Ready")
 
-    def _on_parameter_plot_complete(self):
+    def _on_parameter_plot_complete(self) -> None:
         """Handle successful parameter space plot generation."""
         self.log_to_console("Parameter space plots generated successfully")
         messagebox.showinfo(
@@ -4300,7 +4292,7 @@ class APGIFrameworkGUI(ctk.CTk):
         )
         self.update_status("Ready")
 
-    def plot_time_series(self):
+    def plot_time_series(self) -> None:
         """Plot time series analysis using matplotlib and APGI framework visualizer."""
         try:
             # Check if we have data to plot
@@ -4315,7 +4307,7 @@ class APGIFrameworkGUI(ctk.CTk):
             self.update_status("Plotting time series...")
 
             # Generate plots in a separate thread
-            def plot_thread():
+            def plot_thread() -> None:
                 try:
                     # Create synthetic time series data based on current results
                     test_name = self.current_results.get("test", "Unknown")
@@ -4527,9 +4519,11 @@ class APGIFrameworkGUI(ctk.CTk):
                     plt.show()
 
                     self.after(0, self._on_time_series_complete)
+                    return
 
                 except Exception as e:
                     self.after(0, self._on_plot_error, str(e))
+                    return
 
             threading.Thread(target=plot_thread, daemon=True).start()
 
@@ -4538,7 +4532,7 @@ class APGIFrameworkGUI(ctk.CTk):
             messagebox.showerror("Plot Error", f"Failed to plot time series: {e}")
             self.update_status("Ready")
 
-    def _on_time_series_complete(self):
+    def _on_time_series_complete(self) -> None:
         """Handle successful time series plot generation."""
         self.log_to_console("Time series plots generated successfully")
         messagebox.showinfo("Time Series", "Time series plots generated successfully.")
@@ -4547,7 +4541,7 @@ class APGIFrameworkGUI(ctk.CTk):
     # ------------------------------------------------------------------
     # LEGACY TEST METHODS (for compatibility)
     # ------------------------------------------------------------------
-    def run_p3b_test(self):
+    def run_p3b_test(self) -> None:
         """Run the P3b test analysis."""
         self.log_to_console("Running P3b Test...")
         # Simulate test execution
@@ -4569,7 +4563,7 @@ class APGIFrameworkGUI(ctk.CTk):
 
         messagebox.showinfo("P3b Test", "P3b test completed successfully.")
 
-    def run_gamma_plv_test(self):
+    def run_gamma_plv_test(self) -> None:
         """Run the Gamma Phase-Locking Value test analysis."""
         self.log_to_console("Running Gamma PLV Test...")
         self.log_to_console("Gamma PLV Test: Analyzing gamma band synchronization")
@@ -4589,7 +4583,7 @@ class APGIFrameworkGUI(ctk.CTk):
 
         messagebox.showinfo("Gamma PLV Test", "Gamma PLV test completed successfully.")
 
-    def run_eold_test(self):
+    def run_eold_test(self) -> None:
         """Run the EOLD test analysis."""
         self.log_to_console("Running EOLD Test...")
         self.log_to_console("EOLD Test: Evaluating oscillatory dynamics")
@@ -4609,7 +4603,7 @@ class APGIFrameworkGUI(ctk.CTk):
 
         messagebox.showinfo("EOLD Test", "EOLD test completed successfully.")
 
-    def run_p3d_tests(self):
+    def run_p3d_tests(self) -> None:
         """Run the P3d tests analysis."""
         self.log_to_console("Running P3d Tests...")
         self.log_to_console("P3d Tests: Conducting multiple hypothesis testing")
@@ -4632,7 +4626,7 @@ class APGIFrameworkGUI(ctk.CTk):
     # ------------------------------------------------------------------
     # EXPORT METHODS
     # ------------------------------------------------------------------
-    def export_as_png(self):
+    def export_as_png(self) -> None:
         """Export the console content as a PNG file."""
         file_path = filedialog.asksaveasfilename(
             defaultextension=".png",
@@ -4649,7 +4643,7 @@ class APGIFrameworkGUI(ctk.CTk):
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to save PNG: {str(e)}")
 
-    def export_as_pdf(self):
+    def export_as_pdf(self) -> None:
         """Export the console content as a PDF file."""
         file_path = filedialog.asksaveasfilename(
             defaultextension=".pdf",
@@ -4665,7 +4659,7 @@ class APGIFrameworkGUI(ctk.CTk):
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to save PDF: {str(e)}")
 
-    def export_as_csv(self):
+    def export_as_csv(self) -> None:
         """Export the current results as a CSV file using real framework data manager."""
         if not hasattr(self, "current_results") or self.current_results is None:
             messagebox.showerror(
@@ -4755,7 +4749,7 @@ class APGIFrameworkGUI(ctk.CTk):
     # ------------------------------------------------------------------
     # CONFIGURATION METHODS
     # ------------------------------------------------------------------
-    def new_config(self):
+    def new_config(self) -> None:
         """Create a new configuration with default values."""
         # Reset APGI parameters to defaults
         defaults = {
@@ -4790,7 +4784,7 @@ class APGIFrameworkGUI(ctk.CTk):
             "New Configuration", "New configuration created with default values."
         )
 
-    def load_config(self):
+    def load_config(self) -> None:
         """Load configuration with validation and error handling"""
         try:
             file_path = filedialog.askopenfilename(
@@ -4805,30 +4799,33 @@ class APGIFrameworkGUI(ctk.CTk):
                 with open(file_path, "r") as f:
                     config = json.load(f)
             except json.JSONDecodeError as e:
-                self.error_handler.handle_error(
-                    e,
-                    "Configuration Load - JSON Parse",
-                    ErrorSeverity.HIGH,
-                    show_user=True,
-                )
+                if self.error_handler:
+                    self.error_handler.handle_error(
+                        e,
+                        "Configuration Load - JSON Parse",
+                        ErrorSeverity.HIGH,
+                        show_user=True,
+                    )
                 return
             except IOError as e:
-                self.error_handler.handle_error(
-                    e,
-                    "Configuration Load - File Access",
-                    ErrorSeverity.HIGH,
-                    show_user=True,
-                )
+                if self.error_handler:
+                    self.error_handler.handle_error(
+                        e,
+                        "Configuration Load - File Access",
+                        ErrorSeverity.HIGH,
+                        show_user=True,
+                    )
                 return
 
             # Validate configuration structure
             if not isinstance(config, dict):
-                self.error_handler.handle_error(
-                    ValueError("Invalid configuration format"),
-                    "Configuration Load",
-                    ErrorSeverity.HIGH,
-                    show_user=True,
-                )
+                if self.error_handler:
+                    self.error_handler.handle_error(
+                        ValueError("Invalid configuration format"),
+                        "Configuration Load",
+                        ErrorSeverity.HIGH,
+                        show_user=True,
+                    )
                 return
 
             # Load APGI parameters with validation
@@ -4853,7 +4850,7 @@ class APGIFrameworkGUI(ctk.CTk):
                             entry.insert(0, str_value)
                         else:
                             validation_errors.append(
-                                f"{param_name}: {validation_error.message}"
+                                f"{param_name}: {validation_error.message if validation_error else 'Unknown error'}"
                             )
                             # Still load the value but mark as invalid
                             entry.delete(0, tk.END)
@@ -4870,7 +4867,30 @@ class APGIFrameworkGUI(ctk.CTk):
 
             # Handle validation errors
             if validation_errors:
-                self.error_handler.handle_validation_errors(validation_errors)
+                if self.error_handler:
+                    # Convert string errors to ValidationError objects
+                    validation_error_objects = []
+                    for error_str in validation_errors:
+                        if ":" in error_str:
+                            field, message = error_str.split(":", 1)
+                            validation_error_objects.append(
+                                ValidationError(
+                                    field=field.strip(),
+                                    message=message.strip(),
+                                    severity=ErrorSeverity.MEDIUM,
+                                )
+                            )
+                        else:
+                            validation_error_objects.append(
+                                ValidationError(
+                                    field="unknown",
+                                    message=error_str,
+                                    severity=ErrorSeverity.MEDIUM,
+                                )
+                            )
+                    self.error_handler.handle_validation_errors(
+                        validation_error_objects
+                    )
                 messagebox.showwarning(
                     "Configuration Loaded with Warnings",
                     f"Configuration loaded but {len(validation_errors)} parameters have validation issues.",
@@ -4880,11 +4900,12 @@ class APGIFrameworkGUI(ctk.CTk):
                 messagebox.showinfo("Success", "Configuration loaded successfully")
 
         except Exception as e:
-            self.error_handler.handle_error(
-                e, "Configuration Load", ErrorSeverity.CRITICAL, show_user=True
-            )
+            if self.error_handler:
+                self.error_handler.handle_error(
+                    e, "Configuration Load", ErrorSeverity.CRITICAL, show_user=True
+                )
 
-    def save_config(self):
+    def save_config(self) -> None:
         """Save current configuration with validation"""
         try:
             file_path = filedialog.asksaveasfilename(
@@ -4904,13 +4925,14 @@ class APGIFrameworkGUI(ctk.CTk):
             for param_name, entry in self.exp_setup_params.items():
                 all_params[param_name] = entry.get()
 
-            validation_errors = self.config_validator.validate_all_parameters(
+            is_valid, validation_errors = self.config_validator.validate_all_parameters(
                 all_params
             )
 
-            if validation_errors:
+            if not is_valid and validation_errors:
                 # Show validation errors but allow user to continue
-                self.error_handler.handle_validation_errors(validation_errors)
+                if self.error_handler:
+                    self.error_handler.handle_validation_errors(validation_errors)
 
                 response = messagebox.askyesno(
                     "Configuration Validation",
@@ -4930,10 +4952,11 @@ class APGIFrameworkGUI(ctk.CTk):
             # Save APGI parameters with error handling
             for param, entry in self.apgi_params.items():
                 try:
-                    config["apgi_parameters"][param] = float(entry.get())
+                    config["apgi_parameters"][param] = float(entry.get())  # type: ignore[index]
                 except (ValueError, AttributeError) as e:
-                    config["apgi_parameters"][param] = None
-                    self.logger.warning(f"Could not save parameter {param}: {e}")
+                    config["apgi_parameters"][param] = None  # type: ignore[index]
+                    if self.logger:
+                        self.logger.warning(f"Could not save parameter {param}: {e}")  # type: ignore[union-attr]
 
             # Save experimental setup parameters
             for param, entry in self.exp_setup_params.items():
@@ -4941,12 +4964,13 @@ class APGIFrameworkGUI(ctk.CTk):
                     value = entry.get()
                     # Try to convert to float if possible
                     try:
-                        config["experimental_setup"][param] = float(value)
+                        config["experimental_setup"][param] = float(value)  # type: ignore[index]
                     except ValueError:
-                        config["experimental_setup"][param] = value
+                        config["experimental_setup"][param] = value  # type: ignore[index]
                 except AttributeError as e:
-                    config["experimental_setup"][param] = None
-                    self.logger.warning(f"Could not save parameter {param}: {e}")
+                    config["experimental_setup"][param] = None  # type: ignore[index]
+                    if self.logger:
+                        self.logger.warning(f"Could not save parameter {param}: {e}")  # type: ignore[union-attr]
 
             # Save to file with proper error handling
             try:
@@ -4957,19 +4981,21 @@ class APGIFrameworkGUI(ctk.CTk):
                 messagebox.showinfo("Success", "Configuration saved successfully")
 
             except IOError as e:
-                self.error_handler.handle_error(
-                    e, "Configuration Save", ErrorSeverity.HIGH, show_user=True
-                )
+                if self.error_handler:
+                    self.error_handler.handle_error(
+                        e, "Configuration Save", ErrorSeverity.HIGH, show_user=True
+                    )
 
         except Exception as e:
-            self.error_handler.handle_error(
-                e, "Configuration Save", ErrorSeverity.CRITICAL, show_user=True
-            )
+            if self.error_handler:
+                self.error_handler.handle_error(
+                    e, "Configuration Save", ErrorSeverity.CRITICAL, show_user=True
+                )
 
     # ------------------------------------------------------------------
     # BUTTON COMMANDS
     # ------------------------------------------------------------------
-    def load_test_data(self):
+    def load_test_data(self) -> None:
         """Load test data for analysis."""
         self.log_to_console("Loading test data...")
         # Simulate loading test data
@@ -4980,7 +5006,7 @@ class APGIFrameworkGUI(ctk.CTk):
         self.log_to_console("Data includes EEG, fMRI, and behavioral metrics")
         messagebox.showinfo("Test Data", "Test data loaded successfully.")
 
-    def run_consciousness_evaluation(self):
+    def run_consciousness_evaluation(self) -> None:
         """Run consciousness evaluation."""
         self.log_to_console("Running consciousness evaluation...")
         self.log_to_console("Step 1: Processing neural data")
@@ -4999,7 +5025,7 @@ class APGIFrameworkGUI(ctk.CTk):
             "Evaluation", "Consciousness evaluation completed successfully."
         )
 
-    def short_term_apgi_model(self):
+    def short_term_apgi_model(self) -> None:
         """Run short-term APGI model analysis."""
         self.log_to_console("Running Short-Term APGI Model...")
         self.log_to_console("Model parameters: time_window=2s, overlap=50%")
@@ -5007,7 +5033,7 @@ class APGIFrameworkGUI(ctk.CTk):
         self.log_to_console("Short-term APGI analysis completed")
         messagebox.showinfo("APGI Model", "Short-term APGI model analysis completed.")
 
-    def combined_apgi_analysis(self):
+    def combined_apgi_analysis(self) -> None:
         """Run combined APGI analysis."""
         self.log_to_console("Running Combined APGI Analysis...")
         self.log_to_console("Integrating multiple consciousness models")
@@ -5016,7 +5042,7 @@ class APGIFrameworkGUI(ctk.CTk):
         self.log_to_console("Combined APGI analysis completed")
         messagebox.showinfo("APGI Analysis", "Combined APGI analysis completed.")
 
-    def load_test_data_v2(self):
+    def load_test_data_v2(self) -> None:
         """Load test data for experiments."""
         self.log_to_console("Loading test data...")
         try:
@@ -5034,7 +5060,7 @@ class APGIFrameworkGUI(ctk.CTk):
                         self.current_session_data = json.load(f)
                     self.log_to_console(f"Test data loaded from {data_file}")
                     self.log_to_console(
-                        f"Data contains {len(self.current_session_data)} entries"
+                        f"Data contains {len(self.current_session_data) if self.current_session_data else 0} entries"
                     )
                     data_loaded = True
                     break
@@ -5047,14 +5073,14 @@ class APGIFrameworkGUI(ctk.CTk):
                 # Try to load from example results
                 try:
                     # Run a quick example to generate data
-                    from examples.run_primary_falsification_test import (
+                    from examples.run_primary_falsification_test import (  # type: ignore[import-not-found]
                         run_primary_falsification_test_basic,
                     )
 
                     self.log_to_console("Running example test to generate data...")
 
                     # Run in background thread
-                    def generate_example_data():
+                    def generate_example_data() -> None:
                         try:
                             result = run_primary_falsification_test_basic()
                             self.current_session_data = {
@@ -5066,7 +5092,7 @@ class APGIFrameworkGUI(ctk.CTk):
                                     else str(result)
                                 ),
                                 "source": "example_test",
-                            }
+                            }  # type: ignore[assignment]
                             self.after(0, self._on_data_loaded)
                         except Exception:
                             self.after(
@@ -5095,7 +5121,7 @@ class APGIFrameworkGUI(ctk.CTk):
                         "pci_value": np.random.uniform(0.3, 0.7),
                     },
                     "source": "sample_data",
-                }
+                }  # type: ignore[assignment]
                 self.log_to_console("Sample test data generated")
 
             self._on_data_loaded()
@@ -5104,12 +5130,12 @@ class APGIFrameworkGUI(ctk.CTk):
             self.log_to_console(f"Error loading test data: {e}")
             messagebox.showerror("Error", f"Failed to load test data: {e}")
 
-    def _on_data_loaded(self):
+    def _on_data_loaded(self) -> None:
         """Handle successful data loading."""
         self.log_to_console("Test data loaded successfully")
         if hasattr(self, "current_session_data"):
             # Display summary of loaded data
-            if "neural_signatures" in self.current_session_data:
+            if self.current_session_data and "neural_signatures" in self.current_session_data:  # type: ignore[operator]
                 signatures = self.current_session_data["neural_signatures"]
                 self.log_to_console("Neural signatures:")
                 for key, value in signatures.items():
@@ -5117,21 +5143,21 @@ class APGIFrameworkGUI(ctk.CTk):
 
         messagebox.showinfo("Data Loaded", "Test data loaded successfully.")
 
-    def _on_data_error(self, error_msg):
+    def _on_data_error(self, error_msg: str) -> None:
         """Handle data loading error."""
         self.log_to_console(f"Error generating example data: {error_msg}")
         messagebox.showerror(
             "Data Error", f"Failed to generate example data: {error_msg}"
         )
 
-    def run_surprise_dynamics_analysis_v2(self):
+    def run_surprise_dynamics_analysis_v2(self) -> None:
         """Run surprise dynamics analysis using actual framework."""
         self.log_to_console("Running Surprise Dynamics Analysis...")
         self.update_status("Running Surprise Dynamics...")
 
         try:
             # Import actual analysis module
-            from core.analysis.surprise_dynamics import SurpriseDynamicsAnalyzer
+            from core.analysis.surprise_dynamics import SurpriseDynamicsAnalyzer  # type: ignore[attr-defined, import-not-found]
 
             # Check if we have current results to analyze
             if not self.current_results:
@@ -5146,7 +5172,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 return
 
             # Run in separate thread
-            def run_analysis():
+            def run_analysis() -> None:
                 try:
                     analyzer = SurpriseDynamicsAnalyzer()
 
@@ -5210,7 +5236,7 @@ class APGIFrameworkGUI(ctk.CTk):
             messagebox.showerror("Error", f"Failed to run surprise dynamics: {e}")
             self.update_status("Ready")
 
-    def run_disorder_classification_v2(self):
+    def run_disorder_classification_v2(self) -> None:
         """Run disorder classification using actual clinical framework."""
         self.log_to_console("Running Disorder Classification...")
         self.update_status("Running Disorder Classification...")
@@ -5229,7 +5255,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 return
 
             # Run in separate thread
-            def run_classification():
+            def run_classification() -> None:
                 try:
                     # Use the disorder classifier if available
                     if self.disorder_classifier:
@@ -5270,6 +5296,7 @@ class APGIFrameworkGUI(ctk.CTk):
                             "Disorder Classification",
                             classification_results,
                         )
+                        return
                     else:
                         # Fallback analysis
                         self.log_to_console(
@@ -5288,11 +5315,13 @@ class APGIFrameworkGUI(ctk.CTk):
                             "Disorder Classification",
                             "Basic analysis",
                         )
+                        return
 
                 except Exception as e:
                     self.after(
                         0, self._on_test_error, "Disorder Classification", str(e)
                     )
+                    return
 
             threading.Thread(target=run_classification, daemon=True).start()
 
@@ -5301,7 +5330,7 @@ class APGIFrameworkGUI(ctk.CTk):
             messagebox.showerror("Error", f"Failed to run disorder classification: {e}")
             self.update_status("Ready")
 
-    def run_clinical_parameter_extraction_v2(self):
+    def run_clinical_parameter_extraction_v2(self) -> None:
         """Run clinical parameter extraction using actual framework."""
         self.log_to_console("Running Clinical Parameter Extraction...")
         self.update_status("Running Clinical Extraction...")
@@ -5320,7 +5349,7 @@ class APGIFrameworkGUI(ctk.CTk):
                 return
 
             # Run in separate thread
-            def run_extraction():
+            def run_extraction() -> None:
                 try:
                     # Use clinical extractor if available
                     if self.clinical_extractor:
@@ -5359,6 +5388,7 @@ class APGIFrameworkGUI(ctk.CTk):
                             "Clinical Parameter Extraction",
                             extraction_results,
                         )
+                        return
                     else:
                         # Fallback analysis
                         self.log_to_console(
@@ -5392,7 +5422,7 @@ class APGIFrameworkGUI(ctk.CTk):
             )
             self.update_status("Ready")
 
-    def run_patient_profile_analysis_v2(self):
+    def run_patient_profile_analysis_v2(self) -> None:
         """Run patient profile analysis."""
         self.log_to_console("Running Patient Profile Analysis...")
         self.update_status("Running Patient Profile...")
@@ -5440,7 +5470,7 @@ class APGIFrameworkGUI(ctk.CTk):
             )
             self.update_status("Ready")
 
-    def show_help(self):
+    def show_help(self) -> None:
         """Show help information."""
         help_text = """
 API Framework GUI Help:
@@ -5480,17 +5510,17 @@ For detailed documentation, please refer to the user manual.
     # ------------------------------------------------------------------
     # UTILITY METHODS
     # ------------------------------------------------------------------
-    def get_json_files(self):
+    def get_json_files(self) -> List[str]:
         """Get all JSON files in data folder."""
         if os.path.exists(self.data_folder):
             return [f for f in os.listdir(self.data_folder) if f.endswith(".json")]
         return []
 
-    def get_python_files(self):
+    def get_python_files(self) -> List[str]:
         """Get all Python files in current directory."""
         return [f for f in os.listdir(".") if f.endswith(".py")]
 
-    def execute_script(self, script_name):
+    def execute_script(self, script_name: str) -> None:
         """Execute a Python script."""
         # Check for known experiment scripts
         experiment_scripts = {
@@ -5545,12 +5575,12 @@ For detailed documentation, please refer to the user manual.
                 )
 
                 # Start a thread to monitor output
-                def monitor_process():
+                def monitor_process() -> None:
                     try:
                         stdout, stderr = process.communicate()
 
                         # Update GUI from main thread
-                        def update_gui():
+                        def update_gui() -> None:
                             if stdout:
                                 self.log_to_console(f"Output:\n{stdout}")
                             if stderr:

@@ -114,10 +114,8 @@ class Test{class_name}:
         for module_path in modules:
             try:
                 module_analysis = self._analyze_module(module_path)
-                if self.codebase_analysis is None:
-                    self.codebase_analysis = {}
                 if not isinstance(self.codebase_analysis, dict):
-                    self.codebase_analysis = {}
+                    self.codebase_analysis = {}  # type: ignore[unreachable]
                 self.codebase_analysis.setdefault("modules", {})[
                     str(module_path)
                 ] = module_analysis
@@ -135,6 +133,7 @@ class Test{class_name}:
         )
 
         return self.codebase_analysis
+        # Unreachable code suppressed
 
     def _discover_python_modules(self, root_path: Path) -> List[Path]:
         """Discover all Python modules in the codebase."""

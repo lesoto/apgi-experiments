@@ -12,6 +12,7 @@ import warnings
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
+
 from apgi_framework.logging.standardized_logging import get_logger
 
 logger = get_logger(__name__)
@@ -42,9 +43,9 @@ class PathManager:
         # Common directories
         self._setup_common_directories()
 
-    def _setup_common_directories(self):
+    def _setup_common_directories(self) -> None:
         """Setup common framework directories."""
-        self.dirs = {
+        self.dirs: Dict[str, Path] = {
             "root": self.base_path,
             "data": self.base_path / "data",
             "results": self.base_path / "results",
@@ -366,7 +367,7 @@ class PathManager:
         return temp_dir
 
     @contextmanager
-    def temp_file(self, suffix: str = "", prefix: str = "apgi_"):
+    def temp_file(self, suffix: str = "", prefix: str = "apgi_") -> Any:
         """
         Context manager for temporary file.
 
@@ -393,7 +394,7 @@ class PathManager:
                 temp_file_path.unlink()
 
     @contextmanager
-    def temp_dir_context(self, prefix: str = "apgi_temp_"):
+    def temp_dir_context(self, prefix: str = "apgi_temp_") -> Any:
         """
         Context manager for temporary directory.
 
@@ -471,7 +472,7 @@ class PathManager:
         if create_dirs:
             dest_path.parent.mkdir(parents=True, exist_ok=True)
 
-        return shutil.copy2(source_path, dest_path)
+        return Path(shutil.copy2(source_path, dest_path))
 
     def move_file(
         self, src: Union[str, Path], dst: Union[str, Path], create_dirs: bool = True
@@ -496,7 +497,7 @@ class PathManager:
         if create_dirs:
             dest_path.parent.mkdir(parents=True, exist_ok=True)
 
-        return shutil.move(str(source_path), str(dest_path))
+        return Path(shutil.move(str(source_path), str(dest_path)))
 
     def get_platform_info(self) -> Dict[str, Any]:
         """
@@ -533,7 +534,7 @@ def get_path_manager(base_path: Optional[Union[str, Path]] = None) -> PathManage
     """
     global _default_path_manager
     with _path_lock:
-        if _default_path_manager is None or base_path is not None:
+        if _default_path_manager is None:
             _default_path_manager = PathManager(base_path)
     return _default_path_manager
 
@@ -559,7 +560,7 @@ def safe_filename(filename: str, max_length: int = 255) -> str:
 
 
 # Migration utilities for existing code
-def migrate_from_os_path():
+def migrate_from_os_path() -> Dict[str, str]:
     """
     Provide guidance for migrating from os.path to pathlib.
 
@@ -585,8 +586,8 @@ if __name__ == "__main__":
     # Example usage
     pm = PathManager()
 
-    logger.info("Platform info:", pm.get_platform_info())
-    logger.info("Common directories:", pm.ensure_common_dirs())
+    logger.info(f"Platform info: {pm.get_platform_info()}")
+    logger.info(f"Common directories: {pm.ensure_common_dirs()}")
 
     # Test file operations
     with pm.temp_file(suffix=".txt") as temp_file:

@@ -14,18 +14,15 @@ from apgi_framework.falsification import (
 
 # PrimaryFalsificationTest might be missing or None, so we'll mock it if not available
 try:
-    from apgi_framework.falsification import PrimaryFalsificationTest
+    from apgi_framework.falsification import (
+        PrimaryFalsificationTest as _ImportedPrimaryFalsificationTest,
+    )
 
-    if PrimaryFalsificationTest is None:
+    if _ImportedPrimaryFalsificationTest is None:
         raise ImportError
+    PrimaryFalsificationTest = _ImportedPrimaryFalsificationTest
 except ImportError:
-
-    class PrimaryFalsificationTest:
-        def run_falsification_test(self, n_trials=100, n_participants=20):
-            return {"falsified": False}
-
-        def run_test(self, n_trials=100, n_participants=20):
-            return {"falsified": False}
+    pass
 
 
 class TestPrimaryFalsificationTest:

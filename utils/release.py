@@ -517,7 +517,8 @@ Thank you to all contributors who made this release possible!
                 import toml  # type: ignore
 
                 config = toml.load(pyproject_file)
-                return config.get("project", {}).get("version", "0.1.0")
+                version = config.get("project", {}).get("version", "0.1.0")
+                return str(version)
             except ImportError:
                 pass
 

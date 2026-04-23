@@ -8,13 +8,14 @@ updates for monitoring experiments and system status.
 import asyncio
 import json
 import time
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 try:
-    import websockets
     import threading
+
+    import websockets
 
     WEBSOCKETS_AVAILABLE = True
 except ImportError:
@@ -42,7 +43,7 @@ class MonitoringData:
     value: Any
     metadata: Optional[Dict[str, Any]] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.metadata is None:
             self.metadata = {}
 
@@ -78,14 +79,14 @@ class RealtimeDataStreamer:
         self.clients: set = set()
         self.data_queue: asyncio.Queue = asyncio.Queue()
         self.is_running = False
-        self.server = None
+        self.server: Optional[Any] = None
 
         # Data subscribers
         self.subscribers: Dict[str, set] = {}
 
         logger.info(f"RealtimeDataStreamer initialized on port {port}")
 
-    async def register_client(self, websocket, path):
+    async def register_client(self, websocket: Any) -> None:
         """Register a new WebSocket client."""
         self.clients.add(websocket)
         logger.info(f"Client connected: {websocket.remote_address}")
@@ -116,7 +117,7 @@ class RealtimeDataStreamer:
         finally:
             self.clients.discard(websocket)
 
-    async def handle_client_message(self, websocket, data: Dict[str, Any]):
+    async def handle_client_message(self, websocket: Any, data: Dict[str, Any]) -> None:
         """Handle incoming messages from clients."""
         message_type = data.get("type")
 
@@ -144,14 +145,14 @@ class RealtimeDataStreamer:
                 {"type": "unsubscription_confirmed", "data_types": data_types},
             )
 
-    async def send_to_client(self, websocket, data: Dict[str, Any]):
+    async def send_to_client(self, websocket: Any, data: Dict[str, Any]) -> None:
         """Send data to a specific client."""
         try:
             await websocket.send(json.dumps(data))
         except websockets.exceptions.ConnectionClosed:
             self.clients.discard(websocket)
 
-    async def broadcast_data(self, data: MonitoringData):
+    async def broadcast_data(self, data: MonitoringData) -> None:
         """Broadcast monitoring data to all subscribed clients."""
         message = {
             "type": "data",
@@ -179,7 +180,7 @@ class RealtimeDataStreamer:
         # Remove disconnected clients
         self.clients -= disconnected_clients
 
-    async def broadcast_system_status(self, status: SystemStatus):
+    async def broadcast_system_status(self, status: SystemStatus) -> None:
         """Broadcast system status to all clients."""
         message = {
             "type": "system_status",
@@ -196,7 +197,9 @@ class RealtimeDataStreamer:
 
         self.clients -= disconnected_clients
 
-    async def start_server(self, max_retries: int = 5, initial_delay: float = 1.0):
+    async def start_server(
+        self, max_retries: int = 5, initial_delay: float = 1.0
+    ) -> bool:
         """Start the WebSocket server with retry logic and exponential backoff."""
         if not WEBSOCKETS_AVAILABLE:
             logger.error("WebSockets not available. Install websockets package.")
@@ -228,7 +231,7 @@ class RealtimeDataStreamer:
 
         return False
 
-    async def stop_server(self):
+    async def stop_server(self) -> None:
         """Stop the WebSocket server."""
         if self.server:
             self.server.close()
@@ -236,7 +239,7 @@ class RealtimeDataStreamer:
             self.is_running = False
             logger.info("Real-time monitoring server stopped")
 
-    def add_monitoring_data(self, data: MonitoringData):
+    def add_monitoring_data(self, data: MonitoringData) -> None:
         """Add monitoring data to the queue for broadcasting."""
         if self.is_running:
             try:
@@ -257,7 +260,9 @@ class RealtimeMonitor:
     with automatic data collection and broadcasting.
     """
 
-    def __init__(self, enable_websocket: bool = True, websocket_port: int = 8765):
+    def __init__(
+        self, enable_websocket: bool = True, websocket_port: int = 8765
+    ) -> None:
         """
         Initialize real-time monitor.
 
@@ -302,7 +307,7 @@ class RealtimeMonitor:
 
         logger.info("RealtimeMonitor initialized")
 
-    async def start(self):
+    async def start(self) -> bool:
         """Start the real-time monitoring system."""
         if self.streamer:
             success = await self.streamer.start_server()
@@ -316,7 +321,7 @@ class RealtimeMonitor:
         logger.info("Real-time monitoring started")
         return True
 
-    async def stop(self):
+    async def stop(self) -> None:
         """Stop the real-time monitoring system."""
         if self.streamer:
             await self.streamer.stop_server()
@@ -329,7 +334,7 @@ class RealtimeMonitor:
         data_type: str,
         value: Any,
         metadata: Optional[Dict[str, Any]] = None,
-    ):
+    ) -> None:
         """
         Log experiment data for real-time monitoring.
 
@@ -360,7 +365,7 @@ class RealtimeMonitor:
 
         logger.debug(f"Logged experiment data: {experiment_id} - {data_type} = {value}")
 
-    def log_system_event(self, event_type: str, details: Dict[str, Any]):
+    def log_system_event(self, event_type: str, details: Dict[str, Any]) -> None:
         """
         Log system event for monitoring.
 
@@ -375,7 +380,7 @@ class RealtimeMonitor:
             metadata={"source": "system_monitor"},
         )
 
-    async def _monitor_system(self):
+    async def _monitor_system(self) -> None:
         """Monitor system resources and status with retry logic for network failures."""
         try:
             import psutil
@@ -396,9 +401,9 @@ class RealtimeMonitor:
                         cpu_usage=cpu_percent,
                         memory_usage=memory.percent,
                         disk_usage=disk.percent,
-                        active_connections=len(self.streamer.clients)
-                        if self.streamer
-                        else 0,
+                        active_connections=(
+                            len(self.streamer.clients) if self.streamer else 0
+                        ),
                         experiment_count=len(
                             set(
                                 d.experiment_id
@@ -450,11 +455,12 @@ class RealtimeMonitor:
 
     async def _broadcast_system_status_with_retry(
         self, status: SystemStatus, max_retries: int = 3
-    ):
+    ) -> None:
         """Broadcast system status with retry logic."""
         for attempt in range(max_retries):
             try:
-                await self.streamer.broadcast_system_status(status)
+                if self.streamer is not None:
+                    await self.streamer.broadcast_system_status(status)
                 return
             except (OSError, ConnectionError, asyncio.TimeoutError) as e:
                 if attempt == max_retries - 1:
@@ -502,7 +508,7 @@ class RealtimeMonitor:
         """Get current system status."""
         return self.system_status
 
-    def export_data(self, file_path: Path, experiment_id: Optional[str] = None):
+    def export_data(self, file_path: Path, experiment_id: Optional[str] = None) -> None:
         """
         Export monitoring data to file.
 
@@ -547,7 +553,7 @@ def log_experiment_data(
     data_type: str,
     value: Any,
     metadata: Optional[Dict[str, Any]] = None,
-):
+) -> None:
     """
     Convenience function to log experiment data.
 
@@ -561,7 +567,7 @@ def log_experiment_data(
     monitor.log_experiment_data(experiment_id, data_type, value, metadata)
 
 
-def log_system_event(event_type: str, details: Dict[str, Any]):
+def log_system_event(event_type: str, details: Dict[str, Any]) -> None:
     """
     Convenience function to log system events.
 
@@ -590,10 +596,11 @@ async def start_monitoring(
     if _global_monitor is None:
         _global_monitor = RealtimeMonitor(enable_websocket, websocket_port)
 
-    return await _global_monitor.start()
+    result = await _global_monitor.start()
+    return bool(result)
 
 
-async def stop_monitoring():
+async def stop_monitoring() -> None:
     """Stop the global monitoring system."""
     global _global_monitor
     if _global_monitor:

@@ -4,6 +4,7 @@ Comprehensive tests for apgi_framework.adaptive.task_control module.
 Covers: TaskState, ResponseType, TimingEvent, ResponseData, PrecisionTimer,
 ResponseCollector, TaskStateMachine, SessionConfiguration, SessionManager
 """
+
 from datetime import datetime
 from unittest.mock import MagicMock, patch
 
@@ -19,7 +20,6 @@ from apgi_framework.adaptive.task_control import (
     SessionManager,
     TaskStateMachine,
 )
-
 
 # --- Enums ---
 

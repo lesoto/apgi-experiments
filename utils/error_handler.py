@@ -12,7 +12,7 @@ import traceback
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Tuple, Type
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
 apgi_logger: Any = None
 
@@ -23,7 +23,7 @@ except ImportError:
     import logging
 
     class MockAPGILogger:
-        def __init__(self):
+        def __init__(self) -> None:
             self.logger = logging.getLogger(__name__)
 
     apgi_logger = MockAPGILogger()
@@ -150,7 +150,9 @@ class APGIError(Exception):
 class ValidationError(APGIError):
     """Data validation related errors"""
 
-    def __init__(self, message: str, data_field: Optional[str] = None, **kwargs):
+    def __init__(
+        self, message: str, data_field: Optional[str] = None, **kwargs: Any
+    ) -> None:
         if data_field:
             message = f"Validation failed for field '{data_field}': {message}"
         super().__init__(message=message, category=ErrorCategory.VALIDATION, **kwargs)
@@ -159,7 +161,9 @@ class ValidationError(APGIError):
 class ConfigurationError(APGIError):
     """Configuration related errors"""
 
-    def __init__(self, message: str, config_file: Optional[str] = None, **kwargs):
+    def __init__(
+        self, message: str, config_file: Optional[str] = None, **kwargs: Any
+    ) -> None:
         if config_file:
             message = f"Configuration error in '{config_file}': {message}"
         super().__init__(
@@ -170,7 +174,9 @@ class ConfigurationError(APGIError):
 class ProtocolError(APGIError):
     """Falsification protocol related errors"""
 
-    def __init__(self, message: str, protocol_name: Optional[str] = None, **kwargs):
+    def __init__(
+        self, message: str, protocol_name: Optional[str] = None, **kwargs: Any
+    ) -> None:
         if protocol_name:
             message = f"Protocol '{protocol_name}' error: {message}"
         super().__init__(message=message, category=ErrorCategory.SIMULATION, **kwargs)
@@ -179,7 +185,9 @@ class ProtocolError(APGIError):
 class DataError(APGIError):
     """Data loading/processing related errors"""
 
-    def __init__(self, message: str, data_source: Optional[str] = None, **kwargs):
+    def __init__(
+        self, message: str, data_source: Optional[str] = None, **kwargs: Any
+    ) -> None:
         if data_source:
             message = f"Data error from '{data_source}': {message}"
         super().__init__(message=message, category=ErrorCategory.DATA, **kwargs)
@@ -188,7 +196,9 @@ class DataError(APGIError):
 class ImportWarning(APGIError):
     """Import/dependency related warnings"""
 
-    def __init__(self, message: str, package: Optional[str] = None, **kwargs):
+    def __init__(
+        self, message: str, package: Optional[str] = None, **kwargs: Any
+    ) -> None:
         if package:
             message = f"Import warning for package '{package}': {message}"
         super().__init__(message=message, severity=ErrorSeverity.LOW, **kwargs)
@@ -336,12 +346,12 @@ class ErrorHandler:
         },
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.error_counts: Dict[ErrorCategory, int] = {}
         self.error_handlers: Dict[ErrorCategory, Callable] = {}
 
     def format_error(
-        self, category: ErrorCategory, severity: ErrorSeverity, code: str, **kwargs
+        self, category: ErrorCategory, severity: ErrorSeverity, code: str, **kwargs: Any
     ) -> str:
         """Format error message using templates."""
         try:
@@ -356,9 +366,9 @@ class ErrorHandler:
         severity: ErrorSeverity,
         code: str,
         details: Optional[str] = None,
-        suggestions: Optional[list] = None,
+        suggestions: Optional[List[str]] = None,
         user_action: Optional[str] = None,
-        **format_kwargs,
+        **format_kwargs: Any,
     ) -> ErrorInfo:
         """Create structured error information."""
         message = self.format_error(category, severity, code, **format_kwargs)
@@ -384,7 +394,7 @@ class ErrorHandler:
         details: Optional[str] = None,
         suggestions: Optional[List[str]] = None,
         user_action: Optional[str] = None,
-        **format_kwargs,
+        **format_kwargs: Any,
     ) -> APGIError:
         """Handle and log error with standard formatting."""
         # Create error info
@@ -481,7 +491,7 @@ class ErrorHandler:
 
     def log_error(
         self,
-        message: str,
+        message: Union[str, Exception],
         level: str = "error",
         context: Optional[Dict[str, Any]] = None,
     ) -> None:
@@ -517,12 +527,12 @@ def handle_errors(
     severity: ErrorSeverity = ErrorSeverity.MEDIUM,
     code: str = "UNHANDLED_EXCEPTION",
     reraise: bool = True,
-):
+) -> Callable[[Any], Any]:
     """Decorator for automatic error handling."""
 
-    def decorator(func):
+    def decorator(func: Any) -> Any:
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             try:
                 return func(*args, **kwargs)
             except APGIError:
@@ -550,49 +560,49 @@ def handle_errors(
 
 
 # Convenience functions for common error types
-def config_error(code: str, **kwargs) -> APGIError:
+def config_error(code: str, **kwargs: Any) -> APGIError:
     """Create configuration error."""
     return error_handler.handle_error(
         ErrorCategory.CONFIGURATION, ErrorSeverity.HIGH, code, **kwargs
     )
 
 
-def validation_error(code: str, **kwargs) -> APGIError:
+def validation_error(code: str, **kwargs: Any) -> APGIError:
     """Create validation error."""
     return error_handler.handle_error(
         ErrorCategory.VALIDATION, ErrorSeverity.HIGH, code, **kwargs
     )
 
 
-def simulation_error(code: str, **kwargs) -> APGIError:
+def simulation_error(code: str, **kwargs: Any) -> APGIError:
     """Create simulation error."""
     return error_handler.handle_error(
         ErrorCategory.SIMULATION, ErrorSeverity.HIGH, code, **kwargs
     )
 
 
-def data_error(code: str, **kwargs) -> APGIError:
+def data_error(code: str, **kwargs: Any) -> APGIError:
     """Create data error."""
     return error_handler.handle_error(
         ErrorCategory.DATA, ErrorSeverity.HIGH, code, **kwargs
     )
 
 
-def io_error(code: str, **kwargs) -> APGIError:
+def io_error(code: str, **kwargs: Any) -> APGIError:
     """Create I/O error."""
     return error_handler.handle_error(
         ErrorCategory.IO, ErrorSeverity.HIGH, code, **kwargs
     )
 
 
-def user_input_error(code: str, **kwargs) -> APGIError:
+def user_input_error(code: str, **kwargs: Any) -> APGIError:
     """Create user input error."""
     return error_handler.handle_error(
         ErrorCategory.USER_INPUT, ErrorSeverity.MEDIUM, code, **kwargs
     )
 
 
-def critical_error(code: str, **kwargs) -> APGIError:
+def critical_error(code: str, **kwargs: Any) -> APGIError:
     """Create critical error."""
     return error_handler.handle_error(
         ErrorCategory.RUNTIME, ErrorSeverity.CRITICAL, code, **kwargs
@@ -665,7 +675,7 @@ def get_error_summary() -> Dict[str, Any]:
 
 def handle_error(
     error: Exception,
-    logger=None,
+    logger: Any = None,
     reraise: bool = False,
     context: Optional[Dict[str, Any]] = None,
 ) -> Optional[APGIError]:
@@ -719,12 +729,12 @@ def handle_error(
 
 def safe_execute(
     func: Callable,
-    *args,
+    *args: Any,
     error_message: str = "Operation failed",
-    error_type=None,
+    error_type: Any = None,
     default_return: Any = None,
-    logger=None,
-    **kwargs,
+    logger: Any = None,
+    **kwargs: Any,
 ) -> Any:
     """
     Safely execute a function with standardized error handling
@@ -761,10 +771,10 @@ def safe_execute(
 
 
 def error_boundary(
-    error_type=None,
+    error_type: Any = None,
     default_return: Any = None,
-    logger=None,
-):
+    logger: Any = None,
+) -> Callable[[Any], Any]:
     """
     Decorator for error boundary around functions
 
@@ -776,7 +786,7 @@ def error_boundary(
 
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             return safe_execute(
                 func,
                 *args,
@@ -797,7 +807,7 @@ def retry_on_error(
     delay: float = 1.0,
     backoff: float = 2.0,
     exceptions: Tuple[Type[Exception], ...] = (Exception,),
-):
+) -> Callable[[Any], Any]:
     """
     Decorator for retrying functions on specific exceptions
 
@@ -810,8 +820,8 @@ def retry_on_error(
 
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            last_exception = None
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            last_exception: Optional[Exception] = None
             current_delay = delay
             logger = apgi_logger.logger
 
@@ -834,6 +844,8 @@ def retry_on_error(
                             f"All {max_retries + 1} attempts failed for {func.__name__}"
                         )
 
+            # This should never be None since we only get here after catching an exception
+            assert last_exception is not None
             raise last_exception
 
         return wrapper
@@ -855,7 +867,7 @@ ERROR_MESSAGES = {
 }
 
 
-def format_error_message(template_key: str, **kwargs) -> str:
+def format_error_message(template_key: str, **kwargs: Any) -> str:
     """Format a standardized error message"""
     template = ERROR_MESSAGES.get(template_key, "Unknown error: {details}")
     try:

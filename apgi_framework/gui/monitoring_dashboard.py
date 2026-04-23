@@ -4,18 +4,18 @@ Real-time multi-modal monitoring dashboard.
 Provides live monitoring of EEG, pupillometry, cardiac signals, and parameter estimates.
 """
 
-import os
-import sys
 import asyncio
 import json
+import os
+import sys
 import threading
 import time
 import tkinter as tk
+from collections import deque
+from dataclasses import asdict
 from datetime import datetime
 from tkinter import ttk
 from typing import Any, Dict, List, Optional
-from dataclasses import asdict
-from collections import deque
 
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -29,9 +29,9 @@ try:
     from .realtime_data_stream import get_streamer
 except ImportError:
     # Handle relative import when run directly
+    from apgi_framework.gui.realtime_data_stream import get_streamer
     from apgi_framework.logging.standardized_logging import get_logger
     from apgi_framework.neural.eeg_interface import EEGInterface
-    from apgi_framework.gui.realtime_data_stream import get_streamer
 
 # Check for websockets library
 try:
@@ -52,7 +52,7 @@ class LiveEEGMonitor:
     Monitors EEG data quality, artifact rates, and neural signatures.
     """
 
-    def __init__(self, parent_frame: tk.Frame):
+    def __init__(self, parent_frame: tk.Widget):
         """
         Initialize EEG monitor.
 
@@ -134,9 +134,9 @@ class LiveEEGMonitor:
         self.signal_ax.set_ylim(-100, 100)  # μV range
 
         # Embed signal figure
-        self.signal_canvas = FigureCanvasTkAgg(self.signal_fig, signal_frame)
-        self.signal_canvas.draw()
-        self.signal_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+        self.signal_canvas = FigureCanvasTkAgg(self.signal_fig, signal_frame)  # type: ignore[no-untyped-call]
+        self.signal_canvas.draw()  # type: ignore[no-untyped-call]
+        self.signal_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)  # type: ignore[no-untyped-call]
 
         # Bottom section - neural signatures
         signature_frame = ttk.LabelFrame(
@@ -208,9 +208,7 @@ class LiveEEGMonitor:
         artifact_color = (
             "green"
             if artifact_rate < 0.2
-            else "orange"
-            if artifact_rate < 0.4
-            else "red"
+            else "orange" if artifact_rate < 0.4 else "red"
         )
         self.artifact_label.config(text=artifact_text, foreground=artifact_color)
 
@@ -302,7 +300,7 @@ class LiveEEGMonitor:
 
         # Stop EEG streaming
         if self.eeg_interface:
-            self.eeg_interface.stop_streaming()
+            self.eeg_interface.stop_streaming()  # type: ignore[no-untyped-call]
             self.eeg_interface = None
 
         # Wait for update thread to finish
@@ -375,7 +373,7 @@ class LiveEEGMonitor:
                     )
 
                 # Redraw canvas
-                self.signal_canvas.draw()
+                self.signal_canvas.draw()  # type: ignore[no-untyped-call]
 
             # Update display at 10 Hz
             time.sleep(0.1)
@@ -396,7 +394,7 @@ class PupillometryMonitor:
     Displays pupil diameter, blink rate, and data quality.
     """
 
-    def __init__(self, parent_frame: tk.Frame):
+    def __init__(self, parent_frame: tk.Widget):
         """
         Initialize pupillometry monitor.
 
@@ -477,9 +475,9 @@ class PupillometryMonitor:
         self.ax2.set_ylim(0, 30)  # Blink rate range (bpm)
 
         # Embed figure
-        self.canvas = FigureCanvasTkAgg(self.fig, viz_frame)
-        self.canvas.draw()
-        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+        self.canvas = FigureCanvasTkAgg(self.fig, viz_frame)  # type: ignore[no-untyped-call]
+        self.canvas.draw()  # type: ignore[no-untyped-call]
+        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)  # type: ignore[no-untyped-call]
 
         # Bottom section - measurements
         measurements_frame = ttk.LabelFrame(
@@ -523,9 +521,7 @@ class PupillometryMonitor:
         quality_color = (
             "green"
             if quality_score >= 0.8
-            else "orange"
-            if quality_score >= 0.6
-            else "red"
+            else "orange" if quality_score >= 0.6 else "red"
         )
         self.quality_label.config(text=quality_text, foreground=quality_color)
 
@@ -560,7 +556,7 @@ class PupillometryMonitor:
 
         self._update_plot()
 
-    def _update_plot(self):
+    def _update_plot(self) -> None:
         """Update the matplotlib plot with current data."""
         if len(self.time_data) > 0:
             # Update line data
@@ -589,7 +585,7 @@ class PupillometryMonitor:
                 self.ax2.set_ylim(y_min - margin, y_max + margin)
 
             # Redraw canvas
-            self.canvas.draw()
+            self.canvas.draw()  # type: ignore[no-untyped-call]
 
     def reset(self) -> None:
         """Reset monitor display."""
@@ -607,7 +603,7 @@ class CardiacMonitor:
     Displays heart rate, HRV, and R-peak detection quality.
     """
 
-    def __init__(self, parent_frame: tk.Frame):
+    def __init__(self, parent_frame: tk.Widget):
         """
         Initialize cardiac monitor.
 
@@ -686,9 +682,9 @@ class CardiacMonitor:
         self.ax2.set_ylim(10, 100)  # HRV range (ms)
 
         # Embed figure
-        self.canvas = FigureCanvasTkAgg(self.fig, viz_frame)
-        self.canvas.draw()
-        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+        self.canvas = FigureCanvasTkAgg(self.fig, viz_frame)  # type: ignore[no-untyped-call]
+        self.canvas.draw()  # type: ignore[no-untyped-call]
+        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)  # type: ignore[no-untyped-call]
 
         # Bottom section - measurements
         measurements_frame = ttk.LabelFrame(
@@ -732,9 +728,7 @@ class CardiacMonitor:
         quality_color = (
             "green"
             if quality_score >= 0.8
-            else "orange"
-            if quality_score >= 0.6
-            else "red"
+            else "orange" if quality_score >= 0.6 else "red"
         )
         self.quality_label.config(text=quality_text, foreground=quality_color)
 
@@ -743,9 +737,7 @@ class CardiacMonitor:
         rpeak_color = (
             "green"
             if rpeak_confidence >= 0.9
-            else "orange"
-            if rpeak_confidence >= 0.7
-            else "red"
+            else "orange" if rpeak_confidence >= 0.7 else "red"
         )
         self.rpeak_label.config(text=rpeak_text, foreground=rpeak_color)
 
@@ -773,7 +765,7 @@ class CardiacMonitor:
 
         self._update_plot()
 
-    def _update_plot(self):
+    def _update_plot(self) -> None:
         """Update the matplotlib plot with current data."""
         if len(self.time_data) > 0:
             # Update line data
@@ -798,7 +790,7 @@ class CardiacMonitor:
                 self.ax2.set_ylim(y_min - margin, y_max + margin)
 
             # Redraw canvas
-            self.canvas.draw()
+            self.canvas.draw()  # type: ignore[no-untyped-call]
 
     def reset(self) -> None:
         """Reset monitor display."""
@@ -816,7 +808,7 @@ class RealTimeParameterEstimateUpdater:
     Displays ongoing Bayesian parameter estimates as data accumulates.
     """
 
-    def __init__(self, parent_frame: tk.Frame):
+    def __init__(self, parent_frame: tk.Widget):
         """
         Initialize parameter estimate updater.
 
@@ -898,9 +890,9 @@ class RealTimeParameterEstimateUpdater:
         self.ax.set_ylim(-0.5, 2.0)
 
         # Embed matplotlib figure in tkinter
-        self.canvas = FigureCanvasTkAgg(self.fig, viz_frame)
-        self.canvas.draw()
-        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+        self.canvas: Any = FigureCanvasTkAgg(self.fig, viz_frame)  # type: ignore[no-untyped-call]
+        self.canvas.draw()  # type: ignore[no-untyped-call]
+        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)  # type: ignore[no-untyped-call]
 
         # Start time for x-axis
         self.start_time = time.time()
@@ -972,7 +964,7 @@ class RealTimeParameterEstimateUpdater:
         self.beta_data.append(mean)
         self._update_plot()
 
-    def _update_plot(self):
+    def _update_plot(self) -> None:
         """Update the matplotlib plot with current data."""
         if len(self.time_data) > 0:
             # Ensure all data arrays have the same length
@@ -1037,7 +1029,7 @@ class QualityAlertSystem:
     Monitors all data streams and generates alerts for quality issues.
     """
 
-    def __init__(self, parent_frame: tk.Frame):
+    def __init__(self, parent_frame: tk.Widget):
         """
         Initialize quality alert system.
 
@@ -1247,9 +1239,9 @@ class MultiModalMonitoringDashboard:
 
         logger.info("MultiModalMonitoringDashboard initialized")
 
-    def start_streaming(self):
+    def start_streaming(self) -> None:
         """Start real-time data streaming."""
-        if self.streamer.start_server():
+        if self.streamer.start_server():  # type: ignore[no-untyped-call]
             logger.info("Real-time data streaming started")
             # Start data reception thread
             self.streaming_thread = threading.Thread(
@@ -1259,7 +1251,7 @@ class MultiModalMonitoringDashboard:
         else:
             logger.error("Failed to start real-time streaming")
 
-    def _receive_stream_data(self):
+    def _receive_stream_data(self) -> None:
         """Receive and process streaming data via WebSocket client."""
         if not WEBSOCKETS_AVAILABLE:
             logger.warning("WebSocket library not available, using simulated data")
@@ -1279,7 +1271,7 @@ class MultiModalMonitoringDashboard:
         finally:
             loop.close()
 
-    async def _websocket_client_loop(self):
+    async def _websocket_client_loop(self) -> None:
         """WebSocket client loop to receive data."""
         uri = f"ws://{self.streamer.host}:{self.streamer.port}"
 
@@ -1308,7 +1300,7 @@ class MultiModalMonitoringDashboard:
             logger.error(f"WebSocket connection error: {e}")
             raise
 
-    def _process_websocket_data(self, data: Dict[str, Any]):
+    def _process_websocket_data(self, data: Dict[str, Any]) -> None:
         """Process incoming WebSocket data and update monitors."""
         data_type = data.get("data_type")
         stream_data = data.get("data", {})
@@ -1322,7 +1314,7 @@ class MultiModalMonitoringDashboard:
         elif data_type == "parameters":
             self._update_parameters_from_stream(stream_data)
 
-    def _update_eeg_from_stream(self, data: Dict[str, Any]):
+    def _update_eeg_from_stream(self, data: Dict[str, Any]) -> None:
         """Update EEG monitor from streaming data."""
         quality_score = data.get("quality_score", 0.0)
         artifact_rate = data.get("artifact_rate", 0.0)
@@ -1347,7 +1339,7 @@ class MultiModalMonitoringDashboard:
             0, self.alert_system.check_eeg_quality, quality_score, artifact_rate
         )
 
-    def _update_pupil_from_stream(self, data: Dict[str, Any]):
+    def _update_pupil_from_stream(self, data: Dict[str, Any]) -> None:
         """Update pupillometry monitor from streaming data."""
         data_quality = data.get("data_quality", 0.0)
         data_loss = data.get("data_loss", 0.0)
@@ -1370,7 +1362,7 @@ class MultiModalMonitoringDashboard:
             0, self.alert_system.check_pupil_quality, data_loss, tracking_loss
         )
 
-    def _update_cardiac_from_stream(self, data: Dict[str, Any]):
+    def _update_cardiac_from_stream(self, data: Dict[str, Any]) -> None:
         """Update cardiac monitor from streaming data."""
         signal_quality = data.get("signal_quality", 0.0)
         rpeak_confidence = data.get("rpeak_confidence", 0.0)
@@ -1391,7 +1383,7 @@ class MultiModalMonitoringDashboard:
             0, self.alert_system.check_cardiac_quality, signal_quality, rpeak_confidence
         )
 
-    def _update_parameters_from_stream(self, data: Dict[str, Any]):
+    def _update_parameters_from_stream(self, data: Dict[str, Any]) -> None:
         """Update parameter estimates from streaming data."""
         param_name = data.get("parameter_name", "")
         mean = data.get("mean", 0.0)
@@ -1419,7 +1411,7 @@ class MultiModalMonitoringDashboard:
             0, self.param_monitor.update_convergence, converged, r_hat or 1.0
         )
 
-    def _simulate_data_updates(self):
+    def _simulate_data_updates(self) -> None:
         """Fallback simulation when WebSocket is not available."""
         logger.info("Using simulated data updates")
         while not self._stop_event.is_set():
@@ -1447,10 +1439,10 @@ class MultiModalMonitoringDashboard:
                 logger.error(f"Simulation error: {e}")
                 break
 
-    def stop_streaming(self):
+    def stop_streaming(self) -> None:
         """Stop real-time data streaming."""
         if hasattr(self, "streamer"):
-            self.streamer.stop_server()
+            self.streamer.stop_server()  # type: ignore[no-untyped-call]
             logger.info("Real-time data streaming stopped")
 
 

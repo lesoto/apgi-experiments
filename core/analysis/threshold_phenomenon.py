@@ -1,11 +1,15 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.special import expit  # type: ignore
+from scipy.special import expit
+from typing import Union
 
 
-def ignition_probability(S_t, theta_t, alpha):
+def ignition_probability(
+    S_t: Union[float, np.ndarray], theta_t: float, alpha: float
+) -> Union[float, np.ndarray]:
     """Calculate probability of ignition B_t using sigmoid."""
-    return expit(alpha * (S_t - theta_t))
+    result: Union[float, np.ndarray] = expit(alpha * (S_t - theta_t))
+    return result
 
 
 # Generate data

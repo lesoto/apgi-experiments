@@ -6,7 +6,7 @@ and single-trial ERP estimation for APGI framework validation.
 """
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, cast
 
 import numpy as np
 from scipy import signal
@@ -104,7 +104,7 @@ class ERPAnalysis:
             data[..., baseline_start:baseline_end], axis=-1, keepdims=True
         )
 
-        return data - baseline
+        return cast(np.ndarray, data - baseline)
 
     def apply_filter(
         self,
@@ -145,7 +145,7 @@ class ERPAnalysis:
             return data
 
         # Apply filter along time axis
-        return signal.sosfiltfilt(sos, data, axis=-1)
+        return cast(np.ndarray, signal.sosfiltfilt(sos, data, axis=-1))
 
     def detect_peak(
         self,
@@ -422,7 +422,7 @@ class ERPAnalysis:
         # Convolve with template
         filtered = signal.correlate(data, template[np.newaxis, :], mode="same")
 
-        return filtered
+        return cast(np.ndarray, filtered)
 
     def _create_p3b_template(self, time_points: np.ndarray) -> np.ndarray:
         """
@@ -441,7 +441,7 @@ class ERPAnalysis:
         template = np.exp(-0.5 * ((time_points - peak_latency) / width) ** 2)
         template = template / np.max(template)  # Normalize
 
-        return template
+        return cast(np.ndarray, template)
 
     def compute_grand_average(
         self, trials: List[np.ndarray], reject_threshold: Optional[float] = None

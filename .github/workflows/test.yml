@@ -85,8 +85,7 @@ jobs:
     
     - name: Run mypy (type checking)
       run: |
-        mypy apgi_framework/ --ignore-missing-imports --no-strict-optional
-      continue-on-error: true
+        mypy apgi_framework/ --ignore-missing-imports
 
   security:
     runs-on: ubuntu-latest

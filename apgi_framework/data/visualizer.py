@@ -8,7 +8,7 @@ for falsification test results and interactive visualization capabilities.
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union, Callable, cast
+from typing import Any, Callable, Dict, List, Optional, Union, cast
 
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
@@ -44,7 +44,7 @@ class APGIVisualizer:
         # Set up plotting style
         self._setup_style(style)
 
-    def _setup_style(self, style: str):
+    def _setup_style(self, style: str) -> None:
         """Configure matplotlib and seaborn styles"""
 
         if style == "publication":
@@ -291,6 +291,23 @@ class APGIVisualizer:
             raise VisualizationError(
                 f"Failed to create neural signatures plot: {str(e)}"
             )
+
+    def create_neural_signature_plot(
+        self,
+        trials: List[ExperimentalTrial],
+        save_path: Optional[Union[str, Path]] = None,
+    ) -> str:
+        """
+        Create neural signature visualization (alias for plot_neural_signatures).
+
+        Args:
+            trials: List of experimental trials
+            save_path: Optional custom save path
+
+        Returns:
+            Path to saved figure
+        """
+        return self.plot_neural_signatures(trials, save_path)
 
     def plot_apgi_parameter_space(
         self,
@@ -586,7 +603,7 @@ class InteractiveVisualizer:
     Provides interactive visualization capabilities for real-time analysis.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize interactive visualizer"""
         self.logger = logging.getLogger(__name__)
 

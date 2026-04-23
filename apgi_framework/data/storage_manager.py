@@ -7,7 +7,7 @@ and management operations with automatic validation and backup.
 
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 
 from ..exceptions import APGIFrameworkError
 from ..logging.standardized_logging import get_logger
@@ -37,7 +37,7 @@ class StorageManager:
 
     def __init__(
         self,
-        storage_path: Union[str, Path],
+        storage_path: Optional[Union[str, Path]] = None,
         backend: str = "hdf5",
         auto_validate: bool = True,
         auto_backup: bool = True,
@@ -46,11 +46,13 @@ class StorageManager:
         Initialize storage manager.
 
         Args:
-            storage_path: Base path for data storage
+            storage_path: Base path for data storage (default: ./data)
             backend: Storage backend ('sqlite', 'hdf5', or 'hybrid')
             auto_validate: Whether to automatically validate data on storage
             auto_backup: Whether to automatically create backups
         """
+        if storage_path is None:
+            storage_path = "./data"
         self.storage_path = Path(storage_path)
         self.backend = backend
         self.auto_validate = auto_validate
@@ -123,7 +125,7 @@ class StorageManager:
                     )
 
             # Invalidate stats cache
-            self._invalidate_stats_cache()
+            self._invalidate_stats_cache()  # type: ignore[no-untyped-call]
 
             return experiment_id
 
@@ -374,13 +376,23 @@ class StorageManager:
             raise StorageError("Dataset deletion requires explicit confirmation")
 
         try:
-            self.persistence.delete_experiment(experiment_id, include_backups)
+            if include_backups:
+                # Call the version that supports backup deletion
+                if hasattr(self.persistence, "delete_experiment_with_backups"):
+                    self.persistence.delete_experiment_with_backups(
+                        experiment_id, include_backups
+                    )
+                else:
+                    self.persistence.delete_experiment(experiment_id)
+            else:
+                # Call the simple version
+                self.persistence.delete_experiment(experiment_id)
             self.logger.info(
                 f"Deleted dataset {experiment_id} (backups: {include_backups})"
             )
 
             # Invalidate stats cache
-            self._invalidate_stats_cache()
+            self._invalidate_stats_cache()  # type: ignore[no-untyped-call]
 
             return True
 
@@ -505,7 +517,7 @@ class StorageManager:
 
             dataset = safe_pickle_load(dataset_files[0])
 
-            return dataset
+            return cast(ExperimentalDataset, dataset)
 
     def _restore_incremental_backup(
         self, backup_path: Path, backup_info: BackupInfo
@@ -651,14 +663,14 @@ class StorageManager:
                         validation_summary["invalid_datasets"] = (
                             validation_summary["invalid_datasets"] + 1
                         )
-                        validation_summary["validation_errors"][
-                            exp_id
-                        ] = validation_result["errors"]
+                        validation_summary["validation_errors"][exp_id] = (
+                            validation_result["errors"]
+                        )
 
                     if validation_result["warnings"]:
-                        validation_summary["validation_warnings"][
-                            exp_id
-                        ] = validation_result["warnings"]
+                        validation_summary["validation_warnings"][exp_id] = (
+                            validation_result["warnings"]
+                        )
 
                     total_quality += validation_result["quality_score"]
 
@@ -696,7 +708,7 @@ class StorageManager:
         except (ValueError, TypeError, AttributeError):
             return "1.0.1"
 
-    def _invalidate_stats_cache(self):
+    def _invalidate_stats_cache(self) -> None:
         """Invalidate cached statistics."""
         self._stats_cache = None
         self._stats_cache_time = None
@@ -713,7 +725,7 @@ class StorageManager:
             self.persistence.flush_all()
 
             # Invalidate caches
-            self._invalidate_stats_cache()
+            self._invalidate_stats_cache()  # type: ignore[no-untyped-call]
 
             self.logger.info("Flushed all pending data operations")
             return True
@@ -813,3 +825,138 @@ class StorageManager:
         except Exception as e:
             self.logger.error(f"Failed to export metadata: {str(e)}")
             raise StorageError(f"Failed to export metadata: {str(e)}")
+
+    # Convenience methods for simpler API
+    def save(self, data: dict, filepath: Union[str, Path]) -> str:
+        """
+        Save data to file (JSON format).
+
+        Args:
+            data: Dictionary to save
+            filepath: Path for output file
+
+        Returns:
+            Path to saved file
+        """
+        import json
+
+        filepath = Path(filepath)
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(filepath, "w") as f:
+            json.dump(data, f, indent=2)
+
+        self.logger.info(f"Saved data to {filepath}")
+        return str(filepath)
+
+    def load(self, filepath: Union[str, Path]) -> dict:
+        """
+        Load data from file (JSON format).
+
+        Args:
+            filepath: Path to file
+
+        Returns:
+            Loaded data dictionary
+        """
+        import json
+
+        filepath = Path(filepath)
+
+        with open(filepath, "r") as f:
+            data = json.load(f)
+
+        return cast(Dict[Any, Any], data)
+
+    def exists(self, filepath: Union[str, Path]) -> bool:
+        """
+        Check if file exists.
+
+        Args:
+            filepath: Path to check
+
+        Returns:
+            True if file exists
+        """
+        return Path(filepath).exists()
+
+    def delete(self, filepath: Union[str, Path]) -> bool:
+        """
+        Delete file.
+
+        Args:
+            filepath: Path to delete
+
+        Returns:
+            True if deleted successfully
+        """
+        filepath = Path(filepath)
+        if filepath.exists():
+            filepath.unlink()
+            return True
+        return False
+
+    def list_files(self, directory: Union[str, Path], pattern: str = "*") -> list:
+        """
+        List files in directory matching pattern.
+
+        Args:
+            directory: Directory to list
+            pattern: Glob pattern to match
+
+        Returns:
+            List of file paths
+        """
+        directory = Path(directory)
+        if not directory.exists():
+            return []
+
+        return [str(f) for f in directory.glob(pattern) if f.is_file()]
+
+    def get_file_info(self, filepath: Union[str, Path]) -> dict:
+        """
+        Get file information.
+
+        Args:
+            filepath: Path to file
+
+        Returns:
+            Dictionary with file info
+        """
+        filepath = Path(filepath)
+
+        if not filepath.exists():
+            return {"size": 0, "modified": None, "exists": False}
+
+        stat = filepath.stat()
+        return {
+            "size": stat.st_size,
+            "modified": datetime.fromtimestamp(stat.st_mtime),
+            "exists": True,
+        }
+
+    def batch_save(self, datasets: dict, directory: Union[str, Path]) -> dict:
+        """
+        Save multiple datasets to directory.
+
+        Args:
+            datasets: Dictionary mapping filenames to data
+            directory: Target directory
+
+        Returns:
+            Dictionary mapping filenames to success status
+        """
+        directory = Path(directory)
+        directory.mkdir(parents=True, exist_ok=True)
+
+        results = {}
+        for filename, data in datasets.items():
+            try:
+                filepath = directory / f"{filename}.json"
+                self.save(data, filepath)
+                results[filename] = True
+            except Exception as e:
+                self.logger.warning(f"Failed to save {filename}: {e}")
+                results[filename] = False
+
+        return results

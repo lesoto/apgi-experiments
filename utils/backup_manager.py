@@ -107,7 +107,16 @@ class BackupManager:
         if self.history_file.exists():
             try:
                 with open(self.history_file, "r") as f:
-                    return json.load(f)
+                    history = json.load(f)
+                    if isinstance(history, list) and all(
+                        isinstance(item, dict) for item in history
+                    ):
+                        return history
+                    else:
+                        apgi_logger.logger.warning(
+                            "Invalid backup history format, returning empty list"
+                        )
+                        return []
             except (json.JSONDecodeError, FileNotFoundError, PermissionError) as e:
                 apgi_logger.logger.warning(f"Error loading backup history: {e}")
                 return []

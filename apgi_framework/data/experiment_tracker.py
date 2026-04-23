@@ -114,7 +114,7 @@ class ExperimentTracker:
         self.monitoring_enabled = True
         self.monitoring_interval = 5.0  # seconds
 
-    def setup_logging(self):
+    def setup_logging(self) -> None:
         """Set up logging configuration."""
         log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         logging.basicConfig(
@@ -180,7 +180,7 @@ class ExperimentTracker:
 
         return session.session_id
 
-    def start_session(self, session_id: str):
+    def start_session(self, session_id: str) -> None:
         """Start an experiment session."""
         if session_id not in self.active_sessions:
             raise ValueError(f"Session {session_id} not found")
@@ -201,7 +201,7 @@ class ExperimentTracker:
         session.milestones["session_started"] = session.start_time
         self._save_session(session)
 
-    def end_session(self, session_id: str, status: str = "completed"):
+    def end_session(self, session_id: str, status: str = "completed") -> None:
         """End an experiment session."""
         if session_id not in self.active_sessions:
             raise ValueError(f"Session {session_id} not found")
@@ -239,7 +239,7 @@ class ExperimentTracker:
         old_value: Any,
         new_value: Any,
         reason: str = "",
-    ):
+    ) -> None:
         """Log a parameter change during experiment."""
         if session_id not in self.active_sessions:
             raise ValueError(f"Session {session_id} not found")
@@ -267,7 +267,7 @@ class ExperimentTracker:
         session_id: str,
         new_condition: str,
         condition_parameters: Optional[Dict[str, Any]] = None,
-    ):
+    ) -> None:
         """Log a condition change during experiment."""
         if session_id not in self.active_sessions:
             raise ValueError(f"Session {session_id} not found")
@@ -295,7 +295,7 @@ class ExperimentTracker:
         session_id: str,
         trial_number: int,
         trial_parameters: Optional[Dict[str, Any]] = None,
-    ):
+    ) -> None:
         """Log the start of a trial."""
         if session_id not in self.active_sessions:
             raise ValueError(f"Session {session_id} not found")
@@ -321,7 +321,7 @@ class ExperimentTracker:
         trial_number: int,
         trial_results: Optional[Dict[str, Any]] = None,
         success: bool = True,
-    ):
+    ) -> None:
         """Log the end of a trial."""
         if session_id not in self.active_sessions:
             raise ValueError(f"Session {session_id} not found")
@@ -355,7 +355,7 @@ class ExperimentTracker:
         session_id: str,
         milestone_name: str,
         details: Optional[Dict[str, Any]] = None,
-    ):
+    ) -> None:
         """Log an experiment milestone."""
         if session_id not in self.active_sessions:
             raise ValueError(f"Session {session_id} not found")
@@ -376,7 +376,7 @@ class ExperimentTracker:
 
     def log_results(
         self, session_id: str, results: Dict[str, Any], result_type: str = "final"
-    ):
+    ) -> None:
         """Log experiment results."""
         if session_id not in self.active_sessions:
             raise ValueError(f"Session {session_id} not found")
@@ -404,7 +404,7 @@ class ExperimentTracker:
         error_message: str,
         error_details: Optional[Dict[str, Any]] = None,
         exception: Optional[Exception] = None,
-    ):
+    ) -> None:
         """Log an error during experiment."""
         if session_id in self.active_sessions:
             session = self.active_sessions[session_id]
@@ -427,7 +427,7 @@ class ExperimentTracker:
         session_id: str,
         warning_message: str,
         warning_details: Optional[Dict[str, Any]] = None,
-    ):
+    ) -> None:
         """Log a warning during experiment."""
         if session_id in self.active_sessions:
             session = self.active_sessions[session_id]
@@ -453,7 +453,7 @@ class ExperimentTracker:
         message: str,
         details: Optional[Dict[str, Any]] = None,
         source: str = "tracker",
-    ):
+    ) -> None:
         """Log a general event."""
         log_entry = ExperimentLog(
             session_id=session_id,
@@ -544,7 +544,7 @@ class ExperimentTracker:
 
         return output_path
 
-    def _save_session(self, session: ExperimentSession):
+    def _save_session(self, session: ExperimentSession) -> None:
         """Save session to disk using secure pickle."""
         session_file = self.storage_path / f"session_{session.session_id}.pkl"
         from ..security.secure_pickle import safe_pickle_dump
@@ -560,7 +560,10 @@ class ExperimentTracker:
         try:
             from ..security.secure_pickle import safe_pickle_load
 
-            return safe_pickle_load(session_file, expected_types={ExperimentSession})
+            session: ExperimentSession = safe_pickle_load(
+                session_file, expected_types={ExperimentSession}
+            )
+            return session
         except Exception as e:
             self.logger.error(f"Failed to load session {session_id}: {e}")
             return None
@@ -572,7 +575,7 @@ class ExperimentTracker:
         parameters: Dict[str, Any],
         conditions: List[str],
         random_seed: Optional[int] = None,
-    ):
+    ) -> Any:
         """Context manager for experiment sessions."""
         session_id = self.create_session(
             experiment_name, parameters, conditions, random_seed

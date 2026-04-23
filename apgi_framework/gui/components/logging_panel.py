@@ -13,7 +13,7 @@ import tkinter as tk
 from datetime import datetime
 from pathlib import Path
 from tkinter import filedialog, messagebox
-from typing import Callable, Dict, List, Optional, Any
+from typing import Any, Callable, Dict, List, Optional
 
 import customtkinter as ctk
 
@@ -34,11 +34,11 @@ logger = logging.getLogger("logging_panel")
 class LogHandler(logging.Handler):
     """Custom logging handler that sends logs to a queue for GUI display."""
 
-    def __init__(self, log_queue: queue.Queue):
+    def __init__(self, log_queue: queue.Queue[Any]) -> None:
         super().__init__()
         self.log_queue = log_queue
 
-    def emit(self, record):
+    def emit(self, record: Any) -> None:
         """Emit a log record to the queue."""
         try:
             log_entry = self.format(record)
@@ -56,7 +56,7 @@ class LoggingPanel(ctk.CTkFrame):
     log level filtering, search functionality, and export options.
     """
 
-    def __init__(self, parent, max_log_lines: int = 1000):
+    def __init__(self, parent: Any, max_log_lines: int = 1000) -> None:
         """
         Initialize the logging panel.
 
@@ -68,7 +68,7 @@ class LoggingPanel(ctk.CTkFrame):
 
         self.max_log_lines = max_log_lines
         self.log_queue: queue.Queue[Any] = queue.Queue()
-        self.log_handler = None
+        self.log_handler: Optional[LogHandler] = None
         self.is_polling = True
 
         # Log filtering
@@ -103,7 +103,7 @@ class LoggingPanel(ctk.CTkFrame):
 
         logger.info("LoggingPanel initialized")
 
-    def _create_widgets(self):
+    def _create_widgets(self) -> None:
         """Create logging panel widgets."""
         # Create scrollable frame
         self.scrollable_frame = ctk.CTkScrollableFrame(self)
@@ -121,7 +121,7 @@ class LoggingPanel(ctk.CTkFrame):
         # Log display section
         self._create_log_display_section()
 
-    def _create_control_section(self):
+    def _create_control_section(self) -> None:
         """Create control buttons section."""
         control_frame = ctk.CTkFrame(self.scrollable_frame)
         control_frame.pack(fill="x", padx=5, pady=5)
@@ -175,7 +175,7 @@ class LoggingPanel(ctk.CTkFrame):
             command=lambda choice: self._change_log_level(choice)
         )
 
-    def _create_filter_section(self):
+    def _create_filter_section(self) -> None:
         """Create log filtering section."""
         filter_frame = ctk.CTkFrame(self.scrollable_frame)
         filter_frame.pack(fill="x", padx=5, pady=5)
@@ -204,7 +204,7 @@ class LoggingPanel(ctk.CTkFrame):
         # Bind Enter key to filter
         self.filter_entry.bind("<Return>", lambda e: self._apply_filter())
 
-    def _create_statistics_section(self):
+    def _create_statistics_section(self) -> None:
         """Create log statistics section."""
         stats_frame = ctk.CTkFrame(self.scrollable_frame)
         stats_frame.pack(fill="x", padx=5, pady=5)
@@ -232,7 +232,7 @@ class LoggingPanel(ctk.CTkFrame):
 
         self._update_statistics_display()
 
-    def _create_log_display_section(self):
+    def _create_log_display_section(self) -> None:
         """Create log display section."""
         log_frame = ctk.CTkFrame(self.scrollable_frame)
         log_frame.pack(fill="both", expand=True, padx=5, pady=5)
@@ -271,7 +271,7 @@ class LoggingPanel(ctk.CTkFrame):
         # Add context menu
         self._create_context_menu()
 
-    def _create_context_menu(self):
+    def _create_context_menu(self) -> None:
         """Create context menu for log text widget."""
         self.context_menu = tk.Menu(self.log_text, tearoff=0)
         self.context_menu.add_command(
@@ -287,37 +287,40 @@ class LoggingPanel(ctk.CTkFrame):
         # Bind right-click
         self.log_text.bind("<Button-3>", self._show_context_menu)
 
-    def _show_context_menu(self, event):
+    def _show_context_menu(self, event: Any) -> None:
         """Show context menu."""
         try:
             self.context_menu.tk_popup(event.x_root, event.y_root)
         finally:
             self.context_menu.grab_release()
 
-    def _setup_logging(self):
+    def _setup_logging(self) -> None:
         """Setup logging handler."""
+        from typing import cast
+
         self.log_handler = LogHandler(self.log_queue)
-        self.log_handler.setLevel(self.current_log_level)
+        log_handler = cast(LogHandler, self.log_handler)
+        log_handler.setLevel(self.current_log_level)
 
         # Create formatter
         formatter = logging.Formatter(
             "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
         )
-        self.log_handler.setFormatter(formatter)
+        log_handler.setFormatter(formatter)
 
         # Add handler to root logger
         root_logger = logging.getLogger()
-        root_logger.addHandler(self.log_handler)
+        root_logger.addHandler(log_handler)
         root_logger.setLevel(self.current_log_level)
 
         logger.info("Logging handler configured")
 
-    def _start_log_polling(self):
+    def _start_log_polling(self) -> None:
         """Start polling for log messages."""
         self._poll_logs()
 
-    def _poll_logs(self):
+    def _poll_logs(self) -> None:
         """Poll for new log messages."""
         if not self.is_polling:
             # Schedule next poll even when paused to check for resume
@@ -335,7 +338,7 @@ class LoggingPanel(ctk.CTkFrame):
         # Schedule next poll
         self.after(100, self._poll_logs)
 
-    def _process_log_message(self, message: str):
+    def _process_log_message(self, message: str) -> None:
         """Process a log message and display it if it meets criteria."""
         try:
             # Parse log message
@@ -373,7 +376,7 @@ class LoggingPanel(ctk.CTkFrame):
 
     def _append_formatted_log(
         self, timestamp: str, logger_name: str, level: str, content: str
-    ):
+    ) -> None:
         """Append a formatted log message to the display."""
         # Format the log message with colors
         self.log_text.insert("end", timestamp, "timestamp")
@@ -390,7 +393,7 @@ class LoggingPanel(ctk.CTkFrame):
         # Limit log size
         self._limit_log_size()
 
-    def _limit_log_size(self):
+    def _limit_log_size(self) -> None:
         """Limit the number of lines in the log display."""
         try:
             lines = int(self.log_text.index("end-1c").split(".")[0])
@@ -401,7 +404,7 @@ class LoggingPanel(ctk.CTkFrame):
         except Exception:
             pass  # Don't let errors in log management crash the app
 
-    def _clear_logs(self):
+    def _clear_logs(self) -> None:
         """Clear all log messages."""
         if messagebox.askyesno(
             "Clear Logs", "Clear all log messages? This cannot be undone."
@@ -419,7 +422,7 @@ class LoggingPanel(ctk.CTkFrame):
 
             logger.info("Logs cleared by user")
 
-    def _save_logs(self):
+    def _save_logs(self) -> None:
         """Save logs to file."""
         try:
             filename = filedialog.asksaveasfilename(
@@ -442,7 +445,7 @@ class LoggingPanel(ctk.CTkFrame):
             messagebox.showerror("Error", f"Failed to save logs: {e}")
             logger.error(f"Failed to save logs: {e}")
 
-    def _export_json(self):
+    def _export_json(self) -> None:
         """Export logs as structured JSON."""
         try:
             filename = filedialog.asksaveasfilename(
@@ -497,12 +500,14 @@ class LoggingPanel(ctk.CTkFrame):
 
         return entries
 
-    def _change_log_level(self, level: str):
+    def _change_log_level(self, level: str) -> None:
         """Change logging level."""
         try:
             self.current_log_level = getattr(logging, level)
-            if self.log_handler is not None:
-                self.log_handler.setLevel(self.current_log_level)
+            from typing import cast
+
+            log_handler = cast(logging.Handler, self.log_handler)
+            log_handler.setLevel(self.current_log_level)
 
             # Update root logger level
             root_logger = logging.getLogger()
@@ -513,7 +518,7 @@ class LoggingPanel(ctk.CTkFrame):
         except Exception as e:
             logger.error(f"Failed to change log level: {e}")
 
-    def _toggle_polling(self):
+    def _toggle_polling(self) -> None:
         """Toggle log polling pause/resume."""
         self.is_polling = not self.is_polling
 
@@ -524,7 +529,7 @@ class LoggingPanel(ctk.CTkFrame):
             self.pause_btn.configure(text="Resume")
             logger.info("Log polling paused")
 
-    def _apply_filter(self):
+    def _apply_filter(self) -> None:
         """Apply text filter to logs."""
         self.log_filter_text = self.filter_var.get().strip()
 
@@ -539,12 +544,12 @@ class LoggingPanel(ctk.CTkFrame):
         # In a full implementation, we'd store filtered logs
         logger.info(f"Applied filter: '{self.log_filter_text}'")
 
-    def _clear_filter(self):
+    def _clear_filter(self) -> None:
         """Clear text filter."""
         self.filter_var.set("")
         self._apply_filter()
 
-    def _update_statistics_display(self):
+    def _update_statistics_display(self) -> None:
         """Update the statistics display."""
         self.stats_text.configure(state="normal")
         self.stats_text.delete("1.0", "end")
@@ -571,7 +576,7 @@ class LoggingPanel(ctk.CTkFrame):
 
         self.stats_text.configure(state="disabled")
 
-    def _copy_selected(self):
+    def _copy_selected(self) -> None:
         """Copy selected text to clipboard."""
         try:
             selected_text = self.log_text.get(tk.SEL_FIRST, tk.SEL_LAST)
@@ -587,7 +592,7 @@ class LoggingPanel(ctk.CTkFrame):
             self.show_status(f"Failed to copy selected text: {e}", "error")
             self.logger.error(f"Copy selected text failed: {e}")
 
-    def _copy_all(self):
+    def _copy_all(self) -> None:
         """Copy all log text to clipboard."""
         try:
             all_text = self.log_text.get("1.0", "end")
@@ -601,7 +606,7 @@ class LoggingPanel(ctk.CTkFrame):
             self.show_status(f"Failed to copy all log text: {e}", "error")
             self.logger.error(f"Copy all log text failed: {e}")
 
-    def _find_text(self):
+    def _find_text(self) -> None:
         """Find text in log display."""
         # Simple find dialog (could be enhanced)
         find_dialog = ctk.CTkToplevel(self)
@@ -614,7 +619,7 @@ class LoggingPanel(ctk.CTkFrame):
         find_entry = ctk.CTkEntry(find_dialog, textvariable=find_var, width=30)
         find_entry.pack(pady=5)
 
-        def do_find():
+        def do_find() -> None:
             search_text = find_var.get()
             if search_text:
                 # Simple search (could be enhanced with regex, case sensitivity, etc.)
@@ -628,11 +633,11 @@ class LoggingPanel(ctk.CTkFrame):
 
         ctk.CTkButton(find_dialog, text="Find", command=do_find).pack(pady=10)
 
-    def _clear_selection(self):
+    def _clear_selection(self) -> None:
         """Clear text selection."""
         self.log_text.tag_remove(tk.SEL, "1.0", "end")
 
-    def add_message(self, message: str, level: str = "INFO"):
+    def add_message(self, message: str, level: str = "INFO") -> None:
         """Add a message directly to the log display."""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -649,20 +654,20 @@ class LoggingPanel(ctk.CTkFrame):
         """Get current log statistics."""
         return self.log_counts.copy()
 
-    def set_log_added_callback(self, callback: Callable):
+    def set_log_added_callback(self, callback: Callable[..., None]) -> None:
         """Set callback for log added events."""
         self.on_log_added = callback
 
-    def set_log_cleared_callback(self, callback: Callable):
+    def set_log_cleared_callback(self, callback: Callable[..., None]) -> None:
         """Set callback for log cleared events."""
         self.on_log_cleared = callback
 
-    def set_max_log_lines(self, max_lines: int):
+    def set_max_log_lines(self, max_lines: int) -> None:
         """Set maximum number of log lines to display."""
         self.max_log_lines = max_lines
         self._limit_log_size()
 
-    def export_filtered_logs(self, filename: str):
+    def export_filtered_logs(self, filename: str) -> None:
         """Export only filtered logs."""
         try:
             with open(filename, "w") as f:
@@ -676,7 +681,7 @@ class LoggingPanel(ctk.CTkFrame):
         """Get the most recent log entries."""
         try:
             all_content = self.log_text.get("1.0", "end").strip()
-            lines = all_content.split("\n")
+            lines: List[str] = all_content.split("\n")
             return lines[-count:] if len(lines) > count else lines
         except Exception:
             return []
@@ -697,7 +702,7 @@ class LoggingPanel(ctk.CTkFrame):
 
 
 # Factory function for easy instantiation
-def create_logging_panel(parent, max_log_lines: int = 1000) -> LoggingPanel:
+def create_logging_panel(parent: Any, max_log_lines: int = 1000) -> LoggingPanel:
     """
     Create a logging panel with default settings.
 

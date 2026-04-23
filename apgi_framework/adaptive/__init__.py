@@ -5,6 +5,11 @@ This module provides adaptive algorithms for optimal stimulus selection and
 stimulus control systems for the three core parameter estimation tasks.
 """
 
+from ..research.core_mechanisms.phase_transition import (
+    ConsciousnessDetector,
+    PhaseTransitionAnalyzer,
+    SomaticAgent,
+)
 from .quest_plus_staircase import QuestPlusStaircase
 from .stimulus_generators import (
     CO2PuffController,

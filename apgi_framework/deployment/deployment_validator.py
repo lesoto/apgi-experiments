@@ -7,14 +7,34 @@ including dependencies, hardware configuration, and end-to-end functionality.
 
 import json
 import logging
+import sys
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from .hardware_configuration import HardwareConfigurationManager
-from .installation_manager import InstallationManager, InstallationReport
-from .system_requirements import SystemRequirementsReport, SystemRequirementsValidator
+# Handle both module import and direct execution
+try:
+    from .hardware_configuration import HardwareConfigurationManager
+    from .installation_manager import InstallationManager, InstallationReport
+    from .system_requirements import (
+        SystemRequirementsReport,
+        SystemRequirementsValidator,
+    )
+except ImportError:
+    # Add parent directory to path for direct execution
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+    from apgi_framework.deployment.hardware_configuration import (
+        HardwareConfigurationManager,
+    )
+    from apgi_framework.deployment.installation_manager import (
+        InstallationManager,
+        InstallationReport,
+    )
+    from apgi_framework.deployment.system_requirements import (
+        SystemRequirementsReport,
+        SystemRequirementsValidator,
+    )
 
 
 class ValidationPhase:
@@ -565,3 +585,62 @@ class DeploymentValidator:
         lines.append("=" * 60)
 
         return "\n".join(lines)
+
+
+def main() -> None:
+    """CLI entry point for deployment validator."""
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="APGI Framework Deployment Validator",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+    python deployment_validator.py              # Run full validation
+    python deployment_validator.py --quick    # Run quick validation
+    python deployment_validator.py --report validation_report.json
+        """,
+    )
+    parser.add_argument(
+        "--quick", action="store_true", help="Run quick validation only"
+    )
+    parser.add_argument(
+        "--full", action="store_true", help="Run full validation (default)"
+    )
+    parser.add_argument("--report", type=str, help="Save validation report to file")
+    parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Enable verbose output"
+    )
+
+    args = parser.parse_args()
+
+    # Setup logging level
+    if args.verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
+
+    # Create validator and run
+    validator = DeploymentValidator()
+
+    if args.quick:
+        print("Running quick deployment validation...")
+        validator.validate_deployment(skip_optional=True, run_performance_tests=False)
+    else:
+        print("Running full deployment validation...")
+        validator.validate_deployment(skip_optional=False, run_performance_tests=True)
+
+    # Print summary
+    print("\n" + validator.generate_summary())
+
+    # Save report if requested
+    if args.report:
+        report_path = Path(args.report)
+        validator.save_report(report_path)
+
+    # Exit with appropriate code
+    sys.exit(
+        0 if validator.current_report and validator.current_report.overall_passed else 1
+    )
+
+
+if __name__ == "__main__":
+    main()

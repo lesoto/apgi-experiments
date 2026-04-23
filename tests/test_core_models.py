@@ -18,7 +18,7 @@ from apgi_framework.core.models import PredictiveIgnitionNetwork, SomaticAgent
 class TestSomaticAgent:
     """Test SomaticAgent class from active_inference module."""
 
-    def test_initialization(self):
+    def test_initialization(self) -> None:
         """Test agent initialization."""
         agent = SomaticAgent(n_states=4, n_actions=3, n_contexts=2)
 
@@ -30,7 +30,7 @@ class TestSomaticAgent:
         # Somatic markers should be initialized to zeros
         assert np.all(agent.somatic_markers == 0)
 
-    def test_expected_free_energy_calculation(self):
+    def test_expected_free_energy_calculation(self) -> None:
         """Test expected free energy calculation."""
         agent = SomaticAgent(n_states=4, n_actions=3, n_contexts=2)
         beliefs = np.array([0.25, 0.25, 0.25, 0.25])
@@ -48,7 +48,7 @@ class TestSomaticAgent:
         # (though initially somatic markers are zeros, so they should be equal)
         np.testing.assert_array_equal(G_modified, G_basic)
 
-    def test_somatic_marker_update(self):
+    def test_somatic_marker_update(self) -> None:
         """Test somatic marker updating."""
         agent = SomaticAgent(n_states=4, n_actions=3, n_contexts=2)
         context = 0
@@ -67,7 +67,7 @@ class TestSomaticAgent:
         assert new_value < initial_value
         assert new_value == -0.1  # learning_rate * (valence - initial)
 
-    def test_multiple_marker_updates(self):
+    def test_multiple_marker_updates(self) -> None:
         """Test multiple somatic marker updates."""
         agent = SomaticAgent(n_states=4, n_actions=3, n_contexts=2)
         context = 0
@@ -81,7 +81,7 @@ class TestSomaticAgent:
         final_value = agent.somatic_markers[context, action]
         assert final_value > 0.5  # Should be significantly positive
 
-    def test_decision_making_habitual(self):
+    def test_decision_making_habitual(self) -> None:
         """Test habitual decision making (low surprise)."""
         agent = SomaticAgent(n_states=4, n_actions=3, n_contexts=2)
         beliefs = np.array([0.25, 0.25, 0.25, 0.25])
@@ -95,7 +95,7 @@ class TestSomaticAgent:
         assert 0 <= action < agent.n_actions
         assert len(G) == agent.n_actions
 
-    def test_decision_making_conscious_ignition(self):
+    def test_decision_making_conscious_ignition(self) -> None:
         """Test conscious decision making (high surprise)."""
         agent = SomaticAgent(n_states=4, n_actions=3, n_contexts=2)
         beliefs = np.array([0.25, 0.25, 0.25, 0.25])
@@ -109,7 +109,7 @@ class TestSomaticAgent:
         assert 0 <= action < agent.n_actions
         assert len(G) == agent.n_actions
 
-    def test_precision_effect_on_decision(self):
+    def test_precision_effect_on_decision(self) -> None:
         """Test effect of precision on decision making."""
         agent = SomaticAgent(n_states=4, n_actions=3, n_contexts=2)
         agent.precision = 2.0  # Higher precision
@@ -128,7 +128,7 @@ class TestSomaticAgent:
         # Action 0 should be favored due to positive somatic marker
         assert action == 0
 
-    def test_context_specific_markers(self):
+    def test_context_specific_markers(self) -> None:
         """Test that somatic markers are context-specific."""
         agent = SomaticAgent(n_states=4, n_actions=3, n_contexts=2)
 
@@ -143,7 +143,7 @@ class TestSomaticAgent:
 class TestPredictiveIgnitionNetwork:
     """Test PredictiveIgnitionNetwork class from hierarchical_predictive module."""
 
-    def test_initialization(self):
+    def test_initialization(self) -> None:
         """Test network initialization."""
         n_features = 10
         n_global_units = 5
@@ -166,7 +166,7 @@ class TestPredictiveIgnitionNetwork:
         # Global activation should be initialized to zeros
         assert np.all(network.global_activation == 0.0)
 
-    def test_forward_pass_no_ignition(self):
+    def test_forward_pass_no_ignition(self) -> None:
         """Test forward pass without ignition."""
         network = PredictiveIgnitionNetwork(
             n_features=10, n_global_units=5, threshold=10.0, alpha=2.0
@@ -197,7 +197,7 @@ class TestPredictiveIgnitionNetwork:
         # Predictions should be based on current global activation (initially zeros)
         assert np.allclose(predictions, 0.0)
 
-    def test_forward_pass_with_ignition(self):
+    def test_forward_pass_with_ignition(self) -> None:
         """Test forward pass with ignition."""
         network = PredictiveIgnitionNetwork(
             n_features=10, n_global_units=5, threshold=1.0, alpha=2.0
@@ -222,7 +222,7 @@ class TestPredictiveIgnitionNetwork:
         # Global activation should be updated
         assert not np.allclose(network.global_activation, 0.0)
 
-    def test_somatic_gain_effect(self):
+    def test_somatic_gain_effect(self) -> None:
         """Test effect of somatic gain on ignition."""
         network = PredictiveIgnitionNetwork(
             n_features=10, n_global_units=5, threshold=2.0, alpha=2.0
@@ -246,7 +246,7 @@ class TestPredictiveIgnitionNetwork:
         # Higher somatic gain should increase ignition probability
         assert prob_high > prob_low
 
-    def test_precision_weighting(self):
+    def test_precision_weighting(self) -> None:
         """Test precision weighting of errors."""
         network = PredictiveIgnitionNetwork(
             n_features=10, n_global_units=5, threshold=2.0, alpha=2.0
@@ -266,7 +266,7 @@ class TestPredictiveIgnitionNetwork:
         # Weighted errors should reflect precision differences
         assert np.all(weighted_errors[:5] < weighted_errors[5:])
 
-    def test_prediction_error_calculation(self):
+    def test_prediction_error_calculation(self) -> None:
         """Test prediction error calculation."""
         network = PredictiveIgnitionNetwork(
             n_features=5, n_global_units=3, threshold=2.0, alpha=2.0
@@ -290,7 +290,7 @@ class TestPredictiveIgnitionNetwork:
         expected_errors = sensory_input - predictions
         np.testing.assert_allclose(errors, expected_errors, rtol=1e-3, atol=1e-3)
 
-    def test_ignition_probability_calculation(self):
+    def test_ignition_probability_calculation(self) -> None:
         """Test ignition probability calculation."""
         network = PredictiveIgnitionNetwork(
             n_features=10, n_global_units=5, threshold=2.0, alpha=2.0
@@ -318,7 +318,7 @@ class TestPredictiveIgnitionNetwork:
             else:
                 assert not ignited or prob < 0.7  # Allow some tolerance
 
-    def test_global_activation_update(self):
+    def test_global_activation_update(self) -> None:
         """Test global activation update during ignition."""
         network = PredictiveIgnitionNetwork(
             n_features=5, n_global_units=3, threshold=1.0, alpha=2.0
@@ -340,7 +340,7 @@ class TestPredictiveIgnitionNetwork:
             # Should remain unchanged if no ignition
             np.testing.assert_array_equal(network.global_activation, initial_activation)
 
-    def test_multiple_forward_passes(self):
+    def test_multiple_forward_passes(self) -> None:
         """Test multiple forward passes in sequence."""
         network = PredictiveIgnitionNetwork(
             n_features=10, n_global_units=5, threshold=2.0, alpha=2.0
@@ -360,7 +360,7 @@ class TestPredictiveIgnitionNetwork:
             assert isinstance(ignited, bool)
             assert 0.0 <= prob <= 1.0
 
-    def test_network_state_persistence(self):
+    def test_network_state_persistence(self) -> None:
         """Test that network state persists between forward passes."""
         network = PredictiveIgnitionNetwork(
             n_features=10, n_global_units=5, threshold=2.0, alpha=2.0
@@ -385,7 +385,7 @@ class TestPredictiveIgnitionNetwork:
 class TestModelIntegration:
     """Test integration between different core models."""
 
-    def test_surprise_to_decision_pipeline(self):
+    def test_surprise_to_decision_pipeline(self) -> None:
         """Test pipeline from surprise calculation to decision making."""
         agent = SomaticAgent(n_states=4, n_actions=3, n_contexts=2)
 
@@ -416,7 +416,7 @@ class TestModelIntegration:
             high_surprise_conscious
         ), "Higher surprise values should sometimes lead to conscious decisions"
 
-    def test_network_to_agent_communication(self):
+    def test_network_to_agent_communication(self) -> None:
         """Test communication between predictive network and somatic agent."""
         network = PredictiveIgnitionNetwork(
             n_features=10, n_global_units=5, threshold=2.0, alpha=2.0

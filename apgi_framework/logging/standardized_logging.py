@@ -9,11 +9,68 @@ import json
 import logging
 import logging.handlers
 import sys
+import threading
 import traceback
+import uuid
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
+
+
+class CorrelationContext:
+    """
+    Thread-safe correlation ID management for distributed tracing.
+
+    Provides a way to track requests across multiple components and services,
+    enabling end-to-end observability and debugging.
+    """
+
+    _local = threading.local()
+
+    @classmethod
+    def get_correlation_id(cls) -> str:
+        """Get the current correlation ID or generate a new one."""
+        if not hasattr(cls._local, "correlation_id"):
+            cls._local.correlation_id = str(uuid.uuid4())
+        return str(cls._local.correlation_id)
+
+    @classmethod
+    def set_correlation_id(cls, correlation_id: str) -> None:
+        """Set the correlation ID for the current thread."""
+        cls._local.correlation_id = correlation_id
+
+    @classmethod
+    def clear_correlation_id(cls) -> None:
+        """Clear the correlation ID for the current thread."""
+        if hasattr(cls._local, "correlation_id"):
+            delattr(cls._local, "correlation_id")
+
+    @classmethod
+    @contextmanager
+    def correlation_scope(cls, correlation_id: Optional[str] = None) -> Any:
+        """
+        Context manager for correlation ID scope.
+
+        Args:
+            correlation_id: Optional correlation ID to use. If None, generates new.
+
+        Example:
+            with CorrelationContext.correlation_scope() as cid:
+                logger.info("Processing request", correlation_id=cid)
+        """
+        previous_id = (
+            cls.get_correlation_id() if hasattr(cls._local, "correlation_id") else None
+        )
+        new_id = correlation_id or str(uuid.uuid4())
+        cls.set_correlation_id(new_id)
+        try:
+            yield new_id
+        finally:
+            if previous_id:
+                cls.set_correlation_id(previous_id)
+            else:
+                cls.clear_correlation_id()
 
 
 class APGILogger:
@@ -85,19 +142,21 @@ class APGILogger:
         # Prevent propagation to root logger to avoid duplicate messages
         self.logger.propagate = False
 
-    def debug(self, message: str, **kwargs):
+    def debug(self, message: str, **kwargs: Any) -> None:
         """Log debug message."""
         self._log(logging.DEBUG, message, **kwargs)
 
-    def info(self, message: str, **kwargs):
+    def info(self, message: str, **kwargs: Any) -> None:
         """Log info message."""
         self._log(logging.INFO, message, **kwargs)
 
-    def warning(self, message: str, **kwargs):
+    def warning(self, message: str, **kwargs: Any) -> None:
         """Log warning message."""
         self._log(logging.WARNING, message, **kwargs)
 
-    def error(self, message: str, exception: Optional[Exception] = None, **kwargs):
+    def error(
+        self, message: str, exception: Optional[Exception] = None, **kwargs: Any
+    ) -> None:
         """Log error message with optional exception details."""
         if exception:
             kwargs["exception_type"] = type(exception).__name__
@@ -105,7 +164,9 @@ class APGILogger:
             kwargs["traceback"] = traceback.format_exc()
         self._log(logging.ERROR, message, **kwargs)
 
-    def critical(self, message: str, exception: Optional[Exception] = None, **kwargs):
+    def critical(
+        self, message: str, exception: Optional[Exception] = None, **kwargs: Any
+    ) -> None:
         """Log critical message with optional exception details."""
         if exception:
             kwargs["exception_type"] = type(exception).__name__
@@ -113,7 +174,7 @@ class APGILogger:
             kwargs["traceback"] = traceback.format_exc()
         self._log(logging.CRITICAL, message, **kwargs)
 
-    def experiment_start(self, experiment_id: str, parameters: Dict[str, Any]):
+    def experiment_start(self, experiment_id: str, parameters: Dict[str, Any]) -> None:
         """Log experiment start."""
         self.info(
             f"Experiment started: {experiment_id}",
@@ -122,7 +183,7 @@ class APGILogger:
             event_type="experiment_start",
         )
 
-    def experiment_end(self, experiment_id: str, status: str, duration: float):
+    def experiment_end(self, experiment_id: str, status: str, duration: float) -> None:
         """Log experiment end."""
         self.info(
             f"Experiment completed: {experiment_id} ({status})",
@@ -132,7 +193,7 @@ class APGILogger:
             event_type="experiment_end",
         )
 
-    def security_event(self, event_type: str, details: Dict[str, Any]):
+    def security_event(self, event_type: str, details: Dict[str, Any]) -> None:
         """Log security-related event."""
         self.warning(
             f"Security event: {event_type}",
@@ -141,7 +202,9 @@ class APGILogger:
             event_type="security",
         )
 
-    def performance_metric(self, metric_name: str, value: float, unit: str = ""):
+    def performance_metric(
+        self, metric_name: str, value: float, unit: str = ""
+    ) -> None:
         """Log performance metric."""
         self.debug(
             f"Performance: {metric_name} = {value} {unit}",
@@ -151,11 +214,12 @@ class APGILogger:
             event_type="performance",
         )
 
-    def _log(self, level: int, message: str, **kwargs):
+    def _log(self, level: int, message: str, **kwargs: Any) -> None:
         """Internal logging method with extra data."""
         extra_data = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "module": self.name,
+            "correlation_id": CorrelationContext.get_correlation_id(),
             **kwargs,
         }
 
@@ -163,13 +227,18 @@ class APGILogger:
             self.logger.log(level, message, extra={"extra_data": extra_data})
         else:
             # For non-structured logging, add key info to message
+            cid = CorrelationContext.get_correlation_id()[
+                :8
+            ]  # Short ID for readability
             if kwargs:
                 key_info = ", ".join(f"{k}={v}" for k, v in list(kwargs.items())[:3])
-                message = f"{message} [{key_info}]"
+                message = f"[{cid}] {message} [{key_info}]"
+            else:
+                message = f"[{cid}] {message}"
             self.logger.log(level, message)
 
     @contextmanager
-    def log_execution(self, operation: str):
+    def log_execution(self, operation: str) -> Any:
         """Context manager to log operation execution time."""
         start_time = datetime.now()
         self.debug(f"Starting operation: {operation}")
@@ -196,18 +265,25 @@ class APGILogger:
 class StructuredFormatter(logging.Formatter):
     """JSON structured formatter for machine-readable logs."""
 
-    def format(self, record):
+    def format(self, record: logging.LogRecord) -> str:
         log_entry = {
-            "execution_time_seconds": record.execution_time.total_seconds(),
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),
         }
 
+        # Add execution time if available
+        if hasattr(record, "execution_time"):
+            log_entry["execution_time_seconds"] = record.execution_time.total_seconds()
+
         # Add extra data if available
         if hasattr(record, "extra_data"):
             log_entry.update(record.extra_data)
+
+        # Ensure correlation_id is always present
+        if "correlation_id" not in log_entry:
+            log_entry["correlation_id"] = CorrelationContext.get_correlation_id()
 
         return json.dumps(log_entry)
 
@@ -230,7 +306,7 @@ class LoggingManager:
         log_dir: Optional[Union[str, Path]] = None,
         enable_structured: bool = False,
         enable_console: bool = True,
-    ):
+    ) -> None:
         """
         Configure global logging settings.
 
@@ -253,7 +329,7 @@ class LoggingManager:
 
     @classmethod
     def get_logger(
-        cls, name: str, log_file: Optional[Union[str, Path]] = None, **kwargs
+        cls, name: str, log_file: Optional[Union[str, Path]] = None, **kwargs: Any
     ) -> APGILogger:
         """
         Get or create a logger instance.
@@ -287,7 +363,7 @@ class LoggingManager:
         return cls._loggers[name]
 
     @classmethod
-    def replace_print_with_logging(cls, module_name: str):
+    def replace_print_with_logging(cls, module_name: str) -> Any:
         """
         Replace print() statements with logging for a specific module.
 
@@ -299,7 +375,7 @@ class LoggingManager:
         logger = cls.get_logger(module_name)
 
         # Create a print replacement function
-        def safe_print(*args, **kwargs):
+        def safe_print(*args: Any, **kwargs: Any) -> None:
             """Print replacement that logs instead."""
             message = " ".join(str(arg) for arg in args)
             logger.info(message)
@@ -308,7 +384,7 @@ class LoggingManager:
         return safe_print
 
 
-def get_logger(name: str, **kwargs) -> APGILogger:
+def get_logger(name: str, **kwargs: Any) -> APGILogger:
     """
     Convenience function to get a logger.
 
@@ -326,7 +402,7 @@ def setup_logging(
     log_level: str = "INFO",
     log_dir: Optional[str] = None,
     enable_structured: bool = False,
-):
+) -> None:
     """
     Setup global logging configuration.
 
@@ -364,3 +440,50 @@ def get_gui_logger() -> APGILogger:
 def get_analysis_logger() -> APGILogger:
     """Get logger for analysis operations."""
     return get_logger("apgi.analysis")
+
+
+def get_correlation_id() -> str:
+    """
+    Get the current correlation ID for distributed tracing.
+
+    Returns:
+        Current correlation ID or newly generated one
+
+    Example:
+        cid = get_correlation_id()
+        logger.info("Processing request", correlation_id=cid)
+        # Pass cid to downstream services for tracing
+    """
+    return CorrelationContext.get_correlation_id()
+
+
+def set_correlation_id(correlation_id: str) -> None:
+    """
+    Set the correlation ID for the current thread.
+
+    Args:
+        correlation_id: Correlation ID to set
+
+    Example:
+        # When receiving a request from another service
+        set_correlation_id(request.headers.get("X-Correlation-ID"))
+        logger.info("Processing incoming request")
+    """
+    CorrelationContext.set_correlation_id(correlation_id)
+
+
+__all__ = [
+    "APGILogger",
+    "CorrelationContext",
+    "LoggingManager",
+    "StructuredFormatter",
+    "get_logger",
+    "setup_logging",
+    "get_security_logger",
+    "get_experiment_logger",
+    "get_data_logger",
+    "get_gui_logger",
+    "get_analysis_logger",
+    "get_correlation_id",
+    "set_correlation_id",
+]

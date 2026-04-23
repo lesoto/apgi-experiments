@@ -5,10 +5,9 @@ This module contains statistical analysis tools, validation frameworks,
 and reporting capabilities for comprehensive APGI falsification testing.
 """
 
-from .analysis_engine import (
-    AnalysisEngine,
-    AnalysisResult,
-)
+from typing import Any, Dict, List, Optional
+
+from .analysis_engine import AnalysisEngine, AnalysisResult
 from .bayesian_models import (
     HierarchicalBayesianModel,
     IgnitionProbabilityCalculator,
@@ -85,14 +84,15 @@ from .statistical_tester import (
     TestType,
 )
 
+
 # Mock classes for testing
 class StatisticalAnalyzer:
     """Mock statistical analyzer for testing purposes."""
 
-    def __init__(self):
-        self.analysis_results = {}
+    def __init__(self) -> None:
+        self.analysis_results: Dict[str, Any] = {}
 
-    def analyze_results(self, data):
+    def analyze_results(self, data: Any) -> Dict[str, Any]:
         """Analyze experimental results."""
         analysis_id = f"analysis_{hash(str(data)) % 10000:04d}"
         result = {
@@ -108,7 +108,7 @@ class StatisticalAnalyzer:
         self.analysis_results[analysis_id] = result
         return result
 
-    def get_analysis(self, analysis_id):
+    def get_analysis(self, analysis_id: str) -> Optional[Dict[str, Any]]:
         """Get analysis result by ID."""
         return self.analysis_results.get(analysis_id)
 
@@ -116,11 +116,11 @@ class StatisticalAnalyzer:
 class ProgressiveAnalyzer:
     """Mock progressive analyzer for testing purposes."""
 
-    def __init__(self):
-        self.analysis_steps = []
+    def __init__(self) -> None:
+        self.analysis_steps: List[Dict[str, Any]] = []
         self.current_step = 0
 
-    def add_analysis_step(self, step_data):
+    def add_analysis_step(self, step_data: Any) -> Dict[str, Any]:
         """Add an analysis step."""
         step_id = f"step_{len(self.analysis_steps)}"
         step = {
@@ -132,32 +132,36 @@ class ProgressiveAnalyzer:
         self.analysis_steps.append(step)
         return step
 
-    def complete_step(self, step_id):
+    def complete_step(self, step_id: str) -> None:
         """Mark an analysis step as completed."""
         for step in self.analysis_steps:
             if step["step_id"] == step_id:
                 step["completed"] = True
                 break
 
-    def get_progress(self):
+    def get_progress(self) -> Dict[str, Any]:
         """Get analysis progress."""
         completed = sum(1 for step in self.analysis_steps if step["completed"])
         return {
             "total_steps": len(self.analysis_steps),
             "completed_steps": completed,
-            "progress_percentage": (completed / len(self.analysis_steps) * 100)
-            if self.analysis_steps
-            else 0,
+            "progress_percentage": (
+                (completed / len(self.analysis_steps) * 100)
+                if self.analysis_steps
+                else 0
+            ),
         }
 
 
 class ReplicationChecker:
     """Mock replication checker for testing purposes."""
 
-    def __init__(self):
-        self.replication_results = {}
+    def __init__(self) -> None:
+        self.replication_results: Dict[str, Any] = {}
 
-    def check_replication(self, original_result, replication_result):
+    def check_replication(
+        self, original_result: Any, replication_result: Any
+    ) -> Dict[str, Any]:
         """Check if results replicate successfully."""
         replication_id = (
             f"rep_{hash(str(original_result) + str(replication_result)) % 10000:04d}"
@@ -178,10 +182,12 @@ class ReplicationChecker:
 class CrossModalAnalyzer:
     """Mock cross-modal analyzer for testing purposes."""
 
-    def __init__(self):
-        self.modal_analyses = {}
+    def __init__(self) -> None:
+        self.modal_analyses: Dict[str, Any] = {}
 
-    def analyze_cross_modal(self, modality1_data, modality2_data):
+    def analyze_cross_modal(
+        self, modality1_data: Any, modality2_data: Any
+    ) -> Dict[str, Any]:
         """Analyze cross-modal relationships."""
         analysis_id = (
             f"cross_{hash(str(modality1_data) + str(modality2_data)) % 10000:04d}"

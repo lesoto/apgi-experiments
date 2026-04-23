@@ -7,7 +7,7 @@ import tkinter as tk
 from dataclasses import dataclass, field
 from enum import Enum
 from tkinter import messagebox
-from typing import Optional
+from typing import Dict, List, Optional
 
 from ..logging.standardized_logging import get_logger
 
@@ -38,43 +38,45 @@ class ErrorDialogManager:
     _instance = None
     _lock = threading.Lock()
 
-    def __new__(cls):
+    def __new__(cls) -> "ErrorDialogManager":
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:
                     cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self):
+    def __init__(self) -> None:
         if not hasattr(self, "_initialized"):
             self._initialized = True
             self.logger = get_logger(__name__)
 
             # Error queue and processing
-            self._error_queue = queue.Queue()
+            self._error_queue: queue.Queue = queue.Queue()
             self._processing_active = False
-            self._processing_thread = None
+            self._processing_thread: Optional[threading.Thread] = None
 
             # Aggregation settings
             self._aggregation_window = 5.0  # 5 seconds
             self._max_dialogs_per_minute = 10
-            self._dialog_timestamps = []
+            self._dialog_timestamps: List[float] = []
 
             # Similar error tracking
-            self._recent_errors = {}
+            self._recent_errors: Dict[str, QueuedError] = {}
+            self._recent_errors_lock = threading.Lock()
             self._cleanup_interval = 60.0  # Clean up old errors every minute
 
             # Start processing thread
             self._start_processing()
 
-    def _start_processing(self):
+    def _start_processing(self) -> None:
         """Start the error processing thread."""
         if not self._processing_active:
             self._processing_active = True
             self._processing_thread = threading.Thread(
                 target=self._process_error_queue, daemon=True, name="ErrorDialogManager"
             )
-            self._processing_thread.start()
+            if self._processing_thread:
+                self._processing_thread.start()
             self.logger.info("Error dialog manager started")
 
     def show_error(
@@ -84,7 +86,7 @@ class ErrorDialogManager:
         dialog_type: ErrorDialogType = ErrorDialogType.ERROR,
         details: Optional[str] = None,
         parent: Optional[tk.Tk] = None,
-    ):
+    ) -> None:
         """Queue an error dialog for display."""
         queued_error = QueuedError(
             message=message, dialog_type=dialog_type, title=title, details=details
@@ -95,7 +97,7 @@ class ErrorDialogManager:
         except queue.Full:
             self.logger.warning("Error queue is full, dropping error message")
 
-    def _process_error_queue(self):
+    def _process_error_queue(self) -> None:
         """Process queued errors with rate limiting and aggregation."""
         while self._processing_active:
             try:
@@ -150,68 +152,76 @@ class ErrorDialogManager:
         error_key = f"{new_error.title}:{new_error.message[:50]}"
 
         # Check for similar recent errors
-        if error_key in self._recent_errors:
-            recent_error = self._recent_errors[error_key]
+        with self._recent_errors_lock:
+            if error_key in self._recent_errors:
+                recent_error = self._recent_errors[error_key]
 
-            # Check if within aggregation window
-            if current_time - recent_error.timestamp < self._aggregation_window:
-                # Aggregate the error
-                recent_error.similar_errors += 1
-                recent_error.timestamp = current_time
+                # Check if within aggregation window
+                if current_time - recent_error.timestamp < self._aggregation_window:
+                    # Aggregate the error
+                    recent_error.similar_errors += 1
+                    recent_error.timestamp = current_time
 
-                # Update message to show count
-                if recent_error.similar_errors > 1:
-                    recent_error.message = (
-                        f"{new_error.message} "
-                        f"(occurred {recent_error.similar_errors} times)"
+                    # Update message to show count
+                    if recent_error.similar_errors > 1:
+                        recent_error.message = (
+                            f"{new_error.message} "
+                            f"(occurred {recent_error.similar_errors} times)"
+                        )
+
+                    self.logger.debug(
+                        f"Aggregated error: {error_key} "
+                        f"(count: {recent_error.similar_errors})"
                     )
+                    return recent_error
 
-                self.logger.debug(
-                    f"Aggregated error: {error_key} "
-                    f"(count: {recent_error.similar_errors})"
-                )
-                return recent_error
+            # No aggregation, store as new error
+            self._recent_errors[error_key] = new_error
+            return new_error
 
-        # No aggregation, store as new error
-        self._recent_errors[error_key] = new_error
-        return new_error
-
-    def _cleanup_old_errors(self):
+    def _cleanup_old_errors(self) -> None:
         """Clean up old errors from the tracking dictionary."""
         current_time = time.time()
 
-        # Remove errors older than cleanup interval
-        old_keys = [
-            key
-            for key, error in self._recent_errors.items()
-            if current_time - error.timestamp > self._cleanup_interval
-        ]
+        with self._recent_errors_lock:
+            # Remove errors older than cleanup interval
+            old_keys = [
+                key
+                for key, error in self._recent_errors.items()
+                if current_time - error.timestamp > self._cleanup_interval
+            ]
 
-        for key in old_keys:
-            del self._recent_errors[key]
+            for key in old_keys:
+                del self._recent_errors[key]
 
         if old_keys:
             self.logger.debug(f"Cleaned up {len(old_keys)} old error entries")
 
     def _display_error_dialog(
         self, queued_error: QueuedError, parent: Optional[tk.Tk] = None
-    ):
+    ) -> None:
         """Display an error dialog in the main thread."""
 
-        def show_dialog():
+        def show_dialog() -> None:
             try:
                 # Choose appropriate dialog based on type
                 if queued_error.dialog_type == ErrorDialogType.ERROR:
                     messagebox.showerror(
-                        queued_error.title, queued_error.message, parent=parent
+                        queued_error.title,
+                        queued_error.message,
+                        parent=parent,  # type: ignore[arg-type]
                     )
                 elif queued_error.dialog_type == ErrorDialogType.WARNING:
                     messagebox.showwarning(
-                        queued_error.title, queued_error.message, parent=parent
+                        queued_error.title,
+                        queued_error.message,
+                        parent=parent,  # type: ignore[arg-type]
                     )
                 else:  # INFO
                     messagebox.showinfo(
-                        queued_error.title, queued_error.message, parent=parent
+                        queued_error.title,
+                        queued_error.message,
+                        parent=parent,  # type: ignore[arg-type]
                     )
 
                 # Log the display
@@ -245,7 +255,7 @@ class ErrorDialogManager:
             except Exception:
                 self.logger.warning("Could not find parent window for dialog")
 
-    def clear_queue(self):
+    def clear_queue(self) -> None:
         """Clear all pending error dialogs."""
         while not self._error_queue.empty():
             try:
@@ -258,7 +268,7 @@ class ErrorDialogManager:
         """Get the current size of the error queue."""
         return self._error_queue.qsize()
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """Shutdown the error dialog manager."""
         self._processing_active = False
         if self._processing_thread:
@@ -267,7 +277,7 @@ class ErrorDialogManager:
 
 
 # Global instance
-error_dialog_manager = ErrorDialogManager()
+error_dialog_manager: ErrorDialogManager = ErrorDialogManager()
 
 
 def show_error_dialog(
@@ -276,7 +286,7 @@ def show_error_dialog(
     dialog_type: ErrorDialogType = ErrorDialogType.ERROR,
     details: Optional[str] = None,
     parent: Optional[tk.Tk] = None,
-):
+) -> None:
     """Convenience function to show an error dialog with rate limiting."""
     error_dialog_manager.show_error(
         message=message,
@@ -287,16 +297,22 @@ def show_error_dialog(
     )
 
 
-def show_error(message: str, title: str = "Error", parent: Optional[tk.Tk] = None):
+def show_error(
+    message: str, title: str = "Error", parent: Optional[tk.Tk] = None
+) -> None:
     """Show an error dialog."""
     show_error_dialog(message, title, ErrorDialogType.ERROR, parent=parent)
 
 
-def show_warning(message: str, title: str = "Warning", parent: Optional[tk.Tk] = None):
+def show_warning(
+    message: str, title: str = "Warning", parent: Optional[tk.Tk] = None
+) -> None:
     """Show a warning dialog."""
     show_error_dialog(message, title, ErrorDialogType.WARNING, parent=parent)
 
 
-def show_info(message: str, title: str = "Information", parent: Optional[tk.Tk] = None):
+def show_info(
+    message: str, title: str = "Information", parent: Optional[tk.Tk] = None
+) -> None:
     """Show an info dialog."""
     show_error_dialog(message, title, ErrorDialogType.INFO, parent=parent)

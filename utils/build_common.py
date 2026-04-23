@@ -226,10 +226,11 @@ def get_version(project_path: Optional[str] = None) -> str:
     pyproject_file = project_root / "pyproject.toml"
     if pyproject_file.exists():
         try:
-            import toml  # type: ignore
+            import toml
 
             config = toml.load(pyproject_file)
-            return config.get("project", {}).get("version", "0.1.0")
+            version: str = config.get("project", {}).get("version", "0.1.0")
+            return version
         except ImportError:
             pass
 

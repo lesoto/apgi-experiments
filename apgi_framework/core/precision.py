@@ -218,6 +218,137 @@ class PrecisionCalculator:
         else:
             return precision
 
+    def calculate_precision(
+        self, data: np.ndarray, method: str = "inverse_variance"
+    ) -> float:
+        """
+        Calculate precision from sample data (alias for calculate_precision_from_samples).
+
+        Args:
+            data: Array of prediction error samples
+            method: Calculation method ("inverse_variance", "inverse_std", "fisher_information")
+
+        Returns:
+            Calculated precision value
+        """
+        return self.calculate_precision_from_samples(data, method)
+
+    def confidence_interval(self, data: np.ndarray, confidence: float = 0.95) -> tuple:
+        """
+        Calculate confidence interval for data.
+
+        Args:
+            data: Array of samples
+            confidence: Confidence level (default 0.95)
+
+        Returns:
+            Tuple of (lower_bound, upper_bound)
+        """
+        if len(data) == 0:
+            raise MathematicalError("Cannot calculate CI for empty data")
+        if len(data) < 2:
+            raise MathematicalError("Need at least 2 samples for CI calculation")
+
+        from scipy import stats
+
+        mean = np.mean(data)
+        sem = stats.sem(data)  # Standard error of mean
+        df = len(data) - 1  # Degrees of freedom
+
+        # Get t-value for confidence level
+        t_value = stats.t.ppf((1 + confidence) / 2, df)
+
+        margin = t_value * sem
+        return (mean - margin, mean + margin)
+
+    def relative_precision(self, data: np.ndarray) -> float:
+        """
+        Calculate relative precision (coefficient of variation inverse).
+
+        Args:
+            data: Array of samples
+
+        Returns:
+            Relative precision value
+        """
+        mean = np.mean(data)
+        std = np.std(data, ddof=1)
+
+        if std == 0:
+            return float("inf") if mean == 0 else self.max_precision
+
+        cv = std / abs(mean) if mean != 0 else float("inf")
+        if cv == 0:
+            return self.max_precision
+
+        return min(1.0 / cv, self.max_precision)
+
+    def coefficient_of_variation(self, data: np.ndarray) -> float:
+        """
+        Calculate coefficient of variation (CV).
+
+        Args:
+            data: Array of samples
+
+        Returns:
+            Coefficient of variation
+        """
+        mean = np.mean(data)
+        std = np.std(data, ddof=1)
+
+        if mean == 0:
+            return 0.0 if std == 0 else float("inf")
+
+        return float(std / abs(mean))
+
+    def standard_error(self, data: np.ndarray) -> float:
+        """
+        Calculate standard error of the mean.
+
+        Args:
+            data: Array of samples
+
+        Returns:
+            Standard error
+        """
+        if len(data) == 0:
+            raise MathematicalError("Cannot calculate SE for empty data")
+
+        return float(np.std(data, ddof=1) / np.sqrt(len(data)))
+
+    def calculate_precision_batch(
+        self, datasets: list, method: str = "inverse_variance"
+    ) -> list:
+        """
+        Calculate precision for multiple datasets.
+
+        Args:
+            datasets: List of numpy arrays
+            method: Calculation method
+
+        Returns:
+            List of precision values
+        """
+        return [self.calculate_precision(d, method) for d in datasets]
+
+    def precision_metrics(self, data: np.ndarray) -> dict:
+        """
+        Calculate comprehensive precision metrics.
+
+        Args:
+            data: Array of samples
+
+        Returns:
+            Dictionary with precision metrics
+        """
+        return {
+            "precision": self.calculate_precision(data),
+            "confidence_interval_95": self.confidence_interval(data, 0.95),
+            "relative_precision": self.relative_precision(data),
+            "coefficient_of_variation": self.coefficient_of_variation(data),
+            "standard_error": self.standard_error(data),
+        }
+
     def get_precision_info(self) -> dict:
         """
         Get information about precision calculation settings.

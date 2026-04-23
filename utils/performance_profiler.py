@@ -28,6 +28,7 @@ try:
 except ImportError:
     # Fallback if running as standalone script
     import logging
+    from typing import Any
 
     class MockAPGILogger:
         def __init__(self):
@@ -37,7 +38,9 @@ except ImportError:
             """Mock performance metric logging."""
             self.logger.info(f"Performance Metric - {name}: {value} {unit}")
 
-    apgi_logger = MockAPGILogger()
+    # Use a different name to avoid redefinition
+    _apgi_logger_fallback: Any = MockAPGILogger()
+    apgi_logger = _apgi_logger_fallback  # type: ignore[misc]
 
     # Suppress matplotlib warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="matplotlib")
@@ -438,7 +441,7 @@ class PerformanceProfiler:
                         }
                     )
 
-        report["bottlenecks"] = bottlenecks  # type: ignore[assignment]
+        report["bottlenecks"] = bottlenecks
 
         # Generate recommendations
         recommendations = []
@@ -491,7 +494,7 @@ class PerformanceProfiler:
                     }
                 )
 
-        report["recommendations"] = recommendations  # type: ignore[assignment]
+        report["recommendations"] = recommendations
 
         return report
 

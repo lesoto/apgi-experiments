@@ -11,20 +11,17 @@ import logging
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
+from apgi_framework.logging.standardized_logging import get_logger
 from apgi_framework.main_controller import MainApplicationController
 from apgi_framework.testing.batch_runner import BatchTestRunner
-from apgi_framework.testing.persistence import (
-    TestResultPersistence,
-    store_test_results,
-)
-from apgi_framework.logging.standardized_logging import get_logger
+from apgi_framework.testing.persistence import TestResultPersistence, store_test_results
 
 logger = get_logger(__name__)
 
 
-def validate_trials_range(value):
+def validate_trials_range(value: str) -> int:
     """Validate trials argument is within documented range (100-10000)."""
     try:
         ivalue = int(value)
@@ -37,7 +34,7 @@ def validate_trials_range(value):
         raise argparse.ArgumentTypeError(f"Invalid integer value for trials: {value}")
 
 
-def validate_participants_range(value):
+def validate_participants_range(value: str) -> int:
     """Validate participants argument is within documented range (10-1000)."""
     try:
         ivalue = int(value)
@@ -52,7 +49,7 @@ def validate_participants_range(value):
         )
 
 
-def validate_threshold_range(value):
+def validate_threshold_range(value: str) -> float:
     """Validate threshold argument is within documented range (0.5-10.0)."""
     try:
         fvalue = float(value)
@@ -65,7 +62,7 @@ def validate_threshold_range(value):
         raise argparse.ArgumentTypeError(f"Invalid float value for threshold: {value}")
 
 
-def validate_positive_int(value):
+def validate_positive_int(value: str) -> int:
     """Validate positive integer argument."""
     try:
         ivalue = int(value)
@@ -78,7 +75,7 @@ def validate_positive_int(value):
         raise argparse.ArgumentTypeError(f"Invalid integer value: {value}")
 
 
-def validate_workers_range(value):
+def validate_workers_range(value: str) -> int:
     """Validate max-workers argument is within reasonable range (1-64)."""
     try:
         ivalue = int(value)
@@ -93,7 +90,7 @@ def validate_workers_range(value):
         )
 
 
-def validate_timeout_range(value):
+def validate_timeout_range(value: str) -> int:
     """Validate timeout argument is within reasonable range (1-3600 seconds)."""
     try:
         ivalue = int(value)
@@ -106,7 +103,7 @@ def validate_timeout_range(value):
         raise argparse.ArgumentTypeError(f"Invalid integer value for timeout: {value}")
 
 
-def validate_days_range(value):
+def validate_days_range(value: str) -> int:
     """Validate days argument is within reasonable range (1-365)."""
     try:
         ivalue = int(value)
@@ -119,7 +116,7 @@ def validate_days_range(value):
         raise argparse.ArgumentTypeError(f"Invalid integer value for days: {value}")
 
 
-def validate_coverage_threshold_range(value):
+def validate_coverage_threshold_range(value: str) -> float:
     """Validate coverage threshold argument is within range (0-100)."""
     try:
         fvalue = float(value)
@@ -134,7 +131,7 @@ def validate_coverage_threshold_range(value):
         )
 
 
-def validate_precision_range(value):
+def validate_precision_range(value: str) -> float:
     """Validate precision argument is within reasonable range (0.001-1000)."""
     try:
         fvalue = float(value)
@@ -147,7 +144,7 @@ def validate_precision_range(value):
         raise argparse.ArgumentTypeError(f"Invalid float value for precision: {value}")
 
 
-def validate_steepness_range(value):
+def validate_steepness_range(value: str) -> float:
     """Validate steepness argument is within reasonable range (0.1-50.0)."""
     try:
         fvalue = float(value)
@@ -160,7 +157,7 @@ def validate_steepness_range(value):
         raise argparse.ArgumentTypeError(f"Invalid float value for steepness: {value}")
 
 
-def validate_gain_range(value):
+def validate_gain_range(value: str) -> float:
     """Validate gain argument is within reasonable range (-10.0 to 10.0)."""
     try:
         fvalue = float(value)
@@ -176,10 +173,10 @@ def validate_gain_range(value):
 class APGIFrameworkCLI:
     """Command-line interface for the APGI Framework Testing System."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the CLI."""
-        self.controller = None
-        self.logger = None
+        self.controller: Optional[MainApplicationController] = None
+        self.logger: Optional[Any] = None
 
     def setup_logging(self, log_level: str = "INFO") -> None:
         """Setup logging for CLI operations."""
@@ -634,16 +631,22 @@ Examples:
 
     def initialize_controller(self, config_path: Optional[str] = None) -> None:
         """Initialize the main application controller."""
+        # Ensure logger is available
+        if self.logger is None:
+            self.setup_logging()
+
+        assert self.logger is not None  # for mypy
         try:
             self.controller = MainApplicationController(config_path)
             self.controller.initialize_system()
             self.logger.info("System initialized successfully")
-        except Exception as e:
+        except (RuntimeError, IOError, ValueError) as e:
             self.logger.error(f"Failed to initialize system: {e}")
             sys.exit(1)
 
     def run_individual_test(self, args: argparse.Namespace) -> None:
         """Run an individual falsification test."""
+        assert self.logger is not None  # for mypy
         self.logger.info(f"Running {args.test_type} test with {args.trials} trials")
 
         try:
@@ -653,6 +656,7 @@ Examples:
             elif not self.controller:
                 self.initialize_controller(None)
             # Update configuration if parameters provided
+            assert self.controller is not None  # for mypy
             if args.trials:
                 self.controller.config_manager.update_experimental_config(
                     n_trials=args.trials
@@ -691,12 +695,14 @@ Examples:
             # Save results
             self._save_test_result(result, args.test_type)
 
-        except Exception as e:
+        except (RuntimeError, ValueError, KeyError) as e:
             self.logger.error(f"Test execution failed: {e}")
             sys.exit(1)
 
     def run_batch_experiments(self, args: argparse.Namespace) -> None:
         """Run batch experiments."""
+        assert self.logger is not None  # for mypy
+        assert self.controller is not None  # for mypy
         self.logger.info("Running batch experiments")
 
         try:
@@ -737,7 +743,7 @@ Examples:
                     results[test_type] = result
                     self.logger.info(f"Completed {test_type} test")
 
-                except Exception as e:
+                except (RuntimeError, ValueError, KeyError) as e:
                     self.logger.error(f"Failed to run {test_type} test: {e}")
                     results[test_type] = {"error": str(e)}
 
@@ -747,12 +753,13 @@ Examples:
             # Save batch results
             self._save_batch_results(results)
 
-        except Exception as e:
+        except (RuntimeError, IOError, ValueError) as e:
             self.logger.error(f"Batch execution failed: {e}")
             sys.exit(1)
 
     def generate_configuration(self, args: argparse.Namespace) -> None:
         """Generate a configuration file."""
+        assert self.logger is not None  # for mypy
         self.logger.info(
             f"Generating {args.template} configuration file: {args.output}"
         )
@@ -774,12 +781,14 @@ Examples:
 
             self.logger.info(f"Configuration saved to {args.output}")
 
-        except Exception as e:
+        except (IOError, OSError, ValueError, TypeError) as e:
             self.logger.error(f"Failed to generate configuration: {e}")
             sys.exit(1)
 
     def validate_system(self, args: argparse.Namespace) -> None:
         """Validate system components."""
+        assert self.logger is not None  # for mypy
+        assert self.controller is not None  # for mypy
         self.logger.info("Validating system components...")
 
         try:
@@ -793,21 +802,25 @@ Examples:
             if not validation_results.get("overall", False):
                 sys.exit(1)
 
-        except Exception as e:
+        except (RuntimeError, ValueError, KeyError) as e:
             self.logger.error(f"System validation failed: {e}")
             sys.exit(1)
 
     def show_status(self, args: argparse.Namespace) -> None:
         """Show system status."""
+        assert self.logger is not None  # for mypy
+        assert self.controller is not None  # for mypy
         try:
             status = self.controller.get_system_status()
             self._display_system_status(status)
-        except Exception as e:
+        except (RuntimeError, AttributeError) as e:
             self.logger.error(f"Failed to get system status: {e}")
             sys.exit(1)
 
     def set_parameters(self, args: argparse.Namespace) -> None:
         """Set APGI parameters."""
+        assert self.logger is not None  # for mypy
+        assert self.controller is not None  # for mypy
         try:
             updates = {}
             if args.extero_precision is not None:
@@ -827,12 +840,13 @@ Examples:
             else:
                 self.logger.warning("No parameters specified to update")
 
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError) as e:
             self.logger.error(f"Failed to set parameters: {e}")
             sys.exit(1)
 
     def run_advanced_batch_tests(self, args: argparse.Namespace) -> None:
         """Run advanced batch tests using the new batch test runner."""
+        assert self.logger is not None  # for mypy
         self.logger.info("Running advanced batch tests")
 
         try:
@@ -842,12 +856,13 @@ Examples:
             )
 
             # Set progress callback
-            def progress_callback(progress: float, result: Any):
+            def progress_callback(progress: float, result: Any) -> None:
+                assert self.logger is not None  # for mypy
                 self.logger.info(
                     f"Progress: {progress:.1%} - {result.test_name}: {result.status}"
                 )
 
-            batch_runner.set_progress_callback(progress_callback)
+            batch_runner.set_progress_callback(progress_callback)  # type: ignore[no-untyped-call]
 
             # Determine execution mode
             parallel = args.parallel and not args.sequential
@@ -869,7 +884,7 @@ Examples:
                 self.logger.info(
                     f"Test results stored in database with batch_id: {batch_id}"
                 )
-            except Exception as e:
+            except (RuntimeError, IOError, ValueError) as e:
                 self.logger.warning(f"Failed to store results in database: {e}")
 
             # Display results
@@ -883,12 +898,13 @@ Examples:
             # Save results for potential re-run
             self._save_batch_test_summary(summary)
 
-        except Exception as e:
+        except (RuntimeError, IOError, ValueError) as e:
             self.logger.error(f"Advanced batch test execution failed: {e}")
             sys.exit(1)
 
     def manage_test_results(self, args: argparse.Namespace) -> None:
         """Manage test results."""
+        assert self.logger is not None  # for mypy
         try:
             if args.list:
                 self._list_test_results()
@@ -906,12 +922,13 @@ Examples:
                 self.logger.error("Example: manage-results --show session_123")
                 sys.exit(2)
 
-        except Exception as e:
+        except (RuntimeError, IOError, ValueError) as e:
             self.logger.error(f"Test results management failed: {e}")
             sys.exit(1)
 
     def analyze_test_results(self, args: argparse.Namespace) -> None:
         """Analyze test results and generate reports."""
+        assert self.logger is not None  # for mypy
         try:
             persistence = TestResultPersistence()
 
@@ -995,12 +1012,13 @@ Examples:
                 self.logger.error("Example: analyze-results --export results.json")
                 sys.exit(2)
 
-        except Exception as e:
+        except (RuntimeError, IOError, ValueError) as e:
             self.logger.error(f"Test analysis failed: {e}")
             sys.exit(1)
 
     def run_enhanced_tests(self, args: argparse.Namespace) -> None:
         """Run enhanced test execution with GUI feature parity."""
+        assert self.logger is not None  # for mypy
         self.logger.info("Running enhanced test execution")
 
         try:
@@ -1011,19 +1029,20 @@ Examples:
             test_utils = TestUtilities(
                 args.root_path if hasattr(args, "root_path") else None
             )
-        except ImportError as e:
-            self.logger.error(f"Failed to import test utilities: {e}")
-            sys.exit(1)
 
             # Discover tests based on criteria
-            test_suites = []
+            from typing import List
+
+            from apgi_framework.utils.framework_test_utils import FrameworkTestSuite
+
+            test_suites: List[FrameworkTestSuite] = []
 
             if args.test_paths:
                 # Run specific test paths
                 for path in args.test_paths:
-                    suite = test_utils.discover_tests_in_path(Path(path))
-                    if suite:
-                        test_suites.append(suite)
+                    discovered = test_utils.discover_tests(Path(path))
+                    # discover_tests always returns a list, extend directly
+                    test_suites.extend(discovered)
             else:
                 # Discover tests by categories, modules, or tags
                 all_suites = test_utils.discover_all_tests()
@@ -1099,7 +1118,7 @@ Examples:
                 try:
                     batch_id = store_test_results(execution)
                     self.logger.info(f"Test results stored with batch_id: {batch_id}")
-                except Exception as e:
+                except (RuntimeError, IOError, ValueError) as e:
                     self.logger.warning(f"Failed to store results: {e}")
 
             # Save to output file if specified
@@ -1114,19 +1133,17 @@ Examples:
                     execution.coverage_data, args.coverage_report
                 )
 
-        except Exception as e:
+        except (RuntimeError, ValueError, KeyError) as e:
             self.logger.error(f"Enhanced test execution failed: {e}")
             sys.exit(1)
 
     def organize_tests(self, args: argparse.Namespace) -> None:
         """Organize and categorize tests with GUI feature parity."""
+        assert self.logger is not None  # for mypy
         try:
             from .utils.framework_test_utils import TestUtilities
 
             test_utils = TestUtilities(args.root_path)
-        except ImportError as e:
-            self.logger.error(f"Failed to import test utilities: {e}")
-            sys.exit(1)
 
             if args.discover:
                 self.logger.info("Discovering all tests...")
@@ -1145,39 +1162,39 @@ Examples:
                     )
 
                     if args.categorize:
-                        categories = {}
+                        categories: Dict[str, int] = {}
                         for tc in suite.test_cases:
                             cat = tc.category.value
                             categories[cat] = categories.get(cat, 0) + 1
 
                         logger.info(f"  Categories: {dict(categories)}")
 
-                    logger.info()
+                    logger.info("")
 
                 logger.info(f"Total Tests: {total_tests}")
                 logger.info(f"{'=' * 60}\n")
 
             elif args.list_categories:
-                test_suites = test_utils.discover_all_tests()
-                categories = set()
-                category_counts = {}
+                all_suites_for_list = test_utils.discover_all_tests()
+                categories_set: Set[str] = set()
+                category_counts: Dict[str, int] = {}
 
-                for suite in test_suites:
+                for suite in all_suites_for_list:
                     for tc in suite.test_cases:
                         cat = tc.category.value
-                        categories.add(cat)
+                        categories_set.add(cat)
                         category_counts[cat] = category_counts.get(cat, 0) + 1
 
                 logger.info("\nAvailable Test Categories:")
                 logger.info(f"{'=' * 40}")
-                for category in sorted(categories):
+                for category in sorted(categories_set):
                     logger.info(f"  {category}: {category_counts[category]} tests")
                 logger.info(f"{'=' * 40}\n")
 
             elif args.list_modules:
                 test_suites = test_utils.discover_all_tests()
-                modules = set()
-                module_counts = {}
+                modules: Set[str] = set()
+                module_counts: Dict[str, int] = {}
 
                 for suite in test_suites:
                     module = self._extract_module_from_suite(suite)
@@ -1194,8 +1211,8 @@ Examples:
 
             elif args.list_tags:
                 test_suites = test_utils.discover_all_tests()
-                all_tags = set()
-                tag_counts = {}
+                all_tags: Set[str] = set()
+                tag_counts: Dict[str, int] = {}
 
                 for suite in test_suites:
                     for tc in suite.test_cases:
@@ -1224,16 +1241,18 @@ Examples:
                 )
                 sys.exit(2)
 
-        except Exception as e:
+        except (RuntimeError, IOError, ValueError) as e:
+            assert self.logger is not None  # for mypy
             self.logger.error(f"Test organization failed: {e}")
             sys.exit(1)
 
     def manage_enhanced_coverage(self, args: argparse.Namespace) -> None:
         """Enhanced coverage management with additional CLI options."""
+        assert self.logger is not None  # for mypy
         try:
             from .testing.test_generator import SuiteGenerator
 
-            generator = SuiteGenerator()
+            generator = SuiteGenerator()  # type: ignore[no-untyped-call]
 
             if args.analyze:
                 self.logger.info("Analyzing test coverage gaps with enhanced options")
@@ -1328,12 +1347,18 @@ Examples:
                 )
                 sys.exit(2)
 
-        except Exception as e:
+        except (RuntimeError, IOError, ValueError) as e:
+            assert self.logger is not None  # for mypy
             self.logger.error(f"Enhanced coverage management failed: {e}")
             sys.exit(1)
+
+    def manage_test_coverage(self, args: argparse.Namespace) -> None:
         """Manage test coverage analysis and generation."""
+        assert self.logger is not None  # for mypy
         try:
-            generator = SuiteGenerator()
+            from .testing.test_generator import SuiteGenerator
+
+            generator = SuiteGenerator()  # type: ignore[no-untyped-call]
 
             if args.analyze:
                 self.logger.info("Analyzing test coverage gaps")
@@ -1394,7 +1419,8 @@ Examples:
                 )
 
             elif args.report:
-                self.logger.info(f"Generating coverage report: {args.report_file}")
+                if self.logger:
+                    self.logger.info(f"Generating coverage report: {args.report_file}")
                 analysis = generator.analyze_codebase(args.root_path)
                 report_path = generator.generate_coverage_report(
                     analysis, args.report_file
@@ -1402,17 +1428,20 @@ Examples:
                 logger.info(f"Coverage report generated: {report_path}")
 
             else:
+                assert self.logger is not None  # for mypy
                 self.logger.error(
                     "Must specify one of: --analyze, --generate, --report"
                 )
                 sys.exit(2)
 
-        except Exception as e:
+        except (RuntimeError, IOError, ValueError) as e:
+            assert self.logger is not None  # for mypy
             self.logger.error(f"Test coverage management failed: {e}")
             sys.exit(1)
 
     def _display_batch_test_summary(self, summary: Any) -> None:
         """Display batch test execution summary."""
+        assert self.logger is not None  # for mypy
         logger.info(f"\n{'=' * 80}")
         logger.info("APGI Framework Advanced Batch Test Results")
         logger.info(f"{'=' * 80}")
@@ -1446,6 +1475,7 @@ Examples:
 
     def _save_batch_test_summary(self, summary: Any) -> None:
         """Save batch test summary to file."""
+        assert self.logger is not None  # for mypy
         try:
             output_dir = Path("test_results")
             output_dir.mkdir(exist_ok=True)
@@ -1500,10 +1530,12 @@ Examples:
             with open(filename, "w") as f:
                 json.dump(summary_dict, f, indent=2, default=str)
 
-            self.logger.info(f"Batch test summary saved to {filename}")
+            if self.logger:
+                self.logger.info(f"Batch test summary saved to {filename}")
 
-        except Exception as e:
-            self.logger.warning(f"Failed to save batch test summary: {e}")
+        except (IOError, OSError, ValueError, TypeError) as e:
+            if self.logger:
+                self.logger.warning(f"Failed to save batch test summary: {e}")
 
     def _list_test_results(self) -> None:
         """List recent test result files."""
@@ -1531,6 +1563,7 @@ Examples:
 
     def _show_test_result(self, result_file: str) -> None:
         """Show details of a specific test result file."""
+        assert self.logger is not None  # for mypy
         results_dir = Path("test_results")
         file_path = (
             results_dir / result_file
@@ -1576,11 +1609,13 @@ Examples:
 
             logger.info(f"\n{'=' * 60}\n")
 
-        except Exception as e:
+        except (IOError, OSError, json.JSONDecodeError) as e:
+            assert self.logger is not None  # for mypy
             self.logger.error(f"Failed to read test result file: {e}")
 
     def _rerun_failed_tests(self, result_file: str) -> None:
         """Re-run failed tests from a previous result file."""
+        assert self.logger is not None  # for mypy
         try:
             self.logger.info(f"Re-running failed tests from {result_file}")
 
@@ -1592,12 +1627,13 @@ Examples:
             # Save new results
             self._save_batch_test_summary(summary)
 
-        except Exception as e:
+        except (RuntimeError, IOError, ValueError) as e:
             self.logger.error(f"Failed to re-run failed tests: {e}")
             sys.exit(1)
 
     def _clean_test_results(self) -> None:
         """Clean old test result files."""
+        assert self.logger is not None  # for mypy
         results_dir = Path("test_results")
         if not results_dir.exists():
             logger.info("No test results directory to clean")
@@ -1696,6 +1732,9 @@ Examples:
     def _save_test_result(self, result: Any, test_type: str) -> None:
         """Save individual test result to file."""
         try:
+            if self.controller is None:
+                logger.warning("Controller not initialized, skipping save")
+                return
             output_dir = Path(
                 self.controller.config_manager.get_experimental_config().output_directory
             )
@@ -1713,14 +1752,19 @@ Examples:
             with open(filename, "w") as f:
                 json.dump(result_dict, f, indent=2, default=str)
 
-            self.logger.info(f"Results saved to {filename}")
+            if self.logger:
+                self.logger.info(f"Results saved to {filename}")
 
-        except Exception as e:
-            self.logger.warning(f"Failed to save results: {e}")
+        except (IOError, OSError, ValueError, TypeError) as e:
+            if self.logger:
+                self.logger.warning(f"Failed to save results: {e}")
 
     def _save_batch_results(self, results: Dict[str, Any]) -> None:
         """Save batch experiment results to file."""
         try:
+            if self.controller is None:
+                logger.warning("Controller not initialized, skipping save")
+                return
             output_dir = Path(
                 self.controller.config_manager.get_experimental_config().output_directory
             )
@@ -1740,10 +1784,12 @@ Examples:
             with open(filename, "w") as f:
                 json.dump(results_dict, f, indent=2, default=str)
 
-            self.logger.info(f"Batch results saved to {filename}")
+            if self.logger:
+                self.logger.info(f"Batch results saved to {filename}")
 
-        except Exception as e:
-            self.logger.warning(f"Failed to save batch results: {e}")
+        except (IOError, OSError, ValueError, TypeError) as e:
+            if self.logger:
+                self.logger.warning(f"Failed to save batch results: {e}")
 
     def _create_default_config(self) -> Dict[str, Any]:
         """Create default configuration."""
@@ -1781,11 +1827,13 @@ Examples:
             "experimental_config": {"n_trials": 100, "output_directory": "results"},
         }
 
-    def _extract_module_from_suite(self, suite) -> str:
+    def _extract_module_from_suite(self, suite: Any) -> str:
         """Extract module name from test suite."""
+        from typing import cast
+
         # Extract module from suite name or file path
         if hasattr(suite, "name") and "." in suite.name:
-            return suite.name.split(".")[0]
+            return cast(str, suite.name.split(".")[0])
         elif hasattr(suite, "test_cases") and suite.test_cases:
             # Extract from first test case file path
             file_path = suite.test_cases[0].file_path
@@ -1804,7 +1852,7 @@ Examples:
         return "unknown"
 
     def _display_results_text(
-        self, execution, verbose: bool = False, progress_style: str = "bar"
+        self, execution: Any, verbose: bool = False, progress_style: str = "bar"
     ) -> None:
         """Display test results in text format."""
         logger.info(f"\n{'=' * 80}")
@@ -1848,7 +1896,7 @@ Examples:
 
         logger.info(f"{'=' * 80}\n")
 
-    def _display_results_json(self, execution) -> None:
+    def _display_results_json(self, execution: Any) -> None:
         """Display test results in JSON format."""
         results_data = {
             "execution_id": execution.execution_id,
@@ -1877,7 +1925,7 @@ Examples:
         }
         logger.info(json.dumps(results_data, indent=2))
 
-    def _display_results_xml(self, execution) -> None:
+    def _display_results_xml(self, execution: Any) -> None:
         """Display test results in XML format."""
         # Simple XML output - in a real implementation, you'd use xml.etree.ElementTree
         logger.info('<?xml version="1.0" encoding="UTF-8"?>')
@@ -1916,7 +1964,7 @@ Examples:
 
         logger.info("</testsuites>")
 
-    def _display_results_html(self, execution) -> None:
+    def _display_results_html(self, execution: Any) -> None:
         """Display test results in HTML format."""
         html_content = f"""
 <!DOCTYPE html>
@@ -1976,7 +2024,7 @@ Examples:
         logger.info(html_content)
 
     def _save_results_to_file(
-        self, execution, output_file: str, format_type: str
+        self, execution: Any, output_file: str, format_type: str
     ) -> None:
         """Save test results to specified file."""
         try:
@@ -2025,33 +2073,40 @@ Examples:
 
                     sys.stdout = original_stdout
 
-            self.logger.info(f"Results saved to {output_file}")
+            if self.logger:
+                self.logger.info(f"Results saved to {output_file}")
 
-        except Exception as e:
-            self.logger.error(f"Failed to save results to file: {e}")
+        except (IOError, OSError, ValueError) as e:
+            if self.logger:
+                self.logger.error(f"Failed to save results to file: {e}")
 
-    def _generate_coverage_report(self, coverage_data, report_format: str) -> None:
+    def _generate_coverage_report(self, coverage_data: Any, report_format: str) -> None:
         """Generate coverage report in specified format."""
         try:
             if report_format == "html":
                 # Generate HTML coverage report
-                self.logger.info("Generating HTML coverage report...")
+                if self.logger:
+                    self.logger.info("Generating HTML coverage report...")
                 # Implementation would use coverage.py HTML reporter
             elif report_format == "xml":
                 # Generate XML coverage report
-                self.logger.info("Generating XML coverage report...")
+                if self.logger:
+                    self.logger.info("Generating XML coverage report...")
                 # Implementation would use coverage.py XML reporter
             elif report_format == "json":
                 # Generate JSON coverage report
-                self.logger.info("Generating JSON coverage report...")
+                if self.logger:
+                    self.logger.info("Generating JSON coverage report...")
                 # Implementation would use coverage.py JSON reporter
             else:
                 # Generate text coverage report
-                self.logger.info("Generating text coverage report...")
+                if self.logger:
+                    self.logger.info("Generating text coverage report...")
                 # Implementation would use coverage.py text reporter
 
-        except Exception as e:
-            self.logger.warning(f"Failed to generate coverage report: {e}")
+        except (IOError, OSError, ValueError) as e:
+            if self.logger:
+                self.logger.warning(f"Failed to generate coverage report: {e}")
 
     def _build_test_tree(self, test_suites: Any) -> Dict[str, Any]:
         """Build hierarchical test tree structure."""
@@ -2076,7 +2131,7 @@ Examples:
 
         # Build tree structure
         for module_name, module_suites in modules.items():
-            module_node = {
+            module_node: Dict[str, Any] = {
                 "name": module_name,
                 "type": "module",
                 "children": [],
@@ -2087,7 +2142,7 @@ Examples:
             }
 
             for suite in module_suites:
-                suite_node = {
+                suite_node: Dict[str, Any] = {
                     "name": suite.name,
                     "type": "suite",
                     "children": [],
@@ -2135,7 +2190,7 @@ Examples:
 
         return config
 
-    def manage_test_coverage(self, args: argparse.Namespace) -> None:
+    def manage_test_coverage_legacy(self, args: argparse.Namespace) -> None:
         """Manage test coverage analysis and generation (legacy method for compatibility)."""
         # Redirect to enhanced coverage management
         self.manage_enhanced_coverage(args)
@@ -2199,22 +2254,30 @@ Examples:
             elif parsed_args.command == "set-params":
                 self.set_parameters(parsed_args)
             else:
-                self.logger.error(f"Unknown command: {parsed_args.command}")
+                if self.logger:
+                    self.logger.error(f"Unknown command: {parsed_args.command}")
                 sys.exit(2)
 
         except KeyboardInterrupt:
-            self.logger.info("Operation cancelled by user")
+            if self.logger:
+                self.logger.info("Operation cancelled by user")
             sys.exit(0)
+        except (RuntimeError, IOError, ValueError) as e:
+            if self.logger:
+                self.logger.error(f"Unexpected error: {e}")
+            sys.exit(1)
         except Exception as e:
-            self.logger.error(f"Unexpected error: {e}")
+            if self.logger:
+                self.logger.error(f"Unexpected error: {e}")
             sys.exit(1)
         finally:
             # Cleanup
             if self.controller:
                 try:
                     self.controller.shutdown_system()
-                except Exception as e:
-                    self.logger.warning(f"Error during cleanup: {e}")
+                except (RuntimeError, AttributeError) as e:
+                    if self.logger:
+                        self.logger.warning(f"Error during cleanup: {e}")
 
         # If we reach here, command executed successfully
         sys.exit(0)
@@ -2290,14 +2353,14 @@ def run_failed_tests(result_file: str, parallel: bool = True) -> Any:
 
         return {"error": "Failed to parse re-run results"}
 
-    except Exception as e:
+    except (IOError, OSError, json.JSONDecodeError, subprocess.SubprocessError) as e:
         logger.info(f"Error re-running failed tests: {e}")
         return {"error": str(e)}
 
 
-def main():
+def main() -> None:
     """Entry point for the CLI when run as a module."""
-    cli = APGIFrameworkCLI()
+    cli = APGIFrameworkCLI()  # type: ignore[no-untyped-call]
     cli.run()
 
 

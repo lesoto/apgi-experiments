@@ -9,7 +9,7 @@ import logging
 import tkinter as tk
 from datetime import datetime
 from tkinter import ttk
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -361,7 +361,7 @@ class ProgressDialog:
         self.indicator.start()
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Exit context manager."""
         if self.indicator:
             if exc_type is None:

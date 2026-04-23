@@ -76,12 +76,12 @@ class GUIError:
 class FallbackManager:
     """Manages fallback mechanisms for optional dependencies and features."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize fallback manager."""
         self.fallbacks: Dict[str, Dict[str, Any]] = {}
         self.register_standard_fallbacks()
 
-    def register_standard_fallbacks(self):
+    def register_standard_fallbacks(self) -> None:
         """Register standard fallback mechanisms."""
         # CustomTkinter fallback
         self.fallbacks["customtkinter"] = {
@@ -131,7 +131,7 @@ class FallbackManager:
     def _check_plotly(self) -> bool:
         """Check if Plotly is available."""
         try:
-            import plotly  # noqa: F401
+            import plotly  # type: ignore  # noqa: F401
 
             return True
         except ImportError:
@@ -219,28 +219,28 @@ class EnhancedErrorHandler:
             root_window: Main window for displaying error dialogs
         """
         self.root_window = root_window
-        self.fallback_manager = FallbackManager()
+        self.fallback_manager: FallbackManager = FallbackManager()
         self.error_log: List[GUIError] = []
         self.recovery_strategies: Dict[str, Callable] = {}
         self.register_recovery_strategies()
 
-    def register_recovery_strategies(self):
+    def register_recovery_strategies(self) -> None:
         """Register automatic recovery strategies."""
         self.recovery_strategies[ErrorCategory.IMPORT_ERROR] = self._handle_import_error
         self.recovery_strategies[ErrorCategory.FILE_ERROR] = self._handle_file_error
         self.recovery_strategies[ErrorCategory.DATA_ERROR] = self._handle_data_error
-        self.recovery_strategies[
-            ErrorCategory.NETWORK_ERROR
-        ] = self._handle_network_error
-        self.recovery_strategies[
-            ErrorCategory.HARDWARE_ERROR
-        ] = self._handle_hardware_error
-        self.recovery_strategies[
-            ErrorCategory.VALIDATION_ERROR
-        ] = self._handle_validation_error
-        self.recovery_strategies[
-            ErrorCategory.CONFIGURATION_ERROR
-        ] = self._handle_configuration_error
+        self.recovery_strategies[ErrorCategory.NETWORK_ERROR] = (
+            self._handle_network_error
+        )
+        self.recovery_strategies[ErrorCategory.HARDWARE_ERROR] = (
+            self._handle_hardware_error
+        )
+        self.recovery_strategies[ErrorCategory.VALIDATION_ERROR] = (
+            self._handle_validation_error
+        )
+        self.recovery_strategies[ErrorCategory.CONFIGURATION_ERROR] = (
+            self._handle_configuration_error
+        )
 
     def handle_error(
         self,
@@ -287,7 +287,7 @@ class EnhancedErrorHandler:
 
         return recovery_success
 
-    def _log_error(self, error: GUIError):
+    def _log_error(self, error: GUIError) -> None:
         """Log error with full context."""
         log_message = f"{error.category.upper()}: {error.user_message}"
 
@@ -307,7 +307,8 @@ class EnhancedErrorHandler:
         """Apply appropriate recovery strategy."""
         if error.category in self.recovery_strategies:
             try:
-                return self.recovery_strategies[error.category](error)
+                result: bool = self.recovery_strategies[error.category](error)
+                return result
             except Exception as recovery_error:
                 logger.error(f"Recovery strategy failed: {recovery_error}")
                 return False
@@ -354,7 +355,7 @@ class EnhancedErrorHandler:
         }
         return actions.get(category, ["Contact support", "Check documentation"])
 
-    def _show_error_dialog(self, error: GUIError, recovery_success: bool):
+    def _show_error_dialog(self, error: GUIError, recovery_success: bool) -> None:
         """Show user-friendly error dialog."""
         title = f"Error - {error.category.replace('_', ' ').title()}"
 
@@ -450,7 +451,7 @@ class EnhancedErrorHandler:
             "recent_errors": [str(e.exception) for e in self.error_log[-5:]],
         }
 
-    def save_error_log(self, file_path: Optional[Path] = None):
+    def save_error_log(self, file_path: Optional[Path] = None) -> None:
         """Save error log to file."""
         if file_path is None:
             file_path = Path("error_log.json")
@@ -512,13 +513,15 @@ def handle_gui_error(
     return handler.handle_error(exception, category, severity, context, show_dialog)
 
 
-def setup_global_error_handling(root_window: Optional[tk.Tk]):
+def setup_global_error_handling(root_window: Optional[tk.Tk]) -> None:
     """Setup global error handling for tkinter application."""
     handler = get_error_handler(root_window)
 
-    def handle_tk_error(exc, val, tb):
+    def handle_tk_error(exc: Any, val: BaseException, tb: Any) -> None:
+        # Convert BaseException to Exception for GUIError
+        exception = val if isinstance(val, Exception) else Exception(str(val))
         error = GUIError(
-            exception=val,
+            exception=exception,
             category=ErrorCategory.RUNTIME_ERROR,
             severity=ErrorSeverity.HIGH,
             context={"type": type(val).__name__},

@@ -1,686 +1,580 @@
 """
 Comprehensive test suite for apgi_framework.data.persistence_layer module.
 
-Provides thorough testing of persistence functionality including:
+This module provides complete coverage for:
+- PersistenceLayer initialization with different backends
 - Data storage and retrieval operations
-- File format validation and conversion
-- Error handling and recovery
-- Performance with large datasets
-- Concurrent access scenarios
-- Data integrity and consistency checks
+- Versioning and backup functionality
+- SQLite, HDF5, and PostgreSQL backends
+- Error handling and edge cases
 """
 
-import pytest
-from unittest.mock import patch
-from pathlib import Path
-import tempfile
-import os
-import sys
 import json
-import pickle
-import threading
-import time
+import sqlite3
+import tempfile
+from datetime import datetime
+from pathlib import Path
 
-# Add parent directory to path for imports
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+import numpy as np
+import pandas as pd
+import pytest
 
-from apgi_framework.data.persistence_layer import PersistenceLayer
-from apgi_framework.exceptions import APGIFrameworkError
+from apgi_framework.data.persistence_layer import PersistenceError, PersistenceLayer
+from apgi_framework.data.data_models import ExperimentMetadata
 
 
-class TestPersistenceLayerInit:
-    """Test initialization scenarios for PersistenceLayer."""
+class TestPersistenceLayerInitialization:
+    """Tests for PersistenceLayer initialization."""
 
-    def test_init_with_default_config(self):
-        """Test persistence layer initialization with default settings."""
+    def test_default_hdf5_initialization(self):
+        """Test initialization with default HDF5 backend."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            config = {
-                "data_directory": temp_dir,
-                "backup_enabled": True,
-                "compression_level": "medium",
-            }
+            layer = PersistenceLayer(storage_path=temp_dir, backend="hdf5")
 
-            layer = PersistenceLayer(config)
+            assert layer.storage_path == Path(temp_dir)
+            assert layer.backend == "hdf5"
+            assert layer.hdf5_available is True
+            assert layer.sqlite_available is True
+            assert Path(temp_dir).exists()
+            assert (Path(temp_dir) / "metadata").exists()
+            assert (Path(temp_dir) / "data").exists()
+            assert (Path(temp_dir) / "backups").exists()
 
-            assert layer is not None
-            assert layer.data_directory == Path(temp_dir)
-            assert layer.backup_enabled is True
-
-    def test_init_with_custom_config(self):
-        """Test initialization with custom configuration."""
-        config = {
-            "data_directory": "/custom/data/path",
-            "max_file_size": 1000000,
-            "auto_cleanup": False,
-        }
-
-        persistence = PersistenceLayer(config)
-
-        assert persistence.max_file_size == 1000000
-        assert persistence.auto_cleanup is False
-
-    def test_init_creates_directories(self):
-        """Test that initialization creates necessary directories."""
+    def test_sqlite_initialization(self):
+        """Test initialization with SQLite backend."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            config = {"data_directory": temp_dir}
+            layer = PersistenceLayer(storage_path=temp_dir, backend="sqlite")
 
-            persistence = PersistenceLayer(config)
+            assert layer.backend == "sqlite"
+            assert Path(temp_dir).exists()
+            # Check that SQLite database was created
+            assert (Path(temp_dir) / "metadata" / "experiments.db").exists()
 
-            assert persistence.max_file_size == 1000000
-
-            # Test directory creation
-            expected_dirs = [
-                Path(temp_dir) / "experiments",
-                Path(temp_dir) / "backups",
-                Path(temp_dir) / "cache",
-            ]
-
-            for expected_dir in expected_dirs:
-                assert expected_dir.exists()
-
-    def test_init_with_invalid_config(self):
-        """Test initialization with invalid configuration."""
-        # Missing data directory
-        with pytest.raises(APGIFrameworkError):
-            PersistenceLayer({})
-
-        # Invalid data directory type
-        with pytest.raises(APGIFrameworkError):
-            PersistenceLayer({"data_directory": 123})
-
-
-class TestPersistenceLayerBasicOperations:
-    """Test basic persistence operations."""
-
-    @pytest.fixture
-    def persistence(self):
-        """Fixture providing a persistence layer instance."""
+    def test_invalid_backend_error(self):
+        """Test that invalid backend raises PersistenceError."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            config = {"data_directory": temp_dir}
-            yield PersistenceLayer(config)
+            with pytest.raises(PersistenceError, match="Unknown backend"):
+                PersistenceLayer(storage_path=temp_dir, backend="invalid")
 
-    def test_save_experiment_data(self, persistence):
-        """Test saving experiment data."""
-        test_data = {
-            "experiment_id": "test_exp_001",
-            "timestamp": "2024-01-01T12:00:00Z",
-            "parameters": {"param1": "value1", "param2": 42},
-            "results": {"accuracy": 0.95, "precision": 0.87},
-        }
+    def test_directory_creation(self):
+        """Test that storage directories are created on initialization."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            storage_path = Path(temp_dir) / "new_storage"
+            PersistenceLayer(storage_path=storage_path, backend="hdf5")
 
-        result = persistence.save_experiment("test_exp_001", test_data)
+            assert storage_path.exists()
+            assert (storage_path / "metadata").exists()
+            assert (storage_path / "data").exists()
+            assert (storage_path / "backups").exists()
 
-        assert result is True
-        assert (
-            persistence.data_directory / "experiments" / "test_exp_001.json"
-        ).exists()
 
-    def test_load_experiment_data(self, persistence):
-        """Test loading experiment data."""
-        # First save some test data
-        test_data = {"experiment_id": "test_exp_002", "data": [1, 2, 3]}
-        persistence.save_experiment("test_exp_002", test_data)
+class TestSQLiteBackend:
+    """Tests for SQLite backend operations."""
 
-        # Now load it
-        loaded_data = persistence.load_experiment("test_exp_002")
+    def test_sqlite_schema_creation(self):
+        """Test that SQLite schema is created correctly."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            layer = PersistenceLayer(storage_path=temp_dir, backend="sqlite")
 
-        assert loaded_data["experiment_id"] == "test_exp_002"
-        assert loaded_data["data"] == [1, 2, 3]
+            # Verify tables exist
+            with sqlite3.connect(layer.db_path) as conn:
+                cursor = conn.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table'"
+                )
+                tables = [row[0] for row in cursor.fetchall()]
 
-    def test_load_nonexistent_experiment(self, persistence):
-        """Test loading non-existent experiment."""
-        with pytest.raises(APGIFrameworkError):
-            persistence.load_experiment("non_existent_exp")
+                assert "experiments" in tables
+                assert "versions" in tables
+                assert "backups" in tables
 
-    def test_delete_experiment(self, persistence):
-        """Test experiment deletion."""
-        # Save test data first
-        persistence.save_experiment("test_exp_003", {"data": "test"})
+    def test_sqlite_experiments_table_schema(self):
+        """Test experiments table has correct columns."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            layer = PersistenceLayer(storage_path=temp_dir, backend="sqlite")
 
-        # Verify it exists
-        assert persistence.experiment_exists("test_exp_003")
+            with sqlite3.connect(layer.db_path) as conn:
+                cursor = conn.execute("PRAGMA table_info(experiments)")
+                columns = {row[1] for row in cursor.fetchall()}
 
-        # Delete it
-        result = persistence.delete_experiment("test_exp_003")
+                assert "experiment_id" in columns
+                assert "experiment_name" in columns
+                assert "created_at" in columns
+                assert "updated_at" in columns
+                assert "n_participants" in columns
 
-        assert result is True
-        assert not persistence.experiment_exists("test_exp_003")
 
-    def test_list_experiments(self, persistence):
+class TestExperimentIdValidation:
+    """Tests for experiment ID validation."""
+
+    def test_valid_experiment_id(self):
+        """Test that valid experiment IDs pass validation."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            layer = PersistenceLayer(storage_path=temp_dir, backend="hdf5")
+
+            # Should not raise
+            layer._validate_experiment_id("valid_id_123")
+            layer._validate_experiment_id("experiment-1")
+            layer._validate_experiment_id("test_ABC")
+
+    def test_invalid_experiment_id_characters(self):
+        """Test that invalid characters raise PersistenceError."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            layer = PersistenceLayer(storage_path=temp_dir, backend="hdf5")
+
+            with pytest.raises(PersistenceError, match="Invalid experiment_id"):
+                layer._validate_experiment_id("invalid/path")
+
+            with pytest.raises(PersistenceError, match="Invalid experiment_id"):
+                layer._validate_experiment_id("test.id")
+
+            with pytest.raises(PersistenceError, match="Invalid experiment_id"):
+                layer._validate_experiment_id("test@id")
+
+
+class TestHDF5Operations:
+    """Tests for HDF5 storage operations."""
+
+    def test_store_and_retrieve_data(self):
+        """Test storing and retrieving data with HDF5."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            layer = PersistenceLayer(storage_path=temp_dir, backend="hdf5")
+
+            # Create test data
+            data = pd.DataFrame(
+                {
+                    "col1": [1, 2, 3, 4, 5],
+                    "col2": ["a", "b", "c", "d", "e"],
+                }
+            )
+
+            # Store data
+            experiment_id = "test_exp_001"
+            layer.store_data(experiment_id, data, format="hdf5")
+
+            # Retrieve data
+            retrieved = layer.retrieve_data(experiment_id)
+
+            assert retrieved is not None
+            assert len(retrieved) == len(data)
+            assert list(retrieved.columns) == list(data.columns)
+            pd.testing.assert_frame_equal(retrieved.reset_index(drop=True), data)
+
+    def test_store_numpy_array(self):
+        """Test storing and retrieving numpy arrays."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            layer = PersistenceLayer(storage_path=temp_dir, backend="hdf5")
+
+            # Create test array
+            arr = np.random.randn(100, 10)
+
+            experiment_id = "test_numpy_001"
+            dataset_name = "features"
+
+            layer.store_numpy_array(experiment_id, dataset_name, arr)
+
+            # Retrieve array
+            retrieved = layer.retrieve_numpy_array(experiment_id, dataset_name)
+
+            assert retrieved is not None
+            assert retrieved.shape == arr.shape
+            np.testing.assert_array_almost_equal(retrieved, arr)
+
+
+class TestDataVersioning:
+    """Tests for data versioning operations."""
+
+    def test_create_version(self):
+        """Test creating a new data version."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            layer = PersistenceLayer(storage_path=temp_dir, backend="sqlite")
+
+            experiment_id = "test_version_exp"
+
+            # Create initial version
+            version = layer.create_version(
+                experiment_id=experiment_id,
+                version_number="1.0.0",
+                description="Initial version",
+            )
+
+            assert version is not None
+            assert version.experiment_id == experiment_id
+            assert version.version_number == "1.0.0"
+
+    def test_list_versions(self):
+        """Test listing all versions for an experiment."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            layer = PersistenceLayer(storage_path=temp_dir, backend="sqlite")
+
+            experiment_id = "test_list_versions"
+
+            # Create multiple versions
+            layer.create_version(experiment_id, "1.0.0", "First")
+            layer.create_version(experiment_id, "1.1.0", "Second")
+            layer.create_version(experiment_id, "2.0.0", "Third")
+
+            versions = layer.list_versions(experiment_id)
+
+            assert len(versions) == 3
+            version_numbers = [v.version_number for v in versions]
+            assert "1.0.0" in version_numbers
+            assert "1.1.0" in version_numbers
+            assert "2.0.0" in version_numbers
+
+    def test_get_version(self):
+        """Test retrieving a specific version."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            layer = PersistenceLayer(storage_path=temp_dir, backend="sqlite")
+
+            experiment_id = "test_get_version"
+
+            # Create version
+            created = layer.create_version(experiment_id, "1.0.0", "Test version")
+
+            # Retrieve it
+            retrieved = layer.get_version(experiment_id, "1.0.0")
+
+            assert retrieved is not None
+            assert retrieved.version_id == created.version_id
+            assert retrieved.version_number == "1.0.0"
+
+
+class TestBackupOperations:
+    """Tests for backup operations."""
+
+    def test_create_backup(self):
+        """Test creating a backup."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            layer = PersistenceLayer(storage_path=temp_dir, backend="sqlite")
+
+            experiment_id = "test_backup_exp"
+
+            # Create some data first
+            data = pd.DataFrame({"value": [1, 2, 3]})
+            layer.store_data(experiment_id, data)
+
+            # Create backup
+            backup = layer.create_backup(
+                experiment_id=experiment_id,
+                backup_type="full",
+                retention_days=30,
+            )
+
+            assert backup is not None
+            assert backup.experiment_id == experiment_id
+            assert backup.backup_type == "full"
+
+    def test_list_backups(self):
+        """Test listing backups."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            layer = PersistenceLayer(storage_path=temp_dir, backend="sqlite")
+
+            experiment_id = "test_list_backups"
+
+            # Create data and backups
+            data = pd.DataFrame({"value": [1, 2, 3]})
+            layer.store_data(experiment_id, data)
+
+            layer.create_backup(experiment_id, "full", 30)
+            layer.create_backup(experiment_id, "incremental", 7)
+
+            backups = layer.list_backups(experiment_id)
+
+            assert len(backups) == 2
+
+    def test_restore_backup(self):
+        """Test restoring from backup."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            layer = PersistenceLayer(storage_path=temp_dir, backend="sqlite")
+
+            experiment_id = "test_restore"
+
+            # Create original data
+            original_data = pd.DataFrame({"value": [1, 2, 3]})
+            layer.store_data(experiment_id, original_data)
+
+            # Create backup
+            backup = layer.create_backup(experiment_id, "full", 30)
+
+            # Modify data
+            modified_data = pd.DataFrame({"value": [4, 5, 6]})
+            layer.store_data(experiment_id, modified_data)
+
+            # Restore from backup
+            layer.restore_backup(backup.backup_id)
+
+            # Verify data was restored
+            restored = layer.retrieve_data(experiment_id)
+            pd.testing.assert_frame_equal(restored, original_data)
+
+
+class TestMetadataOperations:
+    """Tests for experiment metadata operations."""
+
+    def test_save_and_retrieve_metadata(self):
+        """Test saving and retrieving experiment metadata."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            layer = PersistenceLayer(storage_path=temp_dir, backend="sqlite")
+
+            experiment_id = "test_metadata_exp"
+
+            metadata = ExperimentMetadata(
+                experiment_id=experiment_id,
+                experiment_name="Test Experiment",
+                description="A test experiment",
+                researcher="Test Researcher",
+                institution="Test Institution",
+                n_participants=100,
+                n_trials=50,
+                created_at=datetime.now(),
+            )
+
+            # Save metadata
+            layer.save_metadata(experiment_id, metadata)
+
+            # Retrieve metadata
+            retrieved = layer.get_metadata(experiment_id)
+
+            assert retrieved is not None
+            assert retrieved.experiment_id == experiment_id
+            assert retrieved.experiment_name == "Test Experiment"
+            assert retrieved.n_participants == 100
+
+    def test_update_metadata(self):
+        """Test updating experiment metadata."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            layer = PersistenceLayer(storage_path=temp_dir, backend="sqlite")
+
+            experiment_id = "test_update_metadata"
+
+            # Create initial metadata
+            metadata = ExperimentMetadata(
+                experiment_id=experiment_id,
+                experiment_name="Original Name",
+                n_participants=50,
+                created_at=datetime.now(),
+            )
+            layer.save_metadata(experiment_id, metadata)
+
+            # Update metadata
+            metadata.experiment_name = "Updated Name"
+            metadata.n_participants = 100
+            layer.save_metadata(experiment_id, metadata)
+
+            # Verify update
+            retrieved = layer.get_metadata(experiment_id)
+            assert retrieved.experiment_name == "Updated Name"
+            assert retrieved.n_participants == 100
+
+    def test_list_experiments(self):
         """Test listing all experiments."""
-        # Save multiple experiments
-        experiments = [
-            ("exp_001", {"data": "test1"}),
-            ("exp_002", {"data": "test2"}),
-            ("exp_003", {"data": "test3"}),
-        ]
-
-        for exp_id, exp_data in experiments:
-            persistence.save_experiment(exp_id, exp_data)
-
-        # List experiments
-        exp_list = persistence.list_experiments()
-
-        assert len(exp_list) == 3
-        assert all(exp["id"] in ["exp_001", "exp_002", "exp_003"] for exp in exp_list)
-
-    def test_experiment_exists(self, persistence):
-        """Test checking if experiment exists."""
-        # Save test experiment
-        persistence.save_experiment("test_exists_exp", {"data": "test"})
-
-        # Test existence
-        assert persistence.experiment_exists("test_exists_exp") is True
-        assert persistence.experiment_exists("non_existent") is False
-
-
-class TestPersistenceLayerDataFormats:
-    """Test different data format handling."""
-
-    @pytest.fixture
-    def persistence(self):
-        """Fixture providing a persistence layer instance."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            config = {"data_directory": temp_dir}
-            yield PersistenceLayer(config)
+            layer = PersistenceLayer(storage_path=temp_dir, backend="sqlite")
 
-    def test_save_json_format(self, persistence):
-        """Test saving data in JSON format."""
-        test_data = {"experiment_id": "json_test", "data": {"nested": {"value": 42}}}
+            # Create multiple experiments
+            for i in range(3):
+                metadata = ExperimentMetadata(
+                    experiment_id=f"exp_{i}",
+                    experiment_name=f"Experiment {i}",
+                    created_at=datetime.now(),
+                )
+                layer.save_metadata(f"exp_{i}", metadata)
 
-        result = persistence.save_experiment("json_test", test_data, format="json")
+            experiments = layer.list_experiments_with_metadata()
 
-        assert result is True
+            assert len(experiments) == 3
+            experiment_ids = [e.experiment_id for e in experiments]
+            assert "exp_0" in experiment_ids
+            assert "exp_1" in experiment_ids
+            assert "exp_2" in experiment_ids
 
-        # Verify JSON structure
-        file_path = persistence.data_directory / "experiments" / "json_test.json"
-        with open(file_path, "r") as f:
-            loaded_json = json.load(f)
-            assert loaded_json["experiment_id"] == "json_test"
 
-    def test_save_pickle_format(self, persistence):
-        """Test saving data in pickle format."""
-        test_data = {
-            "experiment_id": "pickle_test",
-            "complex_object": {"nested": {"data": [1, 2, 3]}},
-            "timestamp": time.time(),
-        }
+class TestDataExportImport:
+    """Tests for data export and import operations."""
 
-        result = persistence.save_experiment("pickle_test", test_data, format="pickle")
+    def test_export_to_csv(self):
+        """Test exporting data to CSV."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            layer = PersistenceLayer(storage_path=temp_dir, backend="hdf5")
 
-        assert result is True
-
-        # Verify pickle structure
-        file_path = persistence.data_directory / "experiments" / "pickle_test.pkl"
-        with open(file_path, "rb") as f:
-            loaded_pickle = pickle.load(f)
-            assert loaded_pickle["experiment_id"] == "pickle_test"
-
-    def test_auto_format_detection(self, persistence):
-        """Test automatic format detection based on data type."""
-        # JSON-compatible data
-        json_data = {"simple": "data"}
-        result = persistence.save_experiment("auto_json", json_data)
-        assert result is True
-
-        # Complex object requiring pickle
-        complex_data = {
-            "timestamp": time.time(),
-            "nested": {"data": os.listdir("/tmp")},
-        }
-        result = persistence.save_experiment("auto_pickle", complex_data)
-        assert result is True
-
-    def test_invalid_format_handling(self, persistence):
-        """Test handling of invalid format specifications."""
-        test_data = {"experiment_id": "invalid_test", "data": "test"}
-
-        with pytest.raises(APGIFrameworkError):
-            persistence.save_experiment(
-                "invalid_test", test_data, format="invalid_format"
+            experiment_id = "test_export"
+            data = pd.DataFrame(
+                {
+                    "col1": [1, 2, 3],
+                    "col2": ["a", "b", "c"],
+                }
             )
 
+            layer.store_data(experiment_id, data)
 
-class TestPersistenceLayerErrorHandling:
-    """Test error handling and recovery scenarios."""
+            # Export to CSV
+            export_path = Path(temp_dir) / "export.csv"
+            layer.export_data(experiment_id, str(export_path), format="csv")
 
-    @pytest.fixture
-    def persistence(self):
-        """Fixture providing a persistence layer instance."""
+            assert export_path.exists()
+
+            # Verify CSV content
+            exported = pd.read_csv(export_path)
+            pd.testing.assert_frame_equal(exported, data)
+
+    def test_export_to_json(self):
+        """Test exporting data to JSON."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            config = {"data_directory": temp_dir}
-            yield PersistenceLayer(config)
+            layer = PersistenceLayer(storage_path=temp_dir, backend="hdf5")
 
-    def test_file_permission_error(self, persistence):
-        """Test handling of file permission errors."""
-        test_data = {"experiment_id": "perm_test", "data": "test"}
-
-        with patch("builtins.open", side_effect=PermissionError("Permission denied")):
-            with pytest.raises(APGIFrameworkError):
-                persistence.save_experiment("perm_test", test_data)
-
-    def test_disk_space_error(self, persistence):
-        """Test handling of disk space errors."""
-        test_data = {"experiment_id": "space_test", "data": "x" * 1000000}  # Large data
-
-        with patch("os.stat", side_effect=OSError("No space left on device")):
-            with pytest.raises(APGIFrameworkError):
-                persistence.save_experiment("space_test", test_data)
-
-    def test_corrupted_file_recovery(self, persistence):
-        """Test recovery from corrupted data files."""
-        # Create a corrupted JSON file
-        exp_path = persistence.data_directory / "experiments" / "corrupted.json"
-        exp_path.parent.mkdir(parents=True, exist_ok=True)
-
-        with open(exp_path, "w") as f:
-            f.write('{"invalid": json content}')
-
-        # Attempt to load should handle corruption gracefully
-        with pytest.raises(APGIFrameworkError):
-            persistence.load_experiment("corrupted")
-
-    def test_backup_creation_on_error(self, persistence):
-        """Test that backup is created when operations fail."""
-        test_data = {"experiment_id": "backup_test", "data": "test"}
-
-        with patch("os.rename", side_effect=OSError("Rename failed")):
-            with patch.object(persistence, "_create_backup") as mock_backup:
-                try:
-                    persistence.save_experiment("backup_test", test_data)
-                except APGIFrameworkError:
-                    pass
-
-                # Verify backup was attempted
-                mock_backup.assert_called()
-
-    def test_partial_data_recovery(self, persistence):
-        """Test recovery of partial data."""
-        # Create a file with partial content
-        exp_path = persistence.data_directory / "experiments" / "partial.json"
-        exp_path.parent.mkdir(parents=True, exist_ok=True)
-
-        with open(exp_path, "w") as f:
-            f.write('{"experiment_id": "partial", "data": ')  # Incomplete JSON
-
-        # Should handle partial data gracefully
-        with pytest.raises(APGIFrameworkError):
-            persistence.load_experiment("partial")
-
-
-class TestPersistenceLayerPerformance:
-    """Test performance with large datasets."""
-
-    @pytest.fixture
-    def persistence(self):
-        """Fixture providing a persistence layer instance."""
-        with tempfile.TemporaryDirectory() as temp_dir:
-            config = {
-                "data_directory": temp_dir,
-                "compression_level": "none",  # Disable for performance testing
-                "max_memory_usage": 1000000,  # 1GB limit
-            }
-            yield PersistenceLayer(config)
-
-    def test_large_dataset_save(self, persistence):
-        """Test saving large datasets efficiently."""
-        # Create large test data
-        large_data = {
-            "experiment_id": "large_test",
-            "data": list(range(10000)),  # 10k items
-            "metadata": {"description": "x" * 1000},  # 1KB description
-        }
-
-        start_time = time.time()
-        result = persistence.save_experiment("large_test", large_data)
-        save_time = time.time() - start_time
-
-        assert result is True
-        assert save_time < 5.0  # Should complete within 5 seconds
-
-    def test_large_dataset_load(self, persistence):
-        """Test loading large datasets efficiently."""
-        # Save large data first
-        large_data = {"experiment_id": "large_load_test", "data": list(range(5000))}
-        persistence.save_experiment("large_load_test", large_data)
-
-        start_time = time.time()
-        loaded_data = persistence.load_experiment("large_load_test")
-        load_time = time.time() - start_time
-
-        assert loaded_data["experiment_id"] == "large_load_test"
-        assert len(loaded_data["data"]) == 5000
-        assert load_time < 3.0  # Should load within 3 seconds
-
-    def test_memory_usage_monitoring(self, persistence):
-        """Test memory usage during operations."""
-        with patch("psutil.Process") as mock_process:
-            mock_process.return_value.memory_info.return_value.rss = 500000  # 500MB
-
-            # Perform operation
-            persistence.save_experiment("memory_test", {"data": list(range(1000))})
-
-            # Check memory was monitored
-            mock_process.assert_called()
-
-    def test_batch_operations_performance(self, persistence):
-        """Test performance of batch operations."""
-        experiments = []
-        for i in range(100):
-            experiments.append(
-                {"experiment_id": f"batch_test_{i:03d}", "data": {"value": i}}
+            experiment_id = "test_export_json"
+            data = pd.DataFrame(
+                {
+                    "col1": [1, 2, 3],
+                    "col2": ["a", "b", "c"],
+                }
             )
 
-        start_time = time.time()
-        results = persistence.save_experiments_batch(experiments)
-        batch_time = time.time() - start_time
+            layer.store_data(experiment_id, data)
 
-        assert len(results) == 100
-        assert all(results)  # All should succeed
-        assert batch_time < 10.0  # Should complete within 10 seconds
+            # Export to JSON
+            export_path = Path(temp_dir) / "export.json"
+            layer.export_data(experiment_id, str(export_path), format="json")
 
+            assert export_path.exists()
 
-class TestPersistenceLayerConcurrency:
-    """Test concurrent access scenarios."""
+            # Verify JSON content
+            with open(export_path) as f:
+                exported = json.load(f)
+            assert len(exported) == 3
 
-    @pytest.fixture
-    def persistence(self):
-        """Fixture providing a persistence layer instance."""
+    def test_import_from_csv(self):
+        """Test importing data from CSV."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            config = {"data_directory": temp_dir}
-            yield PersistenceLayer(config)
+            layer = PersistenceLayer(storage_path=temp_dir, backend="hdf5")
 
-    def test_concurrent_saves(self, persistence):
-        """Test concurrent save operations."""
-        results = []
-        errors = []
+            # Create CSV file
+            import_path = Path(temp_dir) / "import.csv"
+            data = pd.DataFrame(
+                {
+                    "value": [10, 20, 30],
+                    "label": ["x", "y", "z"],
+                }
+            )
+            data.to_csv(import_path, index=False)
 
-        def save_experiment(exp_id):
-            try:
-                result = persistence.save_experiment(exp_id, {"data": f"test_{exp_id}"})
-                results.append(result)
-            except Exception as e:
-                errors.append(e)
+            experiment_id = "test_import"
+            layer.import_data(experiment_id, str(import_path), format="csv")
 
-        # Create multiple threads saving different experiments
-        threads = []
-        for i in range(10):
-            thread = threading.Thread(target=save_experiment, args=(f"concurrent_{i}",))
-            threads.append(thread)
-            thread.start()
-
-        # Wait for all threads to complete
-        for thread in threads:
-            thread.join()
-
-        # Verify results
-        assert len(errors) == 0  # No errors should occur
-        assert len(results) == 10  # All saves should succeed
-        assert all(results)  # All should return True
-
-    def test_concurrent_reads(self, persistence):
-        """Test concurrent read operations."""
-        # Save test data first
-        persistence.save_experiment("concurrent_read_test", {"data": "shared_data"})
-
-        results = []
-        errors = []
-
-        def read_experiment():
-            try:
-                data = persistence.load_experiment("concurrent_read_test")
-                results.append(data)
-            except Exception as e:
-                errors.append(e)
-
-        # Create multiple threads reading the same experiment
-        threads = []
-        for i in range(5):
-            thread = threading.Thread(target=read_experiment)
-            threads.append(thread)
-            thread.start()
-
-        # Wait for all threads to complete
-        for thread in threads:
-            thread.join()
-
-        # Verify results
-        assert len(errors) == 0  # No read errors
-        assert len(results) == 5  # All reads should succeed
-        assert all(r["data"] == "shared_data" for r in results)
-
-    def test_read_write_lock(self, persistence):
-        """Test file locking during read/write operations."""
-        results = []
-
-        def write_operation():
-            persistence.save_experiment("lock_test", {"data": "write_data"})
-            results.append("write_complete")
-
-        def read_operation():
-            time.sleep(0.1)  # Small delay to ensure write starts first
-            data = persistence.load_experiment("lock_test")
-            results.append(f'read: {data["data"]}')
-
-        # Start write and read threads
-        write_thread = threading.Thread(target=write_operation)
-        read_thread = threading.Thread(target=read_operation)
-
-        write_thread.start()
-        read_thread.start()
-
-        write_thread.join()
-        read_thread.join()
-
-        # Both operations should complete successfully
-        assert len(results) == 2
-        assert "write_complete" in results
-        assert any("read: write_data" in result for result in results)
+            # Verify import
+            retrieved = layer.retrieve_data(experiment_id)
+            pd.testing.assert_frame_equal(retrieved, data)
 
 
-class TestPersistenceLayerDataIntegrity:
-    """Test data integrity and validation."""
+class TestStorageStatistics:
+    """Tests for storage statistics."""
 
-    @pytest.fixture
-    def persistence(self):
-        """Fixture providing a persistence layer instance."""
+    def test_get_storage_stats(self):
+        """Test getting storage statistics."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            config = {"data_directory": temp_dir}
-            yield PersistenceLayer(config)
+            layer = PersistenceLayer(storage_path=temp_dir, backend="sqlite")
 
-    def test_data_validation_on_save(self, persistence):
-        """Test data validation before saving."""
-        # Valid data
-        valid_data = {
-            "experiment_id": "validation_test",
-            "data": {"valid": True},
-            "timestamp": "2024-01-01T12:00:00Z",
-        }
+            # Create some data
+            for i in range(3):
+                data = pd.DataFrame({"value": range(100)})
+                layer.store_data(f"exp_{i}", data)
 
-        result = persistence.save_experiment("validation_test", valid_data)
-        assert result is True
+            stats = layer.get_storage_stats()
 
-        # Invalid data - missing required fields
-        invalid_data = {"data": {"valid": True}}  # Missing experiment_id
+            assert "total_experiments" in stats
+            assert stats["total_experiments"] == 3
+            assert "total_size_bytes" in stats
+            assert "backend" in stats
 
-        with pytest.raises(APGIFrameworkError):
-            persistence.save_experiment("invalid_test", invalid_data)
-
-    def test_schema_validation(self, persistence):
-        """Test schema validation for experiment data."""
-        # Test with valid schema
-        valid_schema = {
-            "type": "object",
-            "properties": {
-                "experiment_id": {"type": "string"},
-                "data": {"type": "object"},
-                "timestamp": {"type": "string", "format": "date-time"},
-            },
-            "required": ["experiment_id", "data"],
-        }
-
-        persistence.set_schema_validator(valid_schema)
-
-        valid_data = {
-            "experiment_id": "schema_test",
-            "data": {},
-            "timestamp": "2024-01-01T12:00:00Z",
-        }
-        result = persistence.save_experiment("schema_test", valid_data)
-        assert result is True
-
-        # Invalid schema data
-        invalid_data = {
-            "experiment_id": "schema_test",
-            "data": "invalid_type",
-        }  # Should be object
-
-        with pytest.raises(APGIFrameworkError):
-            persistence.save_experiment("schema_invalid", invalid_data)
-
-    def test_checksum_verification(self, persistence):
-        """Test checksum verification for data integrity."""
-        test_data = {"experiment_id": "checksum_test", "data": {"important": "data"}}
-
-        # Save with checksum enabled
-        result = persistence.save_experiment(
-            "checksum_test", test_data, verify_checksum=True
-        )
-        assert result is True
-
-        # Load and verify checksum
-        loaded_data = persistence.load_experiment("checksum_test", verify_checksum=True)
-        assert loaded_data["experiment_id"] == "checksum_test"
-        assert loaded_data["data"] == test_data["data"]
-
-    def test_data_migration(self, persistence):
-        """Test data migration between formats."""
-        # Save data in old format
-        old_data = {
-            "experiment_id": "migration_test",
-            "data": [1, 2, 3],
-            "format_version": 1,
-        }
-        persistence.save_experiment("migration_test", old_data, format="pickle")
-
-        # Migrate to new format
-        migration_result = persistence.migrate_experiment(
-            "migration_test", from_format="pickle", to_format="json"
-        )
-
-        assert migration_result is True
-
-        # Verify migrated data
-        migrated_data = persistence.load_experiment("migration_test", format="json")
-        assert migrated_data["experiment_id"] == "migration_test"
-        assert migrated_data["data"] == [1, 2, 3]
-
-    def test_backup_and_restore(self, persistence):
-        """Test backup creation and restore functionality."""
-        # Save original data
-        original_data = {
-            "experiment_id": "backup_test",
-            "data": {"critical": "information"},
-        }
-        persistence.save_experiment("backup_test", original_data)
-
-        # Create backup
-        backup_path = persistence.create_backup("backup_test")
-        assert backup_path.exists()
-
-        # Corrupt original data
-        corrupted_data = {"experiment_id": "backup_test", "data": "corrupted"}
-        persistence.save_experiment("backup_test", corrupted_data)
-
-        # Restore from backup
-        restore_result = persistence.restore_from_backup("backup_test")
-        assert restore_result is True
-
-        # Verify restoration
-        restored_data = persistence.load_experiment("backup_test")
-        assert restored_data["data"] == {"critical": "information"}
-
-
-class TestPersistenceLayerMaintenance:
-    """Test maintenance and cleanup operations."""
-
-    @pytest.fixture
-    def persistence(self):
-        """Fixture providing a persistence layer instance."""
+    def test_get_experiment_size(self):
+        """Test getting size of specific experiment."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            config = {"data_directory": temp_dir}
-            yield PersistenceLayer(config)
+            layer = PersistenceLayer(storage_path=temp_dir, backend="hdf5")
 
-    def test_cleanup_old_experiments(self, persistence):
-        """Test cleanup of old experiments."""
-        # Create experiments with different timestamps
-        old_timestamp = "2023-01-01T12:00:00Z"
-        recent_timestamp = "2024-01-01T12:00:00Z"
+            experiment_id = "test_size_exp"
+            data = pd.DataFrame({"value": range(1000)})
+            layer.store_data(experiment_id, data)
 
-        persistence.save_experiment(
-            "old_exp", {"data": "test", "timestamp": old_timestamp}
-        )
-        persistence.save_experiment(
-            "recent_exp", {"data": "test", "timestamp": recent_timestamp}
-        )
+            size = layer.get_experiment_size(experiment_id)
 
-        # Clean up experiments older than 6 months
-        cleanup_result = persistence.cleanup_old_experiments(max_age_months=6)
+            assert size > 0
 
-        assert cleanup_result["cleaned_count"] == 1
-        assert persistence.experiment_exists("recent_exp") is True
-        assert persistence.experiment_exists("old_exp") is False
 
-    def test_temp_file_cleanup(self, persistence):
-        """Test cleanup of temporary files."""
-        # Create some temporary files
-        temp_dir = persistence.data_directory / "cache"
-        temp_dir.mkdir(parents=True, exist_ok=True)
+class TestErrorHandling:
+    """Tests for error handling."""
 
-        temp_files = []
-        for i in range(5):
-            temp_file = temp_dir / f"temp_{i}.tmp"
-            temp_file.write_text(f"temp data {i}")
-            temp_files.append(temp_file)
+    def test_retrieve_nonexistent_data(self):
+        """Test retrieving non-existent data raises error."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            layer = PersistenceLayer(storage_path=temp_dir, backend="hdf5")
 
-        # Verify temp files exist
-        assert all(f.exists() for f in temp_files)
+            with pytest.raises((PersistenceError, FileNotFoundError)):
+                layer.retrieve_data("nonexistent_experiment")
 
-        # Run cleanup
-        cleanup_result = persistence.cleanup_temp_files()
+    def test_get_nonexistent_metadata(self):
+        """Test retrieving non-existent metadata."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            layer = PersistenceLayer(storage_path=temp_dir, backend="sqlite")
 
-        assert cleanup_result["cleaned_count"] == 5
-        assert not any(f.exists() for f in temp_files)
+            result = layer.get_metadata("nonexistent")
+            assert result is None
 
-    def test_disk_space_optimization(self, persistence):
-        """Test disk space optimization."""
-        # Create large experiment files
-        for i in range(3):
-            large_data = {"data": "x" * 100000}  # 100KB each
-            persistence.save_experiment(f"large_exp_{i}", large_data)
+    def test_restore_nonexistent_backup(self):
+        """Test restoring non-existent backup raises error."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            layer = PersistenceLayer(storage_path=temp_dir, backend="sqlite")
 
-        # Run optimization
-        optimization_result = persistence.optimize_disk_space()
+            with pytest.raises((PersistenceError, FileNotFoundError)):
+                layer.restore_backup("nonexistent_backup_id")
 
-        assert optimization_result["space_saved"] > 0
-        assert "compressed_files" in optimization_result
 
-    def test_index_rebuilding(self, persistence):
-        """Test rebuilding of experiment index."""
-        # Save multiple experiments
-        for i in range(10):
-            persistence.save_experiment(f"index_test_{i}", {"data": f"test_{i}"})
+class TestDataDeletion:
+    """Tests for data deletion operations."""
 
-        # Rebuild index
-        rebuild_result = persistence.rebuild_index()
+    def test_delete_experiment(self):
+        """Test deleting an experiment and all its data."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            layer = PersistenceLayer(storage_path=temp_dir, backend="sqlite")
 
-        assert rebuild_result is True
-        assert rebuild_result["total_experiments"] == 10
+            experiment_id = "test_delete"
 
-        # Verify index functionality
-        all_experiments = persistence.list_experiments()
-        assert len(all_experiments) == 10
+            # Create data
+            data = pd.DataFrame({"value": [1, 2, 3]})
+            layer.store_data(experiment_id, data)
+
+            metadata = ExperimentMetadata(
+                experiment_id=experiment_id,
+                experiment_name="To Delete",
+                created_at=datetime.now(),
+            )
+            layer.save_metadata(experiment_id, metadata)
+
+            # Delete
+            layer.delete_experiment(experiment_id)
+
+            # Verify deletion
+            with pytest.raises((PersistenceError, FileNotFoundError)):
+                layer.retrieve_data(experiment_id)
+
+            assert layer.get_metadata(experiment_id) is None
+
+    def test_delete_version(self):
+        """Test deleting a specific version."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            layer = PersistenceLayer(storage_path=temp_dir, backend="sqlite")
+
+            experiment_id = "test_delete_version"
+
+            # Create version
+            version = layer.create_version(experiment_id, "1.0.0", "Test")
+
+            # Delete version
+            layer.delete_version(version.version_id)
+
+            # Verify deletion
+            versions = layer.list_versions(experiment_id)
+            assert len(versions) == 0
 
 
 if __name__ == "__main__":
-    pytest.main([__file__])
+    pytest.main([__file__, "-v"])

@@ -22,7 +22,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from ..utils.file_utils import FileUtils
 from ..utils.logging_utils import get_logging_utils
@@ -47,6 +47,7 @@ class ActivityType(Enum):
     CI_INTEGRATION = "ci_integration"
     NOTIFICATION_SENT = "notification_sent"
     BATCH_OPERATION = "batch_operation"
+    SYSTEM_SHUTDOWN = "system_shutdown"
 
 
 class ActivityLevel(Enum):
@@ -92,39 +93,32 @@ class ActivityEntry:
     thread_id: int = field(default_factory=lambda: threading.get_ident())
     process_id: int = field(default_factory=os.getpid)
 
-
-@dataclass
-class LoggingConfiguration:
-    """Configuration for activity logging."""
-
-    log_directory: Path = field(default_factory=lambda: Path(".logs/activity"))
-    max_file_size_mb: int = 50
-    backup_count: int = 10
-    retention_days: int = 30
-    enable_console_output: bool = True
-    enable_file_output: bool = True
-    enable_structured_format: bool = True
-    log_level: ActivityLevel = ActivityLevel.INFO
-    buffer_size: int = 1000
-    flush_interval_seconds: int = 5
-    compress_old_logs: bool = True
+    def get_entries_by_type(self, activity_type: ActivityType) -> List["ActivityEntry"]:
+        return [entry for entry in [self] if entry.activity_type == activity_type]
 
 
 class ActivityBuffer:
     """Thread-safe buffer for activity entries."""
 
-    def __init__(self, max_size: int = 1000):
+    def __init__(self, max_size: int = 1000) -> None:
         self.max_size = max_size
         self.buffer: List[ActivityEntry] = []
         self.lock = threading.Lock()
 
-    def add(self, entry: ActivityEntry):
+    def add(self, entry: ActivityEntry) -> None:
         """Add an entry to the buffer."""
         with self.lock:
             self.buffer.append(entry)
             if len(self.buffer) > self.max_size:
                 # Remove oldest entries if buffer is full
                 self.buffer = self.buffer[-self.max_size :]
+
+    def get_entries_by_level(self, level: ActivityLevel) -> List[ActivityEntry]:
+        """Flush and return all buffered entries."""
+        with self.lock:
+            entries = self.buffer.copy()
+            self.buffer.clear()
+            return [entry for entry in entries if entry.level == level]
 
     def flush(self) -> List[ActivityEntry]:
         """Flush and return all buffered entries."""
@@ -133,7 +127,7 @@ class ActivityBuffer:
             self.buffer.clear()
             return entries
 
-    def size(self) -> int:
+    def get_buffer_size(self) -> int:
         """Get current buffer size."""
         with self.lock:
             return len(self.buffer)
@@ -142,7 +136,7 @@ class ActivityBuffer:
 class ActivityFormatter:
     """Formatter for activity log entries."""
 
-    def __init__(self, structured: bool = True):
+    def __init__(self, structured: bool = True) -> None:
         self.structured = structured
 
     def format(self, entry: ActivityEntry) -> str:
@@ -153,6 +147,36 @@ class ActivityFormatter:
             return self._format_text(entry)
 
     def _format_json(self, entry: ActivityEntry) -> str:
+        """Format entry as JSON string."""
+        data = {
+            "activity_id": entry.activity_id,
+            "timestamp": entry.timestamp.isoformat(),
+            "activity_type": entry.activity_type.value,
+            "level": entry.level.value,
+            "message": entry.message,
+            "context": {
+                "session_id": entry.context.session_id,
+                "execution_id": entry.context.execution_id,
+                "test_suite": entry.context.test_suite,
+                "test_file": entry.context.test_file,
+                "test_name": entry.context.test_name,
+                "component": entry.context.component,
+                "user_id": entry.context.user_id,
+                "environment": entry.context.environment,
+                "metadata": self._serialize_metadata(entry.context.metadata),
+            },
+            "duration_ms": entry.duration_ms,
+            "data": self._serialize_metadata(entry.data),
+            "thread_id": entry.thread_id,
+            "process_id": entry.process_id,
+        }
+        if entry.error_info:
+            data["error_info"] = entry.error_info
+        if entry.stack_trace:
+            data["stack_trace"] = entry.stack_trace
+        return json.dumps(data, ensure_ascii=False, separators=(",", ":"))
+
+    def export_to_json(self, output_path: Path, entry: ActivityEntry) -> None:
         """Format entry as JSON."""
         data = {
             "activity_id": entry.activity_id,
@@ -183,7 +207,8 @@ class ActivityFormatter:
         if entry.stack_trace:
             data["stack_trace"] = entry.stack_trace
 
-        return json.dumps(data, ensure_ascii=False, separators=(",", ":"))
+        with open(output_path, "w") as f:
+            json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
 
     def _serialize_metadata(self, metadata: Dict[str, Any]) -> Dict[str, Any]:
         """Serialize metadata to JSON-compatible format."""
@@ -197,6 +222,33 @@ class ActivityFormatter:
                 # Convert non-serializable values to strings
                 serialized[key] = str(value)
         return serialized
+
+    def export_filtered(
+        self,
+        output_path: Path,
+        filter_func: Callable[[ActivityEntry], bool],
+        entry: ActivityEntry,
+    ) -> None:
+        """Format entry as human-readable text."""
+        timestamp = entry.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+
+        context_parts = []
+        if entry.context.execution_id:
+            context_parts.append(f"exec:{entry.context.execution_id[:8]}")
+        if entry.context.test_name:
+            context_parts.append(f"test:{entry.context.test_name}")
+        if entry.context.component:
+            context_parts.append(f"comp:{entry.context.component}")
+
+        context_str = f"[{','.join(context_parts)}]" if context_parts else ""
+
+        duration_str = f" ({entry.duration_ms:.1f}ms)" if entry.duration_ms else ""
+
+        if filter_func(entry):
+            with open(output_path, "a") as f:
+                f.write(
+                    f"{timestamp} {entry.level.value:8} {entry.activity_type.value:25} {context_str} {entry.message}{duration_str}\n"
+                )
 
     def _format_text(self, entry: ActivityEntry) -> str:
         """Format entry as human-readable text."""
@@ -217,6 +269,22 @@ class ActivityFormatter:
         return f"{timestamp} {entry.level.value:8} {entry.activity_type.value:25} {context_str} {entry.message}{duration_str}"
 
 
+@dataclass
+class LoggingConfiguration:
+    """Configuration for activity logging."""
+
+    log_directory: Path = field(default_factory=lambda: Path("logs/activity"))
+    max_file_size_mb: int = 10
+    backup_count: int = 5
+    retention_days: int = 30
+    enable_console_output: bool = True
+    enable_file_output: bool = True
+    enable_structured_format: bool = True
+    buffer_size: int = 1000
+    flush_interval_seconds: float = 5.0
+    log_level: ActivityLevel = ActivityLevel.INFO
+
+
 class ActivityLogger:
     """
     Comprehensive activity logger for test execution activities.
@@ -225,7 +293,7 @@ class ActivityLogger:
     and integration with all test execution components.
     """
 
-    def __init__(self, config: Optional[LoggingConfiguration] = None):
+    def __init__(self, config: Optional[LoggingConfiguration] = None) -> None:
         """Initialize the activity logger."""
         self.config = config or LoggingConfiguration()
         self.file_utils = FileUtils()
@@ -244,12 +312,12 @@ class ActivityLogger:
 
         # Threading
         self.lock = threading.Lock()
-        self.flush_thread = None
+        self.flush_thread: Optional[threading.Thread] = None
         self.stop_flush_thread = threading.Event()
 
         # File handlers
-        self.file_handler = None
-        self.console_handler = None
+        self.file_handler: Optional[logging.handlers.RotatingFileHandler] = None
+        self.console_handler: Optional[logging.StreamHandler] = None
 
         # Initialize logging
         self._setup_logging()
@@ -274,7 +342,7 @@ class ActivityLogger:
             config_dict["log_directory"] = str(config_dict["log_directory"])
         return config_dict
 
-    def _setup_logging(self):
+    def _setup_logging(self) -> None:
         """Setup file and console logging handlers."""
         # Setup file handler
         if self.config.enable_file_output:
@@ -291,15 +359,16 @@ class ActivityLogger:
         if self.config.enable_console_output:
             self.console_handler = logging.StreamHandler(sys.stdout)
 
-    def _start_flush_thread(self):
+    def _start_flush_thread(self) -> None:
         """Start the background flush thread."""
         if self.config.flush_interval_seconds > 0:
             self.flush_thread = threading.Thread(
                 target=self._flush_worker, daemon=True, name="ActivityLoggerFlush"
             )
-            self.flush_thread.start()
+            if self.flush_thread:
+                self.flush_thread.start()
 
-    def _flush_worker(self):
+    def _flush_worker(self) -> None:
         """Background worker to flush buffered entries."""
         while not self.stop_flush_thread.wait(self.config.flush_interval_seconds):
             try:
@@ -308,7 +377,7 @@ class ActivityLogger:
                 # Use standard logging to avoid recursion
                 logging.getLogger(__name__).error(f"Error in flush worker: {e}")
 
-    def set_context(self, **kwargs):
+    def set_context(self, **kwargs: Any) -> None:
         """Update the current activity context."""
         with self.lock:
             for key, value in kwargs.items():
@@ -317,7 +386,7 @@ class ActivityLogger:
                 else:
                     self.current_context.metadata[key] = value
 
-    def create_context(self, **kwargs) -> ActivityContext:
+    def create_context(self, **kwargs: Any) -> ActivityContext:
         """Create a new activity context based on current context."""
         with self.lock:
             new_context = ActivityContext(
@@ -346,11 +415,11 @@ class ActivityLogger:
         activity_type: ActivityType,
         level: ActivityLevel,
         message: str,
+        data: Optional[Dict[str, Any]] = None,
         context: Optional[ActivityContext] = None,
         duration_ms: Optional[float] = None,
-        data: Optional[Dict[str, Any]] = None,
         error: Optional[Exception] = None,
-    ):
+    ) -> None:
         """Log an activity entry."""
         # Skip if level is below configured threshold
         level_values = {
@@ -393,7 +462,11 @@ class ActivityLogger:
         if level == ActivityLevel.CRITICAL:
             self.flush_buffer()
 
-    def flush_buffer(self):
+    def clear_buffer(self) -> None:
+        """Clear the buffer."""
+        self.buffer.buffer.clear()
+
+    def flush_buffer(self) -> None:
         """Flush buffered entries to output handlers."""
         entries = self.buffer.flush()
 
@@ -420,8 +493,17 @@ class ActivityLogger:
                         ActivityLevel.CRITICAL,
                     ]:
                         formatted = text_formatter.format(entry)
-                        self.console_handler.stream.write(formatted + "\n")
-                self.console_handler.flush()
+                        try:
+                            self.console_handler.stream.write(formatted + "\n")
+                        except ValueError:
+                            # Stream closed, disable console output
+                            self.config.enable_console_output = False
+                            break
+                try:
+                    self.console_handler.flush()
+                except ValueError:
+                    # Stream closed, disable console output
+                    self.config.enable_console_output = False
 
         except Exception as e:
             # Use standard logging to avoid recursion
@@ -435,7 +517,7 @@ class ActivityLogger:
         level: ActivityLevel = ActivityLevel.INFO,
         context: Optional[ActivityContext] = None,
         data: Optional[Dict[str, Any]] = None,
-    ):
+    ) -> Any:
         """Context manager for timing activities."""
         start_time = time.time()
         span_context = context or self.current_context
@@ -479,7 +561,7 @@ class ActivityLogger:
         test_suite: str,
         total_tests: int,
         configuration: Dict[str, Any],
-    ):
+    ) -> None:
         """Log test execution start."""
         context = self.create_context(execution_id=execution_id, test_suite=test_suite)
 
@@ -497,7 +579,7 @@ class ActivityLogger:
         test_suite: str,
         results: Dict[str, Any],
         duration_ms: float,
-    ):
+    ) -> None:
         """Log test execution end."""
         context = self.create_context(execution_id=execution_id, test_suite=test_suite)
 
@@ -514,7 +596,7 @@ class ActivityLogger:
             data=results,
         )
 
-    def log_test_case_start(self, test_name: str, test_file: str):
+    def log_test_case_start(self, test_name: str, test_file: str) -> None:
         """Log individual test case start."""
         context = self.create_context(test_name=test_name, test_file=test_file)
 
@@ -532,7 +614,7 @@ class ActivityLogger:
         status: str,
         duration_ms: float,
         error_message: Optional[str] = None,
-    ):
+    ) -> None:
         """Log individual test case end."""
         context = self.create_context(test_name=test_name, test_file=test_file)
 
@@ -549,7 +631,7 @@ class ActivityLogger:
 
     def log_coverage_collection(
         self, module: str, coverage_data: Dict[str, Any], duration_ms: float
-    ):
+    ) -> None:
         """Log coverage collection activity."""
         self.log_activity(
             ActivityType.COVERAGE_COLLECTION_END,
@@ -564,7 +646,7 @@ class ActivityLogger:
         discovered_tests: List[str],
         discovery_time_ms: float,
         patterns: Optional[List[str]] = None,
-    ):
+    ) -> None:
         """Log test discovery activity."""
         self.log_activity(
             ActivityType.TEST_DISCOVERY,
@@ -580,7 +662,7 @@ class ActivityLogger:
 
     def log_test_generation(
         self, component: str, generated_tests: List[str], generation_time_ms: float
-    ):
+    ) -> None:
         """Log test generation activity."""
         context = self.create_context(component=component)
 
@@ -598,7 +680,7 @@ class ActivityLogger:
 
     def log_performance_metric(
         self, metric_name: str, value: float, unit: str, component: Optional[str] = None
-    ):
+    ) -> None:
         """Log performance metric."""
         context = self.create_context(component=component) if component else None
 
@@ -612,7 +694,7 @@ class ActivityLogger:
 
     def log_configuration_change(
         self, component: str, old_config: Dict[str, Any], new_config: Dict[str, Any]
-    ):
+    ) -> None:
         """Log configuration change."""
         context = self.create_context(component=component)
 
@@ -629,7 +711,7 @@ class ActivityLogger:
         action: str,
         user_id: Optional[str] = None,
         details: Optional[Dict[str, Any]] = None,
-    ):
+    ) -> None:
         """Log user action."""
         context = self.create_context(user_id=user_id) if user_id else None
 
@@ -643,7 +725,7 @@ class ActivityLogger:
 
     def log_ci_integration(
         self, pipeline_type: str, event: str, details: Dict[str, Any]
-    ):
+    ) -> None:
         """Log CI/CD integration event."""
         self.log_activity(
             ActivityType.CI_INTEGRATION,
@@ -654,7 +736,7 @@ class ActivityLogger:
 
     def log_notification_sent(
         self, channel: str, notification_type: str, recipient_count: int, success: bool
-    ):
+    ) -> None:
         """Log notification sending."""
         level = ActivityLevel.INFO if success else ActivityLevel.WARNING
 
@@ -675,7 +757,7 @@ class ActivityLogger:
         component: str,
         error: Exception,
         context_data: Optional[Dict[str, Any]] = None,
-    ):
+    ) -> None:
         """Log error with full context."""
         context = self.create_context(component=component)
 
@@ -725,11 +807,11 @@ class ActivityLogger:
 
         return cleaned_count
 
-    def get_activity_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> Dict[str, Any]:
         """Get activity logging statistics."""
         stats = {
             "session_id": self.session_id,
-            "buffer_size": self.buffer.size(),
+            "buffer_size": self.buffer.get_buffer_size(),
             "configuration": self._serialize_config(self.config),
             "log_files": [],
         }
@@ -753,7 +835,7 @@ class ActivityLogger:
 
         return stats
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """Shutdown the activity logger."""
         self.log_activity(
             ActivityType.SYSTEM_EVENT,
@@ -793,7 +875,7 @@ def get_activity_logger(
         return _activity_logger
 
 
-def initialize_activity_logging(config: Optional[LoggingConfiguration] = None):
+def initialize_activity_logging(config: Optional[LoggingConfiguration] = None) -> None:
     """Initialize global activity logging."""
     global _activity_logger
 
@@ -803,7 +885,7 @@ def initialize_activity_logging(config: Optional[LoggingConfiguration] = None):
         _activity_logger = ActivityLogger(config)
 
 
-def shutdown_activity_logging():
+def shutdown_activity_logging() -> None:
     """Shutdown global activity logging."""
     global _activity_logger
 
@@ -816,7 +898,7 @@ def shutdown_activity_logging():
 # Convenience functions for common logging operations
 def log_test_execution_start(
     execution_id: str, test_suite: str, total_tests: int, configuration: Dict[str, Any]
-):
+) -> None:
     """Convenience function to log test execution start."""
     get_activity_logger().log_test_execution_start(
         execution_id, test_suite, total_tests, configuration
@@ -825,14 +907,14 @@ def log_test_execution_start(
 
 def log_test_execution_end(
     execution_id: str, test_suite: str, results: Dict[str, Any], duration_ms: float
-):
+) -> None:
     """Convenience function to log test execution end."""
     get_activity_logger().log_test_execution_end(
         execution_id, test_suite, results, duration_ms
     )
 
 
-def log_test_case_start(test_name: str, test_file: str):
+def log_test_case_start(test_name: str, test_file: str) -> None:
     """Convenience function to log test case start."""
     get_activity_logger().log_test_case_start(test_name, test_file)
 
@@ -843,7 +925,7 @@ def log_test_case_end(
     status: str,
     duration_ms: float,
     error_message: Optional[str] = None,
-):
+) -> None:
     """Convenience function to log test case end."""
     get_activity_logger().log_test_case_end(
         test_name, test_file, status, duration_ms, error_message
@@ -852,20 +934,20 @@ def log_test_case_end(
 
 def log_coverage_collection(
     module: str, coverage_data: Dict[str, Any], duration_ms: float
-):
+) -> None:
     """Convenience function to log coverage collection."""
     get_activity_logger().log_coverage_collection(module, coverage_data, duration_ms)
 
 
 def log_error(
     component: str, error: Exception, context_data: Optional[Dict[str, Any]] = None
-):
+) -> None:
     """Convenience function to log errors."""
     get_activity_logger().log_error(component, error, context_data)
 
 
 def activity_span(
     activity_type: ActivityType, message: str, level: ActivityLevel = ActivityLevel.INFO
-):
+) -> Any:
     """Convenience function for activity spans."""
     return get_activity_logger().activity_span(activity_type, message, level)

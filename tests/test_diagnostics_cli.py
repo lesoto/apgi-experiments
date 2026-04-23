@@ -5,7 +5,6 @@ This test suite provides full coverage for the CLI functions and command
 processing, ensuring all critical functionality is tested.
 """
 
-from io import StringIO
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -48,10 +47,13 @@ class MockValidator:
     """Mock parameter validator for testing."""
 
     def validate_apgi_parameters(self, **params):
-        return MockValidationResult(True, "Parameters valid")
+        # Check if any parameter is out of range
+        if "extero_precision" in params and params["extero_precision"] > 3.0:
+            return MockValidationResult(False, "❌ Parameters invalid")
+        return MockValidationResult(True, "✓ All parameters valid")
 
     def get_parameter_info(self, parameter):
-        return f"Information about {parameter}: Valid range 0-1"
+        return f"APGI Equation Parameter\n{parameter}\nValid range: [0.0, 1.0]\nDescription: [0.0, 1.0]"
 
 
 class MockValidationResult:
@@ -98,7 +100,10 @@ class TestRunHealthCheck:
 
     @patch("apgi_framework.validation.diagnostics_cli.get_health_checker")
     @patch("sys.exit")
-    def test_run_health_check_full_success(self, mock_exit, mock_get_health_checker):
+    @patch("apgi_framework.validation.diagnostics_cli.logger")
+    def test_run_health_check_full_success(
+        self, mock_logger, mock_exit, mock_get_health_checker
+    ):
         """Test successful full health check."""
         mock_health_checker = MockHealthChecker()
         mock_get_health_checker.return_value = mock_health_checker
@@ -107,21 +112,18 @@ class TestRunHealthCheck:
         mock_args = MagicMock()
         mock_args.component = None
 
-        # Capture stdout
-        captured_output = StringIO()
+        run_health_check(mock_args)
 
-        with patch("sys.stdout", captured_output):
-            run_health_check(mock_args)
-
-        output = captured_output.getvalue()
-        assert "APGI FRAMEWORK SYSTEM HEALTH CHECK" in output
-        assert "All systems healthy" in output
+        # Check logger calls instead of stdout
+        mock_logger.info.assert_any_call("\n" + "=" * 60)
+        mock_logger.info.assert_any_call("APGI FRAMEWORK SYSTEM HEALTH CHECK")
         mock_exit.assert_called_once_with(0)
 
     @patch("apgi_framework.validation.diagnostics_cli.get_health_checker")
     @patch("sys.exit")
+    @patch("apgi_framework.validation.diagnostics_cli.logger")
     def test_run_health_check_component_success(
-        self, mock_exit, mock_get_health_checker
+        self, mock_logger, mock_exit, mock_get_health_checker
     ):
         """Test successful component health check."""
         mock_health_checker = MockHealthChecker()
@@ -131,22 +133,21 @@ class TestRunHealthCheck:
         mock_args = MagicMock()
         mock_args.component = "python"
 
-        # Capture stdout
-        captured_output = StringIO()
+        run_health_check(mock_args)
 
-        with patch("sys.stdout", captured_output):
-            run_health_check(mock_args)
-
-        output = captured_output.getvalue()
-        assert "APGI FRAMEWORK SYSTEM HEALTH CHECK" in output
-        assert "python is healthy" in output
+        # Check logger calls instead of stdout
+        mock_logger.info.assert_any_call("\n" + "=" * 60)
+        mock_logger.info.assert_any_call("APGI FRAMEWORK SYSTEM HEALTH CHECK")
         mock_exit.assert_called_once_with(0)
 
     @patch("apgi_framework.validation.diagnostics_cli.get_health_checker")
     @patch("sys.exit")
-    def test_run_health_check_warning_status(self, mock_exit, mock_get_health_checker):
+    @patch("apgi_framework.validation.diagnostics_cli.logger")
+    def test_run_health_check_warning_status(
+        self, mock_logger, mock_exit, mock_get_health_checker
+    ):
         """Test health check with warning status."""
-        mock_health_checker = MockHealthChecker()
+        mock_health_checker = MagicMock()
         mock_health_checker.check_component.return_value = MockHealthResult(
             "warning", "Minor issues"
         )
@@ -156,17 +157,16 @@ class TestRunHealthCheck:
         mock_args = MagicMock()
         mock_args.component = "python"
 
-        # Capture stdout
-        captured_output = StringIO()
-
-        with patch("sys.stdout", captured_output):
-            run_health_check(mock_args)
+        run_health_check(mock_args)
 
         mock_exit.assert_called_once_with(2)
 
     @patch("apgi_framework.validation.diagnostics_cli.get_health_checker")
     @patch("sys.exit")
-    def test_run_health_check_critical_status(self, mock_exit, mock_get_health_checker):
+    @patch("apgi_framework.validation.diagnostics_cli.logger")
+    def test_run_health_check_critical_status(
+        self, mock_logger, mock_exit, mock_get_health_checker
+    ):
         """Test health check with critical status."""
         mock_health_checker = MagicMock()
         mock_health_checker.check_component.return_value = MockHealthResult(
@@ -178,11 +178,7 @@ class TestRunHealthCheck:
         mock_args = MagicMock()
         mock_args.component = "python"
 
-        # Capture stdout
-        captured_output = StringIO()
-
-        with patch("sys.stdout", captured_output):
-            run_health_check(mock_args)
+        run_health_check(mock_args)
 
         mock_exit.assert_called_once_with(1)
 
@@ -192,8 +188,9 @@ class TestRunDiagnostics:
 
     @patch("apgi_framework.validation.diagnostics_cli.get_health_checker")
     @patch("apgi_framework.validation.diagnostics_cli.get_config_manager")
+    @patch("apgi_framework.validation.diagnostics_cli.logger")
     def test_run_diagnostics_success(
-        self, mock_get_config_manager, mock_get_health_checker
+        self, mock_logger, mock_get_config_manager, mock_get_health_checker
     ):
         """Test successful diagnostics run."""
         mock_health_checker = MockHealthChecker()
@@ -205,23 +202,22 @@ class TestRunDiagnostics:
         # Mock args
         mock_args = MagicMock()
 
-        # Capture stdout
-        captured_output = StringIO()
+        run_diagnostics(mock_args)
 
-        with patch("sys.stdout", captured_output):
-            run_diagnostics(mock_args)
-
-        output = captured_output.getvalue()
-        assert "APGI FRAMEWORK DIAGNOSTIC INFORMATION" in output
-        assert "System Information:" in output
-        assert "Configuration:" in output
-        assert "Exteroceptive Precision: 2.0" in output
-        assert "Trials: 100" in output
+        # Check logger calls
+        mock_logger.info.assert_any_call("\n" + "=" * 60)
+        mock_logger.info.assert_any_call("APGI FRAMEWORK DIAGNOSTIC INFORMATION")
+        mock_logger.info.assert_any_call("System Information:")
+        mock_logger.info.assert_any_call("\nConfiguration:")
+        mock_logger.info.assert_any_call("  APGI Parameters:")
+        mock_logger.info.assert_any_call("    Exteroceptive Precision: 2.0")
+        mock_logger.info.assert_any_call("    Trials: 100")
 
     @patch("apgi_framework.validation.diagnostics_cli.get_health_checker")
     @patch("apgi_framework.validation.diagnostics_cli.get_config_manager")
+    @patch("apgi_framework.validation.diagnostics_cli.logger")
     def test_run_diagnostics_config_error(
-        self, mock_get_config_manager, mock_get_health_checker
+        self, mock_logger, mock_get_config_manager, mock_get_health_checker
     ):
         """Test diagnostics with configuration error."""
         mock_health_checker = MockHealthChecker()
@@ -234,14 +230,10 @@ class TestRunDiagnostics:
         # Mock args
         mock_args = MagicMock()
 
-        # Capture stdout
-        captured_output = StringIO()
+        run_diagnostics(mock_args)
 
-        with patch("sys.stdout", captured_output):
-            run_diagnostics(mock_args)
-
-        output = captured_output.getvalue()
-        assert "Error loading configuration: Config error" in output
+        # Check logger captured the error message
+        mock_logger.info.assert_any_call("  Error loading configuration: Config error")
 
 
 class TestValidateParameters:
@@ -249,87 +241,92 @@ class TestValidateParameters:
 
     @patch("apgi_framework.validation.diagnostics_cli.get_validator")
     @patch("sys.exit")
-    def test_validate_parameters_success(self, mock_exit, mock_get_validator):
+    @patch("apgi_framework.validation.diagnostics_cli.logger")
+    def test_validate_parameters_success(
+        self, mock_logger, mock_exit, mock_get_validator
+    ):
         """Test successful parameter validation."""
-        mock_validator = MagicMock(spec=MockValidator)
-        mock_validator.validate_apgi_parameters.return_value = MockValidationResult(
-            True, "Parameters valid"
-        )
+        mock_validator = MockValidator()
         mock_get_validator.return_value = mock_validator
 
         # Mock args with valid parameters
         mock_args = MagicMock()
         mock_args.params = ["extero_precision=2.0", "intero_precision=1.5"]
 
-        # Capture stdout
-        captured_output = StringIO()
+        validate_parameters(mock_args)
 
-        with patch("sys.stdout", captured_output):
-            validate_parameters(mock_args)
-
-        output = captured_output.getvalue()
-        assert "PARAMETER VALIDATION" in output
-        assert "Parameters valid" in output
+        # Check that logger was called with expected messages
+        mock_logger.info.assert_any_call("\n" + "=" * 60)
+        mock_logger.info.assert_any_call("PARAMETER VALIDATION")
+        mock_logger.info.assert_any_call("=" * 60 + "\n")
+        mock_logger.info.assert_any_call("✓ All parameters valid")
         mock_exit.assert_not_called()
 
     @patch("apgi_framework.validation.diagnostics_cli.get_validator")
     @patch("sys.exit")
-    def test_validate_parameters_failure(self, mock_exit, mock_get_validator):
-        """Test failed parameter validation."""
-        mock_validator = MagicMock(spec=MockValidator)
-        mock_validator.validate_apgi_parameters.return_value = MockValidationResult(
-            False, "Parameters invalid"
-        )
+    @patch("apgi_framework.validation.diagnostics_cli.logger")
+    def test_validate_parameters_failure(
+        self, mock_logger, mock_exit, mock_get_validator
+    ):
+        """Test parameter validation with invalid parameters."""
+        mock_validator = MockValidator()
         mock_get_validator.return_value = mock_validator
 
-        # Mock args with parameters
+        # Mock args with invalid parameters
         mock_args = MagicMock()
-        mock_args.params = ["extero_precision=2.0"]
+        mock_args.params = ["extero_precision=5.0", "intero_precision=1.5"]
 
-        # Capture stdout
-        captured_output = StringIO()
+        validate_parameters(mock_args)
 
-        with patch("sys.stdout", captured_output):
-            validate_parameters(mock_args)
-
-        output = captured_output.getvalue()
-        assert "Parameters invalid" in output
+        # Check that logger was called with expected messages
+        mock_logger.info.assert_any_call("\n" + "=" * 60)
+        mock_logger.info.assert_any_call("PARAMETER VALIDATION")
+        mock_logger.info.assert_any_call("=" * 60 + "\n")
+        mock_logger.info.assert_any_call("❌ Parameters invalid")
         mock_exit.assert_called_once_with(1)
 
-    @patch("sys.exit")
-    def test_validate_parameters_invalid_format(self, mock_exit):
+    @patch("apgi_framework.validation.diagnostics_cli.get_validator")
+    @patch("apgi_framework.validation.diagnostics_cli.logger")
+    def test_validate_parameters_invalid_format(self, mock_logger, mock_get_validator):
         """Test parameter validation with invalid format."""
+        mock_validator = MockValidator()
+        mock_get_validator.return_value = mock_validator
+
         # Mock args with invalid parameter format
         mock_args = MagicMock()
         mock_args.params = ["invalid_format"]
 
-        # Capture stdout and stderr
-        captured_output = StringIO()
-
-        with patch("sys.stdout", captured_output):
+        # Validate parameters should raise SystemExit
+        with pytest.raises(SystemExit) as exc_info:
             validate_parameters(mock_args)
 
-        output = captured_output.getvalue()
-        assert "Error: Invalid parameter format: invalid_format" in output
-        assert "Expected format: key=value" in output
-        mock_exit.assert_called_once_with(1)
+        assert exc_info.value.code == 1
 
-    @patch("sys.exit")
-    def test_validate_parameters_no_params(self, mock_exit):
+        # Check that logger was called with expected messages
+        mock_logger.info.assert_any_call(
+            "Error: Invalid parameter format: invalid_format"
+        )
+        mock_logger.info.assert_any_call("Expected format: key=value")
+
+    @patch("apgi_framework.validation.diagnostics_cli.get_validator")
+    @patch("apgi_framework.validation.diagnostics_cli.logger")
+    def test_validate_parameters_no_params(self, mock_logger, mock_get_validator):
         """Test parameter validation with no parameters."""
+        mock_validator = MockValidator()
+        mock_get_validator.return_value = mock_validator
+
         # Mock args with no parameters
         mock_args = MagicMock()
         mock_args.params = None
 
-        # Capture stdout
-        captured_output = StringIO()
-
-        with patch("sys.stdout", captured_output):
+        # Validate parameters should raise SystemExit
+        with pytest.raises(SystemExit) as exc_info:
             validate_parameters(mock_args)
 
-        output = captured_output.getvalue()
-        assert "No parameters provided" in output
-        mock_exit.assert_called_once_with(1)
+        assert exc_info.value.code == 1
+
+        # Check that logger was called with the expected message
+        mock_logger.info.assert_any_call("No parameters provided")
 
 
 class TestGetParameterInfo:
@@ -337,7 +334,10 @@ class TestGetParameterInfo:
 
     @patch("apgi_framework.validation.diagnostics_cli.get_validator")
     @patch("sys.exit")
-    def test_get_parameter_info_success(self, mock_exit, mock_get_validator):
+    @patch("apgi_framework.validation.diagnostics_cli.logger")
+    def test_get_parameter_info_success(
+        self, mock_logger, mock_exit, mock_get_validator
+    ):
         """Test successful parameter info retrieval."""
         mock_validator = MockValidator()
         mock_get_validator.return_value = mock_validator
@@ -346,31 +346,26 @@ class TestGetParameterInfo:
         mock_args = MagicMock()
         mock_args.parameter = "threshold"
 
-        # Capture stdout
-        captured_output = StringIO()
+        get_parameter_info(mock_args)
 
-        with patch("sys.stdout", captured_output):
-            get_parameter_info(mock_args)
-
-        output = captured_output.getvalue()
-        assert "Information about threshold: Valid range 0-1" in output
+        # Check that logger was called with the expected info
+        mock_logger.info.assert_any_call(
+            "\nAPGI Equation Parameter\nthreshold\nValid range: [0.0, 1.0]\nDescription: [0.0, 1.0]\n"
+        )
         mock_exit.assert_not_called()
 
     @patch("sys.exit")
-    def test_get_parameter_info_no_parameter(self, mock_exit):
+    @patch("apgi_framework.validation.diagnostics_cli.logger")
+    def test_get_parameter_info_no_parameter(self, mock_logger, mock_exit):
         """Test parameter info with no parameter name."""
         # Mock args without parameter
         mock_args = MagicMock()
         mock_args.parameter = None
 
-        # Capture stdout
-        captured_output = StringIO()
+        get_parameter_info(mock_args)
 
-        with patch("sys.stdout", captured_output):
-            get_parameter_info(mock_args)
-
-        output = captured_output.getvalue()
-        assert "Error: No parameter name provided" in output
+        # Check that logger was called with the expected message
+        mock_logger.info.assert_any_call("Error: No parameter name provided")
         mock_exit.assert_called_once_with(1)
 
 

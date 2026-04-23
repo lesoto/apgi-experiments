@@ -16,7 +16,7 @@ Key components:
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -56,7 +56,7 @@ class AIACCActivation:
     baseline_corrected: bool = True
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate activation parameters"""
         if not isinstance(self.region, AIACCRegion):
             raise ValidationError(f"Invalid AI/ACC region: {self.region}")
@@ -102,7 +102,7 @@ class GammaCoherence:
     duration: float = 0.0  # Duration of coherence (ms)
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate coherence parameters"""
         if not 0.0 <= self.plv <= 1.0:
             raise ValidationError(f"PLV must be between 0.0 and 1.0, got {self.plv}")
@@ -154,7 +154,7 @@ class EffectiveConnectivity:
     latency: Optional[float] = None  # Connection latency (ms)
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate connectivity parameters"""
         if not -1.0 <= self.directionality <= 1.0:
             raise ValidationError(
@@ -239,7 +239,7 @@ class AIACCValidator:
     and effective connectivity according to falsification criteria.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the AI/ACC validator with default thresholds"""
         self.validation_thresholds = {
             "bold_significance": 3.1,  # Z-score threshold for significant BOLD activation
@@ -274,7 +274,7 @@ class AIACCValidator:
         if not activations:
             return True, {"reason": "no_activations_measured", "activations": []}
 
-        validation_details: Dict[str, Union[List[Dict[str, Any]], int, float]] = {
+        validation_details: Dict[str, Any] = {
             "activations": [],
             "significant_activations": 0,
             "mean_activation": 0.0,
@@ -303,8 +303,8 @@ class AIACCValidator:
             activation_values.append(activation.bold_z_score)
 
         validation_details["significant_activations"] = significant_count
-        validation_details["mean_activation"] = np.mean(activation_values)
-        validation_details["max_activation"] = np.max(activation_values)
+        validation_details["mean_activation"] = float(np.mean(activation_values))
+        validation_details["max_activation"] = float(np.max(activation_values))
 
         # AI/ACC activation is considered absent if no regions show significant activation
         is_absent = significant_count == 0
@@ -328,7 +328,7 @@ class AIACCValidator:
         if not coherences:
             return True, {"reason": "no_coherences_measured", "coherences": []}
 
-        validation_details: Dict[str, Union[List[Dict[str, Any]], int, float]] = {
+        validation_details: Dict[str, Any] = {
             "coherences": [],
             "high_coherence_count": 0,
             "mean_plv": 0.0,
@@ -358,8 +358,8 @@ class AIACCValidator:
             plv_values.append(coherence.plv)
 
         validation_details["high_coherence_count"] = high_coherence_count
-        validation_details["mean_plv"] = np.mean(plv_values)
-        validation_details["max_plv"] = np.max(plv_values)
+        validation_details["mean_plv"] = float(np.mean(plv_values))
+        validation_details["max_plv"] = float(np.max(plv_values))
 
         # Gamma coherence is considered low if all measurements are below threshold
         is_low = high_coherence_count == 0
@@ -383,7 +383,7 @@ class AIACCValidator:
         if not connectivities:
             return True, {"reason": "no_connectivities_measured", "connectivities": []}
 
-        validation_details: Dict[str, Union[List[Dict[str, Any]], int, float]] = {
+        validation_details: Dict[str, Any] = {
             "connectivities": [],
             "strong_connections": 0,
             "ai_acc_frontoparietal_connections": 0,
@@ -419,7 +419,7 @@ class AIACCValidator:
 
         validation_details["strong_connections"] = strong_connections
         validation_details["ai_acc_frontoparietal_connections"] = ai_acc_fp_connections
-        validation_details["mean_connectivity"] = np.mean(connectivity_values)
+        validation_details["mean_connectivity"] = float(np.mean(connectivity_values))
 
         # Connectivity is considered disrupted if no strong AI/ACC-frontoparietal connections
         is_disrupted = ai_acc_fp_connections == 0

@@ -503,8 +503,8 @@ class StatisticalTester:
         pooled_std = np.sqrt(((n1 - 1) * s1**2 + (n2 - 1) * s2**2) / (n1 + n2 - 2))
 
         # Cohen's d
-        d = (np.mean(group1) - np.mean(group2)) / pooled_std
-        return d
+        d = float(np.mean(group1) - np.mean(group2)) / pooled_std
+        return float(d)
 
     def _calculate_eta_squared(
         self,
@@ -529,7 +529,7 @@ class StatisticalTester:
         ss_total = ss_between + ss_within
 
         # Eta-squared
-        eta_squared = ss_between / ss_total
+        eta_squared = float(ss_between) / float(ss_total)
         return eta_squared
 
     def _calculate_rank_biserial_correlation(

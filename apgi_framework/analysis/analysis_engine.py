@@ -271,7 +271,9 @@ class AnalysisEngine:
             return stats, p_values, effect_sizes, conf_intervals
 
         # Function to analyze a single grouping variable
-        def analyze_grouping_variable(group_col):
+        def analyze_grouping_variable(
+            group_col: str,
+        ) -> Tuple[str, Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
             group_stats = {}
             group_p_values = {}
             group_effect_sizes = {}
@@ -379,7 +381,7 @@ class AnalysisEngine:
             return stats, p_values, effect_sizes, conf_intervals
 
         # Function to compute correlation for a single pair
-        def compute_correlation(pair):
+        def compute_correlation(pair: Tuple[str, str]) -> Dict[str, Any]:
             col1, col2 = pair
             x = numeric_data[col1]
             y = numeric_data[col2]
@@ -428,9 +430,7 @@ class AnalysisEngine:
         )
         return stats, p_values, effect_sizes, conf_intervals
 
-    def _regression_analysis(
-        self, data: pd.DataFrame, params: Dict[str, Any]
-    ) -> Tuple[
+    def _regression_analysis(self, data: pd.DataFrame, params: Dict[str, Any]) -> Tuple[
         Dict[str, Any],
         Dict[str, float],
         Dict[str, float],
@@ -708,7 +708,7 @@ class AnalysisEngine:
         }
 
         # Convert numpy types for JSON serialization
-        def convert_numpy(obj):
+        def convert_numpy(obj: Any) -> Any:
             if isinstance(obj, np.integer):
                 return int(obj)
             elif isinstance(obj, np.floating):

@@ -17,7 +17,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 import pytest
 
@@ -75,13 +75,13 @@ class BatchTestRunner:
         self.config_manager = config_manager or ConfigManager()
         self.logger = get_logger(f"{__name__}.BatchTestRunner")
         self._stop_execution = False
-        self._progress_callback = None
+        self._progress_callback: Optional[Callable[[float, Any], None]] = None
 
-    def set_progress_callback(self, callback):
+    def set_progress_callback(self, callback: Callable[[float, Any], None]) -> None:
         """Set callback for progress updates."""
         self._progress_callback = callback
 
-    def stop_execution(self):
+    def stop_execution(self) -> None:
         """Stop ongoing test execution."""
         self._stop_execution = True
         self.logger.info("Test execution stop requested")

@@ -114,14 +114,14 @@ class ErrorRecoveryStrategy(abc.ABC):
         """Check if this strategy can handle the error."""
 
     @abc.abstractmethod
-    def recover(self, error: APGIError, **kwargs) -> bool:
+    def recover(self, error: APGIError, **kwargs: Any) -> bool:
         """Attempt to recover from the error."""
 
 
 class DataValidationRecovery(ErrorRecoveryStrategy):
     """Recovery strategy for data validation errors."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             "data_validation_recovery",
             "Attempts to clean and validate data automatically",
@@ -130,7 +130,7 @@ class DataValidationRecovery(ErrorRecoveryStrategy):
     def can_handle(self, error: APGIError) -> bool:
         return error.category == ErrorCategory.DATA_ERROR
 
-    def recover(self, error: APGIError, **kwargs) -> bool:
+    def recover(self, error: APGIError, **kwargs: Any) -> bool:
         """Attempt data cleaning and validation."""
         try:
             data = kwargs.get("data")
@@ -185,7 +185,7 @@ class DataValidationRecovery(ErrorRecoveryStrategy):
 class MemoryRecovery(ErrorRecoveryStrategy):
     """Recovery strategy for memory errors."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             "memory_recovery", "Reduces memory usage by processing data in chunks"
         )
@@ -193,7 +193,7 @@ class MemoryRecovery(ErrorRecoveryStrategy):
     def can_handle(self, error: APGIError) -> bool:
         return error.category == ErrorCategory.MEMORY_ERROR
 
-    def recover(self, error: APGIError, **kwargs) -> bool:
+    def recover(self, error: APGIError, **kwargs: Any) -> bool:
         """Attempt memory optimization."""
         try:
             # Suggest chunked processing
@@ -212,7 +212,7 @@ class MemoryRecovery(ErrorRecoveryStrategy):
 class ConfigurationRecovery(ErrorRecoveryStrategy):
     """Recovery strategy for configuration errors."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             "configuration_recovery", "Resets configuration to default values"
         )
@@ -220,7 +220,7 @@ class ConfigurationRecovery(ErrorRecoveryStrategy):
     def can_handle(self, error: APGIError) -> bool:
         return error.category == ErrorCategory.CONFIGURATION_ERROR
 
-    def recover(self, error: APGIError, **kwargs) -> bool:
+    def recover(self, error: APGIError, **kwargs: Any) -> bool:
         """Attempt configuration reset."""
         try:
             config_path = kwargs.get("config_path")
@@ -244,11 +244,11 @@ class ConfigurationRecovery(ErrorRecoveryStrategy):
 class EnhancedErrorHandler:
     """Enhanced error handler with context analysis and recovery."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger("enhanced_error_handler")
-        self.recovery_strategies = []
-        self.error_patterns = {}
-        self.error_history = []
+        self.recovery_strategies: List[ErrorRecoveryStrategy] = []
+        self.error_patterns: Dict[str, Dict[str, Any]] = {}
+        self.error_history: List[APGIError] = []
 
         # Register default recovery strategies
         self._register_default_strategies()
@@ -256,13 +256,13 @@ class EnhancedErrorHandler:
         # Load error patterns
         self._load_error_patterns()
 
-    def _register_default_strategies(self):
+    def _register_default_strategies(self) -> None:
         """Register default recovery strategies."""
         self.recovery_strategies.extend(
             [DataValidationRecovery(), MemoryRecovery(), ConfigurationRecovery()]
         )
 
-    def _load_error_patterns(self):
+    def _load_error_patterns(self) -> None:
         """Load known error patterns and solutions."""
         self.error_patterns = {
             # Data errors
@@ -357,7 +357,7 @@ for i in range(0, len(data), chunk_size):
             },
         }
 
-    def register_recovery_strategy(self, strategy: ErrorRecoveryStrategy):
+    def register_recovery_strategy(self, strategy: ErrorRecoveryStrategy) -> None:
         """Register a new recovery strategy."""
         self.recovery_strategies.append(strategy)
 
@@ -480,7 +480,7 @@ for i in range(0, len(data), chunk_size):
         return generic_solutions.get(category, [])
 
     def handle_error(
-        self, exception: Exception, user_action: Optional[str] = None, **context
+        self, exception: Exception, user_action: Optional[str] = None, **context: Any
     ) -> APGIError:
         """Handle an error with enhanced analysis and recovery."""
         # Generate unique error ID
@@ -530,7 +530,7 @@ for i in range(0, len(data), chunk_size):
 
         return apgi_error
 
-    def _show_error_dialog(self, apgi_error):
+    def _show_error_dialog(self, apgi_error: APGIError) -> None:
         """Show a user-friendly error dialog using the error dialog manager."""
         try:
             # Determine dialog type based on severity
@@ -577,7 +577,7 @@ for i in range(0, len(data), chunk_size):
         base_message = base_messages.get(category, "An error occurred")
         return f"{base_message} Details: {str(exception)}"
 
-    def _log_error(self, error: APGIError):
+    def _log_error(self, error: APGIError) -> None:
         """Log error with appropriate level."""
         log_level_map = {
             ErrorSeverity.LOW: logging.INFO,
@@ -587,12 +587,12 @@ for i in range(0, len(data), chunk_size):
         }
 
         level = log_level_map[error.severity]
-        self.logger.log(level, f"Error {error.error_id}: {error.message}")
+        self.logger._log(level, f"Error {error.error_id}: {error.message}")
 
         # Log detailed information at debug level
         self.logger.debug(f"Error details: {json.dumps(error.to_dict(), indent=2)}")
 
-    def _attempt_recovery(self, error: APGIError, **context) -> bool:
+    def _attempt_recovery(self, error: APGIError, **context: Any) -> bool:
         """Attempt to recover from error using registered strategies."""
         for strategy in self.recovery_strategies:
             if strategy.can_handle(error):
@@ -648,7 +648,7 @@ def get_error_handler() -> EnhancedErrorHandler:
 
 
 @contextmanager
-def error_context(user_action: Optional[str] = None, **context):
+def error_context(user_action: Optional[str] = None, **context: Any) -> Any:
     """Context manager for enhanced error handling."""
     try:
         yield
@@ -663,7 +663,7 @@ def error_context(user_action: Optional[str] = None, **context):
 class APGIException(Exception):
     """Custom exception class that wraps enhanced error information."""
 
-    def __init__(self, apgi_error: APGIError):
+    def __init__(self, apgi_error: APGIError) -> None:
         self.apgi_error = apgi_error
         super().__init__(apgi_error.user_message)
 
@@ -682,13 +682,13 @@ class APGIException(Exception):
 
 # Convenience functions
 def handle_error(
-    exception: Exception, user_action: Optional[str] = None, **context
+    exception: Exception, user_action: Optional[str] = None, **context: Any
 ) -> APGIError:
     """Handle an error with enhanced analysis."""
     return get_error_handler().handle_error(exception, user_action, **context)
 
 
-def register_recovery_strategy(strategy: ErrorRecoveryStrategy):
+def register_recovery_strategy(strategy: ErrorRecoveryStrategy) -> None:
     """Register a new error recovery strategy."""
     get_error_handler().register_recovery_strategy(strategy)
 

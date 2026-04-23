@@ -413,7 +413,7 @@ class FalsificationInterpreter:
     interpretation of experimental outcomes.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the falsification interpreter"""
         self.signature_classifier = SignaturePatternClassifier()
 
@@ -822,7 +822,7 @@ class ResultLogger:
         self.log_file = log_file
         self.results_log: List[Dict[str, Any]] = []
 
-    def log_trial_result(self, trial_interpretation: TrialInterpretation):
+    def log_trial_result(self, trial_interpretation: TrialInterpretation) -> None:
         """
         Log a complete trial interpretation result.
 
@@ -865,7 +865,7 @@ class ResultLogger:
         else:
             raise ValueError(f"Unsupported export format: {format_type}")
 
-    def _write_to_file(self, log_entry: Dict[str, Any]):
+    def _write_to_file(self, log_entry: Dict[str, Any]) -> None:
         """Write log entry to file"""
         if self.log_file:
             with open(self.log_file, "a") as f:

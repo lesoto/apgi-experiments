@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional
 class APGIParameterValidator:
     """Validator for APGI model parameters using JSON schema"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "title": "APGI Formal Model Parameters",
@@ -147,11 +147,15 @@ class APGIParameterValidator:
         recommended_params = ["tau_S", "tau_theta", "theta_0", "alpha"]
         for param in recommended_params:
             if param not in parameters:
-                warnings.append(
-                    f"Recommended parameter '{param}' not specified, will use default: {self.schema['properties'][param]['default']}"
-                )
+                properties_dict = self.schema["properties"]
+                if isinstance(properties_dict, dict) and param in properties_dict:
+                    param_info = properties_dict[param]
+                    if isinstance(param_info, dict) and "default" in param_info:
+                        warnings.append(
+                            f"Recommended parameter '{param}' not specified, will use default: {param_info['default']}"
+                        )
 
-    def validate(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    def validate(self, parameters: Any) -> Dict[str, Any]:
         """
         Validate parameters against schema
 
@@ -174,13 +178,19 @@ class APGIParameterValidator:
 
             # Check each parameter
             for key, value in parameters.items():
-                if key not in self.schema["properties"]:
+                properties_dict = self.schema["properties"]
+                if not isinstance(properties_dict, dict) or key not in properties_dict:
+                    valid_params = (
+                        list(properties_dict.keys())
+                        if isinstance(properties_dict, dict)
+                        else []
+                    )
                     errors.append(
-                        f"Unknown parameter: '{key}'. Valid parameters: {list(self.schema['properties'].keys())}"
+                        f"Unknown parameter: '{key}'. Valid parameters: {valid_params}"
                     )
                     continue
 
-                prop_schema = self.schema["properties"][key]
+                prop_schema = properties_dict[key]
 
                 # Check type
                 if not self._validate_parameter_type(key, value, prop_schema, errors):
@@ -208,11 +218,19 @@ class APGIParameterValidator:
 
     def get_parameter_info(self, param_name: str) -> Optional[Dict[str, Any]]:
         """Get information about a specific parameter"""
-        return self.schema["properties"].get(param_name)
+        properties_dict = self.schema["properties"]
+        if isinstance(properties_dict, dict):
+            result = properties_dict.get(param_name)
+            if isinstance(result, dict):
+                return result
+        return None
 
     def list_valid_parameters(self) -> List[str]:
         """Get list of all valid parameter names"""
-        return list(self.schema["properties"].keys())
+        properties_dict = self.schema["properties"]
+        if isinstance(properties_dict, dict):
+            return list(properties_dict.keys())
+        return []
 
 
 # Global validator instance

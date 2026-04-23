@@ -8,19 +8,17 @@ efficiently under various conditions.
 
 import json
 import logging
+import os
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import numpy as np
 
-from .exceptions import (
-    MathematicalError,
-    ValidationError,
-)
+from .exceptions import APGIFrameworkError, MathematicalError, ValidationError
 from .main_controller import MainApplicationController
 
 
@@ -145,15 +143,82 @@ class SystemValidator:
     data integrity, performance, and integration testing.
     """
 
-    def __init__(self, controller: MainApplicationController):
+    controller: Optional[Any]
+    current_report: Optional[SystemValidationReport]
+
+    def __init__(self, config_or_controller: Union[Dict[str, Any], Any]) -> None:
         """
         Initialize the system validator.
 
         Args:
-            controller: Main application controller instance.
+            config_or_controller: Either a configuration dictionary or a MainApplicationController instance.
         """
-        self.controller = controller
+        # Handle both config dict and controller for backward compatibility
+        if isinstance(config_or_controller, dict):
+            self.controller = None
+            self._init_from_config(config_or_controller)
+        else:
+            self.controller = config_or_controller
+            self._init_from_controller()
+
+    def _init_from_config(self, config: Dict[str, Any]) -> None:
+        """Initialize from configuration dictionary."""
         self.logger = logging.getLogger(__name__)
+
+        # Configuration validation
+        if "validation_level" in config:
+            level = config["validation_level"]
+            if level not in ["basic", "standard", "comprehensive", "stress_test"]:
+                raise APGIFrameworkError(f"Invalid validation level: {level}")
+            self.validation_level = level
+        else:
+            self.validation_level = "standard"
+
+        # Performance thresholds with validation
+        if "performance_thresholds" in config:
+            thresholds = config["performance_thresholds"]
+            if not isinstance(thresholds, dict):
+                raise APGIFrameworkError("Performance thresholds must be a dictionary")
+
+            # Validate threshold values are numeric
+            for key, value in thresholds.items():
+                if not isinstance(value, (int, float)):
+                    raise APGIFrameworkError(
+                        f"Performance threshold '{key}' must be numeric"
+                    )
+
+            self.performance_thresholds = thresholds
+        else:
+            self.performance_thresholds = {
+                "memory_usage": 80.0,
+                "cpu_usage": 90.0,
+                "disk_usage": 85.0,
+                "response_time": 2.0,
+            }
+
+        # Health check interval
+        self.health_check_interval = config.get("health_check_interval", 60)
+
+        # Validation state
+        self.current_report: Optional[SystemValidationReport] = None
+
+        # Test tolerance values
+        self.numerical_tolerance = 1e-10
+        self.statistical_tolerance = 0.05
+
+    def _init_from_controller(self) -> None:
+        """Initialize from controller (legacy compatibility)."""
+        self.logger = logging.getLogger(__name__)
+
+        # Set defaults for controller-based initialization
+        self.validation_level = "standard"
+        self.performance_thresholds = {
+            "memory_usage": 80.0,
+            "cpu_usage": 90.0,
+            "disk_usage": 85.0,
+            "response_time": 2.0,
+        }
+        self.health_check_interval = 60
 
         # Validation state
         self.current_report: Optional[SystemValidationReport] = None
@@ -169,6 +234,14 @@ class SystemValidator:
             "test_execution_time": 1.0,  # seconds
             "memory_usage_mb": 100.0,  # MB
         }
+
+    def _ensure_controller(self) -> Any:
+        """Ensure controller is available, raising error if not."""
+        if self.controller is None:
+            raise RuntimeError(
+                "Controller not initialized. Validator requires a controller instance."
+            )
+        return self.controller
 
     def run_validation(
         self, level: ValidationLevel = ValidationLevel.STANDARD
@@ -230,25 +303,36 @@ class SystemValidator:
 
         except Exception as e:
             self.logger.error(f"Validation {validation_id} failed: {e}")
-            self.current_report.end_time = datetime.now()
+            if self.current_report:
+                self.current_report.end_time = datetime.now()
             raise ValidationError(f"System validation failed: {e}")
 
+        if self.current_report is None:
+            raise ValidationError("Validation report was not initialized")
         return self.current_report
 
     def _collect_system_info(self) -> None:
         """Collect system information for the report."""
         if self.current_report is None:
             raise RuntimeError("Current report is not initialized")
+        controller = self._ensure_controller()
         self.current_report.system_info = {
-            "controller_initialized": self.controller._initialized,
-            "mathematical_engine_available": self.controller._mathematical_engine
+            "controller_initialized": getattr(controller, "_initialized", False),
+            "mathematical_engine_available": getattr(
+                controller, "_mathematical_engine", None
+            )
             is not None,
-            "neural_simulators_available": self.controller._neural_simulators
+            "neural_simulators_available": getattr(
+                controller, "_neural_simulators", None
+            )
             is not None,
-            "falsification_tests_available": self.controller._falsification_tests
+            "falsification_tests_available": getattr(
+                controller, "_falsification_tests", None
+            )
             is not None,
-            "data_manager_available": self.controller._data_manager is not None,
-            "config_loaded": self.controller.config_manager is not None,
+            "data_manager_available": getattr(controller, "_data_manager", None)
+            is not None,
+            "config_loaded": getattr(controller, "config_manager", None) is not None,
         }
 
     def _run_mathematical_validation(self) -> None:
@@ -387,7 +471,8 @@ class SystemValidator:
         start_time = time.time()
 
         try:
-            equation = self.controller.get_mathematical_engine()["equation"]
+            controller = self._ensure_controller()
+            equation = controller.get_mathematical_engine()["equation"]
 
             # Test with known values
             surprise = equation.calculate_surprise(
@@ -437,7 +522,8 @@ class SystemValidator:
         start_time = time.time()
 
         try:
-            precision_calc = self.controller.get_mathematical_engine()[
+            controller = self._ensure_controller()
+            precision_calc = controller.get_mathematical_engine()[
                 "precision_calculator"
             ]
 
@@ -480,7 +566,8 @@ class SystemValidator:
         start_time = time.time()
 
         try:
-            error_processor = self.controller.get_mathematical_engine()[
+            controller = self._ensure_controller()
+            error_processor = controller.get_mathematical_engine()[
                 "prediction_error_processor"
             ]
 
@@ -522,7 +609,8 @@ class SystemValidator:
         start_time = time.time()
 
         try:
-            somatic_engine = self.controller.get_mathematical_engine()[
+            controller = self._ensure_controller()
+            somatic_engine = controller.get_mathematical_engine()[
                 "somatic_marker_engine"
             ]
 
@@ -556,7 +644,8 @@ class SystemValidator:
         start_time = time.time()
 
         try:
-            threshold_manager = self.controller.get_mathematical_engine()[
+            controller = self._ensure_controller()
+            threshold_manager = controller.get_mathematical_engine()[
                 "threshold_manager"
             ]
 
@@ -596,7 +685,8 @@ class SystemValidator:
         start_time = time.time()
 
         try:
-            equation = self.controller.get_mathematical_engine()["equation"]
+            controller = self._ensure_controller()
+            equation = controller.get_mathematical_engine()["equation"]
 
             # Test sigmoid at key points
             prob_zero = equation.calculate_ignition_probability(
@@ -644,7 +734,8 @@ class SystemValidator:
         start_time = time.time()
 
         try:
-            equation = self.controller.get_mathematical_engine()["equation"]
+            controller = self._ensure_controller()
+            equation = controller.get_mathematical_engine()["equation"]
 
             # Test with extreme values
             extreme_tests = [
@@ -702,18 +793,20 @@ class SystemValidator:
         start_time = time.time()
 
         try:
-            simulators = self.controller.get_neural_simulators()
+            controller = self._ensure_controller()
+            simulators = controller.get_neural_simulators()
             p3b_sim = simulators["p3b"]
 
             # Generate conscious and unconscious signatures
-            conscious_sig = p3b_sim.generate_signature(conscious=True)
-            unconscious_sig = p3b_sim.generate_signature(conscious=False)
+            conscious_signature = p3b_sim.generate(awareness_level=0.8, n_trials=100)
+            unconscious_signature = p3b_sim.generate(awareness_level=0.2, n_trials=100)
 
             # Validate signatures
             conscious_valid = (
-                conscious_sig.amplitude > 5.0 and 250 <= conscious_sig.latency <= 500
+                conscious_signature.amplitude > 5.0
+                and 250 <= conscious_signature.latency <= 500
             )
-            unconscious_valid = unconscious_sig.amplitude < 2.0
+            unconscious_valid = unconscious_signature.amplitude < 2.0
 
             passed = conscious_valid and unconscious_valid
 
@@ -724,12 +817,12 @@ class SystemValidator:
                 execution_time=time.time() - start_time,
                 actual_result={
                     "conscious": {
-                        "amp": conscious_sig.amplitude,
-                        "lat": conscious_sig.latency,
+                        "amp": conscious_signature.amplitude,
+                        "lat": conscious_signature.latency,
                     },
                     "unconscious": {
-                        "amp": unconscious_sig.amplitude,
-                        "lat": unconscious_sig.latency,
+                        "amp": unconscious_signature.amplitude,
+                        "lat": unconscious_signature.latency,
                     },
                 },
             )
@@ -852,7 +945,8 @@ class SystemValidator:
         """Test primary falsification test logic."""
         start_time = time.time()
         try:
-            tests = self.controller.get_falsification_tests()
+            controller = self._ensure_controller()
+            tests = controller.get_falsification_tests()
             primary_test = tests["primary"]
             has_run_method = hasattr(primary_test, "run_test")
             passed = has_run_method
@@ -958,7 +1052,8 @@ class SystemValidator:
         """Test data storage functionality."""
         start_time = time.time()
         try:
-            data_manager = self.controller.get_data_manager()
+            controller = self._ensure_controller()
+            data_manager = controller.get_data_manager()
             storage = data_manager["storage"]
             has_save_method = hasattr(storage, "save_dataset")
             has_load_method = hasattr(storage, "load_dataset")
@@ -983,7 +1078,8 @@ class SystemValidator:
         """Test data validation functionality."""
         start_time = time.time()
         try:
-            data_manager = self.controller.get_data_manager()
+            controller = self._ensure_controller()
+            data_manager = controller.get_data_manager()
             validator = data_manager["validator"]
             has_validate_method = hasattr(validator, "validate_dataset")
             passed = has_validate_method
@@ -1007,7 +1103,8 @@ class SystemValidator:
         """Test configuration management."""
         start_time = time.time()
         try:
-            config_manager = self.controller.config_manager
+            controller = self._ensure_controller()
+            config_manager = controller.config_manager
             apgi_params = config_manager.get_apgi_parameters()
             exp_config = config_manager.get_experimental_config()
 
@@ -1036,9 +1133,10 @@ class SystemValidator:
         """Test end-to-end workflow execution."""
         start_time = time.time()
         try:
-            math_engine = self.controller.get_mathematical_engine()
-            simulators = self.controller.get_neural_simulators()
-            tests = self.controller.get_falsification_tests()
+            controller = self._ensure_controller()
+            math_engine = controller.get_mathematical_engine()
+            simulators = controller.get_neural_simulators()
+            tests = controller.get_falsification_tests()
 
             components_available = (
                 math_engine is not None and simulators is not None and tests is not None
@@ -1106,7 +1204,8 @@ class SystemValidator:
         """Test handling of invalid parameters."""
         start_time = time.time()
         try:
-            equation = self.controller.get_mathematical_engine()["equation"]
+            controller = self._ensure_controller()
+            equation = controller.get_mathematical_engine()["equation"]
             error_caught = False
             try:
                 equation.calculate_surprise(-1, 0, -1, 1, 1)  # Negative precision
@@ -1195,7 +1294,8 @@ class SystemValidator:
         """Test equation calculation performance."""
         start_time = time.time()
         try:
-            equation = self.controller.get_mathematical_engine()["equation"]
+            controller = self._ensure_controller()
+            equation = controller.get_mathematical_engine()["equation"]
 
             # Benchmark equation calculation
             n_iterations = 1000
@@ -1232,7 +1332,8 @@ class SystemValidator:
         """Test neural simulation performance."""
         start_time = time.time()
         try:
-            simulators = self.controller.get_neural_simulators()
+            controller = self._ensure_controller()
+            simulators = controller.get_neural_simulators()
             p3b_sim = simulators["p3b"]
 
             # Benchmark signature generation
@@ -1457,6 +1558,380 @@ class SystemValidator:
             json.dump(report_data, f, indent=2, default=str)
 
         self.logger.info(f"Validation report saved to {file_path}")
+
+    # Methods expected by the comprehensive test suite
+
+    def validate_system_config(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate system configuration."""
+        if not config:
+            raise APGIFrameworkError("Configuration cannot be empty")
+
+        errors = []
+
+        # Validate data_directory
+        if "data_directory" in config:
+            data_dir = config["data_directory"]
+            if not data_dir or not isinstance(data_dir, str):
+                errors.append("data_directory must be a non-empty string")
+
+        # Validate log_level
+        if "log_level" in config:
+            log_level = config["log_level"]
+            valid_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+            if log_level not in valid_levels:
+                errors.append(f"log_level must be one of {valid_levels}")
+
+        # Validate max_memory_usage
+        if "max_memory_usage" in config:
+            max_memory = config["max_memory_usage"]
+            if not isinstance(max_memory, (int, float)) or max_memory <= 0:
+                errors.append("max_memory_usage must be a positive number")
+
+        return {"valid": len(errors) == 0, "errors": errors}
+
+    def validate_component_config(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate component configuration."""
+        errors = []
+
+        # Validate name
+        if "name" not in config or not config["name"]:
+            errors.append("Component must have a valid name")
+
+        # Validate version
+        if "version" not in config or not config["version"]:
+            errors.append("Component must have a valid version")
+
+        # Validate dependencies
+        if "dependencies" in config:
+            deps = config["dependencies"]
+            if not isinstance(deps, list):
+                errors.append("Dependencies must be a list")
+
+        return {
+            "valid": len(errors) == 0,
+            "errors": errors,
+            "component_name": config.get("name", "unknown"),
+        }
+
+    def validate_component_dependencies(
+        self, components: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Validate component dependencies."""
+        errors: List[str] = []
+        warnings: List[str] = []
+
+        for name, config in components.items():
+            deps = config.get("dependencies", [])
+            for dep in deps:
+                if dep not in components:
+                    errors.append(
+                        f"Component '{name}' depends on missing component '{dep}'"
+                    )
+
+        return {"valid": len(errors) == 0, "errors": errors, "warnings": warnings}
+
+    def check_system_health(self) -> Dict[str, Any]:
+        """Check overall system health."""
+        try:
+            import psutil
+
+            # Get system metrics
+            cpu_usage = psutil.cpu_percent(interval=1)
+            memory = psutil.virtual_memory()
+            disk = psutil.disk_usage("/")
+
+            health_status = {
+                "overall_health": "healthy",
+                "cpu_usage": cpu_usage,
+                "memory_usage": memory.percent,
+                "disk_usage": (disk.used / disk.total) * 100,
+                "timestamp": time.time(),
+            }
+
+            # Determine overall health
+            if (
+                cpu_usage > self.performance_thresholds.get("cpu_usage", 90)
+                or memory.percent > self.performance_thresholds.get("memory_usage", 80)
+                or health_status["disk_usage"]
+                > self.performance_thresholds.get("disk_usage", 85)
+            ):
+                health_status["overall_health"] = "degraded"
+
+            return health_status
+
+        except ImportError:
+            # Fallback if psutil not available
+            return {
+                "overall_health": "unknown",
+                "cpu_usage": 0.0,
+                "memory_usage": 0.0,
+                "disk_usage": 0.0,
+                "timestamp": time.time(),
+            }
+
+    def check_component_health(self, components: Dict[str, Any]) -> Dict[str, Any]:
+        """Check health of individual components."""
+        health_status = {}
+        healthy_count = 0
+
+        for name, component in components.items():
+            try:
+                if hasattr(component, "is_healthy") and callable(component.is_healthy):
+                    is_healthy = component.is_healthy()
+                    health_status[name] = is_healthy
+                    if is_healthy:
+                        healthy_count += 1
+                else:
+                    health_status[name] = None
+            except Exception:
+                health_status[name] = False
+
+        total_components = len([c for c in health_status.values() if c is not None])
+        health_status["overall_components_health"] = (
+            healthy_count / total_components if total_components > 0 else 0.0
+        )
+
+        return health_status
+
+    def check_performance_metrics(
+        self, performance_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Check performance metrics against thresholds."""
+        warnings = []
+        status = "optimal"
+
+        # Check response time
+        response_time = performance_data.get("response_time", 0)
+        response_threshold = self.performance_thresholds.get("response_time", 2.0)
+
+        if response_time > response_threshold:
+            warnings.append(
+                f"Response time {response_time}s exceeds threshold {response_threshold}s"
+            )
+            status = "degraded"
+
+        return {
+            "status": status,
+            "warnings": warnings,
+            "response_time_status": (
+                "optimal" if response_time <= response_threshold else "degraded"
+            ),
+        }
+
+    def check_resource_availability(self, resources: List[str]) -> Dict[str, Any]:
+        """Check availability of required resources."""
+        availability = {}
+
+        for resource_path in resources:
+            try:
+                exists = os.path.exists(resource_path)
+                accessible = exists and os.access(resource_path, os.R_OK)
+                availability[resource_path] = {
+                    "exists": exists,
+                    "accessible": accessible,
+                }
+            except Exception:
+                availability[resource_path] = {"exists": False, "accessible": False}
+
+        return availability
+
+    def check_version_compatibility(
+        self, system_requirements: Dict[str, Any], component_versions: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Check version compatibility."""
+        import sys
+
+        compatibility: Dict[str, Any] = {
+            "python_compatible": True,
+            "platform_compatible": True,
+            "overall_compatible": True,
+            "issues": [],
+        }
+
+        # Check Python version
+        if "min_python_version" in system_requirements:
+            min_version = system_requirements["min_python_version"]
+            current_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+            if tuple(map(int, current_version.split("."))) < tuple(
+                map(int, min_version.split("."))
+            ):
+                compatibility["python_compatible"] = False
+                compatibility["issues"].append(
+                    f"Python {current_version} < minimum required {min_version}"
+                )
+
+        return compatibility
+
+    def check_component_version_conflicts(
+        self, components: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Check for component version conflicts."""
+        conflicts: Dict[str, List[Any]] = {"version_conflicts": [], "api_conflicts": []}
+
+        # Group by version to detect conflicts
+        version_groups: Dict[str, List[Dict[str, Any]]] = {}
+        for name, config in components.items():
+            version = config.get("version", "unknown")
+            api_version = config.get("api_version", "unknown")
+
+            if version not in version_groups:
+                version_groups[version] = []
+            version_groups[version].append({"name": name, "api_version": api_version})
+
+        # Check for conflicts
+        for version, comps in version_groups.items():
+            if len(comps) > 1:
+                api_versions = set(c["api_version"] for c in comps)
+                if len(api_versions) > 1:
+                    conflicts["api_conflicts"].append(
+                        {
+                            "version": version,
+                            "components": comps,
+                            "issue": "api_version_mismatch",
+                        }
+                    )
+
+        return conflicts
+
+    def check_api_compatibility(self, api_specs: Dict[str, Any]) -> Dict[str, Any]:
+        """Check API compatibility between components."""
+        compatible_methods: List[str] = []
+        incompatible_methods: List[str] = []
+
+        # Find common methods across all APIs
+        if api_specs:
+            all_methods = set()
+            method_counts: Dict[str, int] = {}
+
+            for name, spec in api_specs.items():
+                methods = set(spec.get("methods", []))
+                all_methods.update(methods)
+                for method in methods:
+                    method_counts[method] = method_counts.get(method, 0) + 1
+
+            # Methods available in all APIs
+            total_apis = len(api_specs)
+            compatible_methods = [
+                method for method, count in method_counts.items() if count == total_apis
+            ]
+            incompatible_methods = list(all_methods - set(compatible_methods))
+
+        return {
+            "compatible_methods": compatible_methods,
+            "incompatible_methods": incompatible_methods,
+            "total_compatible": len(compatible_methods),
+        }
+
+    def validate_dependency_resolution_order(
+        self, dependency_graph: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Validate dependency resolution order."""
+        try:
+            # Simple topological sort to check for circular dependencies
+            visited = set()
+            temp_visited = set()
+            order = []
+
+            def visit(node: str) -> None:
+                if node in temp_visited:
+                    raise ValueError(f"Circular dependency detected involving {node}")
+                if node in visited:
+                    return
+
+                temp_visited.add(node)
+                for dep in dependency_graph.get(node, []):
+                    visit(dep)
+                temp_visited.remove(node)
+                visited.add(node)
+                order.append(node)
+
+            for node in dependency_graph:
+                if node not in visited:
+                    visit(node)
+
+            return {"valid": True, "order": order, "circular_dependencies": []}
+
+        except ValueError as e:
+            return {"valid": False, "order": [], "circular_dependencies": [str(e)]}
+
+    def _report_validation_error(
+        self, component: str, error_type: str, message: str
+    ) -> None:
+        """Report validation error (internal method)."""
+        self.logger.error(f"Validation error in {component}: {error_type} - {message}")
+
+    def handle_system_degradation(
+        self, scenarios: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """Handle system degradation scenarios."""
+        degradation_status: Dict[str, Any] = {
+            "active_degradations": [],
+            "critical_issues": 0,
+            "warning_issues": 0,
+        }
+
+        for scenario in scenarios:
+            severity = scenario.get("severity", "warning")
+            if severity == "critical":
+                degradation_status["critical_issues"] += 1
+            else:
+                degradation_status["warning_issues"] += 1
+            degradation_status["active_degradations"].append(scenario)
+
+        return degradation_status
+
+    def activate_fallback_system(
+        self,
+        primary_systems: List[Dict[str, Any]],
+        fallback_systems: List[Dict[str, Any]],
+    ) -> Dict[str, Any]:
+        """Activate fallback systems when primary fail."""
+        for primary in primary_systems:
+            if not primary.get("available", True):
+                # Find corresponding fallback
+                for fallback in fallback_systems:
+                    if fallback["name"] == primary["name"]:
+                        self.logger.info(
+                            f"Activated fallback system: {fallback['name']}"
+                        )
+                        return {"active_system": fallback["name"], "status": "active"}
+
+        return {"active_system": None, "status": "no_fallback_needed"}
+
+    def recover_from_partial_failure(
+        self, failed_components: List[str], working_components: List[str]
+    ) -> Dict[str, Any]:
+        """Recover from partial system failures."""
+        recovery_result = {
+            "recovery_strategy": "disable_failed",
+            "disabled_components": failed_components,
+            "active_components": working_components,
+            "system_functional": len(working_components) > 0,
+        }
+
+        return recovery_result
+
+    def handle_timeout(
+        self, operation: Callable[[], Any], timeout_seconds: int
+    ) -> Dict[str, Any]:
+        """Handle operation timeout."""
+        import signal
+
+        def timeout_handler(signum: int, frame: Any) -> None:
+            raise TimeoutError(f"Operation timed out after {timeout_seconds} seconds")
+
+        # Set timeout
+        signal.signal(signal.SIGALRM, timeout_handler)
+        signal.alarm(timeout_seconds)
+
+        try:
+            result = operation()
+            signal.alarm(0)  # Cancel timeout
+            return {"success": True, "result": result, "timed_out": False}
+        except TimeoutError:
+            return {"success": False, "result": None, "timed_out": True}
+        finally:
+            signal.alarm(0)  # Ensure timeout is cancelled
 
 
 # Convenience functions

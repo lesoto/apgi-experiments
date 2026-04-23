@@ -111,9 +111,9 @@ class ErrorTelemetry:
             sanitized_dict: Dict[str, Any] = {}
             for i, (key, value) in enumerate(data.items()):
                 if i >= max_items:
-                    sanitized_dict[
-                        "...truncated"
-                    ] = f"{len(data) - max_items} more items"
+                    sanitized_dict["...truncated"] = (
+                        f"{len(data) - max_items} more items"
+                    )
                     break
                 sanitized_dict[str(key)[:50]] = self._sanitize_for_json(
                     value, max_depth, max_items, current_depth + 1

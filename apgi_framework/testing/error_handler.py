@@ -13,7 +13,7 @@ import traceback
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, cast
 
 # Declare psutil for conditional import
 psutil: Optional[Any] = None
@@ -200,7 +200,7 @@ class ErrorHandler:
     for test failures, framework issues, and environmental problems.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger("test_error_handler")
         self.error_patterns = self._load_error_patterns()
         self.resolution_database = self._build_resolution_database()
@@ -427,7 +427,7 @@ class ErrorHandler:
         self,
         exception: Exception,
         test_context: Optional[Context] = None,
-        **metadata,
+        **metadata: Any,
     ) -> DiagnosticInfo:
         """
         Handle an error with comprehensive diagnostic capture.
@@ -558,11 +558,13 @@ class ErrorHandler:
                     estimated_fix_time="1-2 minutes",
                     success_probability=0.95,
                 )
-                return [specific_guidance] + guidance_list
+                return cast(
+                    List[ResolutionGuidance], [specific_guidance] + guidance_list
+                )
 
-        return guidance_list
+        return cast(List[ResolutionGuidance], guidance_list)
 
-    def _log_diagnostic_info(self, diagnostic_info: DiagnosticInfo):
+    def _log_diagnostic_info(self, diagnostic_info: DiagnosticInfo) -> None:
         """Log diagnostic information with appropriate level."""
         # Log summary with appropriate method
         if diagnostic_info.severity == ErrorSeverity.LOW:

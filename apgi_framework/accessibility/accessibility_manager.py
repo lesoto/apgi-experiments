@@ -17,9 +17,9 @@ Features:
 """
 
 import tkinter as tk
-from typing import Optional, Callable, Dict, Any, List
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Callable, Dict, List, Optional
 
 try:
     import customtkinter as ctk
@@ -210,7 +210,7 @@ class AccessibilityManager:
                 except Exception:
                     pass  # Ignore audio feedback errors
 
-    def _on_focus_in(self, event) -> None:
+    def _on_focus_in(self, event: Any) -> None:
         """Handle focus in event for accessibility."""
         widget = event.widget
         self.current_focus_widget = widget
@@ -220,7 +220,7 @@ class AccessibilityManager:
         if self.config.focus_indicators:
             self._show_focus_indicator(widget)
 
-    def _on_focus_out(self, event) -> None:
+    def _on_focus_out(self, event: Any) -> None:
         """Handle focus out event for accessibility."""
         self.current_focus_widget = None
         self._play_audio_feedback("focus_out")
@@ -229,15 +229,15 @@ class AccessibilityManager:
         if self.config.focus_indicators:
             self._hide_focus_indicator()
 
-    def _on_widget_focus_in(self, event) -> None:
+    def _on_widget_focus_in(self, event: Any) -> None:
         """Handle widget focus in event."""
         self._play_audio_feedback("widget_focus_in")
 
-    def _on_widget_focus_out(self, event) -> None:
+    def _on_widget_focus_out(self, event: Any) -> None:
         """Handle widget focus out event."""
         self._play_audio_feedback("widget_focus_out")
 
-    def _navigate_forward(self, event) -> None:
+    def _navigate_forward(self, event: Any) -> None:
         """Navigate forward through focusable widgets."""
         if not self.focus_order:
             return
@@ -260,7 +260,7 @@ class AccessibilityManager:
                 child.focus_set()
                 break
 
-    def _navigate_backward(self, event) -> None:
+    def _navigate_backward(self, event: Any) -> None:
         """Navigate backward through focusable widgets."""
         if not self.focus_order:
             return
@@ -283,7 +283,7 @@ class AccessibilityManager:
                 child.focus_set()
                 break
 
-    def _activate_focused_widget(self, event) -> None:
+    def _activate_focused_widget(self, event: Any) -> None:
         """Activate the currently focused widget (button, checkbox, etc.)."""
         if self.current_focus_widget:
             if hasattr(self.current_focus_widget, "invoke"):
@@ -299,7 +299,7 @@ class AccessibilityManager:
                 child.focus_set()
                 break
 
-    def _is_focusable(self, widget: tk.Widget) -> bool:
+    def _is_focusable(self, widget: tk.Widget | tk.Toplevel) -> bool:
         """Check if a widget is focusable for keyboard navigation."""
         return (
             widget.winfo_class()
@@ -388,7 +388,7 @@ class AccessibilityManager:
         except tk.TclError:
             pass  # Some widgets don't support certain options
 
-    def _update_widget_theme(self, widget: tk.Misc, appearance) -> None:
+    def _update_widget_theme(self, widget: tk.Misc, appearance: Any) -> None:
         """Update CustomTkinter widget appearance recursively."""
         try:
             if hasattr(widget, "configure"):
@@ -644,7 +644,7 @@ def create_accessible_button(
     command: Optional[Callable[[], Any]] = None,
     accessibility_name: Optional[str] = None,
     tooltip: Optional[str] = None,
-    **kwargs,
+    **kwargs: Any,
 ) -> tk.Button:
     """Create an accessible button with proper ARIA support."""
     # Ensure command is properly typed
@@ -682,7 +682,7 @@ def create_accessible_button(
 
 
 def make_accessible_entry(
-    parent: tk.Widget, accessibility_label: Optional[str] = None, **kwargs
+    parent: tk.Widget, accessibility_label: Optional[str] = None, **kwargs: Any
 ) -> tk.Entry:
     """Create an accessible entry field with proper ARIA support."""
     entry = tk.Entry(parent, **kwargs)

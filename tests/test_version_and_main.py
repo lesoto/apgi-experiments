@@ -2,12 +2,13 @@
 Tests for version and main entry points.
 """
 
+from typing import Any
 from unittest.mock import patch
 from apgi_framework import __version__
 import apgi_framework.__version__ as version_module
 
 
-def test_version_constants():
+def test_version_constants() -> None:
     """Test that version constants are present and correctly formatted."""
     assert isinstance(__version__, str)
     assert hasattr(version_module, "__version_info__")
@@ -23,7 +24,7 @@ def test_version_constants():
 
 
 @patch("apgi_framework.cli.main")
-def test_main_execution(mock_cli_main):
+def test_main_execution(mock_cli_main: Any) -> None:
     """Test the __main__ entry point."""
 
     # Simulate running as __main__

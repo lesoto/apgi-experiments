@@ -4,6 +4,8 @@ Validation module for APGI Framework.
 Provides parameter validation, system health checks, and diagnostic utilities.
 """
 
+from typing import Any, Callable, Dict, Optional
+
 from .error_recovery import (
     ErrorRecoveryManager,
     RetryConfig,
@@ -21,17 +23,20 @@ from .system_health import HealthCheckResult, SystemHealthChecker, get_health_ch
 class DesignValidator:
     """Mock design validator for testing purposes."""
 
-    def __init__(self):
-        self.validation_rules = {}
-        self.validation_results = {}
+    def __init__(self) -> None:
+        self.validation_rules: Dict[str, Callable[[Any], Dict[str, Any]]] = {}
+        self.validation_results: Dict[str, Dict[str, Any]] = {}
 
-    def add_validation_rule(self, rule_name, rule_function):
+    def add_validation_rule(
+        self, rule_name: str, rule_function: Callable[[Any], Dict[str, Any]]
+    ) -> None:
         """Add a validation rule."""
         self.validation_rules[rule_name] = rule_function
 
-    def validate_design(self, design_data):
+    def validate_design(self, design_data: Any) -> Dict[str, Any]:
         """Validate a design against all rules."""
         validation_id = f"validation_{hash(str(design_data)) % 10000:04d}"
+        results: Dict[str, Dict[str, Any]] = {}
         results = {}
 
         for rule_name, rule_function in self.validation_rules.items():
@@ -51,13 +56,13 @@ class DesignValidator:
         self.validation_results[validation_id] = validation_result
         return validation_result
 
-    def get_validation_result(self, validation_id):
+    def get_validation_result(self, validation_id: str) -> Optional[Dict[str, Any]]:
         """Get validation result by ID."""
         return self.validation_results.get(validation_id)
 
 
 # Initialize default recovery strategies on import
-initialize_default_recovery_strategies()
+initialize_default_recovery_strategies()  # type: ignore[no-untyped-call]
 
 __all__ = [
     "ParameterValidator",

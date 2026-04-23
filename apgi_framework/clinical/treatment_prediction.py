@@ -40,7 +40,7 @@ class TreatmentPrediction:
 class TreatmentPredictor:
     """Treatment response prediction system."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize treatment predictor."""
 
     def predict(self, params: BaselineParameters) -> TreatmentPrediction:

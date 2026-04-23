@@ -5,15 +5,15 @@ Provides real-time monitoring, interactive visualizations, and experiment manage
 through a modern web interface using Flask and WebSocket for real-time updates.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
 # Pre-define Flask components to avoid redefinition issues
-Flask = None
-jsonify = None
-render_template = None
-request = None
-SocketIO = None
-emit = None
+Flask: Optional[Any] = None
+jsonify: Optional[Callable] = None
+render_template: Optional[Callable] = None
+request: Optional[Any] = None
+SocketIO: Optional[Any] = None
+emit: Optional[Callable] = None
 
 # Import Flask components - successful imports will overwrite the None values
 try:
@@ -24,13 +24,16 @@ except ImportError:
 
     logging.warning("flask_socketio not available. Running in limited mode.")
 
+import functools
 import json
 import os
 import sys
 import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from pathlib import Path
+
 from apgi_framework.logging.standardized_logging import get_logger
 
 logger = get_logger(__name__)
@@ -93,10 +96,10 @@ class InteractiveWebDashboard:
         )
 
         # Core components
-        self.experiment_monitor = ExperimentMonitor()
-        self.comparator = ExperimentComparator()
-        self.visualizer = InteractiveVisualizer()
-        self.config_manager = get_config_manager()
+        self.experiment_monitor = ExperimentMonitor()  # type: ignore
+        self.comparator = ExperimentComparator()  # type: ignore
+        self.visualizer = InteractiveVisualizer()  # type: ignore
+        self.config_manager = get_config_manager()  # type: ignore
 
         # Dashboard state
         self.is_running = False
@@ -104,28 +107,101 @@ class InteractiveWebDashboard:
         self.update_thread: Optional[threading.Thread] = None
         self.stop_event = threading.Event()
 
+        # Concurrency control - async/parallel request handling
+        self.max_concurrent_requests = 20
+        self.request_semaphore = threading.Semaphore(self.max_concurrent_requests)
+        self.request_executor = ThreadPoolExecutor(
+            max_workers=8, thread_name_prefix="dashboard_request_"
+        )
+        self.request_queue: list[tuple] = []
+        self.queue_lock = threading.Lock()
+
         # Data cache
         self.dashboard_cache: Dict[str, Any] = {}
         self.last_update = datetime.now()
 
+        # Client request tracking for rate limiting
+        self.client_request_counts: Dict[str, list[datetime]] = {}
+        self.rate_limit_lock = threading.Lock()
+        self.rate_limit_per_minute = 60  # Max requests per client per minute
+
         # Setup routes and WebSocket events
-        self._setup_routes()
-        self._setup_socketio_events()
+        self._setup_routes()  # type: ignore
+        self._setup_socketio_events()  # type: ignore
 
         self.logger = get_logger(__name__)
         self.logger.info(f"InteractiveWebDashboard initialized for {host}:{port}")
 
-    def _setup_routes(self):
-        """Setup Flask routes."""
+    def _async_route(self, func: Callable) -> Callable:
+        """Decorator to make Flask routes async with concurrency control."""
+
+        @functools.wraps(func)
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            # Acquire semaphore for concurrency control
+            if not self.request_semaphore.acquire(timeout=5.0):
+                assert jsonify is not None
+                return (
+                    jsonify(
+                        {"success": False, "error": "Server busy, try again later"}
+                    ),
+                    503,
+                )
+
+            try:
+                # Check rate limiting
+                client_id = request.remote_addr if request else "unknown"
+                if not self._check_rate_limit(client_id):
+                    assert jsonify is not None
+                    return (
+                        jsonify({"success": False, "error": "Rate limit exceeded"}),
+                        429,
+                    )
+
+                # Submit to thread pool for parallel processing
+                future = self.request_executor.submit(func, *args, **kwargs)
+                return future.result(timeout=30.0)  # 30s timeout per request
+            finally:
+                self.request_semaphore.release()
+
+        return wrapper
+
+    def _check_rate_limit(self, client_id: str) -> bool:
+        """Check if client is within rate limits."""
+        now = datetime.now()
+        with self.rate_limit_lock:
+            if client_id not in self.client_request_counts:
+                self.client_request_counts[client_id] = []
+
+            # Remove old requests (older than 1 minute)
+            cutoff = now - timedelta(minutes=1)
+            self.client_request_counts[client_id] = [
+                t for t in self.client_request_counts[client_id] if t > cutoff
+            ]
+
+            # Check limit
+            if len(self.client_request_counts[client_id]) >= self.rate_limit_per_minute:
+                return False
+
+            # Record this request
+            self.client_request_counts[client_id].append(now)
+            return True
+
+    def _setup_routes(self) -> None:
+        """Setup Flask routes with async/concurrent handling."""
+        assert self.logger is not None  # for mypy
 
         @self.app.route("/")
-        def index():
+        @self._async_route
+        def index() -> Any:
             """Main dashboard page."""
+            assert render_template is not None  # for mypy
             return render_template("dashboard.html")
 
         @self.app.route("/api/experiments")
-        def get_experiments():
-            """Get all experiments data."""
+        @self._async_route
+        def get_experiments() -> Any:
+            """Get all experiments data (async with concurrency control)."""
+            assert self.experiment_monitor is not None  # for mypy
             try:
                 experiments = self.experiment_monitor.get_all_experiments()
 
@@ -151,6 +227,7 @@ class InteractiveWebDashboard:
                     self.logger.info("No experiments found, providing sample data")
                     experiments = self._get_sample_experiments()
 
+                assert jsonify is not None  # for mypy
                 return jsonify(
                     {
                         "success": True,
@@ -165,17 +242,21 @@ class InteractiveWebDashboard:
                     }
                 )
             except Exception as e:
-                self.logger.error(f"Error getting experiments: {e}")
+                assert jsonify is not None  # for mypy
                 return jsonify({"success": False, "error": str(e)}), 500
 
         @self.app.route("/api/experiment/<experiment_id>")
-        def get_experiment(experiment_id):
-            """Get specific experiment data."""
+        @self._async_route
+        def get_experiment(experiment_id: str) -> Any:
+            """Get specific experiment data (async with concurrency control)."""
+            assert self.experiment_monitor is not None  # for mypy
+            assert self.visualizer is not None  # for mypy
             try:
                 experiment = self.experiment_monitor.get_experiment_status(
                     experiment_id
                 )
                 if not experiment:
+                    assert jsonify is not None  # for mypy
                     return (
                         jsonify({"success": False, "error": "Experiment not found"}),
                         404,
@@ -186,6 +267,7 @@ class InteractiveWebDashboard:
                     experiment.get("results", []), experiment.get("trials", [])
                 )
 
+                assert jsonify is not None  # for mypy
                 return jsonify(
                     {
                         "success": True,
@@ -195,16 +277,21 @@ class InteractiveWebDashboard:
                     }
                 )
             except Exception as e:
+                assert jsonify is not None  # for mypy
                 return jsonify({"success": False, "error": str(e)}), 500
 
         @self.app.route("/api/compare", methods=["POST"])
-        def compare_experiments():
-            """Compare multiple experiments."""
+        @self._async_route
+        def compare_experiments() -> Any:
+            """Compare multiple experiments (async with concurrency control)."""
+            assert request is not None  # for mypy
             try:
+                assert request.get_json is not None  # for mypy
                 data = request.get_json()
                 experiment_ids = data.get("experiments", [])
 
                 if len(experiment_ids) < 2:
+                    assert jsonify is not None  # for mypy
                     return (
                         jsonify(
                             {
@@ -223,6 +310,7 @@ class InteractiveWebDashboard:
                         experiments[exp_id] = exp_data
 
                 if len(experiments) < 2:
+                    assert jsonify is not None  # for mypy
                     return (
                         jsonify(
                             {
@@ -234,8 +322,10 @@ class InteractiveWebDashboard:
                     )
 
                 # Generate comparison
+                assert self.comparator is not None  # for mypy
                 comparison = self.comparator.compare_experiments(experiments)
 
+                assert jsonify is not None  # for mypy
                 return jsonify(
                     {
                         "success": True,
@@ -244,19 +334,23 @@ class InteractiveWebDashboard:
                     }
                 )
             except Exception as e:
+                assert jsonify is not None  # for mypy
                 return jsonify({"success": False, "error": str(e)}), 500
 
         @self.app.route("/api/config")
-        def get_config():
-            """Get current configuration."""
+        @self._async_route
+        def get_config() -> Any:
+            """Get current configuration (async with concurrency control)."""
+            assert self.config_manager is not None  # for mypy
             try:
                 config_data = {
                     "apgi_parameters": self.config_manager.get_apgi_parameters().__dict__,
                     "experimental_config": self.config_manager.get_experimental_config().__dict__,
                     "performance_thresholds": self.config_manager.get_performance_thresholds().__dict__,
-                    "stimulus_parameters": self.config_manager.get_stimulus_parameters().__dict__,
+                    "stimulus_parameters": self.config_manager.get_stimulus_params().__dict__,
                 }
 
+                assert jsonify is not None  # for mypy
                 return jsonify(
                     {
                         "success": True,
@@ -265,20 +359,24 @@ class InteractiveWebDashboard:
                     }
                 )
             except Exception as e:
-                return jsonify({"success": False, "error": str(e)}), 500
+                if jsonify is not None:
+                    return jsonify({"success": False, "error": str(e)}), 500
+                else:
+                    return {"success": False, "error": str(e)}, 500
 
         @self.app.route("/api/export/<experiment_id>")
-        def export_experiment(experiment_id):
-            """Export experiment data."""
+        @self._async_route
+        def export_experiment(experiment_id: str) -> Any:
+            """Export experiment data (async with concurrency control)."""
             try:
-                format_type = request.args.get("format", "json")
+                format_type = request.args.get("format", "json")  # type: ignore[union-attr]
                 experiment = self.experiment_monitor.get_experiment_status(
                     experiment_id
                 )
 
                 if not experiment:
                     return (
-                        jsonify({"success": False, "error": "Experiment not found"}),
+                        jsonify({"success": False, "error": "Experiment not found"}),  # type: ignore[misc]
                         404,
                     )
 
@@ -293,7 +391,7 @@ class InteractiveWebDashboard:
                     with open(filepath, "w") as f:
                         json.dump(experiment, f, indent=2, default=str)
 
-                    return jsonify(
+                    return jsonify(  # type: ignore[misc]
                         {
                             "success": True,
                             "filename": filename,
@@ -302,7 +400,7 @@ class InteractiveWebDashboard:
                     )
                 else:
                     return (
-                        jsonify(
+                        jsonify(  # type: ignore[misc]
                             {
                                 "success": False,
                                 "error": f"Unsupported format: {format_type}",
@@ -312,16 +410,16 @@ class InteractiveWebDashboard:
                     )
 
             except Exception as e:
-                return jsonify({"success": False, "error": str(e)}), 500
+                return jsonify({"success": False, "error": str(e)}), 500  # type: ignore[misc]
 
-    def _setup_socketio_events(self):
+    def _setup_socketio_events(self) -> None:
         """Setup WebSocket events for real-time updates."""
 
         @self.socketio.on("connect")
-        def handle_connect():
+        def handle_connect() -> None:
             """Handle client connection."""
-            self.connected_clients.add(request.sid)
-            self.logger.info(f"Client connected: {request.sid}")
+            self.connected_clients.add(request.sid)  # type: ignore[union-attr]
+            self.logger.info(f"Client connected: {request.sid}")  # type: ignore[union-attr]
 
             # Send initial data
             try:
@@ -332,7 +430,7 @@ class InteractiveWebDashboard:
                     )
                     experiments = self._get_sample_experiments()
 
-                emit(
+                emit(  # type: ignore[misc]
                     "initial_data",
                     {
                         "experiments": experiments,
@@ -347,19 +445,19 @@ class InteractiveWebDashboard:
                 )
             except Exception as e:
                 self.logger.error(f"Error sending initial data: {e}")
-                emit("error", {"message": f"Failed to load initial data: {e}"})
+                emit("error", {"message": f"Failed to load initial data: {e}"})  # type: ignore[misc]
 
         @self.socketio.on("disconnect")
-        def handle_disconnect():
+        def handle_disconnect() -> None:
             """Handle client disconnection."""
             try:
-                self.connected_clients.discard(request.sid)
-                self.logger.info(f"Client disconnected: {request.sid}")
+                self.connected_clients.discard(request.sid)  # type: ignore[union-attr]
+                self.logger.info(f"Client disconnected: {request.sid}")  # type: ignore[union-attr]
             except Exception as e:
                 self.logger.error(f"Error handling client disconnection: {e}")
 
         @self.socketio.on("request_update")
-        def handle_update_request():
+        def handle_update_request() -> None:
             """Handle manual update request."""
             try:
                 experiments = self.experiment_monitor.get_all_experiments()
@@ -378,12 +476,12 @@ class InteractiveWebDashboard:
                         else "Real data"
                     ),
                 }
-                emit("update", update_data)
+                emit("update", update_data)  # type: ignore[misc]
             except Exception as e:
                 self.logger.error(f"Error handling update request: {e}")
-                emit("error", {"message": f"Failed to update data: {e}"})
+                emit("error", {"message": f"Failed to update data: {e}"})  # type: ignore[misc]
 
-    def start_dashboard(self):
+    def start_dashboard(self) -> None:
         """Start the interactive dashboard."""
         if self.is_running:
             self.logger.warning("Dashboard is already running")
@@ -417,7 +515,7 @@ class InteractiveWebDashboard:
             self.stop_dashboard()
             raise
 
-    def stop_dashboard(self):
+    def stop_dashboard(self) -> None:
         """Stop the interactive dashboard."""
         if not self.is_running:
             return
@@ -434,7 +532,7 @@ class InteractiveWebDashboard:
 
         self.logger.info("Interactive dashboard stopped")
 
-    def _update_loop(self):
+    def _update_loop(self) -> None:
         """Background thread for real-time updates."""
         while self.is_running and not self.stop_event.is_set():
             try:
@@ -552,33 +650,36 @@ def create_interactive_dashboard(
     Create and configure an interactive dashboard.
 
     Args:
-        port: Web server port
-        host: Server host
+        port: Port number for the dashboard
+        host: Host address for the dashboard
 
     Returns:
-        Configured interactive dashboard
+        Configured dashboard instance or None if Flask not available
     """
     if Flask is None:
-        logger.info(
-            "Error: Flask and flask_socketio are required for the interactive dashboard."
+        logger.error(
+            "Flask and flask-socketio are required for the interactive dashboard."
         )
         logger.info("Please install them with: pip install flask flask-socketio")
         return None
 
-    return InteractiveWebDashboard(port=port, host=host)
+    dashboard = InteractiveWebDashboard(port=port, host=host)  # type: ignore
+    return dashboard
 
 
 if __name__ == "__main__":
     if Flask is None:
-        logger.info(
-            "Error: Flask and flask_socketio are required for the interactive dashboard."
+        logger.error(
+            "Flask and flask-socketio are required for the interactive dashboard."
         )
         logger.info("Please install them with: pip install flask flask-socketio")
-        exit(1)
+        sys.exit(1)
 
-    dashboard = create_interactive_dashboard()
-    if dashboard:
+    dashboard = create_interactive_dashboard()  # type: ignore
+    if dashboard is not None:
         logger.info(
             f"Starting interactive dashboard at {dashboard.get_dashboard_url()}"
         )
-        dashboard.start_dashboard()
+        dashboard.run()  # type: ignore[attr-defined]
+    else:
+        sys.exit(1)

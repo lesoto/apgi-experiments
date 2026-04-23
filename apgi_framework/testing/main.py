@@ -17,7 +17,7 @@ import sys
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, cast
 
 # Add the project root to Python path
 project_root = Path(__file__).parent.parent.parent
@@ -48,7 +48,7 @@ class ApplicationConfig:
     coverage_threshold: float = 0.8
     notification_channels: Optional[List[Dict[str, Any]]] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.notification_channels is None:
             self.notification_channels = []
 
@@ -65,7 +65,7 @@ class DependencyContainer:
         """Get or create BatchTestRunner instance."""
         if "batch_runner" not in self._instances:
             self._instances["batch_runner"] = BatchTestRunner()
-        return self._instances["batch_runner"]
+        return cast(BatchTestRunner, self._instances["batch_runner"])
 
     def get_ci_integrator(self) -> CIIntegrator:
         """Get or create CIIntegrator instance."""
@@ -80,7 +80,7 @@ class DependencyContainer:
             self._instances["ci_integrator"] = CIIntegrator(
                 project_root=self.config.project_root, config=ci_config
             )
-        return self._instances["ci_integrator"]
+        return cast(CIIntegrator, self._instances["ci_integrator"])
 
     def get_notification_manager(self) -> NotificationManager:
         """Get or create NotificationManager instance."""
@@ -93,9 +93,9 @@ class DependencyContainer:
                     channels.append(NotificationChannel(**channel_config))
 
             self._instances["notification_manager"] = NotificationManager(channels)
-        return self._instances["notification_manager"]
+        return cast(NotificationManager, self._instances["notification_manager"])
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Cleanup all managed instances."""
         for name, instance in self._instances.items():
             try:
@@ -119,10 +119,10 @@ class ApplicationLifecycleManager:
         self._shutdown_handlers: List[Callable] = []
         self._setup_signal_handlers()
 
-    def _setup_signal_handlers(self):
+    def _setup_signal_handlers(self) -> None:
         """Setup signal handlers for graceful shutdown."""
 
-        def signal_handler(signum, frame):
+        def signal_handler(signum: Any, frame: Any) -> None:
             self.logger.info(
                 f"Received signal {signum}, initiating graceful shutdown..."
             )
@@ -184,11 +184,11 @@ class ApplicationLifecycleManager:
             self.logger.error(f"Startup validation failed: {e}")
             return False
 
-    def register_shutdown_handler(self, handler):
+    def register_shutdown_handler(self, handler: Callable[[], None]) -> None:
         """Register a shutdown handler function."""
         self._shutdown_handlers.append(handler)
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """Perform graceful shutdown."""
         self.logger.info("Initiating application shutdown...")
 
@@ -205,7 +205,7 @@ class ApplicationLifecycleManager:
         # Log shutdown completion
         activity_logger = get_activity_logger()
         activity_logger.log_activity(
-            ActivityType.SYSTEM_SHUTDOWN,
+            ActivityType.SYSTEM_SHUTDOWN,  # type: ignore[attr-defined]
             ActivityLevel.INFO,
             "Application shutdown completed",
             data={"timestamp": datetime.now().isoformat()},
@@ -218,7 +218,7 @@ def load_config_from_file(config_file: str) -> Dict[str, Any]:
     """Load configuration from JSON file."""
     try:
         with open(config_file, "r") as f:
-            return json.load(f)
+            return cast(Dict[str, Any], json.load(f))
     except FileNotFoundError:
         logging.warning(f"Config file not found: {config_file}")
         return {}
@@ -355,7 +355,8 @@ def run_gui_mode(lifecycle_manager: ApplicationLifecycleManager) -> int:
     """Run the application in GUI mode."""
     try:
         import tkinter as tk
-        from apgi_framework.testing.gui_test_runner import TestRunnerGUI, GUI_AVAILABLE
+
+        from apgi_framework.testing.gui_test_runner import GUI_AVAILABLE, TestRunnerGUI
 
         if not GUI_AVAILABLE:
             logger = logging.getLogger(__name__)
@@ -367,7 +368,7 @@ def run_gui_mode(lifecycle_manager: ApplicationLifecycleManager) -> int:
 
         # Create and run GUI
         root = tk.Tk()
-        TestRunnerGUI(root=root)
+        TestRunnerGUI(root=root)  # type: ignore[no-untyped-call]
 
         # Run the GUI
         root.mainloop()
@@ -394,26 +395,28 @@ def run_cli_mode(
 
         # Create CLI runner
         cli_runner = CLITestRunner(
-            container=lifecycle_manager.container, config=lifecycle_manager.config
+            container=lifecycle_manager.container, config=lifecycle_manager.config  # type: ignore[no-untyped-call]
         )
 
         # Register CLI cleanup
         lifecycle_manager.register_shutdown_handler(cli_runner.cleanup)
 
         # Execute CLI command
+        result: Any
         if args.run_all:
-            return cli_runner.run_all_tests()
+            result = cli_runner.run_all_tests()
         elif args.run_unit:
-            return cli_runner.run_unit_tests()
+            result = cli_runner.run_unit_tests()
         elif args.run_integration:
-            return cli_runner.run_integration_tests()
+            result = cli_runner.run_integration_tests()
         elif args.coverage_report:
-            return cli_runner.generate_coverage_report()
+            result = cli_runner.generate_coverage_report()
         elif args.test_pattern:
-            return cli_runner.run_tests_by_pattern(args.test_pattern)
+            result = cli_runner.run_tests_by_pattern(args.test_pattern)
         else:
             # Interactive CLI mode
-            return cli_runner.run_interactive()
+            result = cli_runner.run_interactive()
+        return int(result) if isinstance(result, int) else 0
 
     except Exception as e:
         logging.error(f"CLI mode failed: {e}")

@@ -5,6 +5,8 @@ Provides hardware failure handling, session state management, backup systems,
 and user guidance for error recovery.
 """
 
+from __future__ import annotations
+
 import json
 import tkinter as tk
 import traceback
@@ -25,8 +27,8 @@ class HardwareStatus(TypedDict):
 
 
 try:
-    from ..data.parameter_estimation_models import SessionData
     from ..data.parameter_estimation_dao import ParameterEstimationDAO
+    from ..data.parameter_estimation_models import SessionData
     from ..security.secure_pickle import (
         SecurePickleError,
         safe_pickle_dump,
@@ -34,17 +36,8 @@ try:
     )
 except ImportError:
     # Create fallback classes that raise informative errors
-    SessionData: Optional[type] = None
-    ParameterEstimationDAO: Optional[type] = None
-
-    class SecurePickleError(Exception):
-        """Raised when secure pickle operations are not available."""
-
-        def __init__(
-            self,
-            message="Secure pickle functionality not available - framework not properly installed",
-        ):
-            super().__init__(message)
+    _SessionData: Optional[type] = None
+    _ParameterEstimationDAO: Optional[type] = None
 
     def safe_pickle_load(
         file_path: str | Path,
@@ -74,7 +67,7 @@ try:
     from .error_logging_utils import get_error_log_dir
 except ImportError:
     # Fallback if utility not available
-    def get_error_log_dir(gui_config_path: Path | None = None) -> Path:  # type: ignore[no-redef]
+    def get_error_log_dir(gui_config_path: Path | None = None) -> Path:
         return Path.home() / ".apgi" / "error_logs"
 
 else:
@@ -447,6 +440,13 @@ class SessionStateManager:
         try:
             state_data = safe_pickle_load(state_file)
 
+            # Ensure state_data is a dict
+            if not isinstance(state_data, dict):
+                logger.error(
+                    f"Invalid state data type: expected dict, got {type(state_data)}"
+                )
+                return None
+
             self.current_state = state_data
             logger.info(f"Loaded session state from {state_file}")
             return state_data
@@ -686,9 +686,9 @@ class AutomaticBackupSystem:
             session_data = SessionData(
                 session_id=session_dict.get("session_id", ""),
                 participant_id=session_dict.get("participant_id", ""),
-                session_date=session_date
-                if session_date is not None
-                else datetime.now(),
+                session_date=(
+                    session_date if session_date is not None else datetime.now()
+                ),
                 protocol_version=session_dict.get("protocol_version", "1.0.0"),
                 completion_status=session_dict.get("completion_status", "in_progress"),
                 total_duration_minutes=session_dict.get("total_duration_minutes"),
@@ -992,7 +992,7 @@ if __name__ == "__main__":
     """Error handling demonstration GUI."""
 
     class ErrorHandlingDemoGUI:
-        def __init__(self):
+        def __init__(self) -> None:
             self.root = tk.Tk()
             self.root.title("Error Handling Demo")
             self.root.geometry("800x600")
@@ -1038,7 +1038,7 @@ if __name__ == "__main__":
             notebook.add(log_frame, text="Error Log")
             self.create_log_tab(log_frame)
 
-        def create_hardware_tab(self, parent):
+        def create_hardware_tab(self, parent: tk.Widget) -> None:
             ttk.Label(
                 parent, text="Hardware Failure Simulation", font=("Arial", 12, "bold")
             ).pack(pady=10)
@@ -1071,7 +1071,7 @@ if __name__ == "__main__":
                 parent, text="Check Hardware Status", command=self.check_hardware_status
             ).pack(pady=10)
 
-        def create_session_tab(self, parent):
+        def create_session_tab(self, parent: tk.Widget) -> None:
             ttk.Label(
                 parent, text="Session State Management", font=("Arial", 12, "bold")
             ).pack(pady=10)
@@ -1094,7 +1094,7 @@ if __name__ == "__main__":
                 button_frame, text="Recover Session", command=self.recover_session
             ).pack(side="left", padx=5)
 
-        def create_backup_tab(self, parent):
+        def create_backup_tab(self, parent: tk.Widget) -> None:
             ttk.Label(parent, text="Backup Systems", font=("Arial", 12, "bold")).pack(
                 pady=10
             )
@@ -1117,7 +1117,7 @@ if __name__ == "__main__":
                 button_frame, text="Check Backups", command=self.check_backups
             ).pack(side="left", padx=5)
 
-        def create_log_tab(self, parent):
+        def create_log_tab(self, parent: tk.Widget) -> None:
             ttk.Label(parent, text="Error Log Viewer", font=("Arial", 12, "bold")).pack(
                 pady=10
             )
@@ -1140,13 +1140,13 @@ if __name__ == "__main__":
                 button_frame, text="Test Error", command=self.test_error_handling
             ).pack(side="left", padx=5)
 
-        def simulate_hardware_failure(self, hardware_type):
+        def simulate_hardware_failure(self, hardware_type: str) -> None:
             self.hardware_handler.report_hardware_failure(
                 hardware_type, Exception(f"Simulated {hardware_type} failure")
             )
             self.check_hardware_status()
 
-        def check_hardware_status(self):
+        def check_hardware_status(self) -> None:
             # Get status for each hardware type
             status_text = ""
             for hw_type in ["eeg", "eye_tracker", "cardiac"]:
@@ -1156,18 +1156,18 @@ if __name__ == "__main__":
             self.hardware_status_text.delete("1.0", tk.END)
             self.hardware_status_text.insert(tk.END, status_text)
 
-        def create_demo_session(self):
+        def create_demo_session(self) -> None:
             session_id = f"demo_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             self.session_manager.create_session(session_id)
             self.update_session_status()
 
-        def simulate_session_crash(self):
+        def simulate_session_crash(self) -> None:
             self.session_manager.handle_session_crash(
                 Exception("Simulated session crash")
             )
             self.update_session_status()
 
-        def recover_session(self):
+        def recover_session(self) -> None:
             recovered = self.session_manager.attempt_session_recovery()
             if recovered:
                 messagebox.showinfo("Success", "Session recovered successfully!")
@@ -1175,19 +1175,19 @@ if __name__ == "__main__":
                 messagebox.showwarning("Recovery Failed", "Could not recover session")
             self.update_session_status()
 
-        def update_session_status(self):
+        def update_session_status(self) -> None:
             status = self.session_manager.get_session_status()
             self.session_status_text.delete("1.0", tk.END)
             self.session_status_text.insert(tk.END, f"Session Status: {status}\n")
 
-        def create_backup(self):
+        def create_backup(self) -> None:
             if self.backup_manager:
                 self.backup_manager.create_backup()
                 messagebox.showinfo("Success", "Backup created successfully!")
             else:
                 messagebox.showinfo("Info", "Backup manager not implemented yet")
 
-        def restore_backup(self):
+        def restore_backup(self) -> None:
             if self.backup_manager:
                 restored = self.backup_manager.restore_from_backup()
                 if restored:
@@ -1197,7 +1197,7 @@ if __name__ == "__main__":
             else:
                 messagebox.showinfo("Info", "Backup manager not implemented yet")
 
-        def check_backups(self):
+        def check_backups(self) -> None:
             if self.backup_manager:
                 backups = self.backup_manager.list_available_backups()
                 self.backup_status_text.delete("1.0", tk.END)
@@ -1212,15 +1212,15 @@ if __name__ == "__main__":
                     tk.END, "Backup manager not implemented yet\n"
                 )
 
-        def refresh_error_log(self):
+        def refresh_error_log(self) -> None:
             self.error_log_text.delete("1.0", tk.END)
             self.error_log_text.insert(tk.END, "Error log refreshed...\n")
 
-        def clear_error_log(self):
+        def clear_error_log(self) -> None:
             self.error_log_text.delete("1.0", tk.END)
             self.error_log_text.insert(tk.END, "Error log cleared...\n")
 
-        def test_error_handling(self):
+        def test_error_handling(self) -> None:
             try:
                 raise Exception("This is a test error for demonstration")
             except Exception as e:
@@ -1228,7 +1228,7 @@ if __name__ == "__main__":
                 self.refresh_error_log()
                 messagebox.showinfo("Test", "Test error logged successfully!")
 
-        def run(self):
+        def run(self) -> None:
             self.root.mainloop()
 
     # Import ttk for the demo

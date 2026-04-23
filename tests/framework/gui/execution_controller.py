@@ -13,21 +13,21 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 try:
-    import PySide6  # type: ignore[import]  # noqa: F401
+    import PySide6  # noqa: F401  # type: ignore[import-not-found]
 
     PYSIDE6_AVAILABLE = True
 except ImportError:
     PYSIDE6_AVAILABLE = False
 
 if PYSIDE6_AVAILABLE:
-    from PySide6.QtCore import (  # type: ignore[import]
+    from PySide6.QtCore import (  # type: ignore[import-not-found]
         QObject,
         QThread,
         QTimer,
         Signal,
         pyqtSignal,
     )
-    from PySide6.QtWidgets import QApplication  # type: ignore[import]
+    from PySide6.QtWidgets import QApplication  # type: ignore[import-not-found]
 else:
     # Fallback for environments without PySide6
     class QObject:  # type: ignore[no-redef]
@@ -147,7 +147,7 @@ class TestExecutionWorker(QThread):
                 time.sleep(0.1)
 
             if self._cancelled:
-                break
+                return  # type: ignore[unreachable]
 
             # Emit progress update
             self.progress_updated.emit(i + 1, total_tests, test_case.name)
@@ -375,7 +375,7 @@ class TestExecutionController(QObject):
         """Check if test execution is currently paused."""
         return self._is_paused
 
-    def _setup_worker_connections(self):
+    def _setup_worker_connections(self) -> None:
         """Set up signal connections with the worker thread."""
         if not self._worker_thread:
             return
@@ -385,15 +385,17 @@ class TestExecutionController(QObject):
         self._worker_thread.execution_finished.connect(self._on_execution_finished)
         self._worker_thread.execution_error.connect(self._on_execution_error)
 
-    def _on_progress_updated(self, current: int, total: int, current_test: str):
+    def _on_progress_updated(self, current: int, total: int, current_test: str) -> None:
         """Handle progress update from worker thread."""
         self.progress_updated.emit(current, total, current_test)
 
-    def _on_test_completed(self, test_name: str, status: str, execution_time: float):
+    def _on_test_completed(
+        self, test_name: str, status: str, execution_time: float
+    ) -> None:
         """Handle test completion from worker thread."""
         self.test_completed.emit(test_name, status, execution_time)
 
-    def _on_execution_finished(self, results: FrameworkResults):
+    def _on_execution_finished(self, results: FrameworkResults) -> None:
         """Handle execution completion from worker thread."""
         if self._current_execution:
             self._current_execution.end_time = datetime.now()
@@ -406,7 +408,7 @@ class TestExecutionController(QObject):
         self._cleanup_execution()
         self.execution_finished.emit(results)
 
-    def _on_execution_error(self, error_message: str):
+    def _on_execution_error(self, error_message: str) -> None:
         """Handle execution error from worker thread."""
         if self._current_execution:
             self._current_execution.status = "error"
@@ -415,7 +417,7 @@ class TestExecutionController(QObject):
         self._cleanup_execution()
         self.execution_error.emit(error_message)
 
-    def _cleanup_execution(self):
+    def _cleanup_execution(self) -> None:
         """Clean up after execution completion or cancellation."""
         self._is_executing = False
         self._is_paused = False
@@ -428,7 +430,7 @@ class TestExecutionController(QObject):
 
         self._current_execution = None
 
-    def _update_progress_monitoring(self):
+    def _update_progress_monitoring(self) -> None:
         """Update progress monitoring (called by timer)."""
         # This could be used for additional monitoring tasks
         # like memory usage, system resources, etc.
@@ -476,12 +478,12 @@ class TestExecutionController(QObject):
         }
 
 
-class ExecutionMonitor(QObject):
+class ResourceMonitor(QObject):
     """Monitor for tracking execution metrics and system resources."""
 
     resource_warning = Signal(str)  # warning_message
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QObject] = None) -> None:
         super().__init__(parent)
         self._monitoring_active = False
         self._monitor_timer = QTimer()
@@ -491,17 +493,17 @@ class ExecutionMonitor(QObject):
         self._memory_threshold_mb = 1000  # 1GB
         self._cpu_threshold_percent = 80
 
-    def start_monitoring(self):
+    def start_monitoring(self) -> None:
         """Start resource monitoring."""
         self._monitoring_active = True
         self._monitor_timer.start(5000)  # Check every 5 seconds
 
-    def stop_monitoring(self):
+    def stop_monitoring(self) -> None:
         """Stop resource monitoring."""
         self._monitoring_active = False
         self._monitor_timer.stop()
 
-    def _check_resources(self):
+    def _check_resources(self) -> None:
         """Check system resources and emit warnings if needed."""
         if not self._monitoring_active:
             return

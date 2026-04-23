@@ -10,9 +10,8 @@ import queue
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, TypedDict
-
 from tkinter import messagebox
+from typing import Any, Callable, Dict, List, Optional, TypedDict, cast
 
 # Type definitions
 
@@ -73,7 +72,7 @@ class MainGUIController:
     centralized communication between components.
     """
 
-    def __init__(self, parent_widget):
+    def __init__(self, parent_widget: Any) -> None:
         """
         Initialize the main GUI controller.
 
@@ -87,28 +86,28 @@ class MainGUIController:
         self.framework_controller = MainApplicationController()
 
         # GUI components
-        self.parameter_panel = None
-        self.test_panels = {}  # Dictionary of test execution panels
-        self.results_panel = None
-        self.logging_panel = None
+        self.parameter_panel: Optional[Any] = None
+        self.test_panels: Dict[str, Any] = {}  # Dictionary of test execution panels
+        self.results_panel: Optional[Any] = None
+        self.logging_panel: Optional[Any] = None
 
         # State management
-        self.current_test = None
-        self.test_results = {}
-        self.system_initialized = False
+        self.current_test: Optional[str] = None
+        self.test_results: Dict[str, Any] = {}
+        self.system_initialized: bool = False
 
         # Communication channels
-        self.message_queue = queue.Queue()
-        self.progress_callbacks = []
-        self.log_callbacks = []
-        self.results_callbacks = []
+        self.message_queue: queue.Queue = queue.Queue()
+        self.progress_callbacks: list[Callable[..., Any]] = []
+        self.log_callbacks: list[Callable[..., Any]] = []
+        self.results_callbacks: list[Callable[..., Any]] = []
 
         # Event handlers
-        self.event_handlers = {}
+        self.event_handlers: dict[str, Callable[..., Any]] = {}
 
         # Initialize components
-        self._initialize_components()
         self._setup_event_handlers()
+        self._initialize_components()
 
         # Check framework availability
         if not FRAMEWORK_COMPONENTS_AVAILABLE:
@@ -123,7 +122,7 @@ class MainGUIController:
 
         logger.info("MainGUIController initialized")
 
-    def _initialize_components(self):
+    def _initialize_components(self) -> None:
         """Initialize all GUI components."""
         if not GUI_COMPONENTS_AVAILABLE:
             logger.warning("GUI components not available - using placeholder panels")
@@ -160,7 +159,7 @@ class MainGUIController:
             logger.error(f"Failed to initialize GUI components: {e}")
             raise
 
-    def _initialize_test_panels(self):
+    def _initialize_test_panels(self) -> None:
         """Initialize test execution panels."""
         test_names = [
             "Primary",
@@ -188,7 +187,7 @@ class MainGUIController:
             except Exception as e:
                 logger.error(f"Failed to initialize test panel for {test_name}: {e}")
 
-    def _setup_event_handlers(self):
+    def _setup_event_handlers(self) -> None:
         """Setup event handlers for component communication."""
         # Parameter panel events
         self.event_handlers["config_changed"] = self._on_config_changed
@@ -209,7 +208,7 @@ class MainGUIController:
         self.event_handlers["log_added"] = self._on_log_added
         self.event_handlers["log_cleared"] = self._on_log_cleared
 
-    def _setup_parameter_panel_callbacks(self):
+    def _setup_parameter_panel_callbacks(self) -> None:
         """Setup callbacks for parameter configuration panel."""
         if self.parameter_panel:
             self.parameter_panel.set_config_changed_callback(
@@ -219,7 +218,7 @@ class MainGUIController:
                 self._on_validation_error
             )
 
-    def _setup_results_panel_callbacks(self):
+    def _setup_results_panel_callbacks(self) -> None:
         """Setup callbacks for results visualization panel."""
         if self.results_panel:
             self.results_panel.set_data_updated_callback(
@@ -229,7 +228,7 @@ class MainGUIController:
                 self.event_handlers["export_requested"]
             )
 
-    def _setup_logging_panel_callbacks(self):
+    def _setup_logging_panel_callbacks(self) -> None:
         """Setup callbacks for logging panel."""
         if self.logging_panel:
             self.logging_panel.set_log_added_callback(self.event_handlers["log_added"])
@@ -237,7 +236,7 @@ class MainGUIController:
                 self.event_handlers["log_cleared"]
             )
 
-    def _setup_test_panel_callbacks(self, test_name: str, panel: TestExecutionPanel):
+    def _setup_test_panel_callbacks(self, test_name: str, panel: Any) -> None:
         """Setup callbacks for a test execution panel."""
         panel.set_test_started_callback(
             lambda name: self.event_handlers["test_started"](name)
@@ -246,59 +245,59 @@ class MainGUIController:
         panel.set_test_failed_callback(self._on_test_failed)
         panel.set_progress_updated_callback(self._on_progress_updated)
 
-    def _get_progress_callback(self) -> Callable:
+    def _get_progress_callback(self) -> Callable[[float, str], None]:
         """Get progress callback for test panels."""
 
-        def progress_callback(progress: float, message: str):
+        def progress_callback(progress: float, message: str) -> None:
             """Handle progress updates from test panels."""
             self._broadcast_progress(progress, message)
 
         return progress_callback
 
-    def _get_log_callback(self) -> Callable:
+    def _get_log_callback(self) -> Callable[[str], None]:
         """Get log callback for test panels."""
 
-        def log_callback(message: str):
+        def log_callback(message: str) -> None:
             """Handle log messages from test panels."""
             self._broadcast_log(message)
 
         return log_callback
 
-    def _get_results_callback(self) -> Callable:
+    def _get_results_callback(self) -> Callable[[str, Any], None]:
         """Get results callback for test panels."""
 
-        def results_callback(test_name: str, results: Any):
+        def results_callback(test_name: str, results: Any) -> None:
             """Handle results from test panels."""
             self._handle_test_results(test_name, results)
 
         return results_callback
 
     # Event handlers
-    def _on_config_changed(self):
+    def _on_config_changed(self) -> None:
         """Handle configuration change event."""
         logger.info("Configuration changed")
         self._broadcast_event("config_changed", {})
 
-    def _on_config_saved(self):
+    def _on_config_saved(self) -> None:
         """Handle configuration saved event."""
         logger.info("Configuration saved")
         self._broadcast_event("config_saved", {})
         self._broadcast_log("Configuration saved successfully")
 
-    def _on_config_loaded(self):
+    def _on_config_loaded(self) -> None:
         """Handle configuration loaded event."""
         logger.info("Configuration loaded")
         self._broadcast_event("config_loaded", {})
         self._broadcast_log("Configuration loaded successfully")
 
-    def _on_test_started(self, test_name: str):
+    def _on_test_started(self, test_name: str) -> None:
         """Handle test started event."""
         logger.info(f"Test started: {test_name}")
         self.current_test = test_name
         self._broadcast_event("test_started", {"test_name": test_name})
         self._broadcast_log(f"Started {test_name} test")
 
-    def _on_test_completed(self, test_name: str, results: Any):
+    def _on_test_completed(self, test_name: str, results: Any) -> None:
         """Handle test completed event."""
         logger.info(f"Test completed: {test_name}")
         self.current_test = None
@@ -307,47 +306,50 @@ class MainGUIController:
         )
         self._broadcast_log(f"Completed {test_name} test successfully")
 
-    def _on_test_failed(self, test_name: str, error: str):
+    def _on_test_failed(self, test_name: str, error: str) -> None:
         """Handle test failed event."""
         logger.error(f"Test failed: {test_name} - {error}")
         self.current_test = None
         self._broadcast_event("test_failed", {"test_name": test_name, "error": error})
         self._broadcast_log(f"Failed {test_name} test: {error}", "ERROR")
 
-    def _on_progress_updated(self, test_name: str, progress: float, message: str):
+    def _on_progress_updated(
+        self, test_name: str, progress: float, message: str
+    ) -> None:
         """Handle progress update event."""
         self._broadcast_event(
             "progress_updated",
             {"test_name": test_name, "progress": progress, "message": message},
         )
 
-    def _on_results_updated(self, results_data: List[Dict[str, Any]]):
+    def _on_results_updated(self, results_data: List[Dict[str, Any]]) -> None:
         """Handle results data updated event."""
         logger.info(f"Results updated: {len(results_data)} entries")
         self._broadcast_event("results_updated", {"data": results_data})
 
-    def _on_export_requested(self, file_path: str):
+    def _on_export_requested(self, file_path: str) -> None:
         """Handle export requested event."""
         logger.info(f"Export requested: {file_path}")
         self._broadcast_event("export_requested", {"file_path": file_path})
 
-    def _on_log_added(self, message: str):
+    def _on_log_added(self, message: str) -> None:
         """Handle log added event."""
         # This is already handled by the logging panel itself
+        pass
 
-    def _on_log_cleared(self):
+    def _on_log_cleared(self) -> None:
         """Handle log cleared event."""
         logger.info("Logs cleared")
         self._broadcast_event("logs_cleared", {})
 
-    def _on_validation_error(self, param_name: str, error: str):
+    def _on_validation_error(self, param_name: str, error: str) -> None:
         """Handle parameter validation error."""
         logger.warning(f"Validation error for {param_name}: {error}")
         self._broadcast_log(
             f"Parameter validation error: {param_name} - {error}", "WARNING"
         )
 
-    def _handle_test_results(self, test_name: str, results: Any):
+    def _handle_test_results(self, test_name: str, results: Any) -> None:
         """Handle test results from test panels."""
         self.test_results[test_name] = {"timestamp": datetime.now(), "results": results}
 
@@ -355,7 +357,7 @@ class MainGUIController:
         if self.results_panel:
             self.results_panel.add_results(test_name, results)
 
-    def _broadcast_progress(self, progress: float, message: str):
+    def _broadcast_progress(self, progress: float, message: str) -> None:
         """Broadcast progress update to all listeners."""
         for callback in self.progress_callbacks:
             try:
@@ -363,7 +365,7 @@ class MainGUIController:
             except Exception as e:
                 logger.error(f"Error in progress callback: {e}")
 
-    def _broadcast_log(self, message: str, level: str = "INFO"):
+    def _broadcast_log(self, message: str, level: str = "INFO") -> None:
         """Broadcast log message to all listeners."""
         for callback in self.log_callbacks:
             try:
@@ -371,7 +373,7 @@ class MainGUIController:
             except Exception as e:
                 logger.error(f"Error in log callback: {e}")
 
-    def _broadcast_event(self, event_type: str, data: Dict[str, Any]):
+    def _broadcast_event(self, event_type: str, data: Dict[str, Any]) -> None:
         """Broadcast event to all listeners."""
         for callback in self.results_callbacks:
             try:
@@ -382,7 +384,7 @@ class MainGUIController:
     # Public API methods
     def get_parameter_panel(self) -> ParameterConfigPanel:
         """Get the parameter configuration panel."""
-        return self.parameter_panel
+        return cast(ParameterConfigPanel, self.parameter_panel)
 
     def get_test_panel(self, test_name: str) -> Optional[TestExecutionPanel]:
         """Get a specific test execution panel."""
@@ -394,11 +396,11 @@ class MainGUIController:
 
     def get_results_panel(self) -> ResultsVisualizationPanel:
         """Get the results visualization panel."""
-        return self.results_panel
+        return cast(ResultsVisualizationPanel, self.results_panel)
 
     def get_logging_panel(self) -> LoggingPanel:
         """Get the logging panel."""
-        return self.logging_panel
+        return cast(LoggingPanel, self.logging_panel)
 
     def get_current_test(self) -> Optional[str]:
         """Get the currently running test."""
@@ -407,14 +409,15 @@ class MainGUIController:
     def get_test_results(self, test_name: Optional[str] = None) -> Dict[str, Any]:
         """Get test results."""
         if test_name:
-            return self.test_results.get(test_name)
+            return cast(Dict[str, Any], self.test_results.get(test_name))
         return self.test_results.copy()
 
     def get_current_config(self) -> Dict[str, Any]:
         """Get current configuration."""
         try:
             if self.parameter_panel:
-                return self.parameter_panel._get_configuration_dict()
+                result = self.parameter_panel._get_configuration_dict()
+                return result if isinstance(result, dict) else {}
             return {}
         except Exception as e:
             logger.error(f"Failed to get current config: {e}")
@@ -483,7 +486,7 @@ class MainGUIController:
                         test_panel.test_vars[param_name].set(value)
 
             # Start the test
-            test_panel._run_test()
+            test_panel._run_test()  # type: ignore[no-untyped-call]
             return True
 
         except Exception as e:
@@ -496,14 +499,14 @@ class MainGUIController:
             if test_name:
                 test_panel = self.get_test_panel(test_name)
                 if test_panel and test_panel.is_test_running():
-                    test_panel._stop_test()
+                    test_panel._stop_test()  # type: ignore[no-untyped-call]
                     return True
             else:
                 # Stop current test
                 if self.current_test:
                     test_panel = self.get_test_panel(self.current_test)
                     if test_panel:
-                        test_panel._stop_test()
+                        test_panel._stop_test()  # type: ignore[no-untyped-call]
                         return True
             return False
         except Exception as e:
@@ -558,29 +561,29 @@ class MainGUIController:
             logger.error(f"Failed to export results: {e}")
             return False
 
-    def add_progress_callback(self, callback: Callable):
+    def add_progress_callback(self, callback: Callable[..., Any]) -> None:
         """Add a progress update callback."""
         self.progress_callbacks.append(callback)
 
-    def add_log_callback(self, callback: Callable):
+    def add_log_callback(self, callback: Callable[..., Any]) -> None:
         """Add a log message callback."""
         self.log_callbacks.append(callback)
 
-    def add_results_callback(self, callback: Callable):
+    def add_results_callback(self, callback: Callable[..., Any]) -> None:
         """Add a results update callback."""
         self.results_callbacks.append(callback)
 
-    def remove_progress_callback(self, callback: Callable):
+    def remove_progress_callback(self, callback: Callable[..., Any]) -> None:
         """Remove a progress update callback."""
         if callback in self.progress_callbacks:
             self.progress_callbacks.remove(callback)
 
-    def remove_log_callback(self, callback: Callable):
+    def remove_log_callback(self, callback: Callable[..., Any]) -> None:
         """Remove a log message callback."""
         if callback in self.log_callbacks:
             self.log_callbacks.remove(callback)
 
-    def remove_results_callback(self, callback: Callable):
+    def remove_results_callback(self, callback: Callable[..., Any]) -> None:
         """Remove a results update callback."""
         if callback in self.results_callbacks:
             self.results_callbacks.remove(callback)
@@ -602,7 +605,7 @@ class MainGUIController:
 
         return status
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """Shutdown the GUI controller."""
         try:
             # Stop any running tests
@@ -623,7 +626,7 @@ class MainGUIController:
         except Exception as e:
             logger.error(f"Error during shutdown: {e}")
 
-    def refresh_all_components(self):
+    def refresh_all_components(self) -> None:
         """Refresh all GUI components."""
         try:
             # Refresh results panel
@@ -656,7 +659,7 @@ class MainGUIController:
                     # Basic validation would go here
                     pass
                 except Exception as e:
-                    issues.append(f"Parameter panel error: {e}")  # type: ignore[attr-defined]
+                    issues.append(f"Parameter panel error: {e}")
                     validation_results["valid"] = False
 
             # Check test panels
@@ -665,7 +668,7 @@ class MainGUIController:
                     if hasattr(panel, "is_test_running") and panel.is_test_running():
                         warnings.append(f"Test {test_name} is still running")
                 except Exception as e:
-                    issues.append(f"Error checking test {test_name}: {e}")  # type: ignore[attr-defined]
+                    issues.append(f"Error checking test {test_name}: {e}")
                     validation_results["valid"] = False
 
             # Check results panel
@@ -677,7 +680,7 @@ class MainGUIController:
                             "Large amount of results data may affect performance"
                         )
                 except Exception as e:
-                    issues.append(f"Error checking results panel: {e}")  # type: ignore[attr-defined]
+                    issues.append(f"Error checking results panel: {e}")
                     validation_results["valid"] = False
 
             # Check logging panel
@@ -687,18 +690,18 @@ class MainGUIController:
                     if isinstance(stats, dict) and stats.get("ERROR", 0) > 10:
                         warnings.append("High number of error logs detected")
                 except Exception as e:
-                    issues.append(f"Error checking logging panel: {e}")  # type: ignore[attr-defined]
+                    issues.append(f"Error checking logging panel: {e}")
                     validation_results["valid"] = False
 
         except Exception as e:
-            issues.append(f"Validation error: {e}")  # type: ignore[attr-defined]
+            issues.append(f"Validation error: {e}")
             validation_results["valid"] = False
 
         return validation_results
 
 
 # Factory function for easy instantiation
-def create_main_gui_controller(parent_widget) -> MainGUIController:
+def create_main_gui_controller(parent_widget: Any) -> MainGUIController:
     """
     Create a main GUI controller with default settings.
 

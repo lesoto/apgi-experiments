@@ -15,14 +15,14 @@ from collections import defaultdict
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 
 import numpy as np
 import pandas as pd
 
 from ..analysis.analysis_engine import AnalysisResult
-from ..security.secure_pickle import safe_pickle_dump, safe_pickle_load
 from ..exceptions import ProcessingError, ValidationError
+from ..security.secure_pickle import safe_pickle_dump, safe_pickle_load
 
 logger = logging.getLogger(__name__)
 
@@ -488,7 +488,7 @@ class ResultsProcessor:
         total_values = 0
         missing_values = 0
 
-        def count_values(obj):
+        def count_values(obj: Any) -> None:
             nonlocal total_values, missing_values
             if isinstance(obj, dict):
                 for val in obj.values():
@@ -496,9 +496,9 @@ class ResultsProcessor:
             elif isinstance(obj, (list, np.ndarray)):
                 for val in obj:
                     count_values(val)
-            elif isinstance(val, (int, float)):
+            elif isinstance(obj, (int, float)):
                 total_values += 1
-                if pd.isna(val) or val is None:
+                if pd.isna(obj) or obj is None:
                     missing_values += 1
 
         count_values(data)
@@ -525,7 +525,7 @@ class ResultsProcessor:
         outlier_count = 0
         total_numeric = 0
 
-        def detect_outliers(obj):
+        def detect_outliers(obj: Any) -> None:
             nonlocal outlier_count, total_numeric
             if isinstance(obj, dict):
                 for value in obj.values():
@@ -589,7 +589,7 @@ class ResultsProcessor:
         # Convert to dict and handle numpy types
         result_dict = asdict(processed_result)
 
-        def convert_numpy(obj):
+        def convert_numpy(obj: Any) -> Any:
             if isinstance(obj, np.integer):
                 return int(obj)
             elif isinstance(obj, np.floating):
@@ -611,8 +611,7 @@ class ResultsProcessor:
 
         # Save as pickle for faster loading
         pickle_path = self.output_dir / f"{processed_result.result_id}.pkl"
-        with open(pickle_path, "wb") as pickle_file:
-            safe_pickle_dump(processed_result, pickle_file)
+        safe_pickle_dump(processed_result, pickle_path)
 
         logger.debug(f"Processed result saved: {processed_result.result_id}")
 
@@ -776,9 +775,7 @@ class ResultsProcessor:
                 css_class = (
                     "quality-good"
                     if value > 0.8
-                    else "quality-warning"
-                    if value > 0.6
-                    else "quality-poor"
+                    else "quality-warning" if value > 0.6 else "quality-poor"
                 )
                 quality_rows += (
                     f"<tr><td>{key}</td><td class='{css_class}'>{value:.4f}</td></tr>"
@@ -944,8 +941,7 @@ class ResultsProcessor:
                 self.output_dir / "exports" / f"{result.result_id}_{timestamp}.pkl"
             )
 
-            with open(pickle_path, "wb") as f:
-                safe_pickle_dump(result, f)
+            safe_pickle_dump(result, pickle_path)
 
             export_paths.append(str(pickle_path))
 
@@ -990,8 +986,7 @@ class ResultsProcessor:
         if not pickle_path.exists():
             raise FileNotFoundError(f"Processed result {result_id} not found")
 
-        with open(pickle_path, "rb") as f:
-            return safe_pickle_load(f)
+        return cast(ProcessedResult, safe_pickle_load(pickle_path))
 
     def list_processed_results(
         self, experiment_type: Optional[str] = None

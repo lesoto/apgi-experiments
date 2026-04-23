@@ -8,31 +8,40 @@ neural signature validation, and experimental control mechanisms.
 
 import logging
 from datetime import datetime
+from typing import Any, Dict, List, Optional, Type, Union, cast
 
 try:
     from .primary_falsification import (
-        PrimaryFalsificationTest as ImportedPrimaryFalsificationTest,
         FalsificationResult as ImportedFalsificationResult,
+    )
+    from .primary_falsification import (
+        PrimaryFalsificationTest as ImportedPrimaryFalsificationTest,
     )
 
     # Use imported classes
-    PrimaryFalsificationTest = ImportedPrimaryFalsificationTest
-    FalsificationResult = ImportedFalsificationResult
+    PrimaryFalsificationTest: Type[
+        Union["_PrimaryFalsificationTest", ImportedPrimaryFalsificationTest]
+    ] = ImportedPrimaryFalsificationTest
+    FalsificationResult: Type[
+        Union["_FalsificationResult", ImportedFalsificationResult]
+    ] = ImportedFalsificationResult
 except ImportError:
     # Fallback to a basic implementation if specialized test implementation is missing
     class _PrimaryFalsificationTest:
         """Stub for PrimaryFalsificationTest providing basic interface."""
 
-        def run_falsification_test(self, n_trials=100, n_participants=20):
+        def run_falsification_test(
+            self, n_trials: int = 100, n_participants: int = 20
+        ) -> Dict[str, Any]:
             return {"framework_falsified": False, "status": "staged"}
 
-        def run_test(self, **kwargs):
+        def run_test(self, **kwargs: Any) -> Dict[str, Any]:
             return {"framework_falsified": False, "status": "staged"}
 
     class _FalsificationResult:
         """Fallback result object."""
 
-        def __init__(self, **kwargs):
+        def __init__(self, **kwargs: Any) -> None:
             self.is_falsified = kwargs.get(
                 "falsified", kwargs.get("framework_falsified", False)
             )
@@ -48,8 +57,6 @@ except ImportError:
                     setattr(self, key, value)
 
     # Use fallback classes
-    PrimaryFalsificationTest = _PrimaryFalsificationTest
-    FalsificationResult = _FalsificationResult
 
 
 # Consciousness assessment classes - implemented inline below
@@ -63,7 +70,7 @@ class ConsciousnessAssessment:
         confidence_rating: float = 0.5,
         response_time: float = 1.0,
         metacognitive_sensitivity: float = 0.5,
-    ):
+    ) -> None:
         self.subjective_report = subjective_report
         self.forced_choice_accuracy = forced_choice_accuracy
         self.confidence_rating = confidence_rating
@@ -125,7 +132,7 @@ class ConsciousnessWithoutIgnitionTest:
     set of neural signatures (P3b, gamma synchrony, BOLD activation, PCI).
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the test with default parameters."""
         self.logger = logging.getLogger(__name__)
         self.signature_thresholds = {
@@ -227,12 +234,13 @@ class ConsciousnessWithoutIgnitionTest:
         # Statistical test
         from scipy import stats
 
+        # Ensure non-negative values for contingency table
         contingency_table = [
             [
-                consciousness_without_ignition,
-                both_present - consciousness_without_ignition,
+                max(0, consciousness_without_ignition),
+                max(0, both_present - consciousness_without_ignition),
             ],
-            [both_absent, ignition_without_consciousness],
+            [max(0, both_absent), max(0, ignition_without_consciousness)],
         ]
 
         chi2_stat = None
@@ -292,7 +300,7 @@ class ThresholdInsensitivityTest:
     conclusions about framework validity.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the test with default parameters."""
         self.logger = logging.getLogger(__name__)
         self.base_thresholds = {
@@ -343,7 +351,7 @@ class ThresholdInsensitivityTest:
         # Run simulation for each configuration
         for config in threshold_configs:
             config_results = self._run_configuration_simulation(
-                n_trials, config["thresholds"]
+                n_trials, cast(Dict[str, Any], config["thresholds"])
             )
             results_by_config.append(
                 {
@@ -354,11 +362,13 @@ class ThresholdInsensitivityTest:
             )
 
         # Analyze sensitivity
-        falsification_rates = [
-            r["results"]["falsification_rate"] for r in results_by_config
-        ]
-        sensitivity = np.std(falsification_rates) / (
-            np.mean(falsification_rates) + 1e-8
+        falsification_rates: List[float] = []
+        for r in results_by_config:
+            r_dict = cast(Dict[str, Any], r)
+            results_dict = cast(Dict[str, Any], r_dict["results"])
+            falsification_rates.append(cast(float, results_dict["falsification_rate"]))
+        sensitivity = float(
+            np.std(falsification_rates) / (np.mean(falsification_rates) + 1e-8)
         )
 
         # Determine if framework is falsified (too sensitive)
@@ -446,7 +456,7 @@ class SomaBiasTest:
     indicate a bias in the model.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the test with default parameters."""
         self.logger = logging.getLogger(__name__)
         self.soma_bias_levels = [-0.5, -0.2, 0.0, 0.2, 0.5]  # Negative to positive bias
@@ -478,7 +488,8 @@ class SomaBiasTest:
 
         # Analyze bias effects
         falsification_rates = [
-            r["results"]["falsification_rate"] for r in results_by_bias
+            cast(Dict[str, Any], r)["results"]["falsification_rate"]
+            for r in results_by_bias
         ]
         bias_levels = [r["bias_level"] for r in results_by_bias]
 
@@ -486,16 +497,17 @@ class SomaBiasTest:
         correlation, p_value = stats.pearsonr(bias_levels, falsification_rates)
 
         # Test for bias asymmetry (different effects for positive vs negative bias)
-        positive_bias_rates = [
-            r["results"]["falsification_rate"]
-            for r in results_by_bias
-            if r["bias_level"] > 0
-        ]
-        negative_bias_rates = [
-            r["results"]["falsification_rate"]
-            for r in results_by_bias
-            if r["bias_level"] < 0
-        ]
+        positive_bias_rates = []
+        negative_bias_rates = []
+        for r in results_by_bias:
+            r_dict = cast(Dict[str, Any], r)
+            bias_level = cast(float, r_dict["bias_level"])
+            results_dict = cast(Dict[str, Any], r_dict["results"])
+            falsification_rate = cast(float, results_dict["falsification_rate"])
+            if bias_level > 0:
+                positive_bias_rates.append(falsification_rate)
+            elif bias_level < 0:
+                negative_bias_rates.append(falsification_rate)
 
         asymmetry_test = None
         asymmetry_p = None
@@ -624,10 +636,12 @@ if PrimaryFalsificationTest is not None:
 class FalsificationEngine:
     """Mock falsification engine for testing purposes."""
 
-    def __init__(self):
-        self.test_results = {}
+    def __init__(self) -> None:
+        self.test_results: Dict[str, Any] = {}
 
-    def run_falsification_test(self, test_name, parameters):
+    def run_falsification_test(
+        self, test_name: str, parameters: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Run a falsification test."""
         result_id = f"test_{hash(str(parameters)) % 10000:04d}"
         result = {
@@ -642,7 +656,7 @@ class FalsificationEngine:
         self.test_results[result_id] = result
         return result
 
-    def get_result(self, result_id):
+    def get_result(self, result_id: str) -> Optional[Dict[str, Any]]:
         """Get test result by ID."""
         return self.test_results.get(result_id)
 

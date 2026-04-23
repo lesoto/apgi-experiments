@@ -7,18 +7,19 @@ environment-specific settings, and dynamic updates.
 
 import json
 import os
-import yaml
-from dataclasses import dataclass, asdict, field
+import threading
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union, get_type_hints
-import threading
+
+import yaml
 
 try:
     from apgi_framework.logging.standardized_logging import get_logger
     from apgi_framework.validation.input_validator import (
         ValidationError,
-        validate_string,
         validate_path,
+        validate_string,
     )
 
     logger = get_logger(__name__)
@@ -31,10 +32,13 @@ except ImportError:
     class ValidationError(Exception):  # type: ignore
         pass
 
-    def validate_string(value: Any, field_name: str = "input", **kwargs) -> str:
+    class ConfigurationError(Exception):  # type: ignore
+        pass
+
+    def validate_string(value: Any, field_name: str = "input", **kwargs: Any) -> str:
         return str(value)
 
-    def validate_path(value: Any, field_name: str = "input", **kwargs) -> Path:
+    def validate_path(value: Any, field_name: str = "input", **kwargs: Any) -> Path:
         return Path(value)
 
 
@@ -112,6 +116,7 @@ class APGIConfig:
     # Environment
     environment: str = "development"
     debug: bool = False
+    strict_mode: bool = False  # Fail startup on configuration errors in production
     secret_key: str = ""
 
     # Component configurations
@@ -172,13 +177,13 @@ class ConfigurationManager:
             f"ConfigurationManager initialized with {len(self._config_sources)} sources"
         )
 
-    def _load_default_config(self):
+    def _load_default_config(self) -> None:
         """Load default configuration."""
         self.config = APGIConfig()
         self._config_sources.append("defaults")
         logger.debug("Loaded default configuration")
 
-    def _load_file_config(self):
+    def _load_file_config(self) -> None:
         """Load configuration from file."""
         if not self.config_file or not self.config_file.exists():
             return
@@ -198,11 +203,12 @@ class ConfigurationManager:
             logger.error(f"Failed to load configuration from {self.config_file}: {e}")
             raise
 
-    def _load_environment_config(self):
+    def _load_environment_config(self) -> None:
         """Load configuration from environment variables."""
         env_mappings = {
             "APGI_ENVIRONMENT": ("environment", str),
             "APGI_DEBUG": ("debug", bool),
+            "APGI_STRICT_MODE": ("strict_mode", bool),
             "APGI_SECRET_KEY": ("secret_key", str),
             "APGI_DATA_DIR": ("data_directory", str),
             "APGI_OUTPUT_DIR": ("output_directory", str),
@@ -216,16 +222,18 @@ class ConfigurationManager:
             "APGI_MAX_PARTICIPANTS": ("experimental.max_participants", int),
         }
 
-        env_config = {}
+        env_config: Dict[str, Any] = {}
         for env_var, (config_path, value_type) in env_mappings.items():
             value = os.getenv(env_var)
             if value is not None:
                 # Convert to appropriate type
                 if value_type == bool:
-                    value = value.lower() in ["true", "1", "yes", "on"]
+                    value_bool = value.lower() in ["true", "1", "yes", "on"]
+                    value = value_bool  # type: ignore[assignment]
                 elif value_type == int:
                     try:
-                        value = int(value)
+                        value_int = int(value)
+                        value = value_int  # type: ignore[assignment]
                     except ValueError:
                         logger.warning(f"Invalid integer value for {env_var}: {value}")
                         continue
@@ -238,12 +246,12 @@ class ConfigurationManager:
             self._config_sources.append("environment")
             logger.debug(f"Loaded {len(env_config)} environment variables")
 
-    def _load_command_line_config(self):
+    def _load_command_line_config(self) -> None:
         """Load configuration from command line arguments."""
         # This would be called from CLI with parsed arguments
         # Implementation depends on how CLI is structured
 
-    def _update_config_from_dict(self, config_dict: Dict[str, Any]):
+    def _update_config_from_dict(self, config_dict: Dict[str, Any]) -> None:
         """Update configuration from dictionary."""
         for key, value in config_dict.items():
             if hasattr(self.config, key):
@@ -277,7 +285,9 @@ class ConfigurationManager:
                 if isinstance(value, dict):
                     self.config.features.update(value)
 
-    def _set_nested_config(self, config_dict: Dict[str, Any], path: str, value: Any):
+    def _set_nested_config(
+        self, config_dict: Dict[str, Any], path: str, value: Any
+    ) -> None:
         """Set nested configuration value."""
         keys = path.split(".")
         current = config_dict
@@ -336,17 +346,17 @@ class ConfigurationManager:
         """Check if a feature is enabled."""
         return self.config.features.get(feature_name, False)
 
-    def enable_feature(self, feature_name: str):
+    def enable_feature(self, feature_name: str) -> None:
         """Enable a feature."""
         self.config.features[feature_name] = True
         logger.info(f"Feature enabled: {feature_name}")
 
-    def disable_feature(self, feature_name: str):
+    def disable_feature(self, feature_name: str) -> None:
         """Disable a feature."""
         self.config.features[feature_name] = False
         logger.info(f"Feature disabled: {feature_name}")
 
-    def update_config(self, updates: Dict[str, Any]):
+    def update_config(self, updates: Dict[str, Any]) -> None:
         """Update configuration with validation."""
         old_config = self.config
         try:
@@ -359,7 +369,7 @@ class ConfigurationManager:
             logger.error(f"Failed to update configuration: {e}")
             raise
 
-    def save_config(self, file_path: Optional[Union[str, Path]] = None):
+    def save_config(self, file_path: Optional[Union[str, Path]] = None) -> None:
         """Save current configuration to file."""
         save_path = Path(file_path) if file_path else self.config_file
         if not save_path:
@@ -388,6 +398,9 @@ class ConfigurationManager:
 
         Returns:
             List of validation error messages
+
+        Raises:
+            ConfigurationError: If strict mode is enabled and validation fails
         """
         errors = []
 
@@ -395,8 +408,45 @@ class ConfigurationManager:
         if self.config.environment == "production" and not self.config.secret_key:
             errors.append("APGI_SECRET_KEY must be set in production environment")
 
-        # Auto-generate secret key for development if not set
-        if self.config.environment == "development" and not self.config.secret_key:
+        # Detect placeholder/default secret keys
+        placeholder_patterns = [
+            "your-secret-key-here",
+            "your-new-secret-key-here",
+            "change-this-to-a-secure",
+            "replace-with-random",
+            "default-secret-key",
+            "dev-secret-key",
+        ]
+
+        if self.config.secret_key:
+            secret_lower = self.config.secret_key.lower()
+            for pattern in placeholder_patterns:
+                if pattern in secret_lower:
+                    if self.config.environment == "production":
+                        errors.append(
+                            "APGI_SECRET_KEY appears to be a placeholder value. "
+                            "Replace with a secure random secret key (64 hex characters recommended)."
+                        )
+                    else:
+                        logger.warning(
+                            "APGI_SECRET_KEY appears to be a placeholder value. "
+                            "Set a secure secret key for production deployment."
+                        )
+                    break
+
+        # In strict mode, fail on missing secrets even in development
+        if self.config.strict_mode and not self.config.secret_key:
+            errors.append(
+                "APGI_SECRET_KEY must be set in strict mode. "
+                "Set APGI_SECRET_KEY environment variable or disable strict mode."
+            )
+
+        # Auto-generate secret key for development if not set (only in non-strict mode)
+        if (
+            self.config.environment == "development"
+            and not self.config.secret_key
+            and not self.config.strict_mode
+        ):
             import secrets
 
             self.config.secret_key = secrets.token_hex(32)
@@ -455,6 +505,12 @@ class ConfigurationManager:
             if not self.config.database.password:
                 errors.append("Database password is required for non-SQLite backends")
 
+        # In strict mode, raise ConfigurationError instead of returning errors
+        if self.config.strict_mode and errors:
+            raise ConfigurationError(
+                "Configuration validation failed in strict mode:\n" + "\n".join(errors)
+            )
+
         return errors
 
     def get_config_summary(self) -> Dict[str, Any]:
@@ -477,7 +533,7 @@ class ConfigurationManager:
             "config_sources": self._config_sources,
         }
 
-    def reload_config(self):
+    def reload_config(self) -> None:
         """Reload configuration from sources."""
         old_config = self.config
         self._config_sources.clear()
@@ -504,7 +560,7 @@ _config_lock = threading.Lock()
 
 
 def get_config_manager(
-    config_file: Optional[Union[str, Path]] = None
+    config_file: Optional[Union[str, Path]] = None,
 ) -> ConfigurationManager:
     """Get or create the global configuration manager."""
     global _global_config_manager
@@ -524,6 +580,6 @@ def is_feature_enabled(feature_name: str) -> bool:
     return get_config_manager().is_feature_enabled(feature_name)
 
 
-def reload_config():
+def reload_config() -> None:
     """Reload the global configuration."""
     get_config_manager().reload_config()

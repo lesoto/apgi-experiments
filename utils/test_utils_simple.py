@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 def test_dependency_checker():
     """Test dependency checker functionality."""
     try:
-        from dependency_checker import CORE_DEPENDENCIES
+        from dependency_checker import CORE_DEPENDENCIES  # type: ignore[import-not-found]
 
         print("✓ DependencyChecker imported successfully")
         print(f"✓ Found {len(CORE_DEPENDENCIES)} core dependencies")
@@ -35,7 +35,7 @@ def test_dependency_checker():
 def test_parameter_validator():
     """Test parameter validator functionality."""
     try:
-        from parameter_validator import APGIParameterValidator
+        from parameter_validator import APGIParameterValidator  # type: ignore[import-not-found]
 
         validator = APGIParameterValidator()
         print("✓ APGIParameterValidator imported successfully")
@@ -56,7 +56,7 @@ def test_parameter_validator():
 def test_config_manager():
     """Test config manager functionality."""
     try:
-        from config_manager import ConfigManager
+        from config_manager import ConfigManager  # type: ignore[import-not-found]
 
         with tempfile.TemporaryDirectory() as temp_dir:
             config_file = Path(temp_dir) / "test_config.json"
@@ -79,7 +79,7 @@ def test_config_manager():
 def test_error_handler():
     """Test error handler functionality."""
     try:
-        from error_handler import ErrorHandler
+        from error_handler import ErrorHandler  # type: ignore[import-not-found]
 
         handler = ErrorHandler()
         print("✓ ErrorHandler imported and initialized successfully")
@@ -100,7 +100,7 @@ def test_error_handler():
 def test_logging_config():
     """Test logging configuration functionality."""
     try:
-        from logging_config import LogEntry
+        from logging_config import LogEntry  # type: ignore[import-not-found]
 
         entry = LogEntry(
             timestamp="2023-01-01T12:00:00",

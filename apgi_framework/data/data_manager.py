@@ -48,7 +48,7 @@ class IntegratedDataManager:
         self.report_generator = ReportGenerator(str(self.base_output_dir / "reports"))
         self.data_exporter = DataExporter(str(self.base_output_dir / "exports"))
         self.visualizer = APGIVisualizer(str(self.base_output_dir / "figures"))
-        self.interactive_visualizer = InteractiveVisualizer()
+        self.interactive_visualizer = InteractiveVisualizer()  # type: ignore[no-untyped-call]
 
         # Dashboard setup
         self.enable_dashboard = enable_dashboard
@@ -66,11 +66,12 @@ class IntegratedDataManager:
         # Active experiments tracking
         self.active_experiments: Dict[str, Any] = {}
 
-    def start_system(self):
+    def start_system(self) -> None:
         """Start the data management system"""
         try:
             if self.enable_dashboard:
-                self.dashboard.start_dashboard()
+                if self.dashboard is not None:
+                    self.dashboard.start_dashboard()
             else:
                 self.experiment_monitor.start_monitoring()
 
@@ -81,11 +82,12 @@ class IntegratedDataManager:
                 f"Failed to start data management system: {str(e)}"
             )
 
-    def stop_system(self):
+    def stop_system(self) -> None:
         """Stop the data management system"""
         try:
             if self.enable_dashboard:
-                self.dashboard.stop_dashboard()
+                if self.dashboard is not None:
+                    self.dashboard.stop_dashboard()
             else:
                 self.experiment_monitor.stop_monitoring()
 
@@ -94,7 +96,9 @@ class IntegratedDataManager:
         except Exception as e:
             self.logger.error(f"Error stopping data management system: {str(e)}")
 
-    def register_experiment(self, experiment_id: str, metadata: Dict[str, Any]) -> str:
+    def register_experiment(
+        self, experiment_id: str, metadata: Optional[Dict[str, Any]] = None
+    ) -> str:
         """
         Register a new experiment for tracking and management.
 
@@ -104,14 +108,28 @@ class IntegratedDataManager:
 
         Returns:
             Experiment ID
+
+        Raises:
+            DataManagementError: If experiment is already registered or ID is invalid
         """
+        # Validate experiment_id
+        if not experiment_id:
+            raise DataManagementError("Experiment ID cannot be empty")
+
+        # Check for duplicate experiment
+        if experiment_id in self.active_experiments:
+            raise DataManagementError(
+                f"Experiment {experiment_id} is already registered"
+            )
+
         try:
             # Register with monitor
-            self.experiment_monitor.register_experiment(experiment_id, metadata)
+            self.experiment_monitor.register_experiment(experiment_id, metadata or {})
 
             # Track locally
             self.active_experiments[experiment_id] = {
-                "metadata": metadata,
+                "metadata": metadata or {},
+                "status": "registered",
                 "start_time": datetime.now(),
                 "results": [],
                 "trials": [],
@@ -132,7 +150,7 @@ class IntegratedDataManager:
         results: Optional[List[FalsificationResult]] = None,
         trials: Optional[List[ExperimentalTrial]] = None,
         current_trial: Optional[int] = None,
-    ):
+    ) -> None:
         """
         Update experiment data and notify monitoring systems.
 
@@ -166,10 +184,61 @@ class IntegratedDataManager:
         except Exception as e:
             raise DataManagementError(f"Failed to update experiment data: {str(e)}")
 
-    def complete_experiment(self, experiment_id: str):
+    def update_experiment_status(self, experiment_id: str, status: str) -> None:
+        """
+        Update experiment status.
+
+        Args:
+            experiment_id: Experiment identifier
+            status: New status (e.g., "pending", "running", "completed", "failed")
+
+        Raises:
+            DataManagementError: If experiment not found or update fails
+        """
+        try:
+            if experiment_id not in self.active_experiments:
+                raise ValueError(f"Experiment {experiment_id} not registered")
+
+            self.active_experiments[experiment_id]["status"] = status
+            self.logger.debug(
+                f"Updated status for experiment {experiment_id} to {status}"
+            )
+
+        except Exception as e:
+            raise DataManagementError(f"Failed to update experiment status: {str(e)}")
+
+    def update_experiment_progress(self, experiment_id: str, progress: int) -> None:
+        """
+        Update experiment progress percentage.
+
+        Args:
+            experiment_id: Experiment identifier
+            progress: Progress percentage (0-100)
+
+        Raises:
+            DataManagementError: If experiment not found or update fails
+        """
+        try:
+            if experiment_id not in self.active_experiments:
+                raise ValueError(f"Experiment {experiment_id} not registered")
+
+            self.active_experiments[experiment_id]["progress"] = progress
+            self.logger.debug(
+                f"Updated progress for experiment {experiment_id} to {progress}%"
+            )
+
+        except Exception as e:
+            raise DataManagementError(f"Failed to update experiment progress: {str(e)}")
+
+    def complete_experiment(
+        self, experiment_id: str, results: Optional[Dict[str, Any]] = None
+    ) -> None:
         """Mark experiment as completed"""
         try:
             if experiment_id in self.active_experiments:
+                self.active_experiments[experiment_id]["status"] = "completed"
+                if results:
+                    self.active_experiments[experiment_id]["results"] = results
                 self.experiment_monitor.complete_experiment(experiment_id)
                 self.logger.info(f"Completed experiment {experiment_id}")
 
@@ -351,13 +420,13 @@ class IntegratedDataManager:
                 "experiment_id": experiment_id,
                 "metadata": exp_data["metadata"],
                 "start_time": exp_data["start_time"].isoformat(),
-                "status": monitor_data.get("status", "unknown")
-                if monitor_data
-                else "unknown",
+                "status": (
+                    monitor_data.get("status", "unknown") if monitor_data else "unknown"
+                ),
                 "progress": monitor_data.get("progress", 0.0) if monitor_data else 0.0,
-                "statistics": monitor_data.get("statistics", {})
-                if monitor_data
-                else {},
+                "statistics": (
+                    monitor_data.get("statistics", {}) if monitor_data else {}
+                ),
                 "data_counts": {
                     "results": len(exp_data["results"]),
                     "trials": len(exp_data["trials"]),
@@ -385,7 +454,7 @@ class IntegratedDataManager:
             for exp_id in self.active_experiments.keys()
         }
 
-    def cleanup_experiment(self, experiment_id: str, keep_files: bool = True):
+    def cleanup_experiment(self, experiment_id: str, keep_files: bool = True) -> None:
         """
         Clean up experiment data and resources.
 
@@ -424,6 +493,127 @@ class IntegratedDataManager:
         if self.enable_dashboard and self.dashboard:
             return f"http://localhost:{self.dashboard.port}"
         return None
+
+    def validate_data(self, data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """
+        Validate data integrity and structure.
+
+        Args:
+            data: Data dictionary to validate (if None, validates all active experiments)
+
+        Returns:
+            Validation results with status and any warnings
+        """
+        try:
+            if data is not None:
+                # Validate provided data
+                validation_results: Dict[str, Any] = {
+                    "status": "valid",
+                    "warnings": [],
+                    "errors": [],
+                    "data_keys": list(data.keys()),
+                }
+
+                # Check for empty/null values
+                for key, value in data.items():
+                    if value is None or (
+                        isinstance(value, (list, dict)) and len(value) == 0
+                    ):
+                        validation_results["warnings"].append(
+                            f"Empty/null value for key: {key}"
+                        )
+
+                return validation_results
+
+            # Validate all active experiments
+            validation_results = {
+                "status": "valid",
+                "warnings": [],
+                "errors": [],
+                "experiments_validated": 0,
+            }
+
+            for experiment_id in self.active_experiments:
+                exp_data = self.active_experiments.get(experiment_id, {})
+                if not exp_data.get("results") and not exp_data.get("trials"):
+                    validation_results["warnings"].append(
+                        f"Experiment {experiment_id} has no results or trials"
+                    )
+                validation_results["experiments_validated"] += 1
+
+            return validation_results
+
+        except Exception as e:
+            self.logger.error(f"Error validating data: {str(e)}")
+            return {"status": "error", "errors": [str(e)]}
+
+    def clean_data(self, data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """
+        Clean data by removing empty/null values and fixing issues.
+
+        Args:
+            data: Data dictionary to clean (if None, cleans active experiment results)
+
+        Returns:
+            Cleaning results with operations performed
+        """
+        try:
+            cleaning_results: Dict[str, Any] = {
+                "operations": [],
+                "warnings": [],
+                "fixed_issues": 0,
+            }
+
+            if data is not None:
+                # Clean provided data dictionary
+                keys_to_remove = []
+                for key, value in list(data.items()):
+                    if value is None:
+                        keys_to_remove.append(key)
+                    elif isinstance(value, dict):
+                        # Recursively clean nested dicts
+                        nested_clean = self.clean_data(value)
+                        cleaning_results["operations"].extend(
+                            nested_clean.get("operations", [])
+                        )
+
+                for key in keys_to_remove:
+                    del data[key]
+                    cleaning_results["operations"].append(
+                        f"Removed null value for key: {key}"
+                    )
+                    cleaning_results["fixed_issues"] += 1
+
+                return cleaning_results
+
+            # Clean active experiment results
+            for experiment_id in list(self.active_experiments.keys()):
+                exp_data = self.active_experiments[experiment_id]
+
+                # Remove empty results
+                if "results" in exp_data and not exp_data["results"]:
+                    cleaning_results["warnings"].append(
+                        f"Experiment {experiment_id} has empty results"
+                    )
+
+                # Clean up any None values in results
+                if isinstance(exp_data.get("results"), list):
+                    original_count = len(exp_data["results"])
+                    exp_data["results"] = [
+                        r for r in exp_data["results"] if r is not None
+                    ]
+                    removed_count = original_count - len(exp_data["results"])
+                    if removed_count > 0:
+                        cleaning_results["operations"].append(
+                            f"Removed {removed_count} null results from {experiment_id}"
+                        )
+                        cleaning_results["fixed_issues"] += removed_count
+
+            return cleaning_results
+
+        except Exception as e:
+            self.logger.error(f"Error cleaning data: {str(e)}")
+            return {"operations": [], "warnings": [str(e)], "fixed_issues": 0}
 
 
 # Convenience function for easy setup

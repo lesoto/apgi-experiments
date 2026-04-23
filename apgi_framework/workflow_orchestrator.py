@@ -55,7 +55,7 @@ class WorkflowStageResult:
     result_data: Dict[str, Any] = field(default_factory=dict)
     error_message: Optional[str] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Calculate duration if end_time is set."""
         if self.end_time and self.start_time:
             self.duration = self.end_time - self.start_time
@@ -109,7 +109,7 @@ class WorkflowResult:
     falsification_conclusion: Optional[str] = None
     confidence_level: Optional[float] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Calculate total duration if end_time is set."""
         if self.end_time and self.start_time:
             self.total_duration = self.end_time - self.start_time

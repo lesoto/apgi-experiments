@@ -233,16 +233,18 @@ class DataValidator:
 
     def _validate_json_structure(self, data: Dict, results: Dict[str, Any]) -> bool:
         """Validate JSON data structure."""
+        is_valid = True
+
         if not isinstance(data, dict):
-            results["errors"].append("JSON root must be an object")
+            results["errors"].append("JSON root must be an object")  # type: ignore[unreachable]
             return False
 
         # Check for required sections
-        if "metadata" not in data:
+        if is_valid and "metadata" not in data:
             results["errors"].append("Missing 'metadata' section")
-            return False
+            is_valid = False
 
-        if "data" not in data:
+        if is_valid and "data" not in data:
             results["errors"].append("Missing 'data' section")
             return False
 
@@ -376,9 +378,9 @@ class DataValidator:
             )
 
         if "pupil_diameter" in df.columns:
-            quality_metrics["signal_quality"][
-                "pupil_diameter"
-            ] = self._assess_signal_quality(df["pupil_diameter"])
+            quality_metrics["signal_quality"]["pupil_diameter"] = (
+                self._assess_signal_quality(df["pupil_diameter"])
+            )
 
         if "eda" in df.columns:
             quality_metrics["signal_quality"]["eda"] = self._assess_signal_quality(
@@ -545,7 +547,7 @@ class DataValidator:
 
         report: Dict[str, Any] = {
             "file_info": self.validate_file_format(file_path),
-            "data_quality": {},  # type: ignore
+            "data_quality": {},
             "recommendations": [],
             "validation_timestamp": datetime.now().isoformat(),
             "validator_version": "1.0.0",
@@ -575,7 +577,7 @@ class DataValidator:
                 TypeError,
                 MemoryError,
             ) as e:
-                report["data_quality"]["error"] = f"{type(e).__name__}: {e}"  # type: ignore
+                report["data_quality"]["error"] = f"{type(e).__name__}: {e}"
 
         return report
 
@@ -792,7 +794,7 @@ class DataPreprocessor:
         self.preprocessing_steps.append(
             f"Missing data cleaned using {strategy} strategy"
         )
-        return df_clean
+        return df_clean  # type: ignore[no-any-return]
 
     def remove_outliers(
         self, df: pd.DataFrame, method: str = "iqr", threshold: float = 1.5
@@ -830,7 +832,7 @@ class DataPreprocessor:
         self.preprocessing_steps.append(
             f"Removed {outliers_removed} outliers using {method} method"
         )
-        return df_clean
+        return df_clean  # type: ignore[no-any-return]
 
     def filter_signals(
         self,
@@ -892,7 +894,7 @@ class DataPreprocessor:
                     df_filtered.loc[data.index, col] = filtered_data
 
         self.preprocessing_steps.append(f"Applied {filter_type} filter to {columns}")
-        return df_filtered
+        return df_filtered  # type: ignore[no-any-return]
 
     def normalize_data(
         self,
@@ -913,12 +915,12 @@ class DataPreprocessor:
                 if method == "zscore":
                     col_std = data.std()
                     if col_std > 0:
-                        df_normalized.loc[:, col] = (data - data.mean()) / col_std  # type: ignore
+                        df_normalized.loc[:, col] = (data - data.mean()) / col_std
                 elif method == "minmax":
                     col_min = data.min()
                     col_max = data.max()
                     if col_max > col_min:
-                        df_normalized[col] = (data - col_min) / (col_max - col_min)  # type: ignore
+                        df_normalized[col] = (data - col_min) / (col_max - col_min)
                 elif method == "robust":
                     median = data.median()
                     mad = np.median(np.abs(data - median))
@@ -926,7 +928,7 @@ class DataPreprocessor:
                         df_normalized[col] = (data - median) / mad
 
         self.preprocessing_steps.append(f"Normalized {columns} using {method} method")
-        return df_normalized
+        return df_normalized  # type: ignore[no-any-return]
 
     def resample_data(
         self, df: pd.DataFrame, target_rate: float, time_column: str = "timestamp"
@@ -955,7 +957,7 @@ class DataPreprocessor:
             df_resampled = pd.concat([df_resampled, df_non_numeric], axis=1)
 
         self.preprocessing_steps.append(f"Resampled data to {target_rate} Hz")
-        return df_resampled.reset_index()
+        return df_resampled.reset_index()  # type: ignore[no-any-return]
 
     def save_processed_data(
         self,
