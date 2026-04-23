@@ -16,12 +16,11 @@ Features:
 
 import threading
 import time
-from typing import Dict, List, Optional, Any, Union
-
 import warnings
+from typing import Any, Dict, List, Optional, Union
 
 try:
-    from flask import Flask, render_template_string, jsonify
+    from flask import Flask, jsonify, render_template_string
     from flask_socketio import SocketIO, emit
 
     FLASK_AVAILABLE = True
@@ -32,8 +31,8 @@ except ImportError:
 # Plotly is used in the frontend HTML template, not in Python code
 PLOTLY_AVAILABLE = True  # Assume available for frontend
 
-from .monitoring_dashboard import QualityAlertSystem
 from ..logging.standardized_logging import get_logger
+from .monitoring_dashboard import QualityAlertSystem
 
 logger = get_logger(__name__)
 

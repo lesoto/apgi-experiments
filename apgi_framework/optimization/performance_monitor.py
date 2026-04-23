@@ -23,7 +23,7 @@ logger = get_logger(__name__)
 # Try to import tkinter for GUI components
 try:
     import tkinter as tk
-    from tkinter import ttk, messagebox
+    from tkinter import messagebox, ttk
 
     HAS_TKINTER = True
 except ImportError:

@@ -12,7 +12,7 @@ import pickletools
 from dataclasses import is_dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Union, TypedDict
+from typing import Any, Dict, List, Optional, Set, TypedDict, Union
 
 logger = logging.getLogger(__name__)
 

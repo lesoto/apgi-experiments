@@ -10,7 +10,7 @@ The core equation is:
 """
 
 import logging
-from typing import TYPE_CHECKING, Optional, Union, Dict, Any
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 import numpy as np
 

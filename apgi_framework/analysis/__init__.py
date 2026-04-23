@@ -7,10 +7,7 @@ and reporting capabilities for comprehensive APGI falsification testing.
 
 from typing import Any, Dict, List, Optional
 
-from .analysis_engine import (
-    AnalysisEngine,
-    AnalysisResult,
-)
+from .analysis_engine import AnalysisEngine, AnalysisResult
 from .bayesian_models import (
     HierarchicalBayesianModel,
     IgnitionProbabilityCalculator,

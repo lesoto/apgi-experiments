@@ -4,8 +4,8 @@ Production startup validation for APGI Framework.
 Ensures the application is configured safely before starting in production mode.
 """
 
-import os
 import logging
+import os
 from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)

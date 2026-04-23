@@ -18,11 +18,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 
 import numpy as np
 
-from .exceptions import (
-    APGIFrameworkError,
-    MathematicalError,
-    ValidationError,
-)
+from .exceptions import APGIFrameworkError, MathematicalError, ValidationError
 from .main_controller import MainApplicationController
 
 

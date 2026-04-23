@@ -116,7 +116,6 @@ python -m pytest --cov=apgi_framework --cov-fail-under=80
 | `data_management_gui.py`       | 178   | 0       | 178     | 0.00%      | Medium   | ⚪     | Data management GUI         |
 | `error_dialogs.py`             | 123   | 0       | 123     | 0.00%      | Medium   | ⚪     | Error dialogs               |
 | `experiment_management_gui.py` | 267   | 0       | 267     | 0.00%      | High     | ⚪     | Experiment management       |
-| `experiment_runner_gui.py`     | 312   | 0       | 312     | 0.00%      | High     | ⚪     | Experiment runner           |
 | `falsification_framework_gui.py`| 334   | 0       | 334     | 0.00%      | High     | ⚪     | Falsification GUI           |
 | `main_controller.py`           | 357   | 198     | 159     | 55.46%     | Critical | 🟡     | Tests created (test_main_controller.py) |
 | `monitoring_dashboard.py`      | 693   | 75      | 618     | 10.82%     | Medium   | 🟡     | Monitoring dashboard        |

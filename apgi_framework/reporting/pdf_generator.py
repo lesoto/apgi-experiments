@@ -15,11 +15,12 @@ try:
     from reportlab.lib import colors  # type: ignore
     from reportlab.lib.enums import TA_CENTER  # type: ignore
     from reportlab.lib.pagesizes import A4  # type: ignore
-    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet  # type: ignore
+    from reportlab.lib.styles import ParagraphStyle  # type: ignore
+    from reportlab.lib.styles import getSampleStyleSheet
     from reportlab.lib.units import inch  # type: ignore
-    from reportlab.platypus import (  # type: ignore
+    from reportlab.platypus import KeepTogether  # type: ignore
+    from reportlab.platypus import (
         Image,
-        KeepTogether,
         PageBreak,
         Paragraph,
         SimpleDocTemplate,

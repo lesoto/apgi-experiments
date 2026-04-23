@@ -6,6 +6,7 @@ plotting and figure generation for falsification test results.
 """
 
 from __future__ import annotations
+
 import csv
 import json
 import logging
@@ -17,10 +18,7 @@ from typing import Any, List, Literal, Optional, Union
 import h5py
 import numpy as np
 
-from ..core.data_models import (
-    ExperimentalTrial,
-    FalsificationResult,
-)
+from ..core.data_models import ExperimentalTrial, FalsificationResult
 from ..exceptions import DataExportError
 
 

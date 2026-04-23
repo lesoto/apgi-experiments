@@ -14,7 +14,8 @@ import logging
 from typing import Any, Dict, List, Optional
 
 try:
-    from RestrictedPython import compile_restricted, safe_globals  # type: ignore
+    from RestrictedPython import compile_restricted  # type: ignore
+    from RestrictedPython import safe_globals
 
     HAS_RESTRICTED_PYTHON = True
 except ImportError:

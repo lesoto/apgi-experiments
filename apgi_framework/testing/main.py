@@ -355,7 +355,8 @@ def run_gui_mode(lifecycle_manager: ApplicationLifecycleManager) -> int:
     """Run the application in GUI mode."""
     try:
         import tkinter as tk
-        from apgi_framework.testing.gui_test_runner import TestRunnerGUI, GUI_AVAILABLE
+
+        from apgi_framework.testing.gui_test_runner import GUI_AVAILABLE, TestRunnerGUI
 
         if not GUI_AVAILABLE:
             logger = logging.getLogger(__name__)

@@ -15,6 +15,7 @@ from tkinter import messagebox
 from typing import Any, Callable, Dict, Optional, Union
 
 import customtkinter as ctk
+
 from apgi_framework.logging.standardized_logging import get_logger
 
 logger = get_logger(__name__)

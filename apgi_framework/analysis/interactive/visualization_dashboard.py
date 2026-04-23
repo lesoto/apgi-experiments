@@ -13,18 +13,20 @@ and analysis of consciousness experiments. Features include:
 - Export capabilities
 """
 
+import warnings
+from typing import Any, Dict, List, Optional, Tuple
+
 import numpy as np
 import pandas as pd
-from typing import Any, Dict, List, Optional, Tuple
-import warnings
+
 from apgi_framework.logging.standardized_logging import get_logger
 
 logger = get_logger(__name__)
 
 
 try:
-    import plotly.graph_objects as go  # type: ignore
     import plotly.express as px  # type: ignore
+    import plotly.graph_objects as go  # type: ignore
     from plotly.subplots import make_subplots  # type: ignore
 
     PLOTLY_AVAILABLE = True

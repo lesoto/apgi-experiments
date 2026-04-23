@@ -225,22 +225,6 @@ class ComprehensiveGUILauncher:
                     "icon": "[Target]",
                     "command": self.launch_full_gui,
                 },
-                {
-                    "name": "Experiment Registry GUI",
-                    "file": "GUI-Experiment-Registry.py",
-                    "description": "Experiment registry and management interface",
-                    "icon": "[Registry]",
-                    "command": self.launch_experiment_registry,
-                },
-            ],
-            "Experiment Management": [
-                {
-                    "name": "Experiment Runner",
-                    "file": "apps/experiment_runner_gui.py",
-                    "description": "Run and manage experiments with comprehensive controls and monitoring",
-                    "icon": "[Play]",
-                    "command": self.launch_experiment_runner,
-                },
             ],
             "Analysis & Visualization": [
                 {
@@ -697,16 +681,6 @@ class ComprehensiveGUILauncher:
     def launch_full_gui(self):
         """Launch the full-featured GUI."""
         self.launch_python_script("GUI.py", "Full-Featured GUI")
-
-    def launch_experiment_registry(self):
-        """Launch Experiment Registry GUI."""
-        self.launch_python_script(
-            "GUI-Experiment-Registry.py", "Experiment Registry GUI"
-        )
-
-    def launch_experiment_runner(self):
-        """Launch Experiment Runner."""
-        self.launch_python_script("apps/experiment_runner_gui.py", "Experiment Runner")
 
     def launch_parameter_estimation(self):
         """Launch Parameter Estimation GUI."""

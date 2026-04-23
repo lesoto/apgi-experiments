@@ -12,8 +12,10 @@ from typing import Any, Dict, List, Optional, Type, Union, cast
 
 try:
     from .primary_falsification import (
-        PrimaryFalsificationTest as ImportedPrimaryFalsificationTest,
         FalsificationResult as ImportedFalsificationResult,
+    )
+    from .primary_falsification import (
+        PrimaryFalsificationTest as ImportedPrimaryFalsificationTest,
     )
 
     # Use imported classes

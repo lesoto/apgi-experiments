@@ -21,8 +21,8 @@ import numpy as np
 import pandas as pd
 
 from ..analysis.analysis_engine import AnalysisResult
-from ..security.secure_pickle import safe_pickle_dump, safe_pickle_load
 from ..exceptions import ProcessingError, ValidationError
+from ..security.secure_pickle import safe_pickle_dump, safe_pickle_load
 
 logger = logging.getLogger(__name__)
 

@@ -6,9 +6,10 @@ formats with custom encoders for APGI-specific data types.
 """
 
 import json
-from datetime import datetime, date
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
+
 import numpy as np
 import pandas as pd
 
@@ -237,8 +238,9 @@ def auto_detect_and_load(file_path: Path) -> Any:
                 "Install with: pip install msgpack"
             )
     elif suffix == ".pkl":
-        from apgi_framework.security.secure_pickle import SecurePickleValidator
         import logging
+
+        from apgi_framework.security.secure_pickle import SecurePickleValidator
 
         logging.warning(f"Loading legacy pickle file: {file_path}")
         return SecurePickleValidator.load(file_path, trusted=True)  # type: ignore[attr-defined]

@@ -8,27 +8,28 @@ Integration (APGI) Framework through systematic testing.
 __version__ = "1.0.0"
 __author__ = "APGI"
 
+# Import all submodules for testing
+from . import (
+    analysis,
+    clinical,
+    data,
+    falsification,
+    gui,
+    monitoring,
+    processing,
+    reporting,
+    research,
+    security,
+    validation,
+    visualization,
+)
+from .collaboration import CollaborationManager
+from .computation import IntensiveComputation
 from .core import APGIEquation, PrecisionCalculator, PredictionErrorProcessor
 from .engines import SomaticMarkerEngine, ThresholdManager
 from .exceptions import APGIFrameworkError, MathematicalError, SimulationError
-
-# Import all submodules for testing
-from . import research
-from . import clinical
-from . import falsification
-from . import data
-from . import analysis
-from . import gui
-from . import monitoring
-from . import visualization
-from . import reporting
-from . import validation
-from . import security
-from . import processing
-from .computation import IntensiveComputation
-from .collaboration import CollaborationManager
-from .notification import NotificationManager
 from .fusion import DataFusion
+from .notification import NotificationManager
 
 __all__ = [
     "APGIEquation",

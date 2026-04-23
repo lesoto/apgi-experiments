@@ -112,9 +112,6 @@ results = processor.analyze_eeg(data_file="eeg_data.csv")
 # Launch the main GUI
 python GUI-Launcher.py
 
-# Run experiment runner GUI
-python apps/experiment_runner_gui.py
-
 # Interactive dashboard
 python -m apgi_framework.gui.interactive_dashboard
 ```
@@ -197,14 +194,12 @@ https://github.com/apgi-research/apgi-framework
 #### Main GUI Applications
 
 - GUI.py - Main comprehensive GUI application (244KB)
-- GUI-Experiment-Registry.py - Experiment registry GUI for running 24 experiments
 - GUI-Launcher.py - Centralized GUI launcher for all applications
 
 #### Apps Directory GUIs
 
 - apps/apgi_falsification_gui.py - Falsification testing GUI (74KB)
 - apps/apgi_falsification_gui_refactored.py - Refactored falsification GUI
-- apps/experiment_runner_gui.py - Experiment runner interface
 - apps/gui_template.py - GUI template (241KB)
 - apps/gui_template_background.py - Background GUI template
 

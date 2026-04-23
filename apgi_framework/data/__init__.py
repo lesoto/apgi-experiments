@@ -8,8 +8,6 @@ results, and metadata.
 
 from typing import Any, Dict, Optional
 
-# Import example data loading functionality
-
 from .dashboard import (
     DashboardServer,
     ExperimentComparator,
@@ -56,6 +54,8 @@ from .persistence_layer import PersistenceLayer
 from .report_generator import FalsificationReport, ReportGenerator, ReportSection
 from .storage_manager import StorageManager
 from .visualizer import APGIVisualizer, InteractiveVisualizer
+
+# Import example data loading functionality
 
 
 # Mock classes for testing

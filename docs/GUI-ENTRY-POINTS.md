@@ -17,20 +17,9 @@ This document describes the different GUI entry points and their intended use ca
 
 **Use Case:** Primary interface for researchers and power users
 
-### 2. `GUI-Experiment-Registry.py`
-
-**Purpose:** Experiment registry and management interface
-**Features:**
-
-- Experiment catalog and metadata management
-- Template-based experiment creation
-- Experiment tracking and organization
-
-**Use Case:** Managing large collections of experiments and templates
-
 ## Secondary Entry Points
 
-### 4. `GUI-Launcher.py` (1,030 lines)
+### 2. `GUI-Launcher.py` (1,030 lines)
 
 **Purpose:** Centralized launcher for all GUI applications
 **Features:**

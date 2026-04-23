@@ -14,17 +14,17 @@ Features:
 - Background processing for large operations
 """
 
+import logging
 import os
+import warnings
 from datetime import datetime, timedelta
 from typing import Any, Dict, Generator, List, Optional, Union
-import warnings
-import logging
 
 try:
+    import numpy as np
+    import pandas as pd
     from psycopg2.extras import Json
     from psycopg2.pool import ThreadedConnectionPool
-    import pandas as pd
-    import numpy as np
 
     PGSQL_AVAILABLE = True
 except ImportError as e:

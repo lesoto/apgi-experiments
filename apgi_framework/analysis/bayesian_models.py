@@ -16,10 +16,7 @@ import numpy as np
 
 # Import standardized logging and security
 from ..logging.standardized_logging import get_logger
-from ..security.secure_pickle import (
-    safe_pickle_dump,
-    safe_pickle_load,
-)
+from ..security.secure_pickle import safe_pickle_dump, safe_pickle_load
 
 # Initialize logger
 logger = get_logger(__name__)

@@ -5,6 +5,7 @@ Provides unified interface for data storage using SQLite and HDF5 backends.
 """
 
 from __future__ import annotations
+
 import hashlib
 import json
 import logging
@@ -23,10 +24,7 @@ import pandas as pd
 from ..exceptions import APGIFrameworkError
 
 logger = logging.getLogger(__name__)
-from ..security.secure_pickle import (
-    safe_pickle_dump,
-    safe_pickle_load,
-)
+from ..security.secure_pickle import safe_pickle_dump, safe_pickle_load
 from .data_models import (
     BackupInfo,
     DataVersion,

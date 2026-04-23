@@ -12,17 +12,18 @@ The registry pattern allows for:
 - Configuration-driven engine selection
 """
 
-from typing import Any, Callable, Dict, List, Optional, Type, TypeVar
-from enum import Enum, auto
 import logging
+from enum import Enum, auto
+from typing import Any, Callable, Dict, List, Optional, Type, TypeVar
 
-# Core engine imports
-from ..core.somatic_marker import SomaticMarkerEngine, ContextType
-from ..core.threshold import ThresholdManager, ThresholdAdaptationType
 from ..core.equation import APGIEquation
+from ..core.models import PredictiveIgnitionNetwork, SomaticAgent
 from ..core.precision import PrecisionCalculator
 from ..core.prediction_error import PredictionErrorProcessor
-from ..core.models import PredictiveIgnitionNetwork, SomaticAgent
+
+# Core engine imports
+from ..core.somatic_marker import ContextType, SomaticMarkerEngine
+from ..core.threshold import ThresholdAdaptationType, ThresholdManager
 
 logger = logging.getLogger(__name__)
 

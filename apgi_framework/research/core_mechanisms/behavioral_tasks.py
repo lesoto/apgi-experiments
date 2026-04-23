@@ -6,9 +6,10 @@ including detection tasks, heartbeat detection, and dual-modality oddball tasks.
 """
 
 import logging
-import numpy as np
-from typing import Dict, Any, Optional, Callable
 from datetime import datetime
+from typing import Any, Callable, Dict, Optional
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 

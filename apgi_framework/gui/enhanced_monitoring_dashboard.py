@@ -20,6 +20,7 @@ from matplotlib.figure import Figure
 
 try:
     import asyncio
+
     import websockets
 except ImportError:
     websockets: Optional[Any] = None  # type: ignore[no-redef]

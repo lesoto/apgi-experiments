@@ -5,13 +5,11 @@ This module implements comprehensive result display with expandable test result 
 failure highlighting, quick navigation to failure details, and stack trace display.
 """
 
-import sys
-from typing import Any, Dict, Optional
-
 import enum
+import sys
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import List, Dict, Optional, Any
+from typing import Any, Dict, List, Optional
 
 
 class TestStatus(enum.Enum):
@@ -74,12 +72,8 @@ logger = get_logger(__name__)
 
 try:
     from PySide6.QtCore import Qt, Signal  # type: ignore[import-not-found]
-    from PySide6.QtGui import (  # type: ignore[import-not-found]
-        QColor,
-        QFont,
-        QSyntaxHighlighter,
-        QTextCharFormat,
-    )
+    from PySide6.QtGui import QFont  # type: ignore[import-not-found]
+    from PySide6.QtGui import QColor, QSyntaxHighlighter, QTextCharFormat
     from PySide6.QtWidgets import (  # type: ignore[import-not-found]
         QApplication,
         QCheckBox,

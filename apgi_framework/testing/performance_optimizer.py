@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, cast
 
 from ..logging.standardized_logging import get_logger
-from ..utils.serialization import serialize_json, deserialize_json
+from ..utils.serialization import deserialize_json, serialize_json
 from .batch_runner import BatchExecutionSummary, BatchTestRunner, TestResult
 
 logger = get_logger(__name__)

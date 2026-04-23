@@ -15,10 +15,11 @@ Features:
 """
 
 from __future__ import annotations
+
 import warnings
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union, cast
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Union, cast
 
 try:
     import numpy as np
@@ -31,11 +32,11 @@ except ImportError:
     warnings.warn("scikit-learn not available. ML features will be limited.")
 
 from ..analysis.ml_classification import (
-    ConsciousnessClassifier,
     BiomarkerClassifierEnsemble,
+    ConsciousnessClassifier,
     create_biomarker_features,
-    hyperparameter_tuning,
     feature_selection,
+    hyperparameter_tuning,
 )
 from ..clinical.disorder_classification import (
     DisorderClassification,
@@ -376,9 +377,8 @@ class UnifiedMLClassifier:
             param_grid = param_grids.get(algorithm, param_grids["random_forest"])
 
         # Get classifier class
-        from sklearn.ensemble import RandomForestClassifier
+        from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
         from sklearn.svm import SVC
-        from sklearn.ensemble import GradientBoostingClassifier
 
         classifier_classes = {
             "random_forest": RandomForestClassifier,

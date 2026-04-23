@@ -7,7 +7,7 @@ import logging
 import os
 import threading
 from contextlib import contextmanager
-from typing import Callable, Optional, Any, Set, cast
+from typing import Any, Callable, Optional, Set, cast
 
 logger = logging.getLogger(__name__)
 

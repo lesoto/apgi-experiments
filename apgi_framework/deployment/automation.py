@@ -16,10 +16,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from apgi_framework.logging.standardized_logging import get_logger
+
 from ..config import get_config_manager
 from ..exceptions import APGIFrameworkError
 from ..logging.standardized_logging import get_logger
-from apgi_framework.logging.standardized_logging import get_logger
 
 logger = get_logger(__name__)
 

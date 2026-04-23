@@ -12,7 +12,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import scipy.stats as stats
-from scipy.stats import t, ncf
+from scipy.stats import ncf, t
 
 
 class EffectSizeType(Enum):

@@ -23,9 +23,7 @@ try:
         RecoveryMetrics,
         RecoveryResults,
     )
-    from ..analysis.predictive_validity import (
-        ValidityResult,
-    )
+    from ..analysis.predictive_validity import ValidityResult
 except ImportError:
     logging.warning("Analysis modules not fully available for validation pipeline")
 

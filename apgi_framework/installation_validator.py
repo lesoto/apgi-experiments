@@ -15,6 +15,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+
 from apgi_framework.logging.standardized_logging import get_logger
 
 logger = get_logger(__name__)
@@ -490,10 +491,9 @@ class InstallationValidator:
         """Validate test execution capability."""
         try:
             # Try to run a simple test discovery
-            from apgi_framework.testing.batch_runner import BatchTestRunner
-
             # Initialize with default config
             from apgi_framework.config import ConfigManager
+            from apgi_framework.testing.batch_runner import BatchTestRunner
 
             config = ConfigManager()
             BatchTestRunner(config_manager=config)

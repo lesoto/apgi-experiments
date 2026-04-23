@@ -60,8 +60,8 @@ class ModuleCoverage:
 
 try:
     from PySide6.QtCore import QRect, Qt, Signal  # type: ignore[import-not-found]
-    from PySide6.QtGui import (  # type: ignore[import-not-found]
-        QBrush,
+    from PySide6.QtGui import QBrush  # type: ignore[import-not-found]
+    from PySide6.QtGui import (
         QColor,
         QFont,
         QPainter,

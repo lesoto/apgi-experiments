@@ -10,9 +10,8 @@ import queue
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, TypedDict, cast
-
 from tkinter import messagebox
+from typing import Any, Callable, Dict, List, Optional, TypedDict, cast
 
 # Type definitions
 

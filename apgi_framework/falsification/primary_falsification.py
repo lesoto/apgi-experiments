@@ -6,8 +6,9 @@ implements the core falsification testing logic with proper result objects.
 """
 
 import logging
-from typing import Any, Optional
 from datetime import datetime
+from typing import Any, Optional
+
 import numpy as np
 from scipy import stats
 

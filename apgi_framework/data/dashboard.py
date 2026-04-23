@@ -13,10 +13,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
-from ..core.data_models import (
-    ExperimentalTrial,
-    FalsificationResult,
-)
+from ..core.data_models import ExperimentalTrial, FalsificationResult
 from ..exceptions import DashboardError
 from .visualizer import InteractiveVisualizer
 

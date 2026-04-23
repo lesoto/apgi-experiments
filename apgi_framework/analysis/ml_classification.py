@@ -14,27 +14,29 @@ Features:
 - Automated model selection
 """
 
+import warnings
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple, Union
+
 import numpy as np
 import pandas as pd
-from typing import Dict, List, Optional, Tuple, Union, Any
-from dataclasses import dataclass
-from sklearn.model_selection import cross_val_score, StratifiedKFold
 from sklearn.metrics import classification_report, confusion_matrix
-from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import StratifiedKFold, cross_val_score
 from sklearn.pipeline import Pipeline
-import warnings
+from sklearn.preprocessing import StandardScaler
+
 from apgi_framework.logging.standardized_logging import get_logger
 
 logger = get_logger(__name__)
 
 
 try:
-    from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-    from sklearn.svm import SVC
-    from sklearn.neural_network import MLPClassifier
+    from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
+    from sklearn.feature_selection import SelectKBest, f_classif
     from sklearn.linear_model import LogisticRegression
     from sklearn.model_selection import GridSearchCV
-    from sklearn.feature_selection import SelectKBest, f_classif
+    from sklearn.neural_network import MLPClassifier
+    from sklearn.svm import SVC
 
     SKLEARN_AVAILABLE = True
 except ImportError:

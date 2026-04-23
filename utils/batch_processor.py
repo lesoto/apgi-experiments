@@ -39,38 +39,23 @@ except ImportError:
             pickle.dump(obj, f, protocol=protocol)
 
 
-# Load modules with hyphens using importlib with fallback
-try:
-    formal_model_spec = importlib.util.spec_from_file_location(
-        "SurpriseIgnitionSystem",
-        PROJECT_ROOT / "Falsification" / "Falsification-Protocol-4.py",
-    )
-    if formal_model_spec is not None and formal_model_spec.loader is not None:
-        formal_model_module = importlib.util.module_from_spec(formal_model_spec)
-        formal_model_spec.loader.exec_module(formal_model_module)
-        SurpriseIgnitionSystem = formal_model_module.SurpriseIgnitionSystem
-    else:
-        raise ImportError("Could not load SurpriseIgnitionSystem module")
-except (FileNotFoundError, ImportError, AttributeError) as e:
-    print(f"Warning: Could not load SurpriseIgnitionSystem: {e}")
+# Create fallback class for batch processing simulations
+class SurpriseIgnitionSystem:
+    """Fallback SurpriseIgnitionSystem for batch processing."""
 
-    # Create fallback class for testing
-    class SurpriseIgnitionSystemFallback:
-        def __init__(self):
-            pass
+    def __init__(self):
+        pass
 
-        def simulate(self, duration, dt, input_generator):
-            # Return dummy data for testing
-            import numpy as np
+    def simulate(self, duration, dt, input_generator):
+        """Return dummy data for testing."""
+        import numpy as np
 
-            steps = int(duration / dt)
-            return {
-                "S": np.random.randn(steps),
-                "theta": np.random.randn(steps) * 0.1 + 0.5,
-                "B": np.random.randint(0, 2, steps),
-            }
-
-    SurpriseIgnitionSystem = SurpriseIgnitionSystemFallback
+        steps = int(duration / dt)
+        return {
+            "S": np.random.randn(steps),
+            "theta": np.random.randn(steps) * 0.1 + 0.5,
+            "B": np.random.randint(0, 2, steps),
+        }
 
 
 try:

@@ -6,8 +6,8 @@ consciousness-related complexity measures. PCI > 0.4 indicates conscious states,
 while PCI < 0.3 indicates unconscious states.
 """
 
-import warnings
 import logging
+import warnings
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 

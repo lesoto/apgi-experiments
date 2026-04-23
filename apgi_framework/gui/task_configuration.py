@@ -7,10 +7,9 @@ UI components and error handling.
 
 import logging
 import tkinter as tk
+from dataclasses import dataclass
 from tkinter import ttk
 from typing import Any, Dict
-
-from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 

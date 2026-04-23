@@ -545,11 +545,11 @@ class MainApplicationController:
         """
         try:
             # Import required modules
-            from apgi_framework.research import HypothesisDesigner
+            from apgi_framework.analysis import StatisticalAnalyzer
             from apgi_framework.falsification import (
                 FalsificationEngine as ExperimentRunner,
             )
-            from apgi_framework.analysis import StatisticalAnalyzer
+            from apgi_framework.research import HypothesisDesigner
 
             # Step 1: Create hypothesis design
             designer = HypothesisDesigner()  # type: ignore[no-untyped-call]
@@ -602,8 +602,8 @@ class MainApplicationController:
         """
         try:
             # Import required modules
-            from apgi_framework.species import SpeciesAnalyzer  # type: ignore
             from apgi_framework.comparison import ComparisonEngine  # type: ignore
+            from apgi_framework.species import SpeciesAnalyzer  # type: ignore
 
             # Step 1: Analyze species data
             analyzer = SpeciesAnalyzer()
@@ -671,7 +671,7 @@ class MainApplicationController:
     ) -> Dict[str, Any]:
         """Execute a clinical application workflow."""
         try:
-            from apgi_framework.clinical import PatientDataManager, InterventionTracker
+            from apgi_framework.clinical import InterventionTracker, PatientDataManager
 
             # Step 1: Manage patient data
             patient_manager = PatientDataManager()  # type: ignore
@@ -746,8 +746,8 @@ class MainApplicationController:
     ) -> Dict[str, Any]:
         """Execute a data analysis pipeline."""
         try:
-            from apgi_framework.data import DataProcessor
             from apgi_framework.analysis import StatisticalAnalyzer
+            from apgi_framework.data import DataProcessor
 
             # Step 1: Process data
             processor = DataProcessor()
@@ -1017,8 +1017,8 @@ class MainApplicationController:
     ) -> dict[str, Any]:
         """Execute multi-modal analysis workflow."""
         try:
-            from apgi_framework.data import MultiModalProcessor
             from apgi_framework.analysis import CrossModalAnalyzer
+            from apgi_framework.data import MultiModalProcessor
             from apgi_framework.fusion import DataFusion
 
             # Step 1: Load modalities

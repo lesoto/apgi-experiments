@@ -18,9 +18,10 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
+from apgi_framework.logging.standardized_logging import get_logger
+
 from .file_utils import FileUtils
 from .path_utils import get_path_manager
-from apgi_framework.logging.standardized_logging import get_logger
 
 logger = get_logger(__name__)
 

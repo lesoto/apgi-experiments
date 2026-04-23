@@ -5,8 +5,9 @@ Implements phase transition dynamics for APGI consciousness experiments.
 Provides the SomaticAgent class for active inference with somatic markers.
 """
 
-import numpy as np
 from typing import Tuple
+
+import numpy as np
 
 from apgi_framework.core.precision import PrecisionCalculator
 from apgi_framework.core.prediction_error import PredictionErrorProcessor

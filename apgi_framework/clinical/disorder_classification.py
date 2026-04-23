@@ -9,12 +9,16 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
+import logging
+
 import numpy as np
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import StratifiedKFold, cross_val_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
+
+logger = logging.getLogger(__name__)
 
 
 class DisorderType(Enum):
@@ -510,6 +514,16 @@ class DisorderClassification:
 
         # Scale features
         X_scaled = self.scaler.fit_transform(X)
+
+        # Dynamic CV fold adjustment based on sample size
+        n_samples = len(profiles)
+        if n_samples < cv_folds:
+            adjusted_folds = max(2, n_samples)
+            logger.warning(
+                f"Insufficient samples ({n_samples}) for {cv_folds}-fold CV. "
+                f"Adjusting to {adjusted_folds}-fold CV."
+            )
+            cv_folds = adjusted_folds
 
         # Cross-validation
         cv = StratifiedKFold(

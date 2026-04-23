@@ -15,9 +15,10 @@ import sys
 import threading
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
-from apgi_framework.logging.standardized_logging import get_logger
 from subprocess import CompletedProcess
+from typing import Any, Dict, List, Optional
+
+from apgi_framework.logging.standardized_logging import get_logger
 
 logger = get_logger(__name__)
 

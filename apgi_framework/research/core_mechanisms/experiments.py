@@ -5,7 +5,8 @@ This module provides experimental implementations and utilities
 for core APGI experimental paradigms and mechanisms.
 """
 
-from typing import Dict, Any
+from typing import Any, Dict
+
 import numpy as np
 
 

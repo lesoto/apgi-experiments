@@ -7,34 +7,33 @@ experiments, monitoring data quality, and managing sessions.
 
 from typing import Any, Dict, Optional
 
+from .error_handling import (
+    AutomaticBackupSystem,
+    HardwareFailureHandler,
+    SessionStateManager,
+    UserGuidanceSystem,
+)
+from .monitoring_dashboard import (
+    CardiacMonitor,
+    LiveEEGMonitor,
+    PupillometryMonitor,
+    QualityAlertSystem,
+    RealTimeParameterEstimateUpdater,
+)
 from .parameter_estimation_gui import launch_gui
-
-from .session_management import SessionSetupManager, ParticipantManager
 from .progress_monitoring import RealTimeProgressMonitor
+from .reporting_visualization import (
+    DataExporter,
+    DataQualitySummarizer,
+    ParameterVisualizationEngine,
+    SessionReportGenerator,
+)
+from .session_management import ParticipantManager, SessionSetupManager
 from .task_configuration import (
-    TaskParameterConfigurator,
     DetectionTaskConfig,
     HeartbeatTaskConfig,
     OddballTaskConfig,
-)
-from .monitoring_dashboard import (
-    LiveEEGMonitor,
-    PupillometryMonitor,
-    CardiacMonitor,
-    RealTimeParameterEstimateUpdater,
-    QualityAlertSystem,
-)
-from .reporting_visualization import (
-    SessionReportGenerator,
-    ParameterVisualizationEngine,
-    DataQualitySummarizer,
-    DataExporter,
-)
-from .error_handling import (
-    HardwareFailureHandler,
-    SessionStateManager,
-    AutomaticBackupSystem,
-    UserGuidanceSystem,
+    TaskParameterConfigurator,
 )
 
 

@@ -17,9 +17,9 @@ Features:
 """
 
 import tkinter as tk
-from typing import Optional, Callable, Dict, Any, List
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Callable, Dict, List, Optional
 
 try:
     import customtkinter as ctk

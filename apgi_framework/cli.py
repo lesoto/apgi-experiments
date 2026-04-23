@@ -13,13 +13,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
+from apgi_framework.logging.standardized_logging import get_logger
 from apgi_framework.main_controller import MainApplicationController
 from apgi_framework.testing.batch_runner import BatchTestRunner
-from apgi_framework.testing.persistence import (
-    TestResultPersistence,
-    store_test_results,
-)
-from apgi_framework.logging.standardized_logging import get_logger
+from apgi_framework.testing.persistence import TestResultPersistence, store_test_results
 
 logger = get_logger(__name__)
 
@@ -1035,6 +1032,7 @@ Examples:
 
             # Discover tests based on criteria
             from typing import List
+
             from apgi_framework.utils.framework_test_utils import FrameworkTestSuite
 
             test_suites: List[FrameworkTestSuite] = []

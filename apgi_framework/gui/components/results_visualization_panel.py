@@ -16,9 +16,9 @@ from typing import Any, Callable, Dict, List, Optional
 
 import customtkinter as ctk
 import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTk
+from matplotlib.figure import Figure
 
 # Add project root to Python path for imports
 project_root = Path(__file__).parent.parent.parent

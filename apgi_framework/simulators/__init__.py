@@ -6,18 +6,10 @@ consciousness, including P3b ERP, gamma-band synchrony, BOLD activation, and
 Perturbational Complexity Index (PCI).
 """
 
-from .bold_simulator import (
-    BOLDResult,
-    BOLDSignature,
-    BOLDSimulator,
-)
+from .bold_simulator import BOLDResult, BOLDSignature, BOLDSimulator
 from .bold_simulator import BrainRegion as BOLDBrainRegion
 from .gamma_simulator import BrainRegion as GammaBrainRegion
-from .gamma_simulator import (
-    GammaResult,
-    GammaSignature,
-    GammaSimulator,
-)
+from .gamma_simulator import GammaResult, GammaSignature, GammaSimulator
 from .p3b_simulator import P3bSignature, P3bSimulator
 from .pci_calculator import PCICalculator, PCISignature
 from .signature_validator import (

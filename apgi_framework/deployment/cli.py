@@ -15,8 +15,8 @@ try:
 except ImportError:
     # Add parent directory to path for direct execution
     sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-    from apgi_framework.logging.standardized_logging import get_logger
     from apgi_framework.deployment.automation_manager import DeploymentAutomationManager
+    from apgi_framework.logging.standardized_logging import get_logger
 
 logger = get_logger(__name__)
 

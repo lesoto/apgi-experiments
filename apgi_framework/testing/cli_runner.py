@@ -18,12 +18,12 @@ from typing import Any, Dict, List, Optional
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
+from apgi_framework.logging.standardized_logging import get_logger
 from apgi_framework.testing.activity_logger import (
     ActivityLevel,
     ActivityType,
     get_activity_logger,
 )
-from apgi_framework.logging.standardized_logging import get_logger
 
 logger = get_logger(__name__)
 

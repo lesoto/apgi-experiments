@@ -8,7 +8,7 @@ for falsification test results and interactive visualization capabilities.
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union, Callable, cast
+from typing import Any, Callable, Dict, List, Optional, Union, cast
 
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt

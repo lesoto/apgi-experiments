@@ -6,6 +6,7 @@ and user guidance for error recovery.
 """
 
 from __future__ import annotations
+
 import json
 import tkinter as tk
 import traceback
@@ -26,8 +27,8 @@ class HardwareStatus(TypedDict):
 
 
 try:
-    from ..data.parameter_estimation_models import SessionData
     from ..data.parameter_estimation_dao import ParameterEstimationDAO
+    from ..data.parameter_estimation_models import SessionData
     from ..security.secure_pickle import (
         SecurePickleError,
         safe_pickle_dump,

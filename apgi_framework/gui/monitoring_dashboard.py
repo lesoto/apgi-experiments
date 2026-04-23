@@ -4,18 +4,18 @@ Real-time multi-modal monitoring dashboard.
 Provides live monitoring of EEG, pupillometry, cardiac signals, and parameter estimates.
 """
 
-import os
-import sys
 import asyncio
 import json
+import os
+import sys
 import threading
 import time
 import tkinter as tk
+from collections import deque
+from dataclasses import asdict
 from datetime import datetime
 from tkinter import ttk
 from typing import Any, Dict, List, Optional
-from dataclasses import asdict
-from collections import deque
 
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -29,9 +29,9 @@ try:
     from .realtime_data_stream import get_streamer
 except ImportError:
     # Handle relative import when run directly
+    from apgi_framework.gui.realtime_data_stream import get_streamer
     from apgi_framework.logging.standardized_logging import get_logger
     from apgi_framework.neural.eeg_interface import EEGInterface
-    from apgi_framework.gui.realtime_data_stream import get_streamer
 
 # Check for websockets library
 try:

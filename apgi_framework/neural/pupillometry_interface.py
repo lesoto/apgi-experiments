@@ -6,13 +6,14 @@ artifact interpolation, and luminance-independent dilation measurement
 for APGI experiments.
 """
 
-from typing import Any, Callable, Dict, List, Optional, Tuple, cast
-import numpy as np
-from dataclasses import dataclass
-from enum import Enum
 import threading
 import time
 from collections import deque
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any, Callable, Dict, List, Optional, Tuple, cast
+
+import numpy as np
 
 
 class EyeType(Enum):
